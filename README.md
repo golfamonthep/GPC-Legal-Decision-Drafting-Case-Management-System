@@ -60,4 +60,11 @@ To get the database running:
    npm run db:seed
    ```
 
+### pgvector Setup for Embeddings
+This project uses `pgvector` for document embeddings. 
+- Ensure your PostgreSQL database supports the `vector` extension.
+- The `vector` extension is created automatically via Prisma migrations. 
+- Because we use Prisma's `Unsupported("vector(1536)")` type, ensure you use `npx prisma migrate dev` (which executes our raw SQL for indexes and extensions) rather than just `prisma db push` if you want the full search functionality.
+- We currently assume the `text-embedding-3-small` model which outputs `1536` dimensions. If you upgrade to `text-embedding-3-large`, the database schema must be updated to use `vector(3072)`.
+
 For detailed steps on the migration from mock data, see [MIGRATION_PATH.md](docs/MIGRATION_PATH.md).

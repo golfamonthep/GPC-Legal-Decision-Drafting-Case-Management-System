@@ -204,12 +204,20 @@ model DocumentChunk {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  // Placeholder for vector embeddings
-  // embedding       Unsupported("vector(1536)")?
+  // embedding vector(1536) if using text-embedding-3-small
+  // text-embedding-3-large would require vector(3072)
+  embedding         Unsupported("vector(1536)")?
 
   citations         DocumentChunkCitation[]
   retrievalResults  RetrievalResult[]
   legalAnswerCitations LegalAnswerCitation[]
+
+  @@index([legalSourceId])
+  @@index([sourceStatus])
+  @@index([reliabilityLevel])
+  @@index([legalCategory])
+  @@index([issueTags])
+  @@index([effectiveDate, expiredDate])
 }
 
 model DocumentChunkCitation {

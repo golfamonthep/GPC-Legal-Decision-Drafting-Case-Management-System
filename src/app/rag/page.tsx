@@ -42,8 +42,22 @@ export default function RAGDashboardPage() {
               ดูชิ้นส่วนทั้งหมด
             </button>
           </div>
-          <div className="border border-gray-100 rounded bg-gray-50 p-4 text-center text-gray-500 text-sm ThaiFont">
-            (รอการเชื่อมต่อฐานข้อมูล pgvector)
+          <div className="grid grid-cols-3 gap-4 mb-4 text-center">
+            <div className="border border-gray-100 rounded bg-gray-50 p-3">
+              <div className="text-2xl font-bold text-gray-700">0</div>
+              <div className="text-xs text-gray-500 mt-1 ThaiFont">ชิ้นส่วนทั้งหมด</div>
+            </div>
+            <div className="border border-green-100 rounded bg-green-50 p-3">
+              <div className="text-2xl font-bold text-green-600">0</div>
+              <div className="text-xs text-green-600 mt-1 ThaiFont">มี Embedding แล้ว</div>
+            </div>
+            <div className="border border-orange-100 rounded bg-orange-50 p-3">
+              <div className="text-2xl font-bold text-orange-600">0</div>
+              <div className="text-xs text-orange-600 mt-1 ThaiFont">รอทำ Embedding</div>
+            </div>
+          </div>
+          <div className="border border-red-100 rounded bg-red-50 p-2 text-center text-red-500 text-sm ThaiFont">
+            สถานะ: 0 ชิ้นส่วนที่ทำ Embedding ไม่สำเร็จ
           </div>
         </div>
       </div>
