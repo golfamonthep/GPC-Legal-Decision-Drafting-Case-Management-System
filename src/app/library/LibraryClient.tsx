@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { BookOpen, ExternalLink, Edit2, AlertCircle } from "lucide-react";
+import { useState, useMemo, useTransition } from "react";
+import { BookOpen, ExternalLink, Edit2, AlertCircle, Database, Loader2, Trash2 } from "lucide-react";
 import LegalSourceForm from "./LegalSourceForm";
+import { ingestLegalSource, deleteChunks } from "./actions";
 
 export default function LibraryClient({ initialResources }: { initialResources: any[] }) {
   const [resources, setResources] = useState(initialResources);
   const [editingSource, setEditingSource] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const [ingestingId, setIngestingId] = useState<string | null>(null);
   
   const [filters, setFilters] = useState({
     documentType: "",
@@ -43,7 +46,34 @@ export default function LibraryClient({ initialResources }: { initialResources: 
   const uniqueStatuses = Array.from(new Set(resources.map(r => r.sourceStatus).filter(Boolean)));
 
   const handleUpdate = (updated: any) => {
-    setResources(resources.map(r => r.id === updated.id ? updated : r));
+    setResources(resources.map(r => r.id === updated.id ? { ...r, ...updated } : r));
+  };
+
+  const handleIngest = async (id: string) => {
+    if (!confirm("ยืนยันการนำเข้าข้อมูลเพื่อสร้าง Chunks หรือไม่?")) return;
+    setIngestingId(id);
+    startTransition(async () => {
+      try {
+        await ingestLegalSource(id, "user-id-placeholder");
+        alert("นำเข้าข้อมูลสำเร็จ");
+      } catch (err: any) {
+        alert("เกิดข้อผิดพลาด: " + err.message);
+      } finally {
+        setIngestingId(null);
+      }
+    });
+  };
+
+  const handleDeleteChunks = async (id: string) => {
+    if (!confirm("คุณต้องการลบ Chunks และล้างข้อมูลการนำเข้าใช่หรือไม่?")) return;
+    startTransition(async () => {
+      try {
+        await deleteChunks(id, "user-id-placeholder");
+        alert("ลบข้อมูล Chunks สำเร็จ");
+      } catch (err: any) {
+        alert("เกิดข้อผิดพลาด: " + err.message);
+      }
+    });
   };
 
   return (
@@ -160,6 +190,57 @@ export default function LibraryClient({ initialResources }: { initialResources: 
                     ))}
                   </div>
                 )}
+                
+                {/* Ingestion Status Area */}
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-slate-500">การนำเข้าข้อมูล (Ingestion)</span>
+                      {resource.ingestionJobs && resource.ingestionJobs.length > 0 && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          resource.ingestionJobs[0].status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
+                          resource.ingestionJobs[0].status === 'FAILED' ? 'bg-red-100 text-red-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {resource.ingestionJobs[0].status}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleIngest(resource.id)}
+                        disabled={isPending || ingestingId === resource.id}
+                        className="flex-1 inline-flex justify-center items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                      >
+                        {ingestingId === resource.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Database className="h-3.5 w-3.5" />
+                        )}
+                        {(resource._count?.documentChunks ?? 0) > 0 ? "Re-ingest" : "Ingest"}
+                      </button>
+                      
+                      {(resource._count?.documentChunks ?? 0) > 0 && (
+                        <button
+                          onClick={() => handleDeleteChunks(resource.id)}
+                          disabled={isPending}
+                          className="inline-flex justify-center items-center p-1.5 text-xs font-medium rounded-md bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-50"
+                          title="ลบ Chunks"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {(resource._count?.documentChunks ?? 0) > 0 && (
+                      <a href={`/library/${resource.id}/chunks`} className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center justify-center mt-1 font-medium">
+                        View {resource._count.documentChunks} Chunks <ExternalLink className="ml-1 h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
               </div>
             </div>
             <div className="mt-6 flex items-center justify-between">

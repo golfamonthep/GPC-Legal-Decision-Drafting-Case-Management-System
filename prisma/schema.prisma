@@ -22,6 +22,7 @@ model User {
   casesAssigned Case[]       @relation("LegalOfficer")
   auditLogs     AuditLog[]
   aiQueries     AiQueryLog[]
+  retrievalQueries RetrievalQuery[]
 }
 
 model Case {
@@ -68,6 +69,8 @@ model CaseDocument {
   fileUrl    String
   type       String // e.g. "complaint", "evidence", "rebuttal"
   uploadedAt DateTime @default(now())
+
+  documentChunks DocumentChunk[]
 }
 
 model CaseEvent {
@@ -124,6 +127,8 @@ model LegalSource {
   sourceFileUrl   String?
 
   clauses LegalClause[]
+  ingestionJobs DocumentIngestionJob[]
+  documentChunks DocumentChunk[]
 }
 
 model LegalClause {
@@ -156,3 +161,102 @@ model AuditLog {
   afterValue  String?  @db.Text
   timestamp   DateTime @default(now())
 }
+
+model DocumentIngestionJob {
+  id            String   @id @default(uuid())
+  legalSourceId String?
+  legalSource   LegalSource? @relation(fields: [legalSourceId], references: [id], onDelete: Cascade)
+  status        String   // "pending", "processing", "completed", "failed"
+  errorMessage  String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model DocumentChunk {
+  id                String   @id @default(uuid())
+  legalSourceId     String
+  legalSource       LegalSource @relation(fields: [legalSourceId], references: [id], onDelete: Cascade)
+  caseDocumentId    String?
+  caseDocument      CaseDocument? @relation(fields: [caseDocumentId], references: [id], onDelete: Cascade)
+  
+  chunkIndex        Int
+  title             String?
+  content           String   @db.Text
+  normalizedContent String   @db.Text
+  
+  pageNumber        Int?
+  sectionName       String?
+  paragraphNumber   Int?
+  
+  sourceType        String
+  sourceStatus      String
+  reliabilityLevel  String
+  legalCategory     String?
+  
+  issueTags         String[]
+  lawNames          String[]
+  articleNumbers    String[]
+  decisionResult    String?
+  
+  effectiveDate     DateTime?
+  expiredDate       DateTime?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Placeholder for vector embeddings
+  // embedding       Unsupported("vector(1536)")?
+
+  citations         DocumentChunkCitation[]
+  retrievalResults  RetrievalResult[]
+  legalAnswerCitations LegalAnswerCitation[]
+}
+
+model DocumentChunkCitation {
+  id              String   @id @default(uuid())
+  chunkId         String
+  chunk           DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+}
+
+model RetrievalQuery {
+  id            String   @id @default(uuid())
+  queryText     String   @db.Text
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+
+  results       RetrievalResult[]
+  answers       LegalAnswer[]
+}
+
+model RetrievalResult {
+  id            String   @id @default(uuid())
+  queryId       String
+  query         RetrievalQuery @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  chunkId       String
+  chunk         DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  score         Float?
+  rank          Int?
+  createdAt     DateTime @default(now())
+}
+
+model LegalAnswer {
+  id            String   @id @default(uuid())
+  queryId       String
+  query         RetrievalQuery @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  answerText    String   @db.Text
+  createdAt     DateTime @default(now())
+
+  citations     LegalAnswerCitation[]
+}
+
+model LegalAnswerCitation {
+  id            String   @id @default(uuid())
+  answerId      String
+  answer        LegalAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  chunkId       String
+  chunk         DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+}
+
