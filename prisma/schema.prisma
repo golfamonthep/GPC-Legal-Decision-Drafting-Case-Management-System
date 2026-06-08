@@ -259,6 +259,7 @@ model LegalAnswer {
   queryId       String
   query         RetrievalQuery @relation(fields: [queryId], references: [id], onDelete: Cascade)
   answerText    String   @db.Text
+  modelUsed     String?
   createdAt     DateTime @default(now())
 
   citations     LegalAnswerCitation[]

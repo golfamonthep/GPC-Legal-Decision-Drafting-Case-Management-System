@@ -2,7 +2,9 @@ import OpenAI from "openai";
 import prisma from "@/lib/db";
 import { auditLog } from "@/lib/audit";
 
-const openai = new OpenAI();
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || "dummy-key-for-build",
+});
 const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || "text-embedding-3-small";
 
 /**
