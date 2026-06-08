@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  role      String // e.g. "admin", "commissioner", "legal_officer"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  casesOwned    Case[]       @relation("OwnerCommissioner")
+  casesAssigned Case[]       @relation("LegalOfficer")
+  auditLogs     AuditLog[]
+  aiQueries     AiQueryLog[]
+}
+
+model Case {
+  id             String  @id @default(uuid())
+  type           String // "ร้องทุกข์" | "อุทธรณ์"
+  blackNumber    String  @unique
+  redNumber      String? @unique
+  petitionerName String
+  respondentName String
+  subject        String
+  legalCategory  String
+
+  ownerId String?
+  owner   User?   @relation("OwnerCommissioner", fields: [ownerId], references: [id])
+
+  legalOfficerId String?
+  legalOfficer   User?   @relation("LegalOfficer", fields: [legalOfficerId], references: [id])
+
+  receivedDate DateTime
+  dueDate30    DateTime?
+  dueDate60    DateTime?
+  dueDate90    DateTime?
+  dueDate120   DateTime?
+  dueDate240   DateTime?
+
+  currentStatus  String
+  meetingDate    DateTime?
+  decisionResult String?
+  oneDriveUrl    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents CaseDocument[]
+  events    CaseEvent[]
+  drafts    DecisionDraft[]
+}
+
+model CaseDocument {
+  id         String   @id @default(uuid())
+  caseId     String
+  case       Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  title      String
+  fileUrl    String
+  type       String // e.g. "complaint", "evidence", "rebuttal"
+  uploadedAt DateTime @default(now())
+}
+
+model CaseEvent {
+  id        String   @id @default(uuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  action    String
+  actorName String
+  timestamp DateTime @default(now())
+}
+
+model DecisionDraft {
+  id        String   @id @default(uuid())
+  caseId    String
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  title     String
+  status    String // "draft", "review", "approved"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sections DecisionDraftSection[]
+}
+
+model DecisionDraftSection {
+  id          String        @id @default(uuid())
+  draftId     String
+  draft       DecisionDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+  sectionType String // "facts", "issues", "reasoning", "conclusion"
+  content     String        @db.Text
+  order       Int
+  status      String // "pending", "in_progress", "completed"
+  updatedAt   DateTime      @updatedAt
+}
+
+model LegalSource {
+  id              String    @id @default(uuid())
+  title           String
+  documentType    String // "SupremeAdministrativeCourt", "GPC_Decision", "Act"
+  referenceNumber String?
+  date            DateTime?
+  url             String?
+
+  year            Int?
+  caseType        String?
+  legalCategory   String?
+  issueTags       String[]
+  lawNames        String[]
+  sectionNumbers  String[]
+  decisionResult  String?
+  sourceStatus    String   @default("ใช้งาน")
+  reliabilityLevel String  @default("official")
+  effectiveDate   DateTime?
+  expiredDate     DateTime?
+  sourceFileUrl   String?
+
+  clauses LegalClause[]
+}
+
+model LegalClause {
+  id           String      @id @default(uuid())
+  sourceId     String
+  source       LegalSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  clauseNumber String
+  content      String      @db.Text
+}
+
+model AiQueryLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  prompt     String   @db.Text
+  response   String   @db.Text
+  tokensUsed Int?
+  modelUsed  String?
+  timestamp  DateTime @default(now())
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String
+  entityType  String
+  entityId    String
+  beforeValue String?  @db.Text
+  afterValue  String?  @db.Text
+  timestamp   DateTime @default(now())
+}
