@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
-import { BookOpen, ExternalLink, Edit2, AlertCircle, Database, Loader2, Trash2 } from "lucide-react";
+import { BookOpen, ExternalLink, Edit2, AlertCircle, Database, Loader2, Trash2, Cpu } from "lucide-react";
 import LegalSourceForm from "./LegalSourceForm";
 import { ingestLegalSource, deleteChunks } from "./actions";
+import { generateAllMissingEmbeddings } from "./actions/embedding";
 
 export default function LibraryClient({ initialResources }: { initialResources: any[] }) {
   const [resources, setResources] = useState(initialResources);
@@ -11,6 +12,7 @@ export default function LibraryClient({ initialResources }: { initialResources: 
   const [searchQuery, setSearchQuery] = useState("");
   const [isPending, startTransition] = useTransition();
   const [ingestingId, setIngestingId] = useState<string | null>(null);
+  const [isGeneratingEmbeddings, setIsGeneratingEmbeddings] = useState(false);
   
   const [filters, setFilters] = useState({
     documentType: "",
@@ -76,6 +78,23 @@ export default function LibraryClient({ initialResources }: { initialResources: 
     });
   };
 
+  const handleGenerateAllEmbeddings = async () => {
+    if (!confirm("ยืนยันการสร้าง Embeddings สำหรับ Chunks ทั้งหมดที่ยังไม่มี Embeddings หรือไม่?")) return;
+    setIsGeneratingEmbeddings(true);
+    try {
+      const res = await generateAllMissingEmbeddings("user-id-placeholder");
+      if (res.success) {
+        alert(`สร้าง Embeddings สำเร็จจำนวน ${res.count} chunks`);
+      } else {
+        alert("เกิดข้อผิดพลาด: " + res.error);
+      }
+    } catch (err: any) {
+      alert("เกิดข้อผิดพลาด: " + err.message);
+    } finally {
+      setIsGeneratingEmbeddings(false);
+    }
+  };
+
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center justify-between">
@@ -86,6 +105,17 @@ export default function LibraryClient({ initialResources }: { initialResources: 
           <p className="mt-2 text-sm text-slate-500">
             ฐานข้อมูลคำวินิจฉัย ก.พ.ค.ตร., คำพิพากษาศาลปกครองสูงสุด, และกฎหมายที่เกี่ยวข้อง (รองรับ Metadata)
           </p>
+        </div>
+        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+          <button
+            type="button"
+            onClick={handleGenerateAllEmbeddings}
+            disabled={isGeneratingEmbeddings}
+            className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+          >
+            {isGeneratingEmbeddings ? <Loader2 className="h-4 w-4 animate-spin" /> : <Cpu className="h-4 w-4" />}
+            Generate Missing Embeddings
+          </button>
         </div>
       </div>
 

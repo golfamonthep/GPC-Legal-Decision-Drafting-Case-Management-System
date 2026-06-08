@@ -1,7 +1,8 @@
 import prisma from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Database } from "lucide-react";
+import { ArrowLeft, Database, CheckCircle, XCircle, Clock } from "lucide-react";
+import GenerateEmbeddingsButton from "./GenerateEmbeddingsButton";
 
 export default async function ViewChunksPage({ params }: { params: { id: string } }) {
   const { id } = await params;
@@ -34,6 +35,9 @@ export default async function ViewChunksPage({ params }: { params: { id: string 
             Chunks for: <span className="font-medium text-slate-700">{source.title}</span>
           </p>
         </div>
+        <div className="ml-auto">
+          <GenerateEmbeddingsButton sourceId={source.id} />
+        </div>
       </div>
 
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 mb-8">
@@ -62,7 +66,19 @@ export default async function ViewChunksPage({ params }: { params: { id: string 
           source.documentChunks.map((chunk) => (
             <div key={chunk.id} className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
               <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
-                <span className="font-medium text-slate-700 text-sm">Chunk #{chunk.chunkIndex}</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-slate-700 text-sm">Chunk #{chunk.chunkIndex}</span>
+                  {(chunk as any).embeddingStatus === 'completed' && (
+                    <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 px-2 py-0.5 rounded border border-green-200">
+                      <CheckCircle className="h-3 w-3" /> Embeddings
+                    </span>
+                  )}
+                  {(chunk as any).embeddingStatus === 'failed' && (
+                    <span className="inline-flex items-center gap-1 text-xs text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200" title={(chunk as any).embeddingError || 'Error'}>
+                      <XCircle className="h-3 w-3" /> Error
+                    </span>
+                  )}
+                </div>
                 <span className="text-xs text-slate-500 bg-white px-2 py-1 rounded border border-slate-200">
                   {chunk.content.length} chars
                 </span>

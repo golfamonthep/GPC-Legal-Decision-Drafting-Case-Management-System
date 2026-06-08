@@ -204,6 +204,11 @@ model DocumentChunk {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  embeddingModel    String?
+  embeddedAt        DateTime?
+  embeddingStatus   String?   // "pending", "completed", "failed"
+  embeddingError    String?   @db.Text
+
   // embedding vector(1536) if using text-embedding-3-small
   // text-embedding-3-large would require vector(3072)
   embedding         Unsupported("vector(1536)")?
