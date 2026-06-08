@@ -23,6 +23,7 @@ model User {
   auditLogs     AuditLog[]
   aiQueries     AiQueryLog[]
   retrievalQueries RetrievalQuery[]
+  draftSectionAiLogs DraftSectionAiLog[]
 }
 
 model Case {
@@ -274,3 +275,19 @@ model LegalAnswerCitation {
   createdAt     DateTime @default(now())
 }
 
+model DraftSectionAiLog {
+  id              String   @id @default(uuid())
+  caseId          String
+  draftId         String
+  sectionId       String
+  sectionType     String
+  userInstruction String   @db.Text
+  prompt          String   @db.Text
+  generatedText   String   @db.Text
+  modelUsed       String
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  timestamp       DateTime @default(now())
+
+  chunkIds        String[] // Array of retrieved DocumentChunk IDs used
+}
