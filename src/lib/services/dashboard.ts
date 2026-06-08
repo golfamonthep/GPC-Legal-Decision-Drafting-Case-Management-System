@@ -1,5 +1,5 @@
 import prisma from "@/lib/db";
-import { Case, CaseEvent } from "@prisma/client";
+import { Case, CaseEvent } from "@/generated/prisma";
 
 export async function getDashboardStats() {
   const totalCases = await prisma.case.count();

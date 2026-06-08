@@ -1,7 +1,7 @@
 import prisma from "@/lib/db";
 import LibraryClient from "./LibraryClient";
 
-import { LegalSource } from "@prisma/client";
+import { LegalSource } from "@/generated/prisma";
 
 export default async function LibraryPage() {
   let legalSources: LegalSource[] = [];

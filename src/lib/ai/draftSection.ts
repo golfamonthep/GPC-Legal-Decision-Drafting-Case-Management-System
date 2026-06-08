@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/generated/prisma';
 import prisma from '@/lib/db';
 import OpenAI from 'openai';
 import { searchChunks } from '@/lib/rag/retrieval/searchChunks';

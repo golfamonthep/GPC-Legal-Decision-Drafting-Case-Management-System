@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/generated/prisma';
 
 type CaseWithRelations = Prisma.CaseGetPayload<{
   include: { owner: true; legalOfficer: true }
