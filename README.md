@@ -68,3 +68,12 @@ This project uses `pgvector` for document embeddings.
 - We currently assume the `text-embedding-3-small` model which outputs `1536` dimensions. If you upgrade to `text-embedding-3-large`, the database schema must be updated to use `vector(3072)`.
 
 For detailed steps on the migration from mock data, see [MIGRATION_PATH.md](docs/MIGRATION_PATH.md).
+
+## Vercel Deployment Checklist
+- Set DATABASE_URL in Vercel Production
+- Set OPENAI_API_KEY in Vercel Production
+- Set EMBEDDING_MODEL
+- Redeploy after changing env vars
+- Run production migrations
+- Seed production database only when intended
+

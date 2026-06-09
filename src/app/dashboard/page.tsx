@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { DashboardCard } from "@/components/DashboardCard";
 import { CaseTable } from "@/components/CaseTable";
 import { mockCases, mockActivities } from "@/data/mock-data";
@@ -84,6 +87,17 @@ export default async function DashboardPage() {
     }));
   } catch (error) {
     console.error("Failed to load dashboard data from database, falling back to mock data:", error);
+    if (process.env.NODE_ENV === 'production') {
+      return (
+        <div className="p-8">
+          <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-6 flex flex-col items-center justify-center text-center">
+             <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
+             <h2 className="text-lg font-bold mb-2">ข้อผิดพลาดฐานข้อมูล</h2>
+             <p>ไม่สามารถเชื่อมต่อฐานข้อมูล Production ได้ กรุณาตรวจสอบ DATABASE_URL ใน Vercel Environment Variables</p>
+          </div>
+        </div>
+      );
+    }
     // Silent fallback to mock data defined above
   }
 

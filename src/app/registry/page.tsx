@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import React, { Suspense } from 'react';
 import RegistryFilters from '@/components/RegistryFilters';
 import RegistryTable from '@/components/RegistryTable';
@@ -72,3 +75,4 @@ export default async function RegistryPage({ searchParams }: PageProps) {
     </div>
   );
 }
+

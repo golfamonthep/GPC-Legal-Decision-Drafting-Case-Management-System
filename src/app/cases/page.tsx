@@ -4,6 +4,7 @@ import { CaseStatus } from "@/types";
 import { differenceInDays } from "date-fns";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function CasesPage() {
   const dbCases = await prisma.case.findMany({
@@ -74,3 +75,4 @@ export default async function CasesPage() {
     </div>
   );
 }
+
