@@ -133,7 +133,7 @@ export default function RegistryTable({ data, metadata }: RegistryTableProps) {
                     <td className="px-4 py-3 text-slate-700">{item.subject}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-slate-600">{formatDate(item.receivedDate)}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-slate-700">{item.owner?.name || '-'}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-slate-700">{item.legalOfficer?.name || '-'}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-slate-700">{item.legalOfficer?.name || item.legalOfficerName || '-'}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                         item.currentStatus === 'รอดำเนินการ' ? 'bg-slate-100 text-slate-800' :

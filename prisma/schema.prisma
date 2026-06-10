@@ -42,8 +42,9 @@ model Case {
 
   legalOfficerId String?
   legalOfficer   User?   @relation("LegalOfficer", fields: [legalOfficerId], references: [id])
+  legalOfficerName String?
 
-  receivedDate DateTime
+  receivedDate DateTime?
   dueDate30    DateTime?
   dueDate60    DateTime?
   dueDate90    DateTime?
@@ -54,6 +55,7 @@ model Case {
   meetingDate    DateTime?
   decisionResult String?
   oneDriveUrl    String?
+  proceedingNote String? @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

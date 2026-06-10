@@ -161,7 +161,7 @@ export default async function CaseDetailPage({
                 </div>
                 <div className="sm:col-span-1">
                   <dt className="text-sm font-medium text-slate-500">นิติกรผู้รับผิดชอบ</dt>
-                  <dd className="mt-1 text-sm text-slate-900">{caseData.legalOfficer?.name || "-"}</dd>
+                  <dd className="mt-1 text-sm text-slate-900">{caseData.legalOfficer?.name || caseData.legalOfficerName || "-"}</dd>
                 </div>
                 <div className="sm:col-span-1">
                   <dt className="text-sm font-medium text-slate-500">วันนัดพิจารณา</dt>
@@ -171,6 +171,12 @@ export default async function CaseDetailPage({
                   <dt className="text-sm font-medium text-slate-500">ผลคำวินิจฉัย</dt>
                   <dd className="mt-1 text-sm text-slate-900">{caseData.decisionResult || "-"}</dd>
                 </div>
+                {caseData.proceedingNote && (
+                  <div className="sm:col-span-2">
+                    <dt className="text-sm font-medium text-slate-500">การดำเนินการ (ล่าสุด)</dt>
+                    <dd className="mt-1 text-sm text-slate-900 whitespace-pre-wrap">{caseData.proceedingNote}</dd>
+                  </div>
+                )}
               </dl>
             </div>
           </div>

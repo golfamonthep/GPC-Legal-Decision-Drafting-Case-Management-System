@@ -22,6 +22,7 @@ export interface ColumnMapping {
   deadline240: string;
   meetingDate: string;
   decisionResult: string;
+  proceedingNote: string;
 }
 
 interface ColumnMapperProps {
@@ -35,14 +36,15 @@ const REQUIRED_FIELDS = [
   { key: 'blackCaseNo', label: 'เรื่องดำ' },
   { key: 'complainantName', label: 'ชื่อผู้ร้องทุกข์/ผู้อุทธรณ์' },
   { key: 'subject', label: 'เรื่อง' },
-  { key: 'receivedDate', label: 'วันที่รับเรื่อง' },
-  { key: 'status', label: 'สถานะ' },
 ];
 
 const OPTIONAL_FIELDS = [
+  { key: 'receivedDate', label: 'วันที่รับเรื่อง' },
+  { key: 'status', label: 'สถานะ' },
   { key: 'seq', label: 'ลำดับ' },
   { key: 'redCaseNo', label: 'เรื่องแดง' },
-  { key: 'accusedName', label: 'คู่กรณี' },
+  { key: 'accusedName', label: 'คู่กรณีในการร้องทุกข์' },
+  { key: 'proceedingNote', label: 'การดำเนินการ' },
   { key: 'commissioner', label: 'กรรมการเจ้าของสำนวน' },
   { key: 'legalOfficer', label: 'นิติกร' },
   { key: 'deadline30', label: 'วันครบกำหนด 30 วัน' },
@@ -63,10 +65,19 @@ export default function ColumnMapper({ excelHeaders, onMappingComplete, onCancel
     const allFields = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 
     allFields.forEach(field => {
-      // Find a header that exactly matches or contains the label
-      const matchedHeader = excelHeaders.find(h => 
-        h === field.label || h.includes(field.label) || field.label.includes(h)
-      );
+      let matchedHeader = excelHeaders.find(h => h === field.label || h.includes(field.label) || field.label.includes(h));
+      
+      // Additional auto-detect variants
+      if (!matchedHeader) {
+        if (field.key === 'accusedName') {
+          matchedHeader = excelHeaders.find(h => ['คู่กรณีในร้องทุกข์', 'คู่กรณี', 'คู่กรณีในการอุทธรณ์'].some(v => h.includes(v)));
+        } else if (field.key === 'proceedingNote') {
+          matchedHeader = excelHeaders.find(h => ['ดำเนินการ', 'รายละเอียดการดำเนินการ'].some(v => h.includes(v)));
+        } else if (field.key === 'legalOfficer') {
+          matchedHeader = excelHeaders.find(h => ['ผู้รับผิดชอบ', 'เจ้าของสำนวน'].some(v => h.includes(v)));
+        }
+      }
+
       if (matchedHeader) {
         initialMapping[field.key] = matchedHeader;
       } else {

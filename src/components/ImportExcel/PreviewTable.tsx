@@ -38,13 +38,31 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
       const messages: string[] = [];
       let status: 'valid' | 'warning' | 'error' = 'valid';
 
-      // 1. Missing Required Fields
-      const requiredKeys = ['caseType', 'blackCaseNo', 'complainantName', 'subject', 'receivedDate', 'status'];
-      const missingFields = requiredKeys.filter(k => !mappedData[k] || String(mappedData[k]).trim() === '');
-      if (missingFields.length > 0) {
+      // 1. Minimum import rule
+      const meaningfulFields = ['blackCaseNo', 'redCaseNo', 'complainantName', 'subject', 'accusedName', 'proceedingNote'];
+      const hasMeaningful = meaningfulFields.some(k => mappedData[k] && String(mappedData[k]).trim() !== '');
+      if (!hasMeaningful) {
         status = 'error';
-        messages.push(`ขาดข้อมูลสำคัญ: ${missingFields.join(', ')}`);
+        messages.push(`ไม่พบข้อมูลสาระสำคัญในแถวนี้ (ต้องมีอย่างน้อยหนึ่งช่อง: เรื่องดำ, เรื่องแดง, ผู้ร้องทุกข์, เรื่อง, คู่กรณี, หรือการดำเนินการ)`);
       }
+
+      // 1.5 Warnings for important blank fields
+      const importantBlankWarnings = [
+        { key: 'redCaseNo', label: 'เรื่องแดง' },
+        { key: 'receivedDate', label: 'วันที่รับเรื่อง' },
+        { key: 'status', label: 'สถานะ' },
+        { key: 'legalOfficer', label: 'นิติกร' },
+        { key: 'accusedName', label: 'คู่กรณีในการร้องทุกข์' },
+        { key: 'proceedingNote', label: 'การดำเนินการ' },
+        { key: 'decisionResult', label: 'ผลคำวินิจฉัย' },
+        { key: 'meetingDate', label: 'วันประชุม' },
+      ];
+      importantBlankWarnings.forEach(f => {
+        if (!mappedData[f.key] || String(mappedData[f.key]).trim() === '') {
+          if (status !== 'error') status = 'warning';
+          messages.push(`เว้นว่าง: ${f.label}`);
+        }
+      });
 
       // 2. Duplicate Black Case No (within this file)
       const blackNo = mappedData['blackCaseNo'];
@@ -73,10 +91,17 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
       dateKeys.forEach(dk => {
         const dVal = mappedData[dk];
         if (dVal && String(dVal).trim() !== '') {
-          const parsed = parseThaiDate(dVal);
-          if (!parsed) {
+          if (String(dVal).includes('#VALUE!')) {
             if (status !== 'error') status = 'warning';
-            messages.push(`รูปแบบวันที่ไม่ถูกต้อง (${dk}): ${dVal}`);
+            messages.push(`ไม่สามารถอ่านวันที่จากค่าใน Excel ได้ ระบบจะเว้นค่านี้ไว้ (${dk})`);
+            mappedData[dk] = '';
+          } else {
+            const parsed = parseThaiDate(dVal);
+            if (!parsed) {
+              if (status !== 'error') status = 'warning';
+              messages.push(`รูปแบบวันที่ไม่ถูกต้อง ระบบจะเว้นค่านี้ไว้ (${dk}): ${dVal}`);
+              mappedData[dk] = ''; // Store empty so it doesn't break import
+            }
           }
         }
       });
@@ -155,8 +180,9 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
             <tr>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">สถานะ</th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">แถวที่</th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/4">เรื่องดำ/แดง</th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/4">เรื่อง</th>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/5">เรื่องดำ/แดง</th>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/5">เรื่อง/นิติกร</th>
+              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/5">คู่กรณี/การดำเนินการ</th>
               <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">รายละเอียดเพิ่มเติม</th>
             </tr>
           </thead>
@@ -186,6 +212,15 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
                   <td className="px-4 py-3 text-sm text-slate-900">
                     <div className="line-clamp-2" title={row.data.subject}>{row.data.subject || '-'}</div>
                     <div className="text-xs text-slate-500 mt-1">{row.data.caseType || '-'}</div>
+                    <div className="text-xs text-slate-500 mt-1 truncate" title={row.data.legalOfficer}>นิติกร: {row.data.legalOfficer || '-'}</div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-slate-900 max-w-xs">
+                    <div className="font-medium truncate" title={row.data.accusedName}>คู่กรณี: {row.data.accusedName || '-'}</div>
+                    {row.data.proceedingNote && (
+                      <div className="text-xs text-slate-500 mt-1 truncate" title={row.data.proceedingNote}>
+                        ดำเนินการ: {row.data.proceedingNote}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-500">
                     {row.messages.length > 0 ? (
@@ -216,7 +251,7 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
         </button>
         <button
           onClick={() => onConfirmImport(processedData.filter(r => r.status !== 'error'))}
-          disabled={stats.error > 0}
+          disabled={stats.total === 0 || stats.valid + stats.warning === 0}
           className={`px-5 py-2 rounded-lg text-sm font-medium text-white flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
             stats.error === 0 
               ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' 

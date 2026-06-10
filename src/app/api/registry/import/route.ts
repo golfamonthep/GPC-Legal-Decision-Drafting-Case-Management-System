@@ -15,27 +15,26 @@ export async function POST(request: Request) {
         const data = row.data;
 
         // Parse dates safely
-        const receivedDate = parseThaiDate(data.receivedDate);
-        if (!receivedDate) {
-          throw new Error(`รูปแบบวันที่รับเรื่องไม่ถูกต้องในแถวที่ ${row.index}`);
-        }
+        const receivedDate = parseThaiDate(data.receivedDate) || null;
 
         const newCase = await tx.case.create({
           data: {
-            type: data.caseType,
+            type: data.caseType || 'ไม่ระบุ',
             blackNumber: data.blackCaseNo,
             redNumber: data.redCaseNo || null,
-            petitionerName: data.complainantName,
+            petitionerName: data.complainantName || 'ไม่ระบุ',
             respondentName: data.accusedName || 'ไม่ระบุ',
-            subject: data.subject,
+            subject: data.subject || 'ไม่ระบุ',
             legalCategory: 'ทั่วไป', // Default for imported cases
+            legalOfficerName: data.legalOfficer || null,
+            proceedingNote: data.proceedingNote || null,
             receivedDate: receivedDate,
             dueDate30: parseThaiDate(data.deadline30),
             dueDate60: parseThaiDate(data.deadline60),
             dueDate90: parseThaiDate(data.deadline90),
             dueDate120: parseThaiDate(data.deadline120),
             dueDate240: parseThaiDate(data.deadline240),
-            currentStatus: data.status || 'รอดำเนินการ',
+            currentStatus: data.status || 'อยู่ระหว่างดำเนินการ',
             meetingDate: parseThaiDate(data.meetingDate),
             decisionResult: data.decisionResult || null,
           }

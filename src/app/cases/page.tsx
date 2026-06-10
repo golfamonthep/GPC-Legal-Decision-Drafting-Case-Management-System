@@ -31,7 +31,7 @@ export default async function CasesPage() {
       legalCategory: c.legalCategory,
       ownerCommissioner: c.ownerId || "-",
       legalOfficer: c.legalOfficerId || "-",
-      receivedDate: c.receivedDate.toISOString().split("T")[0],
+      receivedDate: c.receivedDate ? c.receivedDate.toISOString().split("T")[0] : "-",
       dueDates: {
         days30: c.dueDate30 ? c.dueDate30.toISOString() : "-",
         days60: c.dueDate60 ? c.dueDate60.toISOString() : "-",

@@ -67,7 +67,7 @@ export default async function DashboardPage() {
         legalCategory: c.legalCategory,
         ownerCommissioner: (c as any).owner?.name || "ไม่ระบุ",
         legalOfficer: (c as any).legalOfficer?.name || "ไม่ระบุ",
-        receivedDate: c.receivedDate.toISOString().split('T')[0],
+        receivedDate: c.receivedDate ? c.receivedDate.toISOString().split('T')[0] : "-",
         dueDates: { days30: "", days60: "", days90: "", days120: "", days240: "" }, // Placeholder as it's not strictly used in table
         currentStatus: c.currentStatus as any,
         isOverdue: isOverdue,
