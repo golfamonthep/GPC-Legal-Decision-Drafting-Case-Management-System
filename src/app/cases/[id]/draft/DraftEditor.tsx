@@ -7,7 +7,7 @@ import {
   FileSearch, Scale, FileOutput, FilePlus
 } from "lucide-react";
 import Link from "next/link";
-import { updateSection, updateAllSections, SectionStatus } from "./actions";
+import { updateSection, updateAllSections, SectionStatus, applyReviewSuggestion } from "./actions";
 
 export function DraftEditor({ caseData, draftData }: { caseData: any, draftData: any }) {
   const [sections, setSections] = useState(draftData.sections);
@@ -20,6 +20,13 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiResult, setAiResult] = useState<{ generatedText: string, sourcesUsed: any[] } | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  // New states for AI Wording Review
+  const [activeReviewSectionId, setActiveReviewSectionId] = useState<string | null>(null);
+  const [reviewMode, setReviewMode] = useState("language_only");
+  const [isReviewing, setIsReviewing] = useState(false);
+  const [reviewResult, setReviewResult] = useState<any>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
 
   const handleSectionChange = (id: string, content: string) => {
@@ -82,6 +89,54 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
       setAiError(err.message);
     } finally {
       setIsGeneratingAi(false);
+    }
+  };
+
+  const handleReviewWording = async (sectionId: string, sectionType: string) => {
+    setIsReviewing(true);
+    setReviewError(null);
+    setReviewResult(null);
+
+    const section = sections.find((s: any) => s.id === sectionId);
+    if (!section || !section.content.trim()) {
+      setReviewError("ไม่มีข้อความให้ตรวจ กรุณาพิมพ์ข้อความก่อน");
+      setIsReviewing(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/draft/review-wording", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          caseId: caseData.id,
+          draftId: draftData.id,
+          sectionId,
+          sectionType,
+          currentSectionText: section.content,
+          reviewMode,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to review wording");
+      }
+
+      setReviewResult(data);
+    } catch (err: any) {
+      setReviewError(err.message);
+    } finally {
+      setIsReviewing(false);
+    }
+  };
+
+  const handleApplyReviewSuggestion = async (sectionId: string, suggestedText: string) => {
+    if (confirm("คุณแน่ใจหรือไม่ที่จะนำข้อเสนอแนะนี้ไปแทนที่ข้อความเดิม?")) {
+      await applyReviewSuggestion(sectionId, suggestedText, caseData.id);
+      handleSectionChange(sectionId, suggestedText);
+      setActiveReviewSectionId(null);
     }
   };
 
@@ -266,10 +321,22 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
                             setAiInstruction("");
                             setAiResult(null);
                             setAiError(null);
+                            setActiveReviewSectionId(null);
                           }}
                           className="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 rounded border border-indigo-200 transition-colors flex items-center gap-1.5 font-semibold"
                         >
                           <Sparkles className="w-3.5 h-3.5" /> ช่วยร่างส่วนนี้
+                        </button>
+                        <button
+                          onClick={() => {
+                            setActiveReviewSectionId(activeReviewSectionId === section.id ? null : section.id);
+                            setReviewResult(null);
+                            setReviewError(null);
+                            setActiveAiSectionId(null);
+                          }}
+                          className="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-1.5 rounded border border-emerald-200 transition-colors flex items-center gap-1.5 font-semibold"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5" /> ตรวจถ้อยคำ
                         </button>
                       </div>
 
@@ -353,6 +420,114 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
                                   </ul>
                                 </div>
                               )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Wording Review Panel */}
+                      {activeReviewSectionId === section.id && (
+                        <div className="mt-4 p-4 bg-emerald-50/50 border border-emerald-100 rounded-lg shadow-inner">
+                          <div className="mb-4">
+                            <label className="block text-xs font-semibold text-slate-700 mb-2">เลือกโหมดการตรวจ</label>
+                            <div className="flex gap-2 flex-wrap">
+                              <select
+                                value={reviewMode}
+                                onChange={(e) => setReviewMode(e.target.value)}
+                                className="rounded-md border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm px-3 py-2"
+                              >
+                                <option value="language_only">ตรวจภาษาราชการ (Language)</option>
+                                <option value="legal_style">ตรวจถ้อยคำกฎหมาย (Legal Style)</option>
+                                <option value="consistency">ตรวจความสอดคล้อง (Consistency)</option>
+                                <option value="risk_check">ตรวจความเสี่ยงข้อเท็จจริง (Risk Check)</option>
+                                <option value="full_section_review">ตรวจครบทุกด้าน (Full Review)</option>
+                              </select>
+                              <button
+                                onClick={() => handleReviewWording(section.id, section.sectionType)}
+                                disabled={isReviewing}
+                                className="bg-emerald-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-2 shadow-sm"
+                              >
+                                {isReviewing ? "กำลังตรวจสอบ..." : "เริ่มตรวจสอบ"}
+                              </button>
+                            </div>
+                          </div>
+
+                          {reviewError && (
+                            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md mb-3 flex items-start gap-2">
+                              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                              {reviewError}
+                            </div>
+                          )}
+
+                          {reviewResult && (
+                            <div className="space-y-4">
+                              <div className="bg-white p-4 rounded-md border border-slate-200 shadow-sm">
+                                <div className="flex justify-between items-center mb-3">
+                                  <h4 className="text-sm font-bold text-slate-800">ผลการตรวจสอบ</h4>
+                                  <span className={`px-2 py-1 rounded text-xs font-bold border ${reviewResult.riskLevel === 'low' ? 'bg-green-50 text-green-700 border-green-200' : reviewResult.riskLevel === 'medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                    ระดับความเสี่ยง: {reviewResult.riskLevel.toUpperCase()}
+                                  </span>
+                                </div>
+
+                                <div className="text-sm text-slate-700 mb-4 bg-slate-50 p-3 rounded border border-slate-100">
+                                  <strong>ภาพรวมการตรวจ: </strong>
+                                  {reviewResult.overallAssessment}
+                                </div>
+
+                                {reviewResult.issues && reviewResult.issues.length > 0 ? (
+                                  <div className="mb-4 space-y-3">
+                                    <strong className="text-sm text-slate-800">ประเด็นที่พบ:</strong>
+                                    {reviewResult.issues.map((issue: any, idx: number) => (
+                                      <div key={idx} className="bg-orange-50 border border-orange-100 p-3 rounded-md text-sm">
+                                        <div className="flex gap-2 items-center mb-1">
+                                          <span className="font-semibold text-orange-800">[{issue.type}]</span>
+                                          <span className="text-xs px-1.5 py-0.5 bg-white border border-orange-200 rounded text-orange-600">Severity: {issue.severity}</span>
+                                        </div>
+                                        <p className="mb-1"><span className="font-semibold">ข้อความเดิม:</span> <span className="line-through text-slate-500">{issue.originalText}</span></p>
+                                        <p className="mb-1 text-slate-800"><span className="font-semibold">เหตุผล:</span> {issue.explanationThai}</p>
+                                        <p className="text-green-700"><span className="font-semibold">ข้อเสนอแนะ:</span> {issue.suggestedText}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="text-sm text-green-700 mb-4 p-3 bg-green-50 rounded border border-green-100">
+                                    <CheckCircle className="w-4 h-4 inline mr-1 -mt-0.5" /> ไม่พบประเด็นที่ต้องแก้ไข
+                                  </div>
+                                )}
+
+                                {reviewResult.improvedSectionText && reviewResult.improvedSectionText !== section.content && (
+                                  <div className="mt-4">
+                                    <strong className="text-sm text-slate-800 block mb-2">ข้อความที่ปรับปรุงแล้ว:</strong>
+                                    <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap bg-emerald-50/50 p-4 rounded-md border border-emerald-100 shadow-inner">
+                                      {reviewResult.improvedSectionText}
+                                    </div>
+                                    <div className="mt-3 flex justify-end">
+                                      <button
+                                        onClick={() => handleApplyReviewSuggestion(section.id, reviewResult.improvedSectionText)}
+                                        className="bg-emerald-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-emerald-700 flex items-center gap-1.5 shadow-sm"
+                                      >
+                                        <CheckCircle className="w-4 h-4" /> นำข้อเสนอไปใช้
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {reviewResult.citationNotes && (
+                                  <div className="mt-4 text-xs text-slate-600 bg-blue-50 p-3 rounded border border-blue-100 whitespace-pre-wrap">
+                                    <BookOpen className="w-3.5 h-3.5 inline mr-1 -mt-0.5 text-blue-500" />
+                                    <strong>หมายเหตุแหล่งอ้างอิง: </strong>
+                                    {reviewResult.citationNotes}
+                                  </div>
+                                )}
+
+                                {reviewResult.humanReviewWarning && (
+                                  <div className="mt-4 text-xs text-yellow-800 bg-yellow-50 p-3 rounded border border-yellow-200">
+                                    <AlertCircle className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
+                                    <strong>คำเตือน: </strong>
+                                    {reviewResult.humanReviewWarning}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>

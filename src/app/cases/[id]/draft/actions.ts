@@ -124,3 +124,32 @@ export async function updateAllSections(sectionsData: { id: string, content: str
   revalidatePath(`/cases/${caseId}/draft`);
   return { success: true };
 }
+
+export async function applyReviewSuggestion(sectionId: string, newContent: string, caseId: string, userId?: string) {
+  // Fetch current section to keep as beforeValue
+  const currentSection = await prisma.decisionDraftSection.findUnique({
+    where: { id: sectionId }
+  });
+
+  if (!currentSection) {
+    throw new Error("Section not found");
+  }
+
+  const updatedSection = await prisma.decisionDraftSection.update({
+    where: { id: sectionId },
+    data: { content: newContent }
+  });
+
+  // Create Audit Log for AI Wording Suggestion Applied
+  await auditLog({
+    userId,
+    action: "AI_LEGAL_WORDING_SUGGESTION_APPLIED",
+    entityType: "DecisionDraftSection",
+    entityId: sectionId,
+    beforeValue: currentSection.content,
+    afterValue: newContent,
+  });
+
+  revalidatePath(`/cases/${caseId}/draft`);
+  return updatedSection;
+}
