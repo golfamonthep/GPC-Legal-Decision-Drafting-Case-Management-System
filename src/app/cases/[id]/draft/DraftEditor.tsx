@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 import { updateSection, updateAllSections, SectionStatus, applyReviewSuggestion } from "./actions";
 
-export function DraftEditor({ caseData, draftData }: { caseData: any, draftData: any }) {
+export function DraftEditor({ caseData, draftData, templateExists = false }: { caseData: any, draftData: any, templateExists?: boolean }) {
   const [sections, setSections] = useState(draftData.sections);
   const [isSaving, setIsSaving] = useState(false);
   const [savingSectionId, setSavingSectionId] = useState<string | null>(null);
@@ -339,13 +339,18 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
               <Scale className="h-4 w-4" /> ตรวจข้อกฎหมาย
             </button>
             
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              {!templateExists && (
+                <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                  ยังไม่พบไฟล์แม่แบบ ระบบจะส่งออกด้วยรูปแบบมาตรฐานชั่วคราว
+                </span>
+              )}
               <button 
                 onClick={handleExportDocx}
                 disabled={isExporting}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md text-sm font-medium shadow-sm transition-colors disabled:opacity-50"
               >
-                <FileOutput className="h-4 w-4" /> {isExporting ? "กำลังส่งออก..." : "ส่งออก DOCX"}
+                <FileOutput className="h-4 w-4" /> {isExporting ? "กำลังส่งออก..." : (templateExists ? "ส่งออกตามแม่แบบคำวินิจฉัย" : "ส่งออก DOCX")}
               </button>
             </div>
           </div>

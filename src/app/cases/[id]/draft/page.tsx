@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import prisma from "@/lib/db";
 import { getOrCreateDraft } from "./actions";
 import { DraftEditor } from "./DraftEditor";
+import fs from "fs/promises";
+import path from "path";
 
 export default async function DraftDecisionPage({
   params,
@@ -21,5 +23,14 @@ export default async function DraftDecisionPage({
 
   const draftData = await getOrCreateDraft(caseId);
 
-  return <DraftEditor caseData={caseData} draftData={draftData} />;
+  let templateExists = false;
+  try {
+    const templatePath = path.join(process.cwd(), "templates", "docx", "gpc-decision-template.docx");
+    await fs.access(templatePath);
+    templateExists = true;
+  } catch (err) {
+    templateExists = false;
+  }
+
+  return <DraftEditor caseData={caseData} draftData={draftData} templateExists={templateExists} />;
 }
