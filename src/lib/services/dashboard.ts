@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import { Case, CaseEvent } from "@/generated/prisma";
+import { isClosedOrRedCase } from "@/lib/caseStatus";
 
 export async function getDashboardStats() {
   const totalCases = await prisma.case.count();
@@ -43,7 +44,7 @@ export async function getCasesByOwnerCommissioner() {
 
 export async function getOverdueCases() {
   const now = new Date();
-  return prisma.case.findMany({
+  const cases = await prisma.case.findMany({
     where: {
       OR: [
         { dueDate30: { lt: now } },
@@ -52,13 +53,15 @@ export async function getOverdueCases() {
         { dueDate120: { lt: now } },
         { dueDate240: { lt: now } },
       ],
-      currentStatus: { notIn: ["ปิดคดี", "วินิจฉัยแล้วเสร็จ"] } // Exclude closed cases
+      currentStatus: { notIn: ["ปิดคดี", "วินิจฉัยแล้วเสร็จ", "เสร็จสิ้น", "ยุติเรื่อง", "จำหน่ายเรื่อง", "ปิดเรื่อง", "แล้วเสร็จ"] } // Exclude closed cases
     },
     include: {
       owner: true,
       legalOfficer: true
     }
   });
+
+  return cases.filter((c: any) => !isClosedOrRedCase(c));
 }
 
 export async function getDueSoonCases(days: number) {
@@ -66,7 +69,7 @@ export async function getDueSoonCases(days: number) {
   const futureDate = new Date();
   futureDate.setDate(now.getDate() + days);
 
-  return prisma.case.findMany({
+  const cases = await prisma.case.findMany({
     where: {
       OR: [
         { dueDate30: { gt: now, lte: futureDate } },
@@ -75,13 +78,15 @@ export async function getDueSoonCases(days: number) {
         { dueDate120: { gt: now, lte: futureDate } },
         { dueDate240: { gt: now, lte: futureDate } },
       ],
-      currentStatus: { notIn: ["ปิดคดี", "วินิจฉัยแล้วเสร็จ"] }
+      currentStatus: { notIn: ["ปิดคดี", "วินิจฉัยแล้วเสร็จ", "เสร็จสิ้น", "ยุติเรื่อง", "จำหน่ายเรื่อง", "ปิดเรื่อง", "แล้วเสร็จ"] }
     },
     include: {
       owner: true,
       legalOfficer: true
     }
   });
+
+  return cases.filter((c: any) => !isClosedOrRedCase(c));
 }
 
 export async function getRecentCaseEvents() {

@@ -3,6 +3,7 @@ import { StatusBadge } from "./StatusBadge";
 import Link from "next/link";
 import { AlertCircle, Clock } from "lucide-react";
 import { cn } from "../lib/utils";
+import { isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
 
 interface CaseTableProps {
   cases: Case[];
@@ -53,7 +54,15 @@ export function CaseTable({ cases }: CaseTableProps) {
                 <StatusBadge status={c.currentStatus} />
               </td>
               <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                {c.isOverdue ? (
+                {isClosedCaseStatus(c.currentStatus) ? (
+                  <div className="flex items-center text-green-600 font-medium">
+                    เสร็จสิ้นแล้ว
+                  </div>
+                ) : hasRedCaseNumber(c.redNumber) ? (
+                  <div className="flex items-center text-green-600 font-medium">
+                    เสร็จสิ้นตามเลขแดง
+                  </div>
+                ) : c.isOverdue ? (
                   <div className="flex items-center text-red-600 font-medium">
                     <AlertCircle className="mr-1.5 h-4 w-4" />
                     เกินกำหนด {Math.abs(c.daysUntilDue || 0)} วัน

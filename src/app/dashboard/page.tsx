@@ -12,6 +12,7 @@ import {
   getRecentCaseEvents 
 } from "@/lib/services/dashboard";
 import { Case } from "@/types";
+import { isClosedOrRedCase } from "@/lib/caseStatus";
 
 function calculateDaysUntilDue(caseData: any): number | undefined {
   const now = new Date();
@@ -29,11 +30,11 @@ export default async function DashboardPage() {
     grievanceCases: mockCases.filter(c => c.type === "ร้องทุกข์").length,
     appealCases: mockCases.filter(c => c.type === "อุทธรณ์").length,
     draftCompletions: 0,
-    overdueCount: mockCases.filter(c => c.isOverdue).length,
-    dueSoonCount: mockCases.filter(c => !c.isOverdue && (c.daysUntilDue || 0) <= 7).length,
+    overdueCount: mockCases.filter(c => c.isOverdue && !isClosedOrRedCase(c)).length,
+    dueSoonCount: mockCases.filter(c => !c.isOverdue && (c.daysUntilDue || 0) <= 7 && !isClosedOrRedCase(c)).length,
   };
 
-  let urgentCasesData: Case[] = mockCases.filter(c => c.isOverdue || (c.daysUntilDue || 0) <= 7);
+  let urgentCasesData: Case[] = mockCases.filter(c => (c.isOverdue || (c.daysUntilDue || 0) <= 7) && !isClosedOrRedCase(c));
   let activitiesData = mockActivities.slice(0, 5);
 
   try {
@@ -54,7 +55,11 @@ export default async function DashboardPage() {
     // Combine and map Prisma cases to UI cases
     const dbUrgentCases = [...dbOverdueCases, ...dbDueSoonCases].map(c => {
       const daysUntilDue = calculateDaysUntilDue(c);
-      const isOverdue = daysUntilDue !== undefined && daysUntilDue < 0;
+      let isOverdue = daysUntilDue !== undefined && daysUntilDue < 0;
+      
+      if (isClosedOrRedCase(c)) {
+        isOverdue = false;
+      }
       
       return {
         id: c.id,
