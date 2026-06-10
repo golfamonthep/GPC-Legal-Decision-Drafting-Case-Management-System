@@ -25,6 +25,9 @@ export function CaseTable({ cases }: CaseTableProps) {
               คู่กรณี
             </th>
             <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
+              นิติกร / การดำเนินการ
+            </th>
+            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
               สถานะ
             </th>
             <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">
@@ -49,6 +52,14 @@ export function CaseTable({ cases }: CaseTableProps) {
               <td className="px-3 py-4 text-sm text-slate-500">
                 <div>ผู้ร้อง: {c.petitionerName}</div>
                 <div className="text-xs mt-1">ผู้ถูกร้อง: {c.respondentName}</div>
+              </td>
+              <td className="px-3 py-4 text-sm text-slate-500 max-w-[200px]">
+                <div className="font-medium text-slate-700">{c.legalOfficer !== "-" ? c.legalOfficer : (c as any).legalOfficerName || "-"}</div>
+                {(c as any).proceedingNote && (
+                  <div className="text-xs mt-1 truncate" title={(c as any).proceedingNote}>
+                    {(c as any).proceedingNote}
+                  </div>
+                )}
               </td>
               <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
                 <StatusBadge status={c.currentStatus} />

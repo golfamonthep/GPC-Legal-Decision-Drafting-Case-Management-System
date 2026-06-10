@@ -11,6 +11,9 @@ import { format } from "date-fns";
 import { th } from "date-fns/locale";
 import { auditLog } from "@/lib/audit";
 import { CaseStatus } from "@/types";
+import { CaseDetailActions } from "@/components/CaseDetailActions";
+import { isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
+import { differenceInYears } from "date-fns";
 
 function formatDate(date: Date | null | undefined): string {
   if (!date) return "-";
@@ -88,6 +91,36 @@ export default async function CaseDetailPage({
 
   const isOverdue = false; // Logic for overdue could be added here if needed
 
+  // Data QA Indicators Logic
+  const qaWarnings: string[] = [];
+  if (!caseData.petitionerName || caseData.petitionerName.trim() === '-' || caseData.petitionerName === '') {
+    qaWarnings.push("ข้อมูลผู้ร้องทุกข์/ผู้อุทธรณ์ไม่ครบถ้วน");
+  }
+  if (!caseData.subject || caseData.subject.trim() === '-' || caseData.subject === '') {
+    qaWarnings.push("ข้อมูลเรื่องไม่ครบถ้วน");
+  }
+  if (!caseData.legalOfficerId && (!caseData.legalOfficerName || caseData.legalOfficerName.trim() === '-' || caseData.legalOfficerName === '')) {
+    qaWarnings.push("ยังไม่ได้ระบุนิติกรผู้รับผิดชอบ");
+  }
+  if (!caseData.currentStatus || caseData.currentStatus.trim() === '-' || caseData.currentStatus === '') {
+    qaWarnings.push("ยังไม่ได้ระบุสถานะ");
+  }
+  if (!caseData.receivedDate) {
+    qaWarnings.push("ไม่มีข้อมูลวันที่รับเรื่อง");
+  }
+  if (caseData.redNumber && hasRedCaseNumber(caseData.redNumber) && !isClosedCaseStatus(caseData.currentStatus)) {
+    qaWarnings.push("คดีมีเลขแดงแล้ว แต่สถานะยังไม่ระบุว่าเสร็จสิ้น");
+  }
+  if (isClosedCaseStatus(caseData.currentStatus) && !hasRedCaseNumber(caseData.redNumber)) {
+    qaWarnings.push("สถานะคดีเสร็จสิ้น แต่ยังไม่ได้ระบุเลขเรื่องแดง");
+  }
+  if (!isClosedCaseStatus(caseData.currentStatus) && caseData.receivedDate) {
+    const yearsOpen = differenceInYears(new Date(), caseData.receivedDate);
+    if (yearsOpen >= 3) {
+      qaWarnings.push(`คดีล่าช้าเกิน 3 ปี (เปิดมาแล้ว ${yearsOpen} ปี)`);
+    }
+  }
+
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="md:flex md:items-center md:justify-between">
@@ -111,6 +144,7 @@ export default async function CaseDetailPage({
           </div>
         </div>
         <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
+          <CaseDetailActions caseData={caseData} />
           {caseData.oneDriveUrl && (
             <a
               href={caseData.oneDriveUrl}
@@ -131,6 +165,23 @@ export default async function CaseDetailPage({
           </Link>
         </div>
       </div>
+
+      {qaWarnings.length > 0 && (
+        <div className="mt-6 rounded-md bg-red-50 p-4 border border-red-200">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">พบข้อสังเกตด้านคุณภาพข้อมูล (Data QA) {qaWarnings.length} รายการ:</h3>
+              <div className="mt-2 text-sm text-red-700">
+                <ul role="list" className="list-disc space-y-1 pl-5">
+                  {qaWarnings.map((warning, index) => (
+                    <li key={index}>{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Left Column: Details */}
