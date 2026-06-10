@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Upload, Settings, CheckSquare } from 'lucide-react';
+import { ArrowLeft, Upload, Settings, CheckSquare, AlertCircle } from 'lucide-react';
 import ExcelUploader from '@/components/ImportExcel/ExcelUploader';
 import ColumnMapper, { ColumnMapping } from '@/components/ImportExcel/ColumnMapper';
 import PreviewTable, { ProcessedRow } from '@/components/ImportExcel/PreviewTable';
@@ -32,6 +32,15 @@ export default function ImportRegistryPage() {
   };
 
   const [isImporting, setIsImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{
+    success: boolean;
+    importedRows?: number;
+    skippedErrorRows?: number;
+    skippedDuplicateRows?: number;
+    failedRows?: number;
+    messages?: string[];
+    errorMsg?: string;
+  } | null>(null);
 
   const handleConfirmImport = async (validRows: ProcessedRow[]) => {
     setIsImporting(true);
@@ -44,19 +53,26 @@ export default function ImportRegistryPage() {
       const data = await response.json();
       
       if (!response.ok) {
-        alert(data.error || 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+        setImportResult({
+          success: false,
+          errorMsg: 'นำเข้าข้อมูลไม่สำเร็จ เนื่องจากระบบใช้เวลานานเกินกำหนด กรุณาลองใหม่ หรือแบ่งนำเข้าเป็นชุด'
+        });
       } else {
-        alert(
-          `นำเข้าข้อมูลสำเร็จจำนวน ${data.importedCount} รายการ\n` +
-          `  - เป็นแถวที่มีคำเตือน: ${data.warningImportedCount} รายการ\n` +
-          `ข้ามแถวที่ไม่ผ่าน: ${data.skippedErrorCount} รายการ\n` +
-          `ข้ามแถวที่ซ้ำ: ${data.skippedDuplicateCount} รายการ`
-        );
-        resetToUpload();
+        setImportResult({
+          success: true,
+          importedRows: data.importedRows,
+          skippedErrorRows: data.skippedErrorRows,
+          skippedDuplicateRows: data.skippedDuplicateRows,
+          failedRows: data.failedRows,
+          messages: data.messages
+        });
       }
     } catch (error) {
       console.error(error);
-      alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+      setImportResult({
+        success: false,
+        errorMsg: 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์ กรุณาลองใหม่'
+      });
     } finally {
       setIsImporting(false);
     }
@@ -127,7 +143,63 @@ export default function ImportRegistryPage() {
           />
         )}
 
-        {step === 3 && mapping && (
+        {importResult && (
+          <div className="max-w-2xl mx-auto mt-10 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="text-center">
+              {importResult.success ? (
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckSquare className="h-8 w-8 text-green-600" />
+                </div>
+              ) : (
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertCircle className="h-8 w-8 text-red-600" />
+                </div>
+              )}
+              
+              <h2 className="text-2xl font-bold font-thai text-slate-800 mb-2">
+                {importResult.success ? 'นำเข้าข้อมูลเสร็จสิ้น' : 'เกิดข้อผิดพลาด'}
+              </h2>
+              
+              {importResult.success ? (
+                <div className="text-slate-600 mb-6 font-thai">
+                  <p className="text-lg">นำเข้าสำเร็จ <span className="font-bold text-green-600">{importResult.importedRows}</span> แถว</p>
+                  <p>ข้ามแถวที่ไม่ผ่าน <span className="font-bold text-slate-800">{importResult.skippedErrorRows}</span> แถว</p>
+                  <p>ข้ามข้อมูลซ้ำ <span className="font-bold text-amber-600">{importResult.skippedDuplicateRows}</span> แถว</p>
+                  {importResult.failedRows && importResult.failedRows > 0 ? <p className="text-red-600">นำเข้าล้มเหลว <span className="font-bold">{importResult.failedRows}</span> แถว</p> : null}
+                </div>
+              ) : (
+                <div className="text-slate-600 mb-6 font-thai text-lg">
+                  <p className="text-red-600">{importResult.errorMsg}</p>
+                </div>
+              )}
+
+              {importResult.messages && importResult.messages.length > 0 && (
+                <div className="bg-slate-50 rounded-lg p-4 text-left border border-slate-200 h-48 overflow-y-auto mb-6">
+                  <h4 className="font-medium font-thai text-slate-700 mb-2">รายละเอียด:</h4>
+                  <ul className="text-sm text-slate-600 font-thai list-disc pl-5 space-y-1">
+                    {importResult.messages.map((msg, idx) => (
+                      <li key={idx}>{msg}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  setImportResult(null);
+                  if (importResult.success) {
+                    resetToUpload();
+                  }
+                }}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm font-thai"
+              >
+                {importResult.success ? 'กลับไปหน้าอัปโหลด' : 'ลองใหม่อีกครั้ง'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && mapping && !importResult && (
           <div className="h-[600px]">
             <PreviewTable 
               rowData={rowData} 
