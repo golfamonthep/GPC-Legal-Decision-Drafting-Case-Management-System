@@ -28,6 +28,13 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
   const [reviewResult, setReviewResult] = useState<any>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
+  // New states for Citation Coverage Checker
+  const [activeCoverageSectionId, setActiveCoverageSectionId] = useState<string | null>(null);
+  const [coverageMode, setCoverageMode] = useState("facts");
+  const [isCheckingCoverage, setIsCheckingCoverage] = useState(false);
+  const [coverageResult, setCoverageResult] = useState<any>(null);
+  const [coverageError, setCoverageError] = useState<string | null>(null);
+
 
   const handleSectionChange = (id: string, content: string) => {
     setSections((prev: any) => 
@@ -129,6 +136,46 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
       setReviewError(err.message);
     } finally {
       setIsReviewing(false);
+    }
+  };
+
+  const handleCheckCoverage = async (sectionId: string, sectionType: string) => {
+    setIsCheckingCoverage(true);
+    setCoverageError(null);
+    setCoverageResult(null);
+
+    const section = sections.find((s: any) => s.id === sectionId);
+    if (!section || !section.content.trim()) {
+      setCoverageError("ไม่มีข้อความให้ตรวจ กรุณาพิมพ์ข้อความก่อน");
+      setIsCheckingCoverage(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/draft/check-citations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          caseId: caseData.id,
+          draftId: draftData.id,
+          sectionId,
+          sectionType,
+          currentSectionText: section.content,
+          coverageMode,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to check coverage");
+      }
+
+      setCoverageResult(data);
+    } catch (err: any) {
+      setCoverageError(err.message);
+    } finally {
+      setIsCheckingCoverage(false);
     }
   };
 
@@ -322,6 +369,7 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
                             setAiResult(null);
                             setAiError(null);
                             setActiveReviewSectionId(null);
+                            setActiveCoverageSectionId(null);
                           }}
                           className="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 rounded border border-indigo-200 transition-colors flex items-center gap-1.5 font-semibold"
                         >
@@ -333,10 +381,23 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
                             setReviewResult(null);
                             setReviewError(null);
                             setActiveAiSectionId(null);
+                            setActiveCoverageSectionId(null);
                           }}
                           className="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-1.5 rounded border border-emerald-200 transition-colors flex items-center gap-1.5 font-semibold"
                         >
                           <CheckCircle className="w-3.5 h-3.5" /> ตรวจถ้อยคำ
+                        </button>
+                        <button
+                          onClick={() => {
+                            setActiveCoverageSectionId(activeCoverageSectionId === section.id ? null : section.id);
+                            setCoverageResult(null);
+                            setCoverageError(null);
+                            setActiveAiSectionId(null);
+                            setActiveReviewSectionId(null);
+                          }}
+                          className="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded border border-blue-200 transition-colors flex items-center gap-1.5 font-semibold"
+                        >
+                          <FileSearch className="w-3.5 h-3.5" /> ตรวจแหล่งอ้างอิง
                         </button>
                       </div>
 
@@ -525,6 +586,153 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
                                     <AlertCircle className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
                                     <strong>คำเตือน: </strong>
                                     {reviewResult.humanReviewWarning}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Citation Coverage Check Panel */}
+                      {activeCoverageSectionId === section.id && (
+                        <div className="mt-4 p-4 bg-blue-50/50 border border-blue-100 rounded-lg shadow-inner">
+                          <div className="mb-4">
+                            <label className="block text-xs font-semibold text-slate-700 mb-2">เลือกโหมดการตรวจแหล่งอ้างอิง</label>
+                            <div className="flex gap-2 flex-wrap">
+                              <select
+                                value={coverageMode}
+                                onChange={(e) => setCoverageMode(e.target.value)}
+                                className="rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3 py-2"
+                              >
+                                <option value="facts">ตรวจฐานข้อเท็จจริง (Facts)</option>
+                                <option value="legal_basis">ตรวจฐานข้อกฎหมาย (Legal Basis)</option>
+                                <option value="reasoning">ตรวจฐานเหตุผลวินิจฉัย (Reasoning)</option>
+                                <option value="precedent">ตรวจแนวคำวินิจฉัยเดิม (Precedent)</option>
+                                <option value="full_section_coverage">ตรวจครบทุกด้าน (Full Coverage)</option>
+                              </select>
+                              <button
+                                onClick={() => handleCheckCoverage(section.id, section.sectionType)}
+                                disabled={isCheckingCoverage}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 shadow-sm"
+                              >
+                                {isCheckingCoverage ? "กำลังตรวจสอบ..." : "เริ่มตรวจสอบ"}
+                              </button>
+                            </div>
+                          </div>
+
+                          {coverageError && (
+                            <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md mb-3 flex items-start gap-2">
+                              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                              {coverageError}
+                            </div>
+                          )}
+
+                          {coverageResult && (
+                            <div className="space-y-4">
+                              <div className="bg-white p-4 rounded-md border border-slate-200 shadow-sm">
+                                <div className="flex flex-col sm:flex-row justify-between items-start mb-3 gap-2">
+                                  <h4 className="text-sm font-bold text-slate-800">ผลการตรวจแหล่งอ้างอิง</h4>
+                                  <div className="flex gap-2 flex-wrap">
+                                    <span className={`px-2 py-1 rounded text-xs font-bold border ${coverageResult.overallCoverage === 'sufficient' ? 'bg-green-50 text-green-700 border-green-200' : coverageResult.overallCoverage === 'partial' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : coverageResult.overallCoverage === 'insufficient' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                                      {coverageResult.overallCoverage === 'sufficient' ? 'มีแหล่งอ้างอิงครบถ้วน' :
+                                       coverageResult.overallCoverage === 'partial' ? 'มีแหล่งอ้างอิงบางส่วน' :
+                                       coverageResult.overallCoverage === 'not_applicable' ? 'ไม่ต้องมีแหล่งอ้างอิง' :
+                                       'ขาดแหล่งอ้างอิงที่เพียงพอ'}
+                                    </span>
+                                    <span className={`px-2 py-1 rounded text-xs font-bold border ${coverageResult.riskLevel === 'low' ? 'bg-green-50 text-green-700 border-green-200' : coverageResult.riskLevel === 'medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                      ระดับความเสี่ยง: {coverageResult.riskLevel.toUpperCase()}
+                                    </span>
+                                    <span className="px-2 py-1 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                      คะแนนความครบถ้วนของแหล่งอ้างอิง: {coverageResult.coverageScore}%
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {coverageResult.checkedClaims && coverageResult.checkedClaims.length > 0 && (
+                                  <div className="mb-4 space-y-3">
+                                    <strong className="text-sm text-slate-800">ข้อความที่ตรวจพบ:</strong>
+                                    {coverageResult.checkedClaims.map((claim: any, idx: number) => {
+                                      const badgeColor = claim.supportStatus === 'supported' ? 'bg-green-100 text-green-800' :
+                                                        claim.supportStatus === 'partially_supported' ? 'bg-yellow-100 text-yellow-800' :
+                                                        claim.supportStatus === 'unsupported' ? 'bg-red-100 text-red-800' :
+                                                        'bg-slate-100 text-slate-800';
+                                      
+                                      const badgeText = claim.supportStatus === 'supported' ? 'มีแหล่งรองรับ' :
+                                                        claim.supportStatus === 'partially_supported' ? 'มีแหล่งรองรับบางส่วน' :
+                                                        claim.supportStatus === 'unsupported' ? 'ยังไม่พบแหล่งรองรับ' :
+                                                        'ยังไม่ได้ตรวจ';
+
+                                      return (
+                                        <div key={idx} className="bg-slate-50 border border-slate-200 p-3 rounded-md text-sm">
+                                          <div className="flex gap-2 items-center mb-2 flex-wrap">
+                                            <span className="text-xs px-2 py-0.5 bg-slate-200 text-slate-800 rounded font-semibold border border-slate-300">
+                                              ประเภทข้อความ: {claim.claimType}
+                                            </span>
+                                            <span className={`text-xs px-2 py-0.5 rounded font-semibold ${badgeColor}`}>
+                                              สถานะแหล่งรองรับ: {badgeText}
+                                            </span>
+                                          </div>
+                                          <p className="mb-2"><span className="font-semibold text-slate-700">ข้อความ:</span> {claim.claimText}</p>
+                                          <p className="mb-2 text-slate-600"><span className="font-semibold">ผลวิเคราะห์:</span> {claim.explanationThai}</p>
+                                          {claim.recommendedActionThai && (
+                                            <p className="text-blue-700"><span className="font-semibold">ข้อเสนอแนะ:</span> {claim.recommendedActionThai}</p>
+                                          )}
+                                          {claim.supportingSourceChunkIds && claim.supportingSourceChunkIds.length > 0 && (
+                                            <p className="mt-2 text-xs text-slate-500">
+                                              <BookOpen className="w-3 h-3 inline mr-1 -mt-0.5" />
+                                              เชื่อมโยงกับแหล่งอ้างอิง: {claim.supportingSourceChunkIds.length} รายการ
+                                            </p>
+                                          )}
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                )}
+
+                                {coverageResult.missingSupport && coverageResult.missingSupport.length > 0 && (
+                                  <div className="mb-4 space-y-3">
+                                    <strong className="text-sm text-red-700 flex items-center gap-1">
+                                      <AlertCircle className="w-4 h-4" /> ข้อความที่ยังไม่มีแหล่งรองรับ:
+                                    </strong>
+                                    {coverageResult.missingSupport.map((missing: any, idx: number) => (
+                                      <div key={idx} className="bg-red-50 border border-red-200 p-3 rounded-md text-sm">
+                                        <p className="mb-1"><span className="font-semibold text-slate-800">ข้อความ:</span> {missing.statement}</p>
+                                        <p className="mb-1 text-red-700"><span className="font-semibold">เหตุผลที่ต้องมีแหล่งอ้างอิง:</span> {missing.whySupportIsNeededThai}</p>
+                                        <p className="text-blue-700"><span className="font-semibold">ข้อเสนอแนะในการเติมแหล่งอ้างอิง:</span> {missing.suggestedSourceTypeThai}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {coverageResult.sourceSummary && (
+                                  <div className="mt-4 text-sm text-slate-700 bg-slate-50 p-3 rounded border border-slate-200 whitespace-pre-wrap">
+                                    <strong>สรุปภาพรวมแหล่งอ้างอิง: </strong>
+                                    {coverageResult.sourceSummary}
+                                  </div>
+                                )}
+
+                                {coverageResult.retrievedChunksUsed && coverageResult.retrievedChunksUsed.length > 0 && (
+                                  <div className="mt-4">
+                                    <strong className="text-xs text-slate-500 uppercase tracking-wider mb-2 block">แหล่งอ้างอิงที่พบ</strong>
+                                    <ul className="space-y-2">
+                                      {coverageResult.retrievedChunksUsed.map((source: any, idx: number) => (
+                                        <li key={idx} className="text-xs text-slate-700 bg-slate-50 p-2 rounded border border-slate-200">
+                                          <span className="font-semibold">{source.sourceTitle}</span>
+                                          {source.citationMetadata?.referenceNumber && ` (อ้างอิง: ${source.citationMetadata.referenceNumber})`}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+
+                                {coverageResult.humanReviewWarning && (
+                                  <div className="mt-4 text-xs text-yellow-800 bg-yellow-50 p-3 rounded border border-yellow-200 flex items-start gap-1.5">
+                                    <AlertCircle className="w-4 h-4 shrink-0" />
+                                    <div>
+                                      <strong>ต้องตรวจโดยมนุษย์: </strong>
+                                      {coverageResult.humanReviewWarning}
+                                    </div>
                                   </div>
                                 )}
                               </div>
