@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Upload, Settings, CheckSquare } from 'lucide-react';
 import ExcelUploader from '@/components/ImportExcel/ExcelUploader';
 import ColumnMapper, { ColumnMapping } from '@/components/ImportExcel/ColumnMapper';
-import PreviewTable from '@/components/ImportExcel/PreviewTable';
+import PreviewTable, { ProcessedRow } from '@/components/ImportExcel/PreviewTable';
 
 export default function ImportRegistryPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -31,10 +31,30 @@ export default function ImportRegistryPage() {
     setStep(1);
   };
 
-  const handleConfirmImport = () => {
-    // Placeholder for actual import logic
-    alert('ระบบจำลองการนำเข้าข้อมูลสำเร็จแล้ว (ยังไม่ได้บันทึกลงฐานข้อมูลจริง)');
-    resetToUpload();
+  const [isImporting, setIsImporting] = useState(false);
+
+  const handleConfirmImport = async (validRows: ProcessedRow[]) => {
+    setIsImporting(true);
+    try {
+      const response = await fetch('/api/registry/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ validRows })
+      });
+      const data = await response.json();
+      
+      if (!response.ok) {
+        alert(data.error || 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
+      } else {
+        alert(`นำเข้าข้อมูลสำเร็จจำนวน ${data.count} รายการ`);
+        resetToUpload();
+      }
+    } catch (error) {
+      console.error(error);
+      alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -51,6 +71,9 @@ export default function ImportRegistryPage() {
           <p className="mt-1 text-sm text-slate-500">
             นำเข้าข้อมูลจากไฟล์ Excel (.xlsx, .xlsm) เข้าสู่ระบบ
           </p>
+          <div className="mt-2 text-sm text-amber-600 bg-amber-50 p-2 rounded border border-amber-200 inline-block font-thai">
+            กรุณาตรวจสอบข้อมูลตัวอย่างก่อนยืนยันการนำเข้า ระบบจะไม่ลบหรือเขียนทับข้อมูลเดิม
+          </div>
         </div>
       </div>
 
@@ -106,6 +129,14 @@ export default function ImportRegistryPage() {
               onCancel={() => setStep(2)} 
               onConfirmImport={handleConfirmImport}
             />
+            {isImporting && (
+              <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-50">
+                <div className="bg-white p-4 rounded-lg shadow-lg text-center border border-slate-200">
+                  <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-2"></div>
+                  <p className="text-sm font-medium text-slate-700 font-thai">กำลังนำเข้าข้อมูล...</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

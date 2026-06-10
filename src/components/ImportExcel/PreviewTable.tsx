@@ -3,12 +3,13 @@
 import React, { useMemo, useState } from 'react';
 import { AlertCircle, CheckCircle2, AlertTriangle, FileText } from 'lucide-react';
 import { ColumnMapping } from './ColumnMapper';
+import { parseThaiDate } from '@/lib/dateUtils';
 
 interface PreviewTableProps {
   rowData: any[];
   mapping: ColumnMapping;
   onCancel: () => void;
-  onConfirmImport: () => void;
+  onConfirmImport: (validRows: ProcessedRow[]) => void;
 }
 
 export interface ProcessedRow {
@@ -67,17 +68,15 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
         }
       }
 
-      // 4. Invalid Dates (Basic check for now)
+      // 4. Invalid Dates
       const dateKeys = ['receivedDate', 'deadline30', 'deadline60', 'deadline90', 'deadline120', 'deadline240', 'meetingDate'];
       dateKeys.forEach(dk => {
         const dVal = mappedData[dk];
         if (dVal && String(dVal).trim() !== '') {
-          // If it's a number (Excel serial date), it's generally fine. If it's a string, see if it roughly looks like a date.
-          // For simplicity in preview, if it's "N/A" or something we can warn.
-          // In a real app we'd parse with date-fns or xlsx date util.
-          if (typeof dVal === 'string' && dVal.length < 5) {
+          const parsed = parseThaiDate(dVal);
+          if (!parsed) {
             if (status !== 'error') status = 'warning';
-            messages.push(`รูปแบบวันที่อาจไม่ถูกต้อง (${dk}): ${dVal}`);
+            messages.push(`รูปแบบวันที่ไม่ถูกต้อง (${dk}): ${dVal}`);
           }
         }
       });
@@ -216,7 +215,7 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
           กลับไปตั้งค่าใหม่
         </button>
         <button
-          onClick={onConfirmImport}
+          onClick={() => onConfirmImport(processedData.filter(r => r.status !== 'error'))}
           disabled={stats.error > 0}
           className={`px-5 py-2 rounded-lg text-sm font-medium text-white flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
             stats.error === 0 
