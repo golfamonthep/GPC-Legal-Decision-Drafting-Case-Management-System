@@ -34,6 +34,8 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
   const [isCheckingCoverage, setIsCheckingCoverage] = useState(false);
   const [coverageResult, setCoverageResult] = useState<any>(null);
   const [coverageError, setCoverageError] = useState<string | null>(null);
+  
+  const [isExporting, setIsExporting] = useState(false);
 
 
   const handleSectionChange = (id: string, content: string) => {
@@ -187,6 +189,46 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
     }
   };
 
+  const handleExportDocx = async () => {
+    setIsExporting(true);
+    try {
+      const res = await fetch(`/api/cases/${caseData.id}/export-docx`, {
+        method: "GET",
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || "ไม่สามารถส่งออกไฟล์ DOCX ได้ กรุณาลองใหม่อีกครั้ง");
+      }
+
+      // Handle file download
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      
+      // Try to get filename from Content-Disposition header
+      const contentDisposition = res.headers.get('Content-Disposition');
+      let filename = `คำวินิจฉัย-${caseData.blackNumber.split('/').join('-')}.docx`;
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename\\*=(?:UTF-8'')?([^;]+)/i);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = decodeURIComponent(filenameMatch[1]);
+        }
+      }
+      
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const sectionTemplates = [
     { type: "heading", title: "1. เรื่องเดิม / สรุปคำร้อง", placeholder: "พิมพ์ข้อเท็จจริงตามคำร้องของผู้อุทธรณ์/ผู้ร้องทุกข์...", rows: 5 },
     { type: "parties", title: "2. คำชี้แจงของคู่กรณี", placeholder: "พิมพ์สรุปคำชี้แจงโต้แย้งของผู้ถูกร้อง...", rows: 5 },
@@ -298,8 +340,12 @@ export function DraftEditor({ caseData, draftData }: { caseData: any, draftData:
             </button>
             
             <div className="ml-auto">
-              <button disabled className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-400 border border-slate-200 rounded-md text-sm font-medium shadow-sm cursor-not-allowed">
-                <FileOutput className="h-4 w-4" /> ส่งออก DOCX
+              <button 
+                onClick={handleExportDocx}
+                disabled={isExporting}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md text-sm font-medium shadow-sm transition-colors disabled:opacity-50"
+              >
+                <FileOutput className="h-4 w-4" /> {isExporting ? "กำลังส่งออก..." : "ส่งออก DOCX"}
               </button>
             </div>
           </div>
