@@ -55,14 +55,24 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
         { key: 'accusedName', label: 'คู่กรณีในการร้องทุกข์' },
         { key: 'proceedingNote', label: 'การดำเนินการ' },
         { key: 'decisionResult', label: 'ผลคำวินิจฉัย' },
-        { key: 'meetingDate', label: 'วันประชุม' },
+        { key: 'meetingDate', label: 'นัดประชุม' },
+        { key: 'deadline30', label: 'ครบ 30 วัน' },
+        { key: 'deadline60', label: 'ครบ 60 วัน' },
+        { key: 'oneDriveUrl', label: 'OneDrive link' },
+        { key: 'note', label: 'หมายเหตุ' },
       ];
+      
+      const blankLabels: string[] = [];
       importantBlankWarnings.forEach(f => {
         if (!mappedData[f.key] || String(mappedData[f.key]).trim() === '') {
-          if (status !== 'error') status = 'warning';
-          messages.push(`เว้นว่าง: ${f.label}`);
+          blankLabels.push(f.label);
         }
       });
+      
+      if (blankLabels.length > 0) {
+        if (status !== 'error') status = 'warning';
+        messages.push(`ช่องข้อมูลเสริมที่เว้นว่าง: ${blankLabels.join(', ')}`);
+      }
 
       // 2. Duplicate Black Case No (within this file)
       const blackNo = mappedData['blackCaseNo'];
@@ -107,10 +117,18 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
       });
 
       // Status checks (Warning if not a standard status)
-      const knownStatuses = ['รอดำเนินการ', 'อยู่ระหว่างพิจารณา', 'รอพิจารณาคำวินิจฉัย', 'วินิจฉัยแล้ว', 'จำหน่ายคดี'];
-      if (mappedData['status'] && !knownStatuses.includes(String(mappedData['status']).trim())) {
+      const knownStatuses = [
+        'อยู่ระหว่างดำเนินการ', 
+        'อยู่ระหว่างพิจารณา', 
+        'รอดำเนินการ', 
+        'เสร็จสิ้น', 
+        'แล้วเสร็จ', 
+        'ยุติเรื่อง', 
+        'จำหน่ายเรื่อง'
+      ];
+      if (mappedData['status'] && String(mappedData['status']).trim() !== '' && !knownStatuses.includes(String(mappedData['status']).trim())) {
         if (status !== 'error') status = 'warning';
-        messages.push(`สถานะไม่ตรงกับระบบ: ${mappedData['status']}`);
+        messages.push(`สถานะไม่ตรงกับระบบ: ${mappedData['status']} (หากเว้นว่างจะกำหนดเป็น อยู่ระหว่างดำเนินการ)`);
       }
 
       results.push({
@@ -143,7 +161,9 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
       <div className="px-6 py-5 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
           <h3 className="text-lg font-medium text-slate-800 font-thai">ตรวจสอบข้อมูล (Preview)</h3>
-          <p className="text-sm text-slate-500 mt-1">ตรวจสอบความถูกต้องของข้อมูลก่อนนำเข้าสู่ระบบ</p>
+          <p className="text-sm text-slate-500 mt-1">
+            แถวที่มีคำเตือนยังสามารถนำเข้าได้ ระบบจะไม่นำเข้าเฉพาะแถวที่ไม่ผ่านเท่านั้น
+          </p>
         </div>
         
         <div className="flex bg-white rounded-lg border border-slate-200 p-1 shadow-sm">
@@ -199,8 +219,8 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
                 <tr key={row.index} className={row.status === 'error' ? 'bg-red-50/30' : row.status === 'warning' ? 'bg-amber-50/30' : 'hover:bg-slate-50'}>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {row.status === 'valid' && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"><CheckCircle2 className="w-3 h-3 mr-1" /> ผ่าน</span>}
-                    {row.status === 'warning' && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800"><AlertTriangle className="w-3 h-3 mr-1" /> เตือน</span>}
-                    {row.status === 'error' && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><AlertCircle className="w-3 h-3 mr-1" /> ไม่ผ่าน</span>}
+                    {row.status === 'warning' && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800"><AlertTriangle className="w-3 h-3 mr-1" /> นำเข้าได้ แต่มีคำเตือน</span>}
+                    {row.status === 'error' && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"><AlertCircle className="w-3 h-3 mr-1" /> ไม่นำเข้า</span>}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-500">
                     {row.index}
@@ -242,24 +262,30 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
         </table>
       </div>
 
-      <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
+      <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
         <button
           onClick={onCancel}
-          className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+          className="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 whitespace-nowrap"
         >
           กลับไปตั้งค่าใหม่
         </button>
-        <button
-          onClick={() => onConfirmImport(processedData.filter(r => r.status !== 'error'))}
-          disabled={stats.total === 0 || stats.valid + stats.warning === 0}
-          className={`px-5 py-2 rounded-lg text-sm font-medium text-white flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-            stats.error === 0 
-              ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' 
-              : 'bg-slate-300 cursor-not-allowed'
-          }`}
-        >
-          ยืนยันการนำเข้าข้อมูล
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+          <div className="text-sm font-thai text-right">
+            <p>ระบบจะนำเข้าแถวที่ผ่านและแถวที่มีคำเตือน รวม <span className="font-semibold">{stats.valid + stats.warning}</span> แถว</p>
+            {stats.error > 0 && <p className="text-red-600">มีแถวที่ไม่ผ่านจำนวน {stats.error} แถว ระบบจะข้ามแถวเหล่านี้</p>}
+          </div>
+          <button
+            onClick={() => onConfirmImport(processedData.filter(r => r.status !== 'error'))}
+            disabled={stats.total === 0 || stats.valid + stats.warning === 0}
+            className={`px-5 py-2 rounded-lg text-sm font-medium text-white flex items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap ${
+              stats.valid + stats.warning > 0 
+                ? 'bg-blue-600 hover:bg-blue-700 shadow-sm' 
+                : 'bg-slate-300 cursor-not-allowed'
+            }`}
+          >
+            ยืนยันนำเข้าแถวที่ผ่านและแถวที่มีคำเตือน
+          </button>
+        </div>
       </div>
     </div>
   );

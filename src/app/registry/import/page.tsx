@@ -46,7 +46,12 @@ export default function ImportRegistryPage() {
       if (!response.ok) {
         alert(data.error || 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
       } else {
-        alert(`นำเข้าข้อมูลสำเร็จจำนวน ${data.count} รายการ`);
+        alert(
+          `นำเข้าข้อมูลสำเร็จจำนวน ${data.importedCount} รายการ\n` +
+          `  - เป็นแถวที่มีคำเตือน: ${data.warningImportedCount} รายการ\n` +
+          `ข้ามแถวที่ไม่ผ่าน: ${data.skippedErrorCount} รายการ\n` +
+          `ข้ามแถวที่ซ้ำ: ${data.skippedDuplicateCount} รายการ`
+        );
         resetToUpload();
       }
     } catch (error) {

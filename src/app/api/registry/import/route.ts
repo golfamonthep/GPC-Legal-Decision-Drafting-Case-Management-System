@@ -10,17 +10,39 @@ export async function POST(request: Request) {
     }
 
     const results = await prisma.$transaction(async (tx) => {
-      const importedCases = [];
+      let importedCount = 0;
+      let skippedErrorCount = 0;
+      let skippedDuplicateCount = 0;
+      let warningImportedCount = 0;
+
       for (const row of validRows) {
         const data = row.data;
 
-        // Parse dates safely
+        // 1. Minimum import rule (hard error)
+        const meaningfulFields = ['blackCaseNo', 'redCaseNo', 'complainantName', 'subject', 'accusedName', 'proceedingNote'];
+        const hasMeaningful = meaningfulFields.some(k => data[k] && String(data[k]).trim() !== '');
+        if (!hasMeaningful) {
+          skippedErrorCount++;
+          continue;
+        }
+
+        // 2. Duplicate Black Case No in DB (hard error if skipping)
+        if (data.blackCaseNo) {
+          const existing = await tx.case.findUnique({ where: { blackNumber: data.blackCaseNo } });
+          if (existing) {
+            skippedDuplicateCount++;
+            continue;
+          }
+        }
+
+        // Derive blackNumber if missing to satisfy DB constraint
+        const blackNumber = data.blackCaseNo || `ไม่มีหมายเลขดำ-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         const receivedDate = parseThaiDate(data.receivedDate) || null;
 
         const newCase = await tx.case.create({
           data: {
             type: data.caseType || 'ไม่ระบุ',
-            blackNumber: data.blackCaseNo,
+            blackNumber: blackNumber,
             redNumber: data.redCaseNo || null,
             petitionerName: data.complainantName || 'ไม่ระบุ',
             respondentName: data.accusedName || 'ไม่ระบุ',
@@ -37,6 +59,7 @@ export async function POST(request: Request) {
             currentStatus: data.status || 'อยู่ระหว่างดำเนินการ',
             meetingDate: parseThaiDate(data.meetingDate),
             decisionResult: data.decisionResult || null,
+            oneDriveUrl: data.oneDriveUrl || null,
           }
         });
 
@@ -57,12 +80,22 @@ export async function POST(request: Request) {
           }
         });
 
-        importedCases.push(newCase);
+        importedCount++;
+        if (row.status === 'warning') {
+          warningImportedCount++;
+        }
       }
-      return importedCases;
+      return { importedCount, skippedErrorCount, skippedDuplicateCount, warningImportedCount };
     });
 
-    return NextResponse.json({ success: true, count: results.length });
+    return NextResponse.json({ 
+      success: true, 
+      count: results.importedCount,
+      importedCount: results.importedCount,
+      skippedErrorCount: results.skippedErrorCount,
+      skippedDuplicateCount: results.skippedDuplicateCount,
+      warningImportedCount: results.warningImportedCount
+    });
   } catch (error: any) {
     console.error('Import error:', error);
     return NextResponse.json({ error: 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล: ' + error.message }, { status: 500 });
