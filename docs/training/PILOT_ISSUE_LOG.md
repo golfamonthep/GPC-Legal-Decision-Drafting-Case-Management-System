@@ -1,13 +1,12 @@
-# ทะเบียนบันทึกปัญหาช่วงทดลองใช้งาน (Pilot Issue Log)
+# Pilot Issue Log
 
-ตารางด้านล่างนี้ใช้สำหรับบันทึกปัญหาที่พบระหว่างการทดลองใช้งานระบบ
+This log tracks all issues reported during the pilot phase.
 
-| Issue ID | วันที่ (Date) | รายงานโดยบทบาท (Reported By Role) | หน้า/โมดูล (Page/Module) | รายละเอียดปัญหา (Description) | ระดับความรุนแรง (Severity) | มีภาพหน้าจอ (Screenshot Available) | ข้อมูลที่ได้รับผลกระทบ (Data Affected) | วิธีแก้ปัญหาชั่วคราว (Workaround) | สถานะ (Status) | ผู้รับผิดชอบ (Owner) | วันที่แก้ไขเสร็จ (Resolved Date) |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| ISSUE-001 | | | | | | | | | | | |
-| ISSUE-002 | | | | | | | | | | | |
-| ISSUE-003 | | | | | | | | | | | |
-| ISSUE-004 | | | | | | | | | | | |
-| ISSUE-005 | | | | | | | | | | | |
+| issueId | reportedDate | reporterRole | pageOrModule | category | severity | priority | title | description | stepsToReproduce | expectedResult | actualResult | screenshotAvailable | dataAffected | workaround | owner | status | targetFixVersion | resolvedDate | resolutionNote |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ISSUE-001 | | | | | | | | | | | | | | | | NEW | | | |
+| ISSUE-002 | | | | | | | | | | | | | | | | NEW | | | |
+
+*Status values: NEW, TRIAGED, IN_PROGRESS, WAITING_FOR_USER, FIXED, WONT_FIX, DUPLICATE, NEEDS_TRAINING, DOCUMENTED*
 
 *หมายเหตุ: กรณีพบปัญหาระดับความรุนแรงสูง (High Severity) เช่น ระบบขัดข้องเข้าไม่ได้ หรือพบความเสี่ยงเรื่องข้อมูลรั่วไหล กรุณาแจ้งผู้ดูแลระบบโดยด่วน*

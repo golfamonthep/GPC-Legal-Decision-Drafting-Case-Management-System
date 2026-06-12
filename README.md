@@ -92,3 +92,10 @@ See [Production Security Review](docs/PRODUCTION_SECURITY_REVIEW.md) for details
 - [Pilot Operation SOP](docs/training/SOP_PILOT_OPERATION.md)
 - [Quick Start Guide](docs/training/QUICK_START.md)
 - [Training Checklist](docs/training/TRAINING_CHECKLIST.md)
+
+## Pilot Feedback Loop
+- [Pilot Feedback Loop](docs/training/PILOT_FEEDBACK_LOOP.md)
+- [Pilot Issue Log](docs/training/PILOT_ISSUE_LOG.md)
+- [Pilot Weekly Review Template](docs/training/PILOT_WEEKLY_REVIEW_TEMPLATE.md)
+- [Pilot Release Notes Template](docs/training/PILOT_RELEASE_NOTES_TEMPLATE.md)
+- [Pilot Backlog](docs/training/PILOT_BACKLOG.md)
