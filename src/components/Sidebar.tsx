@@ -13,7 +13,8 @@ import {
   BookOpen,
   Users,
   PieChart,
-  Search
+  Search,
+  AlertTriangle
 } from "lucide-react";
 import { SessionUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
@@ -24,6 +25,7 @@ const navigation = [
   { name: "รายการคดี", href: "/cases", icon: Files },
   { name: "ค้นหาขั้นสูง", href: "/search", icon: Search, permission: "ADVANCED_CASE_SEARCH" as any },
   { name: "สารบบ", href: "/registry", icon: BookOpen },
+  { name: "ตรวจคุณภาพข้อมูล", href: "/data-quality", icon: AlertTriangle, permission: "VIEW_DATA_QUALITY" as any },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },
   { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
   { name: "อัปโหลดเอกสาร", href: "/upload", icon: Upload },

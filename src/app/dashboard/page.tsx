@@ -13,6 +13,10 @@ import {
 } from "@/lib/services/dashboard";
 import { Case } from "@/types";
 import { isClosedOrRedCase } from "@/lib/caseStatus";
+import { requirePermission } from "@/lib/auth/requirePermission";
+import { getCurrentUser } from "@/lib/auth/currentUser";
+import { hasPermission } from "@/lib/auth/permissions";
+import { detectCaseDataQualityIssues } from "@/lib/dataQuality/caseDataQuality";
 
 function calculateDaysUntilDue(caseData: any): number | undefined {
   const now = new Date();
@@ -25,6 +29,10 @@ function calculateDaysUntilDue(caseData: any): number | undefined {
 }
 
 export default async function DashboardPage() {
+  await requirePermission("VIEW_DASHBOARD");
+  const user = await getCurrentUser();
+  const canViewDataQuality = user && hasPermission(user.role, 'VIEW_DATA_QUALITY');
+
   let stats = {
     totalCases: mockCases.length,
     grievanceCases: mockCases.filter(c => c.type === "ร้องทุกข์").length,
@@ -34,6 +42,8 @@ export default async function DashboardPage() {
     dueSoonCount: mockCases.filter(c => !c.isOverdue && (c.daysUntilDue || 0) <= 7 && !isClosedOrRedCase(c)).length,
   };
 
+  let dqStats = { total: 0, critical: 0, high: 0, medium: 0 };
+
   let urgentCasesData: Case[] = mockCases.filter(c => (c.isOverdue || (c.daysUntilDue || 0) <= 7) && !isClosedOrRedCase(c));
   let activitiesData = mockActivities.slice(0, 5);
 
@@ -42,6 +52,20 @@ export default async function DashboardPage() {
     const dbOverdueCases = await getOverdueCases();
     const dbDueSoonCases = await getDueSoonCases(7);
     const dbRecentEvents = await getRecentCaseEvents();
+
+    if (canViewDataQuality) {
+      // Calculate data quality issues for dashboard
+      const { PrismaClient } = await import('@prisma/client');
+      const prisma = new PrismaClient();
+      const allCases = await prisma.case.findMany();
+      for (const c of allCases) {
+        const issues = detectCaseDataQualityIssues(c);
+        dqStats.total += issues.length;
+        dqStats.critical += issues.filter(i => i.severity === 'CRITICAL').length;
+        dqStats.high += issues.filter(i => i.severity === 'HIGH').length;
+        dqStats.medium += issues.filter(i => i.severity === 'MEDIUM').length;
+      }
+    }
 
     stats = {
       totalCases: dbStats.totalCases,
@@ -148,6 +172,30 @@ export default async function DashboardPage() {
           description="ทั้งหมด"
         />
       </div>
+
+      {canViewDataQuality && dqStats.total > 0 && (
+        <div className="mt-8">
+          <div className="bg-white shadow sm:rounded-lg border border-slate-200 p-6 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium leading-6 text-slate-900 flex items-center">
+                <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
+                ปัญหาคุณภาพข้อมูลที่ควรตรวจสอบ
+              </h3>
+              <div className="mt-2 max-w-xl text-sm text-slate-500">
+                <p>พบปัญหาที่ต้องตรวจสอบและแก้ไข: ระดับ Critical ({dqStats.critical}), High ({dqStats.high}), Medium ({dqStats.medium})</p>
+              </div>
+            </div>
+            <div className="mt-3 sm:ml-4 sm:mt-0">
+              <a
+                href="/data-quality"
+                className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
+              >
+                ดูและแก้ไขข้อมูล
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-12">
         <div className="sm:flex sm:items-center">

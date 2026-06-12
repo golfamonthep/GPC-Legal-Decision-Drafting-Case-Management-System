@@ -5,6 +5,7 @@ import { Scale, FileText, AlertTriangle, Clock, Download, CheckCircle, ShieldAle
 import Link from "next/link";
 import prisma from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/currentUser";
+import { hasPermission } from "@/lib/auth/permissions";
 
 export const dynamic = 'force-dynamic';
 
@@ -194,9 +195,16 @@ export default async function ExecutiveDashboardPage({
         {/* Quality & AI */}
         <div className="bg-white shadow rounded-lg border border-slate-200 p-6 space-y-6">
           <div>
-            <h3 className="text-base font-semibold leading-6 text-slate-900 mb-4 text-amber-600 flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5" /> คุณภาพข้อมูล
-            </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-base font-semibold leading-6 text-slate-900 text-amber-600 flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5" /> คุณภาพข้อมูล
+              </h3>
+              {hasPermission(user.role, 'VIEW_DATA_QUALITY') && (
+                <Link href="/data-quality" className="text-sm text-blue-600 hover:text-blue-800 underline">
+                  จัดการคุณภาพข้อมูล &rarr;
+                </Link>
+              )}
+            </div>
             <ul className="text-sm text-slate-600 space-y-2">
               <li className="flex justify-between"><span>ไม่มีเลขดำ</span> <span>{data.dataQuality.noBlackNumber}</span></li>
               <li className="flex justify-between"><span>ไม่มีเลขแดง</span> <span>{data.dataQuality.noRedNumber}</span></li>
