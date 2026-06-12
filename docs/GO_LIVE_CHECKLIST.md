@@ -50,3 +50,14 @@
 - [ ] backup/rollback plan confirmed
 - [ ] pilot users trained
 - [ ] release decision logged
+
+## Wider Rollout Gate
+
+- [ ] stabilization exit criteria met
+- [ ] rollout readiness checklist complete
+- [ ] support model assigned
+- [ ] role onboarding checklist ready
+- [ ] communication sent
+- [ ] rollback/pause plan approved
+- [ ] adoption metrics defined
+- [ ] go/no-go decision logged

@@ -105,3 +105,10 @@ See [Production Security Review](docs/PRODUCTION_SECURITY_REVIEW.md) for details
 - [Stabilization Backlog](docs/stabilization/STABILIZATION_BACKLOG.md)
 - [Regression Test Checklist](docs/stabilization/REGRESSION_TEST_CHECKLIST.md)
 - [Release Decision Log](docs/stabilization/RELEASE_DECISION_LOG.md)
+
+## Wider Rollout and Change Management
+- [Wider Rollout Plan](docs/rollout/WIDER_ROLLOUT_PLAN.md)
+- [Change Management Plan](docs/rollout/CHANGE_MANAGEMENT_PLAN.md)
+- [Rollout Readiness Checklist](docs/rollout/ROLLOUT_READINESS_CHECKLIST.md)
+- [Support Model](docs/rollout/SUPPORT_MODEL.md)
+- [Rollback and Pause Plan](docs/rollout/ROLLBACK_AND_PAUSE_PLAN.md)
