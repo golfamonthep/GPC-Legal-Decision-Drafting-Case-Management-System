@@ -74,6 +74,21 @@ model CaseDocument {
   type       String // e.g. "complaint", "evidence", "rebuttal"
   uploadedAt DateTime @default(now())
 
+  // External Storage (OneDrive / SharePoint via Microsoft Graph)
+  storageProvider   String? // e.g. "microsoft_graph"
+  driveId           String?
+  driveItemId       String?
+  webUrl            String?
+  fileName          String?
+  mimeType          String?
+  fileSize          Int?
+  documentCategory  String?
+  sourceStatus      String?
+  uploadedByUserId  String?
+  syncedAt          DateTime?
+  syncStatus        String?
+  syncError         String?
+
   documentChunks DocumentChunk[]
 }
 

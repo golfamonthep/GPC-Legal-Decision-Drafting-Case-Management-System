@@ -4,7 +4,7 @@ import { useState } from "react";
 import { 
   ArrowLeft, Save, Sparkles, CheckSquare, FileText, 
   Search, BookOpen, CheckCircle, Clock, AlertCircle,
-  FileSearch, Scale, FileOutput, FilePlus
+  FileSearch, Scale, FileOutput, FilePlus, FolderSync
 } from "lucide-react";
 import Link from "next/link";
 import { updateSection, updateAllSections, SectionStatus, applyReviewSuggestion } from "./actions";
@@ -356,6 +356,13 @@ export function DraftEditor({ caseData, draftData, templateExists = false }: { c
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md text-sm font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <FileOutput className="h-4 w-4" /> {isExporting ? "กำลังส่งออก..." : (templateExists ? "ส่งออกตามแม่แบบคำวินิจฉัย" : "ส่งออก DOCX")}
+              </button>
+              <button 
+                disabled
+                title="ยังไม่ได้ตั้งค่า Microsoft Graph สำหรับจัดเก็บไฟล์"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-400 border border-slate-200 rounded-md text-sm font-medium cursor-not-allowed transition-colors"
+              >
+                <FolderSync className="h-4 w-4" /> บันทึกไปยัง OneDrive
               </button>
             </div>
           </div>

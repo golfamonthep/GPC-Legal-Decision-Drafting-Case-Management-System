@@ -69,6 +69,9 @@ This project uses `pgvector` for document embeddings.
 
 For detailed steps on the migration from mock data, see [MIGRATION_PATH.md](docs/MIGRATION_PATH.md).
 
+## Microsoft Graph / OneDrive Integration
+To configure document storage using Microsoft SharePoint/OneDrive, please see the [Microsoft Graph Integration Guide](docs/MICROSOFT_GRAPH_INTEGRATION.md).
+
 ## Vercel Deployment Checklist
 - Set DATABASE_URL in Vercel Production
 - Set OPENAI_API_KEY in Vercel Production

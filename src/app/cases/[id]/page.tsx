@@ -14,6 +14,8 @@ import { CaseStatus } from "@/types";
 import { CaseDetailActions } from "@/components/CaseDetailActions";
 import { isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
 import { differenceInYears } from "date-fns";
+import { checkGraphIntegrationStatus } from "@/lib/microsoft/graphConfig";
+import { DocumentLinkModal } from "@/components/DocumentLinkModal";
 
 function formatDate(date: Date | null | undefined): string {
   if (!date) return "-";
@@ -86,8 +88,14 @@ export default async function CaseDetailPage({
     id: d.id,
     name: d.title,
     date: formatDate(d.uploadedAt),
-    size: "N/A" // Size is not stored in db
+    size: d.fileSize ? `${Math.round(d.fileSize / 1024)} KB` : "N/A",
+    webUrl: d.webUrl || undefined,
+    category: d.documentCategory || d.type,
+    status: d.sourceStatus || undefined,
+    provider: d.storageProvider || undefined
   }));
+
+  const graphStatus = checkGraphIntegrationStatus();
 
   const isOverdue = false; // Logic for overdue could be added here if needed
 
@@ -266,8 +274,15 @@ export default async function CaseDetailPage({
           </div>
 
           <div className="bg-white shadow sm:rounded-lg border border-slate-200">
+            <div className="px-4 py-5 sm:p-6 flex items-center justify-between border-b border-slate-200">
+              <h3 className="text-base font-semibold leading-6 text-slate-900">เอกสารในสำนวน</h3>
+              <DocumentLinkModal 
+                caseId={caseId} 
+                isGraphConfigured={graphStatus.isConfigured} 
+                graphMessage={graphStatus.message} 
+              />
+            </div>
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-base font-semibold leading-6 text-slate-900 mb-4">เอกสารในสำนวน</h3>
               <DocumentList documents={mockDocs} />
             </div>
           </div>
