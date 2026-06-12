@@ -85,4 +85,10 @@ To configure Microsoft Entra ID authentication and manage role-based access, ple
 
   
 ## Security Review  
-See [Production Security Review](docs/PRODUCTION_SECURITY_REVIEW.md) for details. 
+See [Production Security Review](docs/PRODUCTION_SECURITY_REVIEW.md) for details.
+
+## Pilot Training and SOP
+- [Pilot User Training Guide](docs/training/PILOT_USER_TRAINING.md)
+- [Pilot Operation SOP](docs/training/SOP_PILOT_OPERATION.md)
+- [Quick Start Guide](docs/training/QUICK_START.md)
+- [Training Checklist](docs/training/TRAINING_CHECKLIST.md)
