@@ -112,3 +112,6 @@ See [Production Security Review](docs/PRODUCTION_SECURITY_REVIEW.md) for details
 - [Rollout Readiness Checklist](docs/rollout/ROLLOUT_READINESS_CHECKLIST.md)
 - [Support Model](docs/rollout/SUPPORT_MODEL.md)
 - [Rollback and Pause Plan](docs/rollout/ROLLBACK_AND_PAUSE_PLAN.md)
+
+## Executive Dashboard and Reporting
+- [Executive Dashboard Documentation](docs/reports/EXECUTIVE_DASHBOARD.md)

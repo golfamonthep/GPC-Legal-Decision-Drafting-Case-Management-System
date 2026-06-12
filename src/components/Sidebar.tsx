@@ -10,19 +10,25 @@ import {
   Upload, 
   Settings,
   Scale,
-  BookOpen
+  BookOpen,
+  Users,
+  PieChart
 } from "lucide-react";
+import { SessionUser } from "@/lib/auth/currentUser";
+import { hasPermission } from "@/lib/auth/permissions";
 
 const navigation = [
   { name: "หน้าหลัก (Dashboard)", href: "/dashboard", icon: LayoutDashboard },
+  { name: "รายงานผู้บริหาร", href: "/executive", icon: PieChart, permission: "VIEW_EXECUTIVE_DASHBOARD" as any },
   { name: "รายการคดี", href: "/cases", icon: Files },
   { name: "สารบบ", href: "/registry", icon: BookOpen },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },
+  { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
   { name: "อัปโหลดเอกสาร", href: "/upload", icon: Upload },
   { name: "ตั้งค่าระบบ", href: "/settings", icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ user }: { user: SessionUser | null }) {
   const pathname = usePathname();
 
   return (
@@ -36,6 +42,9 @@ export function Sidebar() {
           <li>
             <ul role="list" className="-mx-2 space-y-1">
               {navigation.map((item) => {
+                if (item.permission && (!user || !hasPermission(user.role, item.permission))) {
+                  return null;
+                }
                 const isActive = pathname.startsWith(item.href);
                 return (
                   <li key={item.name}>

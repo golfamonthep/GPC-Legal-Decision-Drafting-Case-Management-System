@@ -1,0 +1,77 @@
+export const PERMISSIONS = {
+  VIEW_DASHBOARD: 'VIEW_DASHBOARD',
+  VIEW_CASES: 'VIEW_CASES',
+  VIEW_CASE_DETAIL: 'VIEW_CASE_DETAIL',
+  EDIT_CASE: 'EDIT_CASE',
+  IMPORT_REGISTRY: 'IMPORT_REGISTRY',
+  VIEW_DOCUMENTS: 'VIEW_DOCUMENTS',
+  LINK_DOCUMENTS: 'LINK_DOCUMENTS',
+  UPLOAD_DOCUMENTS: 'UPLOAD_DOCUMENTS',
+  VIEW_DRAFT: 'VIEW_DRAFT',
+  EDIT_DRAFT: 'EDIT_DRAFT',
+  USE_AI_DRAFT: 'USE_AI_DRAFT',
+  USE_AI_REVIEW: 'USE_AI_REVIEW',
+  EXPORT_DOCX: 'EXPORT_DOCX',
+  MANAGE_USERS: 'MANAGE_USERS',
+  VIEW_AUDIT_LOGS: 'VIEW_AUDIT_LOGS',
+  MANAGE_SYSTEM_SETTINGS: 'MANAGE_SYSTEM_SETTINGS',
+  VIEW_EXECUTIVE_DASHBOARD: 'VIEW_EXECUTIVE_DASHBOARD',
+  EXPORT_EXECUTIVE_REPORT: 'EXPORT_EXECUTIVE_REPORT',
+} as const;
+
+export type Permission = keyof typeof PERMISSIONS;
+export type Role = 'ADMIN' | 'COMMISSIONER' | 'LEGAL_OFFICER' | 'REGISTRY_OFFICER' | 'VIEWER';
+export type UserStatus = 'PENDING' | 'ACTIVE' | 'DISABLED';
+
+export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
+  ADMIN: Object.values(PERMISSIONS),
+  COMMISSIONER: [
+    'VIEW_DASHBOARD',
+    'VIEW_CASES',
+    'VIEW_CASE_DETAIL',
+    'VIEW_DOCUMENTS',
+    'VIEW_DRAFT',
+    'USE_AI_REVIEW',
+    'EXPORT_DOCX',
+    'VIEW_AUDIT_LOGS',
+    'VIEW_EXECUTIVE_DASHBOARD',
+    'EXPORT_EXECUTIVE_REPORT',
+  ],
+  LEGAL_OFFICER: [
+    'VIEW_DASHBOARD',
+    'VIEW_CASES',
+    'VIEW_CASE_DETAIL',
+    'EDIT_CASE',
+    'VIEW_DOCUMENTS',
+    'LINK_DOCUMENTS',
+    'VIEW_DRAFT',
+    'EDIT_DRAFT',
+    'USE_AI_DRAFT',
+    'USE_AI_REVIEW',
+    'EXPORT_DOCX',
+  ],
+  REGISTRY_OFFICER: [
+    'VIEW_DASHBOARD',
+    'VIEW_CASES',
+    'VIEW_CASE_DETAIL',
+    'EDIT_CASE',
+    'IMPORT_REGISTRY',
+    'VIEW_DOCUMENTS',
+    'LINK_DOCUMENTS',
+  ],
+  VIEWER: [
+    'VIEW_DASHBOARD',
+    'VIEW_CASES',
+    'VIEW_CASE_DETAIL',
+    'VIEW_DOCUMENTS',
+    'VIEW_DRAFT',
+  ],
+};
+
+export function hasPermission(userRole: string | undefined, permission: Permission): boolean {
+  if (!userRole) return false;
+  const role = userRole as Role;
+  const permissionsForRole = ROLE_PERMISSIONS[role];
+  if (!permissionsForRole) return false;
+  return permissionsForRole.includes(permission);
+}
