@@ -26,8 +26,18 @@ export async function linkExternalDocumentToCase(
   metadata: ExternalDocumentMetadata, 
   userId?: string
 ) {
-  // Validate webUrl (very basic check for SharePoint/OneDrive domain)
-  if (!metadata.webUrl.includes('sharepoint.com') && !metadata.webUrl.includes('onedrive.live.com')) {
+  // Validate webUrl
+  let urlObj;
+  try {
+    urlObj = new URL(metadata.webUrl);
+  } catch {
+    throw new Error('รูปแบบลิงก์ไม่ถูกต้อง');
+  }
+  if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+    throw new Error('อนุญาตเฉพาะลิงก์ http หรือ https เท่านั้น');
+  }
+  const hostname = urlObj.hostname.toLowerCase();
+  if (!hostname.endsWith('sharepoint.com') && !hostname.endsWith('onedrive.live.com')) {
     throw new Error('Invalid URL: ต้องเป็นลิงก์จาก SharePoint หรือ OneDrive เท่านั้น');
   }
 

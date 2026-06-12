@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listCaseDocuments, linkExternalDocumentToCase } from '@/lib/documents/documentStorage';
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
 import { auditLog } from '@/lib/audit';
 
 export async function GET(
@@ -7,6 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await requireApiPermission("VIEW_DOCUMENTS");
     const resolvedParams = await params;
     const caseId = resolvedParams.id;
     const documents = await listCaseDocuments(caseId);
@@ -20,7 +22,14 @@ export async function GET(
 
     return NextResponse.json(documents);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("GET Documents Error:", error);
+    if (error.message === "FORBIDDEN") {
+      return NextResponse.json({ error: "คุณไม่มีสิทธิ์ดำเนินการนี้" }, { status: 403 });
+    }
+    if (error.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+    }
+    return NextResponse.json({ error: 'ไม่สามารถดำเนินการได้ กรุณาลองใหม่อีกครั้ง' }, { status: 500 });
   }
 }
 
@@ -29,6 +38,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireApiPermission("LINK_DOCUMENTS");
     const resolvedParams = await params;
     const caseId = resolvedParams.id;
     const body = await req.json();
@@ -44,10 +54,17 @@ export async function POST(
       webUrl,
       documentCategory,
       notes
-    }, 'mock-user-id'); // TODO: get from auth session
+    }, user.id);
 
-    return NextResponse.json(document);
+    return NextResponse.json(document, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    console.error("POST Link Document Error:", error);
+    if (error.message === "FORBIDDEN") {
+      return NextResponse.json({ error: "คุณไม่มีสิทธิ์ดำเนินการนี้" }, { status: 403 });
+    }
+    if (error.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+    }
+    return NextResponse.json({ error: 'ไม่สามารถดำเนินการได้ กรุณาลองใหม่อีกครั้ง' }, { status: 400 });
   }
 }

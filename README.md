@@ -72,6 +72,9 @@ For detailed steps on the migration from mock data, see [MIGRATION_PATH.md](docs
 ## Microsoft Graph / OneDrive Integration
 To configure document storage using Microsoft SharePoint/OneDrive, please see the [Microsoft Graph Integration Guide](docs/MICROSOFT_GRAPH_INTEGRATION.md).
 
+## Authentication & Permissions
+To configure Microsoft Entra ID authentication and manage role-based access, please see the [Microsoft Auth and Roles Guide](docs/MICROSOFT_AUTH_AND_ROLES.md).
+
 ## Vercel Deployment Checklist
 - Set DATABASE_URL in Vercel Production
 - Set OPENAI_API_KEY in Vercel Production
@@ -80,3 +83,6 @@ To configure document storage using Microsoft SharePoint/OneDrive, please see th
 - Run production migrations
 - Seed production database only when intended
 
+  
+## Security Review  
+See [Production Security Review](docs/PRODUCTION_SECURITY_REVIEW.md) for details. 

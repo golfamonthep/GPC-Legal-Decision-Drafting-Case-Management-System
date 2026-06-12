@@ -1,9 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireApiPermission } from '@/lib/auth/requireApiPermission';
 import prisma from '@/lib/db';
 import { parseThaiDate } from '@/lib/dateUtils';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const user = await requireApiPermission("IMPORT_REGISTRY");
     const { validRows } = await request.json();
     if (!validRows || !Array.isArray(validRows)) {
       return NextResponse.json({ error: 'รูปแบบข้อมูลไม่ถูกต้อง' }, { status: 400 });
@@ -125,12 +127,13 @@ export async function POST(request: Request) {
               data: {
                 caseId: newCase.id,
                 action: 'import_case',
-                actorName: 'System Import',
+                actorName: user.name || 'System Import',
               }
             });
 
             await tx.auditLog.create({
               data: {
+                userId: user.id,
                 action: 'import_registry',
                 entityType: 'Case',
                 entityId: newCase.id,
@@ -174,7 +177,13 @@ export async function POST(request: Request) {
       warningImportedCount: warningImportedCount,
     });
   } catch (error: any) {
-    console.error('Import error:', error);
-    return NextResponse.json({ error: 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล: ' + error.message }, { status: 500 });
+    console.error('Registry import error:', error);
+    if (error?.message === "FORBIDDEN") {
+      return NextResponse.json({ error: 'คุณไม่มีสิทธิ์ดำเนินการนี้' }, { status: 403 });
+    }
+    if (error?.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบ' }, { status: 401 });
+    }
+    return NextResponse.json({ error: 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล กรุณาลองใหม่อีกครั้ง' }, { status: 500 });
   }
 }
