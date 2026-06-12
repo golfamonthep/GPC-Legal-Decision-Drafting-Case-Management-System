@@ -12,7 +12,8 @@ import {
   Scale,
   BookOpen,
   Users,
-  PieChart
+  PieChart,
+  Search
 } from "lucide-react";
 import { SessionUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
@@ -21,6 +22,7 @@ const navigation = [
   { name: "หน้าหลัก (Dashboard)", href: "/dashboard", icon: LayoutDashboard },
   { name: "รายงานผู้บริหาร", href: "/executive", icon: PieChart, permission: "VIEW_EXECUTIVE_DASHBOARD" as any },
   { name: "รายการคดี", href: "/cases", icon: Files },
+  { name: "ค้นหาขั้นสูง", href: "/search", icon: Search, permission: "ADVANCED_CASE_SEARCH" as any },
   { name: "สารบบ", href: "/registry", icon: BookOpen },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },
   { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
