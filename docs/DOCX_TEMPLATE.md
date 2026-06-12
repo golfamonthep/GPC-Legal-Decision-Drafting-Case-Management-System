@@ -1,50 +1,57 @@
-# DOCX Template Setup Guide
+# DOCX Template Export
 
-This document explains how to set up and use the DOCX template system for exporting formal ก.พ.ค.ตร. decision documents.
+This system supports exporting decision drafts to a formatted DOCX document using a pre-defined template.
 
 ## Template Location
-The system looks for a sanitized template at the following path:
+
+The sanitized official template should be placed exactly at:
 `templates/docx/gpc-decision-template.docx`
 
-**Important:** Do not commit real official decision samples that contain personal data. Place any private testing samples inside `templates/docx/private/` which is ignored by git.
+**WARNING:** Do NOT commit real personal-data samples or actual unsanitized decision files to the repository. If you have private test data, place it in `templates/docx/private/` which is ignored by Git.
 
 ## Supported Placeholders
 
+You can use the following placeholders in your DOCX template. The system will replace them with the actual case and draft data.
+
 ### Case Metadata
-- `{{caseType}}` - ประเภทเรื่อง (e.g., อุทธรณ์, ร้องทุกข์)
-- `{{blackCaseNumber}}` - หมายเลขคดีดำ
-- `{{redCaseNumber}}` - หมายเลขคดีแดง
-- `{{decisionDate}}` - วันที่ตัดสิน (Thai Buddhist Era format)
-- `{{receivedDate}}` - วันที่รับเรื่อง (Thai Buddhist Era format)
-- `{{petitionerLabel}}` - ผู้อุทธรณ์ / ผู้ร้องทุกข์
-- `{{petitionerName}}` - ชื่อผู้ร้อง
-- `{{counterpartyLabel}}` - คู่กรณีในอุทธรณ์ / คู่กรณีในการร้องทุกข์
-- `{{counterpartyName}}` - ชื่อคู่กรณี
-- `{{subject}}` - เรื่อง
-- `{{legalOfficerName}}` - ชื่อนิติกร
-- `{{committeeOwnerName}}` - ชื่อกรรมการเจ้าของสำนวน
-- `{{status}}` - สถานะ
-- `{{decisionResult}}` - ผลคำวินิจฉัย
+* `{{caseType}}` - ประเภทคดี (ร้องทุกข์ / อุทธรณ์)
+* `{{blackCaseNumber}}` - หมายเลขคดีดำ
+* `{{redCaseNumber}}` - หมายเลขคดีแดง
+* `{{decisionDate}}` - วันที่วินิจฉัย (Thai format)
+* `{{receivedDate}}` - วันที่รับเรื่อง (Thai format)
+* `{{petitionerLabel}}` - ป้ายกำกับผู้ร้อง (ผู้อุทธรณ์ / ผู้ร้องทุกข์)
+* `{{petitionerName}}` - ชื่อผู้ร้อง
+* `{{counterpartyLabel}}` - ป้ายกำกับคู่กรณี (คู่กรณีในอุทธรณ์ / คู่กรณีในการร้องทุกข์)
+* `{{counterpartyName}}` - ชื่อคู่กรณี
+* `{{subject}}` - เรื่อง
+* `{{legalOfficerName}}` - ชื่อนิติกรเจ้าของสำนวน
+* `{{committeeOwnerName}}` - ชื่อกรรมการเจ้าของสำนวน
+* `{{status}}` - สถานะคดี
+* `{{decisionResult}}` - ผลคำวินิจฉัย
 
 ### Draft Sections
-The system maps existing section types to these placeholders:
-- `{{section_summary}}` - สรุปคำร้องทุกข์ / สรุปอุทธรณ์
-- `{{section_request}}` - คำขอของผู้ร้องทุกข์ / คำขอของผู้อุทธรณ์
-- `{{section_counterparty_statement}}` - คำแก้ของคู่กรณี
-- `{{section_facts}}` - ข้อเท็จจริงรับฟังได้
-- `{{section_jurisdiction}}` - อำนาจและเงื่อนไขการพิจารณา
-- `{{section_issues}}` - ประเด็นที่ต้องวินิจฉัย
-- `{{section_laws}}` - ข้อกฎหมายที่เกี่ยวข้อง
-- `{{section_analysis}}` - พิเคราะห์
-- `{{section_decision_result}}` - ผลคำวินิจฉัย
-- `{{section_court_right}}` - สิทธิฟ้องคดีต่อศาลปกครองสูงสุด
-- `{{section_signatures}}` - ส่วนลงนาม
+* `{{section_summary}}` - สรุปคำร้อง/อุทธรณ์
+* `{{section_request}}` - คำขอของผู้ร้อง/ผู้อุทธรณ์
+* `{{section_counterparty_statement}}` - คำแก้ของคู่กรณี
+* `{{section_facts}}` - ข้อเท็จจริงรับฟังได้
+* `{{section_jurisdiction}}` - อำนาจและเงื่อนไขการพิจารณา
+* `{{section_issues}}` - ประเด็นที่ต้องวินิจฉัย
+* `{{section_laws}}` - ข้อกฎหมายที่เกี่ยวข้อง
+* `{{section_analysis}}` - พิเคราะห์ (เหตุผลวินิจฉัย)
+* `{{section_decision_result}}` - ผลคำวินิจฉัย
+* `{{section_court_right}}` - สิทธิฟ้องคดีต่อศาลปกครองสูงสุด
+* `{{section_signatures}}` - ส่วนลงนาม
 
-### System Placeholders
-- `{{systemDraftWarning}}` - Warning message for unreviewed drafts.
+### System Notifications
+* `{{systemDraftWarning}}` - ข้อความแจ้งเตือนร่างเอกสารเพื่อตรวจทาน
 
-## Testing the Export
-1. Ensure `gpc-decision-template.docx` is placed in `templates/docx/`.
-2. Go to a case draft page in the web app.
-3. Click the "ส่งออก DOCX" button.
-4. If the template is present, the file will be generated using `docxtemplater`. Otherwise, it will fallback to a basic programmatic format.
+## Missing Template Fallback
+
+If the `gpc-decision-template.docx` file is missing, the system will not fail. Instead, it will automatically fallback to the legacy programmatic DOCX export mode.
+
+## How to Test Export
+
+1. Place your template in `templates/docx/gpc-decision-template.docx`.
+2. Go to any case draft.
+3. Click "ส่งออกตามแม่แบบคำวินิจฉัย".
+4. The downloaded DOCX should contain your template with data filled in.

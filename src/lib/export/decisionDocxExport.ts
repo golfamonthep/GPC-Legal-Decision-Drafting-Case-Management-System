@@ -92,6 +92,7 @@ export async function generateDecisionDocx(caseId: string, userId?: string) {
         let key = "";
         switch(section.sectionType) {
           case "heading": key = "section_summary"; break;
+          case "request": key = "section_request"; break;
           case "parties": key = "section_counterparty_statement"; break;
           case "established_facts": key = "section_facts"; break;
           case "jurisdiction": key = "section_jurisdiction"; break;
@@ -99,6 +100,8 @@ export async function generateDecisionDocx(caseId: string, userId?: string) {
           case "applicable_laws": key = "section_laws"; break;
           case "reasoning": key = "section_analysis"; break;
           case "conclusion": key = "section_decision_result"; break;
+          case "court_right": key = "section_court_right"; break;
+          case "signatures": key = "section_signatures"; break;
         }
         if (key && section.content && section.content.trim()) {
           sectionMap[key] = section.content;

@@ -1,13 +1,9 @@
 # DOCX Templates
 
-This folder contains templates for exporting Word documents.
+This folder contains DOCX templates used for exporting decision drafts.
 
-## Real Sample Policy
-**Do not commit real official decision samples that contain personal data.**
-Real case documents contain sensitive information and must not be pushed to the repository.
-
-- The production template should be a sanitized `.docx` file with placeholders only, stored as `gpc-decision-template.docx`.
-- If a real sample is needed for local comparison, keep it only in the `private/` subfolder, which is ignored by Git.
-
-## Adding a Template
-Save your sanitized template as `gpc-decision-template.docx` in this folder.
+**IMPORTANT:**
+* Real official samples with personal data must NOT be committed to the repository.
+* Sanitized templates should be placed at: `templates/docx/gpc-decision-template.docx`
+* Private samples (with real data for testing) should be kept in: `templates/docx/private/`
+* The `templates/docx/private/` folder is ignored by Git to prevent accidental commits of sensitive data.
