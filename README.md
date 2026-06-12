@@ -75,7 +75,17 @@ To configure document storage using Microsoft SharePoint/OneDrive, please see th
 ## Authentication & Permissions
 To configure Microsoft Entra ID authentication and manage role-based access, please see the [Microsoft Auth and Roles Guide](docs/MICROSOFT_AUTH_AND_ROLES.md).
 
-## Vercel Deployment Checklist
+- [Micro-service Structure](./docs/MICROSERVICE_ARCHITECTURE.md)
+- [Deployment Guide](./docs/DEPLOYMENT_GUIDE.md)
+
+### Modules & Workflows
+- [Case Assignment and Workload Balancing Workflow](docs/assignments/CASE_ASSIGNMENT_WORKFLOW.md)
+- [Meeting Agenda and Board Review Workflow](docs/meetings/MEETING_AGENDA_WORKFLOW.md)
+  - [Board Review Checklist](docs/meetings/BOARD_REVIEW_CHECKLIST.md)
+
+## Development Setups
+
+## 🚀 Setup & Development Checklist
 - Set DATABASE_URL in Vercel Production
 - Set OPENAI_API_KEY in Vercel Production
 - Set EMBEDDING_MODEL

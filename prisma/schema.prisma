@@ -2,9 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  engineType      = "library"
-  output          = "../src/generated/prisma"
+  provider   = "prisma-client-js"
+  engineType = "library"
+  output     = "../src/generated/prisma"
 }
 
 datasource db {
@@ -12,19 +12,25 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  role      String // e.g. "admin", "commissioner", "legal_officer"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  name               String
+  role               String // e.g. "ADMIN", "COMMISSIONER", "LEGAL_OFFICER", "REGISTRY_OFFICER", "VIEWER"
+  microsoftAccountId String?   @unique
+  image              String?
+  status             String    @default("PENDING") // "PENDING", "ACTIVE", "DISABLED"
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  casesOwned    Case[]       @relation("OwnerCommissioner")
-  casesAssigned Case[]       @relation("LegalOfficer")
-  auditLogs     AuditLog[]
-  aiQueries     AiQueryLog[]
-  retrievalQueries RetrievalQuery[]
+  casesOwned         Case[]              @relation("OwnerCommissioner")
+  casesAssigned      Case[]              @relation("LegalOfficer")
+  auditLogs          AuditLog[]
+  aiQueries          AiQueryLog[]
+  retrievalQueries   RetrievalQuery[]
   draftSectionAiLogs DraftSectionAiLog[]
+  meetingsCreated    Meeting[]           @relation("MeetingCreator")
+  meetingsFollowUps  MeetingAgendaItem[] @relation("FollowUpUser")
 }
 
 model Case {
@@ -40,9 +46,13 @@ model Case {
   ownerId String?
   owner   User?   @relation("OwnerCommissioner", fields: [ownerId], references: [id])
 
-  legalOfficerId String?
-  legalOfficer   User?   @relation("LegalOfficer", fields: [legalOfficerId], references: [id])
+  legalOfficerId   String?
+  legalOfficer     User?   @relation("LegalOfficer", fields: [legalOfficerId], references: [id])
   legalOfficerName String?
+
+  committeeOwnerName  String?
+  assignedAt          DateTime?
+  assignmentUpdatedAt DateTime?
 
   receivedDate DateTime?
   dueDate30    DateTime?
@@ -55,14 +65,15 @@ model Case {
   meetingDate    DateTime?
   decisionResult String?
   oneDriveUrl    String?
-  proceedingNote String? @db.Text
+  proceedingNote String?   @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  documents CaseDocument[]
-  events    CaseEvent[]
-  drafts    DecisionDraft[]
+  documents   CaseDocument[]
+  events      CaseEvent[]
+  drafts      DecisionDraft[]
+  agendaItems MeetingAgendaItem[]
 }
 
 model CaseDocument {
@@ -75,19 +86,19 @@ model CaseDocument {
   uploadedAt DateTime @default(now())
 
   // External Storage (OneDrive / SharePoint via Microsoft Graph)
-  storageProvider   String? // e.g. "microsoft_graph"
-  driveId           String?
-  driveItemId       String?
-  webUrl            String?
-  fileName          String?
-  mimeType          String?
-  fileSize          Int?
-  documentCategory  String?
-  sourceStatus      String?
-  uploadedByUserId  String?
-  syncedAt          DateTime?
-  syncStatus        String?
-  syncError         String?
+  storageProvider  String? // e.g. "microsoft_graph"
+  driveId          String?
+  driveItemId      String?
+  webUrl           String?
+  fileName         String?
+  mimeType         String?
+  fileSize         Int?
+  documentCategory String?
+  sourceStatus     String?
+  uploadedByUserId String?
+  syncedAt         DateTime?
+  syncStatus       String?
+  syncError        String?
 
   documentChunks DocumentChunk[]
 }
@@ -132,21 +143,21 @@ model LegalSource {
   date            DateTime?
   url             String?
 
-  year            Int?
-  caseType        String?
-  legalCategory   String?
-  issueTags       String[]
-  lawNames        String[]
-  sectionNumbers  String[]
-  decisionResult  String?
-  sourceStatus    String   @default("ใช้งาน")
-  reliabilityLevel String  @default("official")
-  effectiveDate   DateTime?
-  expiredDate     DateTime?
-  sourceFileUrl   String?
+  year             Int?
+  caseType         String?
+  legalCategory    String?
+  issueTags        String[]
+  lawNames         String[]
+  sectionNumbers   String[]
+  decisionResult   String?
+  sourceStatus     String    @default("ใช้งาน")
+  reliabilityLevel String    @default("official")
+  effectiveDate    DateTime?
+  expiredDate      DateTime?
+  sourceFileUrl    String?
 
-  clauses LegalClause[]
-  ingestionJobs DocumentIngestionJob[]
+  clauses        LegalClause[]
+  ingestionJobs  DocumentIngestionJob[]
   documentChunks DocumentChunk[]
 }
 
@@ -182,58 +193,58 @@ model AuditLog {
 }
 
 model DocumentIngestionJob {
-  id            String   @id @default(uuid())
+  id            String       @id @default(uuid())
   legalSourceId String?
   legalSource   LegalSource? @relation(fields: [legalSourceId], references: [id], onDelete: Cascade)
-  status        String   // "pending", "processing", "completed", "failed"
-  errorMessage  String?  @db.Text
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status        String // "pending", "processing", "completed", "failed"
+  errorMessage  String?      @db.Text
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model DocumentChunk {
-  id                String   @id @default(uuid())
-  legalSourceId     String
-  legalSource       LegalSource @relation(fields: [legalSourceId], references: [id], onDelete: Cascade)
-  caseDocumentId    String?
-  caseDocument      CaseDocument? @relation(fields: [caseDocumentId], references: [id], onDelete: Cascade)
-  
+  id             String        @id @default(uuid())
+  legalSourceId  String
+  legalSource    LegalSource   @relation(fields: [legalSourceId], references: [id], onDelete: Cascade)
+  caseDocumentId String?
+  caseDocument   CaseDocument? @relation(fields: [caseDocumentId], references: [id], onDelete: Cascade)
+
   chunkIndex        Int
   title             String?
-  content           String   @db.Text
-  normalizedContent String   @db.Text
-  
-  pageNumber        Int?
-  sectionName       String?
-  paragraphNumber   Int?
-  
-  sourceType        String
-  sourceStatus      String
-  reliabilityLevel  String
-  legalCategory     String?
-  
-  issueTags         String[]
-  lawNames          String[]
-  articleNumbers    String[]
-  decisionResult    String?
-  
-  effectiveDate     DateTime?
-  expiredDate       DateTime?
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  content           String  @db.Text
+  normalizedContent String  @db.Text
 
-  embeddingModel    String?
-  embeddedAt        DateTime?
-  embeddingStatus   String?   // "pending", "completed", "failed"
-  embeddingError    String?   @db.Text
+  pageNumber      Int?
+  sectionName     String?
+  paragraphNumber Int?
+
+  sourceType       String
+  sourceStatus     String
+  reliabilityLevel String
+  legalCategory    String?
+
+  issueTags      String[]
+  lawNames       String[]
+  articleNumbers String[]
+  decisionResult String?
+
+  effectiveDate DateTime?
+  expiredDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  embeddingModel  String?
+  embeddedAt      DateTime?
+  embeddingStatus String? // "pending", "completed", "failed"
+  embeddingError  String?   @db.Text
 
   // embedding vector(1536) if using text-embedding-3-small
   // text-embedding-3-large would require vector(3072)
-  embedding         Unsupported("vector(1536)")?
+  embedding Unsupported("vector(1536)")?
 
-  citations         DocumentChunkCitation[]
-  retrievalResults  RetrievalResult[]
+  citations            DocumentChunkCitation[]
+  retrievalResults     RetrievalResult[]
   legalAnswerCitations LegalAnswerCitation[]
 
   @@index([legalSourceId])
@@ -245,52 +256,52 @@ model DocumentChunk {
 }
 
 model DocumentChunkCitation {
-  id              String   @id @default(uuid())
-  chunkId         String
-  chunk           DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
-  createdAt       DateTime @default(now())
+  id        String        @id @default(uuid())
+  chunkId   String
+  chunk     DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
 }
 
 model RetrievalQuery {
-  id            String   @id @default(uuid())
-  queryText     String   @db.Text
-  userId        String?
-  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  createdAt     DateTime @default(now())
+  id        String   @id @default(uuid())
+  queryText String   @db.Text
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
 
-  results       RetrievalResult[]
-  answers       LegalAnswer[]
+  results RetrievalResult[]
+  answers LegalAnswer[]
 }
 
 model RetrievalResult {
-  id            String   @id @default(uuid())
-  queryId       String
-  query         RetrievalQuery @relation(fields: [queryId], references: [id], onDelete: Cascade)
-  chunkId       String
-  chunk         DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
-  score         Float?
-  rank          Int?
-  createdAt     DateTime @default(now())
+  id        String         @id @default(uuid())
+  queryId   String
+  query     RetrievalQuery @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  chunkId   String
+  chunk     DocumentChunk  @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  score     Float?
+  rank      Int?
+  createdAt DateTime       @default(now())
 }
 
 model LegalAnswer {
-  id            String   @id @default(uuid())
-  queryId       String
-  query         RetrievalQuery @relation(fields: [queryId], references: [id], onDelete: Cascade)
-  answerText    String   @db.Text
-  modelUsed     String?
-  createdAt     DateTime @default(now())
+  id         String         @id @default(uuid())
+  queryId    String
+  query      RetrievalQuery @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  answerText String         @db.Text
+  modelUsed  String?
+  createdAt  DateTime       @default(now())
 
-  citations     LegalAnswerCitation[]
+  citations LegalAnswerCitation[]
 }
 
 model LegalAnswerCitation {
-  id            String   @id @default(uuid())
-  answerId      String
-  answer        LegalAnswer @relation(fields: [answerId], references: [id], onDelete: Cascade)
-  chunkId       String
-  chunk         DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
-  createdAt     DateTime @default(now())
+  id        String        @id @default(uuid())
+  answerId  String
+  answer    LegalAnswer   @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  chunkId   String
+  chunk     DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
 }
 
 model DraftSectionAiLog {
@@ -307,5 +318,61 @@ model DraftSectionAiLog {
   user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   timestamp       DateTime @default(now())
 
-  chunkIds        String[] // Array of retrieved DocumentChunk IDs used
+  chunkIds String[] // Array of retrieved DocumentChunk IDs used
+}
+
+model Meeting {
+  id              String   @id @default(uuid())
+  title           String
+  meetingNo       String
+  meetingDate     DateTime
+  startTime       String?
+  endTime         String?
+  location        String?
+  meetingType     String?
+  status          String   @default("DRAFT") // "DRAFT", "SCHEDULED", "AGENDA_LOCKED", "IN_PROGRESS", "COMPLETED", "CANCELLED"
+  chairName       String?
+  secretaryName   String?
+  notes           String?  @db.Text
+  createdByUserId String?
+  createdByUser   User?    @relation("MeetingCreator", fields: [createdByUserId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  agendaItems MeetingAgendaItem[]
+  attendees   MeetingAttendee[]
+}
+
+model MeetingAgendaItem {
+  id                     String    @id @default(uuid())
+  meetingId              String
+  meeting                Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  caseId                 String
+  case                   Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  agendaNo               Int
+  agendaType             String?
+  proposedAction         String?
+  readinessStatus        String    @default("PENDING_REVIEW") // "PENDING_REVIEW", "READY", "NEEDS_REVISION"
+  reviewStatus           String?   @db.Text // JSON string or text summary of checklist
+  boardResult            String? // "เห็นชอบตามร่าง", "ให้แก้ไขร่าง", "เลื่อนพิจารณา"
+  boardNote              String?   @db.Text
+  postMeetingAction      String?
+  assignedFollowUpUserId String?
+  assignedFollowUpUser   User?     @relation("FollowUpUser", fields: [assignedFollowUpUserId], references: [id])
+  followUpDueDate        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MeetingAttendee {
+  id               String   @id @default(uuid())
+  meetingId        String
+  meeting          Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  userId           String?
+  attendeeName     String
+  role             String?
+  attendanceStatus String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }

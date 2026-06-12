@@ -7,6 +7,7 @@ import { DocumentList } from "@/components/DocumentList";
 import Link from "next/link";
 import { PenTool, FolderSync } from "lucide-react";
 import prisma from "@/lib/db";
+import { requirePermission } from "@/lib/auth/requirePermission";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 import { auditLog } from "@/lib/audit";
@@ -16,6 +17,8 @@ import { isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
 import { differenceInYears } from "date-fns";
 import { checkGraphIntegrationStatus } from "@/lib/microsoft/graphConfig";
 import { DocumentLinkModal } from "@/components/DocumentLinkModal";
+import { CaseAssignmentPanel } from "@/components/CaseAssignmentPanel";
+import { hasPermission } from "@/lib/auth/permissions";
 
 function formatDate(date: Date | null | undefined): string {
   if (!date) return "-";
@@ -27,6 +30,7 @@ export default async function CaseDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const user = await requirePermission("VIEW_CASE_DETAIL");
   const resolvedParams = await params;
   const caseId = resolvedParams.id;
   
@@ -45,6 +49,12 @@ export default async function CaseDetailPage({
         include: {
           sections: true
         }
+      },
+      agendaItems: {
+        include: {
+          meeting: true
+        },
+        orderBy: { meeting: { meetingDate: 'desc' } }
       }
     }
   });
@@ -240,39 +250,6 @@ export default async function CaseDetailPage({
             </div>
           </div>
 
-          {/* Review Checklist UI Placeholder */}
-          <div className="bg-white shadow sm:rounded-lg border border-slate-200">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-base font-semibold leading-6 text-slate-900 mb-4">รายการตรวจสอบ (Review Checklist)</h3>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <div className="flex h-6 items-center">
-                    <input id="check-1" name="check-1" type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600" />
-                  </div>
-                  <div className="ml-3 text-sm leading-6">
-                    <label htmlFor="check-1" className="font-medium text-slate-900">ตรวจสอบความครบถ้วนของเอกสารคำร้อง</label>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="flex h-6 items-center">
-                    <input id="check-2" name="check-2" type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600" />
-                  </div>
-                  <div className="ml-3 text-sm leading-6">
-                    <label htmlFor="check-2" className="font-medium text-slate-900">บันทึกข้อมูลคู่กรณีเข้าระบบ</label>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="flex h-6 items-center">
-                    <input id="check-3" name="check-3" type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600" />
-                  </div>
-                  <div className="ml-3 text-sm leading-6">
-                    <label htmlFor="check-3" className="font-medium text-slate-900">สรุปประเด็นข้อพิพาทเบื้องต้น</label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div className="bg-white shadow sm:rounded-lg border border-slate-200">
             <div className="px-4 py-5 sm:p-6 flex items-center justify-between border-b border-slate-200">
               <h3 className="text-base font-semibold leading-6 text-slate-900">เอกสารในสำนวน</h3>
@@ -283,13 +260,72 @@ export default async function CaseDetailPage({
               />
             </div>
             <div className="px-4 py-5 sm:p-6">
-              <DocumentList documents={mockDocs} />
+              <DocumentList 
+                caseId={caseData.id}
+                documents={mockDocs} 
+                canLink={user.role === 'ADMIN' || user.role === 'LEGAL_OFFICER' || user.role === 'REGISTRY_OFFICER'} 
+              />
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium leading-6 text-slate-900">ประวัติการพิจารณาในที่ประชุม</h3>
+            <div className="bg-white shadow sm:rounded-lg">
+              {caseData.agendaItems && caseData.agendaItems.length > 0 ? (
+                <ul role="list" className="divide-y divide-slate-200">
+                  {caseData.agendaItems.map((item: any) => (
+                    <li key={item.id} className="p-4 sm:px-6 hover:bg-slate-50 transition-colors">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-semibold text-slate-900">
+                          {item.meeting.title} ครั้งที่ {item.meeting.meetingNo}
+                        </h4>
+                        <span className="text-sm text-slate-500">
+                          {new Date(item.meeting.meetingDate).toLocaleDateString('th-TH')}
+                        </span>
+                      </div>
+                      <div className="text-sm text-slate-600 mb-2">วาระที่ {item.agendaNo}</div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-sm font-medium">สถานะความพร้อม:</span>
+                        <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">
+                          {item.readinessStatus}
+                        </span>
+                      </div>
+                      {item.boardResult && (
+                        <div className="mt-3 bg-blue-50 p-3 rounded-md text-sm border border-blue-100">
+                          <span className="font-semibold text-blue-900">มติที่ประชุม: </span>
+                          <span className="text-blue-800">{item.boardResult}</span>
+                          {item.boardNote && (
+                            <p className="mt-1 text-blue-700">{item.boardNote}</p>
+                          )}
+                        </div>
+                      )}
+                      {item.postMeetingAction && (
+                        <div className="mt-2 text-sm text-slate-600">
+                          <span className="font-medium">การดำเนินการหลังการประชุม: </span>
+                          {item.postMeetingAction}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="p-6 text-center text-sm text-slate-500">
+                  ยังไม่มีประวัติการนำเสนอเข้าที่ประชุม
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Right Column: Timeline & Dates */}
         <div className="space-y-6">
+          <CaseAssignmentPanel 
+            caseId={caseId} 
+            currentLegalOfficer={caseData.legalOfficer?.name || caseData.legalOfficerName || "-"} 
+            currentCommitteeOwner={caseData.owner?.name || caseData.committeeOwnerName || "-"} 
+            canAssign={hasPermission(user.role, 'ASSIGN_CASES') || hasPermission(user.role, 'REASSIGN_CASES') || user.role === 'ADMIN'}
+          />
+
           <div className="bg-white shadow sm:rounded-lg border border-slate-200">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-base font-semibold leading-6 text-slate-900 mb-4">กรอบระยะเวลา (Due Dates)</h3>
@@ -392,4 +428,3 @@ export default async function CaseDetailPage({
     </div>
   );
 }
-

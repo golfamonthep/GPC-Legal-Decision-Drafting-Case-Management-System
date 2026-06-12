@@ -1,20 +1,29 @@
 import { notFound } from "next/navigation";
 import prisma from "@/lib/db";
 import { getOrCreateDraft } from "./actions";
+import { requirePermission } from "@/lib/auth/requirePermission";
 import { DraftEditor } from "./DraftEditor";
 import fs from "fs/promises";
 import path from "path";
 
-export default async function DraftDecisionPage({
+export default async function DraftWorkspacePage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
+  await requirePermission("VIEW_DRAFT");
   const resolvedParams = await params;
   const caseId = resolvedParams.id;
   
   const caseData = await prisma.case.findUnique({
-    where: { id: caseId }
+    where: { id: caseId },
+    include: {
+      agendaItems: {
+        include: { meeting: true },
+        where: { meeting: { status: { in: ['DRAFT', 'SCHEDULED', 'AGENDA_LOCKED'] } } },
+        orderBy: { meeting: { meetingDate: 'asc' } }
+      }
+    }
   });
 
   if (!caseData) {
@@ -32,5 +41,28 @@ export default async function DraftDecisionPage({
     templateExists = false;
   }
 
-  return <DraftEditor caseData={caseData} draftData={draftData} templateExists={templateExists} />;
+  const upcomingMeeting = caseData.agendaItems?.[0];
+
+  return (
+    <div className="flex flex-col h-full">
+      {upcomingMeeting && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 mx-8 mt-4 rounded-r-md">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                <strong className="font-medium text-yellow-800">แจ้งเตือน:</strong> สำนวนนี้อยู่ในวาระการประชุม {upcomingMeeting.meeting.title} ครั้งที่ {upcomingMeeting.meeting.meetingNo} วันที่ {new Date(upcomingMeeting.meeting.meetingDate).toLocaleDateString('th-TH')} 
+                โปรดตรวจสอบความสมบูรณ์ของร่างคำวินิจฉัยให้เรียบร้อย
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      <DraftEditor caseData={caseData} draftData={draftData} templateExists={templateExists} />
+    </div>
+  );
 }

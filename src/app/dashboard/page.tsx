@@ -4,7 +4,7 @@ export const revalidate = 0;
 import { DashboardCard } from "@/components/DashboardCard";
 import { CaseTable } from "@/components/CaseTable";
 import { mockCases, mockActivities } from "@/data/mock-data";
-import { FileText, AlertTriangle, Scale, Clock } from "lucide-react";
+import { FileText, AlertTriangle, Scale, Clock, Calendar } from "lucide-react";
 import { 
   getDashboardStats, 
   getOverdueCases, 
@@ -17,6 +17,8 @@ import { requirePermission } from "@/lib/auth/requirePermission";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
 import { detectCaseDataQualityIssues } from "@/lib/dataQuality/caseDataQuality";
+import Link from "next/link";
+import prisma from "@/lib/db";
 
 function calculateDaysUntilDue(caseData: any): number | undefined {
   const now = new Date();
@@ -46,6 +48,9 @@ export default async function DashboardPage() {
 
   let urgentCasesData: Case[] = mockCases.filter(c => (c.isOverdue || (c.daysUntilDue || 0) <= 7) && !isClosedOrRedCase(c));
   let activitiesData = mockActivities.slice(0, 5);
+  let upcomingMeetings: any[] = [];
+
+  const canViewMeetings = user && hasPermission(user.role, 'VIEW_MEETINGS');
 
   try {
     const dbStats = await getDashboardStats();
@@ -53,10 +58,17 @@ export default async function DashboardPage() {
     const dbDueSoonCases = await getDueSoonCases(7);
     const dbRecentEvents = await getRecentCaseEvents();
 
+    if (canViewMeetings) {
+      upcomingMeetings = await prisma.meeting.findMany({
+        where: { meetingDate: { gte: new Date() }, status: { not: 'CANCELLED' } },
+        orderBy: { meetingDate: 'asc' },
+        take: 3,
+        include: { _count: { select: { agendaItems: true } } }
+      });
+    }
+
     if (canViewDataQuality) {
       // Calculate data quality issues for dashboard
-      const { PrismaClient } = await import('@prisma/client');
-      const prisma = new PrismaClient();
       const allCases = await prisma.case.findMany();
       for (const c of allCases) {
         const issues = detectCaseDataQualityIssues(c);
@@ -243,6 +255,39 @@ export default async function DashboardPage() {
           </ul>
         </div>
       </div>
+
+      {canViewMeetings && upcomingMeetings.length > 0 && (
+        <div className="mt-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold leading-6 text-slate-900">
+              การประชุมคณะกรรมการที่กำลังจะมาถึง
+            </h2>
+            <Link href="/meetings" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+              ดูทั้งหมด
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {upcomingMeetings.map((meeting) => (
+              <div key={meeting.id} className="bg-white overflow-hidden shadow rounded-lg border border-slate-200">
+                <div className="px-4 py-5 sm:p-6">
+                  <h3 className="text-base font-semibold text-slate-900 truncate">
+                    {meeting.title} ครั้งที่ {meeting.meetingNo}
+                  </h3>
+                  <div className="mt-2 text-sm text-slate-500 space-y-1">
+                    <p className="flex items-center"><Calendar className="mr-2 h-4 w-4" /> {meeting.meetingDate.toLocaleDateString('th-TH')}</p>
+                    <p className="flex items-center"><Scale className="mr-2 h-4 w-4" /> {meeting._count.agendaItems} วาระ</p>
+                  </div>
+                  <div className="mt-4">
+                    <Link href={`/meetings/${meeting.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-500">
+                      จัดการวาระประชุม &rarr;
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
