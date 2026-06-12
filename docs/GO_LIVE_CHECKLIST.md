@@ -36,3 +36,17 @@
 
 ## Blockers / Known Issues (To be updated during UAT)
 - (Document any blocking issues found during UAT here)
+
+## Stabilization Exit Criteria
+
+- [ ] no open P0 issues
+- [ ] no open P1 security/data integrity issues
+- [ ] registry import tested with pilot files
+- [ ] dashboard logic verified
+- [ ] permissions verified
+- [ ] AI safety regression passed
+- [ ] DOCX export regression passed
+- [ ] audit logs verified
+- [ ] backup/rollback plan confirmed
+- [ ] pilot users trained
+- [ ] release decision logged

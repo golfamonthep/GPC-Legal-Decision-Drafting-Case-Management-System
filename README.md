@@ -99,3 +99,9 @@ See [Production Security Review](docs/PRODUCTION_SECURITY_REVIEW.md) for details
 - [Pilot Weekly Review Template](docs/training/PILOT_WEEKLY_REVIEW_TEMPLATE.md)
 - [Pilot Release Notes Template](docs/training/PILOT_RELEASE_NOTES_TEMPLATE.md)
 - [Pilot Backlog](docs/training/PILOT_BACKLOG.md)
+
+## Stabilization and Pilot Rollout
+- [Stabilization Sprint Plan](docs/stabilization/STABILIZATION_SPRINT_PLAN.md)
+- [Stabilization Backlog](docs/stabilization/STABILIZATION_BACKLOG.md)
+- [Regression Test Checklist](docs/stabilization/REGRESSION_TEST_CHECKLIST.md)
+- [Release Decision Log](docs/stabilization/RELEASE_DECISION_LOG.md)
