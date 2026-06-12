@@ -9,7 +9,7 @@ import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 
 function formatThaiDate(date: Date | null | undefined): string {
-  if (!date) return "[วันที่]";
+  if (!date || isNaN(date.getTime())) return "[วันที่]";
   const buddhistYear = date.getFullYear() + 543;
   return `${date.getDate()} ${format(date, "MMM", { locale: th })} ${buddhistYear}`;
 }
@@ -171,34 +171,37 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
   const children: any[] = [];
   const { font, paragraph: pConfig } = docxLayoutConfig;
 
-  // Warning
-  children.push(
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      children: [
-        new TextRun({
-          text: "ข้อควรตรวจสอบก่อนใช้เอกสาร",
-          bold: true,
-          size: font.sizes.body,
-          color: "FF0000",
-          font: font.family
-        })
-      ]
-    }),
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 400 },
-      children: [
-        new TextRun({
-          text: "เอกสารนี้เป็นร่างที่ส่งออกจากระบบเพื่อการตรวจทาน ต้องตรวจสอบโดยนิติกร/กรรมการก่อนนำไปใช้เป็นเอกสารทางราชการ",
-          bold: true,
-          size: font.sizes.body,
-          color: "FF0000",
-          font: font.family
-        })
-      ]
-    })
-  );
+  // Draft Warning (Can be toggled off in future official export mode)
+  const includeDraftWarning = true;
+  if (includeDraftWarning) {
+    children.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new TextRun({
+            text: "ข้อควรตรวจสอบก่อนใช้เอกสาร",
+            bold: true,
+            size: font.sizes.body,
+            color: "FF0000",
+            font: font.family
+          })
+        ]
+      }),
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+        children: [
+          new TextRun({
+            text: "เอกสารนี้เป็นร่างที่ส่งออกจากระบบเพื่อการตรวจทาน ต้องตรวจสอบโดยนิติกร/กรรมการก่อนนำไปใช้เป็นเอกสารทางราชการ",
+            bold: true,
+            size: font.sizes.body,
+            color: "FF0000",
+            font: font.family
+          })
+        ]
+      })
+    );
+  }
 
   // Header Title
   children.push(
@@ -228,8 +231,8 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
       rows: [
         new TableRow({
           children: [
-            new TableCell({ children: [new Paragraph({ alignment: AlignmentType.LEFT, children: [new TextRun({ text: "เรื่องดำที่", size: font.sizes.body, font: font.family })] })] }),
-            new TableCell({ children: [new Paragraph({ alignment: AlignmentType.LEFT, children: [new TextRun({ text: caseData.blackNumber || "[ยังไม่มีข้อมูล]", size: font.sizes.body, font: font.family })] })] })
+            new TableCell({ width: { size: 40, type: WidthType.PERCENTAGE }, children: [new Paragraph({ alignment: AlignmentType.LEFT, children: [new TextRun({ text: "เรื่องดำที่", size: font.sizes.body, font: font.family })] })] }),
+            new TableCell({ width: { size: 60, type: WidthType.PERCENTAGE }, children: [new Paragraph({ alignment: AlignmentType.LEFT, children: [new TextRun({ text: caseData.blackNumber || "[ยังไม่มีข้อมูล]", size: font.sizes.body, font: font.family })] })] })
           ]
         }),
         new TableRow({

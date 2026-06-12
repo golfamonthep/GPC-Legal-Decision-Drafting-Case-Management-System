@@ -17,21 +17,21 @@ export const docxLayoutConfig = {
   },
   paragraph: {
     indent: {
-      firstLine: 850 // ~1.5 cm
+      firstLine: 709 // ~1.25 cm
     },
     spacing: {
       body: {
         before: 0,
-        after: 120, // 6pt
-        line: 360,  // 1.5 lines or just proportional spacing, let's keep it simple
+        after: 100, // 5pt, small but not excessive
+        line: 276,  // Multiple 1.15 line spacing ~ 276 twips (240 is single)
       },
       headingMain: {
         before: 0,
-        after: 200
+        after: 240 // Moderate gap before case numbers
       },
       sectionHeading: {
-        before: 240,
-        after: 120
+        before: 240, // Moderate gap before new section
+        after: 80    // Small gap after heading
       },
       partyBlock: {
         after: 120

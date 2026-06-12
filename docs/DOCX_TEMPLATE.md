@@ -30,7 +30,7 @@ When creating or modifying the template in Microsoft Word, follow these exact ma
 **Paragraph Styles:**
 * Line Spacing: Standard for Thai official documents, avoiding excessive gaps or cramped paragraphs (e.g., Exactly 16 pt or Multiple 1.15).
 * Spacing After Paragraph: 6 pt to separate paragraphs slightly.
-* First-line Indentation: Set to ~1.5 cm for paragraph body texts to ensure readability.
+* First-line Indentation: Set to ~1.25 cm for paragraph body texts to ensure readability.
 
 **Alignment and Spacing:**
 * Case Numbers (เรื่องดำ / เรื่องแดง): Align right using a clean block or right-tab stops.
