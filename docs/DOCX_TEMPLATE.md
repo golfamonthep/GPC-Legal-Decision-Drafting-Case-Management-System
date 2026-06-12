@@ -15,7 +15,7 @@ The sanitized official template should be placed exactly at:
 
 ## Template Design Guidelines
 
-When creating or modifying the template in Microsoft Word, follow these official ก.พ.ค.ตร. styling guidelines:
+When creating or modifying the template in Microsoft Word, follow these exact manual settings to match the official ก.พ.ค.ตร. style:
 
 **Page Setup:**
 * Paper Size: A4 Portrait
@@ -24,9 +24,18 @@ When creating or modifying the template in Microsoft Word, follow these official
 **Typography:**
 * Font Family: TH Sarabun New
 * Body Text: 16 pt (regular)
-* Headings: 18 pt (bold)
-* Line Spacing: Standard for Thai official documents, avoiding excessive gaps or cramped paragraphs.
-* First-line Indentation: Set to ~1.5 cm for paragraph body texts.
+* Headings (Main): 18 pt (bold)
+* Section Headings: 16 pt (bold)
+
+**Paragraph Styles:**
+* Line Spacing: Standard for Thai official documents, avoiding excessive gaps or cramped paragraphs (e.g., Exactly 16 pt or Multiple 1.15).
+* Spacing After Paragraph: 6 pt to separate paragraphs slightly.
+* First-line Indentation: Set to ~1.5 cm for paragraph body texts to ensure readability.
+
+**Alignment and Spacing:**
+* Case Numbers (เรื่องดำ / เรื่องแดง): Align right using a clean block or right-tab stops.
+* Party Block (ผู้ร้อง / คู่กรณี): Neatly aligned using tabs or invisible tables.
+* Signature Spacing: Leave ~3-4 empty lines before role text to accommodate physical signatures. Do not invent committee names if unknown.
 
 ## Supported Placeholders
 

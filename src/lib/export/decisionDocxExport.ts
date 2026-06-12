@@ -1,5 +1,6 @@
-import { Document, Packer, Paragraph, TextRun, AlignmentType, PageOrientation } from "docx";
+import { Document, Packer, Paragraph, TextRun, AlignmentType, PageOrientation, Table, TableRow, TableCell, BorderStyle, WidthType } from "docx";
 import prisma from "@/lib/db";
+import { docxLayoutConfig } from "./docxLayoutConfig";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 import fs from "fs/promises";
@@ -109,20 +110,20 @@ export async function generateDecisionDocx(caseId: string, userId?: string) {
       }
 
       const data = {
-        caseType: caseData.type || "",
-        blackCaseNumber: caseData.blackNumber || "",
-        redCaseNumber: caseData.redNumber || "",
+        caseType: caseData.type || "[ยังไม่มีข้อมูล]",
+        blackCaseNumber: caseData.blackNumber || "[ยังไม่มีข้อมูล]",
+        redCaseNumber: caseData.redNumber || " ",
         decisionDate: formatThaiDate(caseData.meetingDate),
         receivedDate: formatThaiDate(caseData.receivedDate),
         petitionerLabel,
-        petitionerName: caseData.petitionerName || "",
+        petitionerName: caseData.petitionerName || "[ยังไม่มีข้อมูล]",
         counterpartyLabel,
-        counterpartyName: caseData.respondentName || "",
-        subject: caseData.subject || "",
-        legalOfficerName: caseData.legalOfficer?.name || caseData.legalOfficerName || "",
-        committeeOwnerName: caseData.owner?.name || "",
-        status: caseData.currentStatus || "",
-        decisionResult: caseData.decisionResult || "",
+        counterpartyName: caseData.respondentName || "[ยังไม่มีข้อมูล]",
+        subject: caseData.subject || "[ยังไม่มีข้อมูล]",
+        legalOfficerName: caseData.legalOfficer?.name || caseData.legalOfficerName || "[ยังไม่มีข้อมูล]",
+        committeeOwnerName: caseData.owner?.name || "[ยังไม่มีข้อมูล]",
+        status: caseData.currentStatus || "[ยังไม่มีข้อมูล]",
+        decisionResult: caseData.decisionResult || "[ยังไม่มีข้อมูล]",
         systemDraftWarning: "เอกสารนี้เป็นร่างที่ส่งออกจากระบบเพื่อการตรวจทาน ต้องตรวจสอบโดยนิติกร/กรรมการก่อนนำไปใช้เป็นเอกสารทางราชการ",
         ...sectionMap
       };
@@ -168,7 +169,9 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
   const respondentLabel = caseData.type === "อุทธรณ์" ? "คู่กรณีในอุทธรณ์" : "คู่กรณีในการร้องทุกข์";
 
   const children: any[] = [];
+  const { font, paragraph: pConfig } = docxLayoutConfig;
 
+  // Warning
   children.push(
     new Paragraph({
       alignment: AlignmentType.CENTER,
@@ -176,9 +179,9 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
         new TextRun({
           text: "ข้อควรตรวจสอบก่อนใช้เอกสาร",
           bold: true,
-          size: 32,
+          size: font.sizes.body,
           color: "FF0000",
-          font: "TH Sarabun New"
+          font: font.family
         })
       ]
     }),
@@ -189,48 +192,122 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
         new TextRun({
           text: "เอกสารนี้เป็นร่างที่ส่งออกจากระบบเพื่อการตรวจทาน ต้องตรวจสอบโดยนิติกร/กรรมการก่อนนำไปใช้เป็นเอกสารทางราชการ",
           bold: true,
-          size: 28,
+          size: font.sizes.body,
           color: "FF0000",
-          font: "TH Sarabun New"
+          font: font.family
         })
       ]
     })
   );
 
+  // Header Title
   children.push(
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: "คำวินิจฉัย", bold: true, size: 36, font: "TH Sarabun New" })]
+      children: [new TextRun({ text: "คำวินิจฉัย", bold: true, size: font.sizes.heading, font: font.family })]
     }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { after: 200 },
-      children: [new TextRun({ text: "คณะกรรมการพิทักษ์ระบบคุณธรรมข้าราชการตำรวจ", bold: true, size: 36, font: "TH Sarabun New" })]
-    }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: `เรื่องดำที่ ${caseData.blackNumber || "[เรื่องดำ]"}`, size: 32, font: "TH Sarabun New" })]
-    }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      spacing: { after: 200 },
-      children: [new TextRun({ text: `เรื่องแดงที่ ${caseData.redNumber || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })]
-    }),
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      spacing: { after: 400 },
-      children: [new TextRun({ text: `วันที่ ${formatThaiDate(caseData.meetingDate)}`, size: 32, font: "TH Sarabun New" })]
+      spacing: { after: pConfig.spacing.headingMain.after },
+      children: [new TextRun({ text: "คณะกรรมการพิทักษ์ระบบคุณธรรมข้าราชการตำรวจ", bold: true, size: font.sizes.heading, font: font.family })]
     })
   );
 
+  // Case Number Block
+  const noBorder = { style: BorderStyle.NONE, size: 0, color: "auto" };
+  const tableBorders = {
+    top: noBorder, bottom: noBorder, left: noBorder, right: noBorder,
+    insideHorizontal: noBorder, insideVertical: noBorder
+  };
+
   children.push(
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `${petitionerLabel}: \t\t\t${caseData.petitionerName || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `${respondentLabel}: \t\t${caseData.respondentName || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `เรื่อง \t\t\t\t${caseData.subject || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `ประเภทเรื่อง \t\t\t${caseData.type || "-"}`, size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `วันที่รับเรื่อง \t\t\t${formatThaiDate(caseData.receivedDate)}`, size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `นิติกร \t\t\t\t${caseData.legalOfficer?.name || caseData.legalOfficerName || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { after: 400 }, children: [new TextRun({ text: `กรรมการเจ้าของสำนวน \t\t${caseData.owner?.name || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })] })
+    new Table({
+      borders: tableBorders,
+      alignment: AlignmentType.RIGHT,
+      width: { size: 35, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph({ alignment: AlignmentType.LEFT, children: [new TextRun({ text: "เรื่องดำที่", size: font.sizes.body, font: font.family })] })] }),
+            new TableCell({ children: [new Paragraph({ alignment: AlignmentType.LEFT, children: [new TextRun({ text: caseData.blackNumber || "[ยังไม่มีข้อมูล]", size: font.sizes.body, font: font.family })] })] })
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ children: [new Paragraph({ alignment: AlignmentType.LEFT, children: [new TextRun({ text: "เรื่องแดงที่", size: font.sizes.body, font: font.family })] })] }),
+            new TableCell({ children: [new Paragraph({ alignment: AlignmentType.LEFT, children: [new TextRun({ text: caseData.redNumber || " ", size: font.sizes.body, font: font.family })] })] })
+          ]
+        })
+      ]
+    }),
+    new Paragraph({
+      alignment: AlignmentType.RIGHT,
+      spacing: { before: 120, after: 400 },
+      children: [new TextRun({ text: `วันที่ ${formatThaiDate(caseData.meetingDate)}`, size: font.sizes.body, font: font.family })]
+    })
+  );
+
+  // Metadata / Parties Block
+  children.push(
+    new Table({
+      borders: tableBorders,
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({ width: { size: 20, type: WidthType.PERCENTAGE }, margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: petitionerLabel, size: font.sizes.body, font: font.family })] })] }),
+            new TableCell({ width: { size: 80, type: WidthType.PERCENTAGE }, margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: caseData.petitionerName || "[ยังไม่มีข้อมูล]", size: font.sizes.body, font: font.family })] })] }),
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: respondentLabel, size: font.sizes.body, font: font.family })] })] }),
+            new TableCell({ margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: caseData.respondentName || "[ยังไม่มีข้อมูล]", size: font.sizes.body, font: font.family })] })] }),
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: "เรื่อง", size: font.sizes.body, font: font.family })] })] }),
+            new TableCell({ margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: caseData.subject || "[ยังไม่มีข้อมูล]", size: font.sizes.body, font: font.family })] })] }),
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: "ประเภทเรื่อง", size: font.sizes.body, font: font.family })] })] }),
+            new TableCell({ margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: caseData.type || "-", size: font.sizes.body, font: font.family })] })] }),
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: "วันที่รับเรื่อง", size: font.sizes.body, font: font.family })] })] }),
+            new TableCell({ margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: formatThaiDate(caseData.receivedDate), size: font.sizes.body, font: font.family })] })] }),
+          ]
+        })
+      ]
+    })
+  );
+
+  // We intentionally exclude operational fields from official body unless requested. The prompt says "do not show operational internal fields in the official body unless intentionally included". I removed legalOfficer and owner for now, or keep them if they are in official format. Actually, in Thai official docs, legal officer and owner are sometimes at the very end or not included in the decision doc. I will omit them to make it look official, or add them at the end. Wait, previous prompt said "Include, only where appropriate: เรื่อง ประเภทเรื่อง วันที่รับเรื่อง นิติกร กรรมการเจ้าของสำนวน". I'll add them back to the table for completeness.
+
+  children.push(
+    new Table({
+      borders: tableBorders,
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({ width: { size: 20, type: WidthType.PERCENTAGE }, margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: "นิติกร", size: font.sizes.body, font: font.family })] })] }),
+            new TableCell({ width: { size: 80, type: WidthType.PERCENTAGE }, margins: { bottom: 120 }, children: [new Paragraph({ children: [new TextRun({ text: caseData.legalOfficer?.name || caseData.legalOfficerName || "[ยังไม่มีข้อมูล]", size: font.sizes.body, font: font.family })] })] }),
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({ margins: { bottom: 400 }, children: [new Paragraph({ children: [new TextRun({ text: "กรรมการเจ้าของสำนวน", size: font.sizes.body, font: font.family })] })] }),
+            new TableCell({ margins: { bottom: 400 }, children: [new Paragraph({ children: [new TextRun({ text: caseData.owner?.name || "[ยังไม่มีข้อมูล]", size: font.sizes.body, font: font.family })] })] }),
+          ]
+        })
+      ]
+    })
   );
 
   const officialSectionOrder = [
@@ -249,7 +326,11 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
     const sectionData = sections.find(s => s.sectionType === template.type);
 
     children.push(
-      new Paragraph({ spacing: { before: 240, after: 120 }, children: [new TextRun({ text: template.title, bold: true, size: 36, font: "TH Sarabun New" })] })
+      new Paragraph({ 
+        spacing: pConfig.spacing.sectionHeading, 
+        keepNext: true,
+        children: [new TextRun({ text: template.title, bold: true, size: font.sizes.sectionHeading, font: font.family })] 
+      })
     );
 
     if (sectionData && sectionData.content && sectionData.content.trim()) {
@@ -259,38 +340,50 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
         children.push(
           new Paragraph({
             alignment: AlignmentType.JUSTIFIED,
-            spacing: { before: 0, after: 120 },
-            indent: { firstLine: 850 },
-            children: [new TextRun({ text: line, size: 32, font: "TH Sarabun New" })]
+            spacing: pConfig.spacing.body,
+            indent: pConfig.indent,
+            children: [new TextRun({ text: line, size: font.sizes.body, font: font.family })]
           })
         );
       }
     } else {
       children.push(
         new Paragraph({
-          spacing: { before: 0, after: 120 },
-          indent: { firstLine: 850 },
-          children: [new TextRun({ text: "[ยังไม่มีข้อความในส่วนนี้]", color: "888888", size: 32, font: "TH Sarabun New" })]
+          spacing: pConfig.spacing.body,
+          indent: pConfig.indent,
+          children: [new TextRun({ text: "[ยังไม่มีข้อความในส่วนนี้]", color: "888888", size: font.sizes.body, font: font.family })]
         })
       );
     }
   }
 
   children.push(
-    new Paragraph({ spacing: { before: 240, after: 120 }, children: [new TextRun({ text: "สิทธิฟ้องคดีต่อศาลปกครองสูงสุด", bold: true, size: 36, font: "TH Sarabun New" })] }),
-    new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { before: 0, after: 120 }, indent: { firstLine: 850 }, children: [new TextRun({ text: "[ยังไม่มีข้อความในส่วนนี้]", color: "888888", size: 32, font: "TH Sarabun New" })] })
+    new Paragraph({ 
+      spacing: pConfig.spacing.sectionHeading, 
+      keepNext: true,
+      children: [new TextRun({ text: "สิทธิฟ้องคดีต่อศาลปกครองสูงสุด", bold: true, size: font.sizes.sectionHeading, font: font.family })] 
+    }),
+    new Paragraph({ 
+      alignment: AlignmentType.JUSTIFIED, 
+      spacing: pConfig.spacing.body, 
+      indent: pConfig.indent, 
+      children: [new TextRun({ text: "[ยังไม่มีข้อความในส่วนนี้]", color: "888888", size: font.sizes.body, font: font.family })] 
+    })
   );
 
+  // Signatures
   children.push(
-    new Paragraph({ spacing: { before: 800 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { before: 120, after: 400 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "ประธานกรรมการ", size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { before: 600 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { before: 120, after: 400 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "กรรมการ", size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { before: 600 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: 32, font: "TH Sarabun New" })] }),
-    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "กรรมการและเลขานุการ", size: 32, font: "TH Sarabun New" })] })
+    new Paragraph({ spacing: { before: 800 }, keepNext: true, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: font.sizes.body, font: font.family })] }),
+    new Paragraph({ spacing: { before: pConfig.spacing.signature.beforeRole }, keepNext: true, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: font.sizes.body, font: font.family })] }),
+    new Paragraph({ spacing: { before: pConfig.spacing.signature.beforeRole, after: pConfig.spacing.signature.afterRole }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "ประธานกรรมการ", size: font.sizes.body, font: font.family })] }),
+    
+    new Paragraph({ spacing: { before: pConfig.spacing.signature.beforeNewSignature }, keepNext: true, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: font.sizes.body, font: font.family })] }),
+    new Paragraph({ spacing: { before: pConfig.spacing.signature.beforeRole }, keepNext: true, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: font.sizes.body, font: font.family })] }),
+    new Paragraph({ spacing: { before: pConfig.spacing.signature.beforeRole, after: pConfig.spacing.signature.afterRole }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "กรรมการ", size: font.sizes.body, font: font.family })] }),
+    
+    new Paragraph({ spacing: { before: pConfig.spacing.signature.beforeNewSignature }, keepNext: true, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: font.sizes.body, font: font.family })] }),
+    new Paragraph({ spacing: { before: pConfig.spacing.signature.beforeRole }, keepNext: true, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: font.sizes.body, font: font.family })] }),
+    new Paragraph({ spacing: { before: pConfig.spacing.signature.beforeRole }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "กรรมการและเลขานุการ", size: font.sizes.body, font: font.family })] })
   );
 
   const doc = new Document({
@@ -298,8 +391,8 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
       default: {
         document: {
           run: {
-            size: 32,
-            font: "TH Sarabun New"
+            size: font.sizes.body,
+            font: font.family
           }
         }
       }
@@ -307,7 +400,7 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
     sections: [{
       properties: {
         page: {
-          margin: { top: 1417, right: 1134, bottom: 1134, left: 1701 },
+          margin: docxLayoutConfig.page.margins,
           size: { orientation: PageOrientation.PORTRAIT }
         }
       },
