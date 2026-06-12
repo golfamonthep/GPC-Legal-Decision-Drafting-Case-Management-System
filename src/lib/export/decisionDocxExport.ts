@@ -140,7 +140,7 @@ export async function generateDecisionDocx(caseId: string, userId?: string) {
           entityType: "Case",
           entityId: caseId,
           userId: userId || null,
-          afterValue: JSON.stringify({ filename, templateUsed: true, templateName: "gpc-decision-template.docx" }),
+          afterValue: JSON.stringify({ filename, exportMode: "template", templateUsed: true }),
         }
       });
 
@@ -176,8 +176,9 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
         new TextRun({
           text: "ข้อควรตรวจสอบก่อนใช้เอกสาร",
           bold: true,
-          size: 32, // 16pt (half-points)
-          color: "FF0000"
+          size: 32,
+          color: "FF0000",
+          font: "TH Sarabun New"
         })
       ]
     }),
@@ -188,8 +189,9 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
         new TextRun({
           text: "เอกสารนี้เป็นร่างที่ส่งออกจากระบบเพื่อการตรวจทาน ต้องตรวจสอบโดยนิติกร/กรรมการก่อนนำไปใช้เป็นเอกสารทางราชการ",
           bold: true,
-          size: 28, // 14pt
-          color: "FF0000"
+          size: 28,
+          color: "FF0000",
+          font: "TH Sarabun New"
         })
       ]
     })
@@ -198,41 +200,42 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
   children.push(
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      children: [new TextRun({ text: "คำวินิจฉัย", bold: true, size: 36 })]
+      children: [new TextRun({ text: "คำวินิจฉัย", bold: true, size: 36, font: "TH Sarabun New" })]
     }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
       spacing: { after: 200 },
-      children: [new TextRun({ text: "คณะกรรมการพิทักษ์ระบบคุณธรรมข้าราชการตำรวจ", bold: true, size: 32 })]
+      children: [new TextRun({ text: "คณะกรรมการพิทักษ์ระบบคุณธรรมข้าราชการตำรวจ", bold: true, size: 36, font: "TH Sarabun New" })]
     }),
     new Paragraph({
       alignment: AlignmentType.RIGHT,
-      children: [new TextRun({ text: `เรื่องดำที่: ${caseData.blackNumber || "[เรื่องดำ]"}`, size: 32 })]
+      children: [new TextRun({ text: `เรื่องดำที่ ${caseData.blackNumber || "[เรื่องดำ]"}`, size: 32, font: "TH Sarabun New" })]
     }),
     new Paragraph({
       alignment: AlignmentType.RIGHT,
       spacing: { after: 200 },
-      children: [new TextRun({ text: `เรื่องแดงที่: ${caseData.redNumber || "[เรื่องแดง]"}`, size: 32 })]
+      children: [new TextRun({ text: `เรื่องแดงที่ ${caseData.redNumber || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })]
     }),
     new Paragraph({
       alignment: AlignmentType.RIGHT,
       spacing: { after: 400 },
-      children: [new TextRun({ text: `วันที่: ${formatThaiDate(caseData.meetingDate || new Date())}`, size: 32 })]
+      children: [new TextRun({ text: `วันที่ ${formatThaiDate(caseData.meetingDate)}`, size: 32, font: "TH Sarabun New" })]
     })
   );
 
   children.push(
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `${petitionerLabel}: \t\t\t${caseData.petitionerName || "-"}`, size: 32 })] }),
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `${respondentLabel}: \t\t${caseData.respondentName || "-"}`, size: 32 })] }),
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `เรื่อง: \t\t\t\t${caseData.subject || "-"}`, size: 32 })] }),
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `ประเภทเรื่อง: \t\t\t${caseData.type || "-"}`, size: 32 })] }),
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `วันที่รับเรื่อง: \t\t\t${formatThaiDate(caseData.receivedDate)}`, size: 32 })] }),
-    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `นิติกร: \t\t\t\t${caseData.legalOfficer?.name || caseData.legalOfficerName || "-"}`, size: 32 })] }),
-    new Paragraph({ spacing: { after: 400 }, children: [new TextRun({ text: `กรรมการเจ้าของสำนวน: \t\t${caseData.owner?.name || "-"}`, size: 32 })] })
+    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `${petitionerLabel}: \t\t\t${caseData.petitionerName || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `${respondentLabel}: \t\t${caseData.respondentName || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `เรื่อง \t\t\t\t${caseData.subject || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `ประเภทเรื่อง \t\t\t${caseData.type || "-"}`, size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `วันที่รับเรื่อง \t\t\t${formatThaiDate(caseData.receivedDate)}`, size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: `นิติกร \t\t\t\t${caseData.legalOfficer?.name || caseData.legalOfficerName || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { after: 400 }, children: [new TextRun({ text: `กรรมการเจ้าของสำนวน \t\t${caseData.owner?.name || "[ยังไม่มีข้อมูล]"}`, size: 32, font: "TH Sarabun New" })] })
   );
 
   const officialSectionOrder = [
     { type: "heading", title: caseData.type === "อุทธรณ์" ? "สรุปอุทธรณ์" : "สรุปคำร้องทุกข์" },
+    { type: "request", title: caseData.type === "อุทธรณ์" ? "คำขอของผู้อุทธรณ์" : "คำขอของผู้ร้องทุกข์" },
     { type: "parties", title: "คำแก้ของคู่กรณี" },
     { type: "established_facts", title: "ข้อเท็จจริงรับฟังได้" },
     { type: "jurisdiction", title: "อำนาจและเงื่อนไขการพิจารณา" },
@@ -246,50 +249,61 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
     const sectionData = sections.find(s => s.sectionType === template.type);
 
     children.push(
-      new Paragraph({ spacing: { before: 240, after: 120 }, children: [new TextRun({ text: template.title, bold: true, size: 32 })] })
+      new Paragraph({ spacing: { before: 240, after: 120 }, children: [new TextRun({ text: template.title, bold: true, size: 36, font: "TH Sarabun New" })] })
     );
 
     if (sectionData && sectionData.content && sectionData.content.trim()) {
       const lines = sectionData.content.split('\n');
       for (const line of lines) {
+        if (!line.trim()) continue;
         children.push(
           new Paragraph({
-            alignment: AlignmentType.THAI_DISTRIBUTE,
-            spacing: { before: 60, after: 60 },
-            indent: { firstLine: 720 },
-            children: [new TextRun({ text: line, size: 32 })]
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { before: 0, after: 120 },
+            indent: { firstLine: 850 },
+            children: [new TextRun({ text: line, size: 32, font: "TH Sarabun New" })]
           })
         );
       }
     } else {
       children.push(
         new Paragraph({
-          spacing: { before: 60, after: 60 },
-          indent: { firstLine: 720 },
-          children: [new TextRun({ text: "[ยังไม่มีข้อความในส่วนนี้]", color: "888888", size: 32 })]
+          spacing: { before: 0, after: 120 },
+          indent: { firstLine: 850 },
+          children: [new TextRun({ text: "[ยังไม่มีข้อความในส่วนนี้]", color: "888888", size: 32, font: "TH Sarabun New" })]
         })
       );
     }
   }
 
   children.push(
-    new Paragraph({ spacing: { before: 240, after: 120 }, children: [new TextRun({ text: "สิทธิฟ้องคดีต่อศาลปกครองสูงสุด", bold: true, size: 32 })] }),
-    new Paragraph({ alignment: AlignmentType.THAI_DISTRIBUTE, spacing: { before: 60, after: 60 }, indent: { firstLine: 720 }, children: [new TextRun({ text: "[ยังไม่มีข้อความในส่วนนี้]", color: "888888", size: 32 })] })
+    new Paragraph({ spacing: { before: 240, after: 120 }, children: [new TextRun({ text: "สิทธิฟ้องคดีต่อศาลปกครองสูงสุด", bold: true, size: 36, font: "TH Sarabun New" })] }),
+    new Paragraph({ alignment: AlignmentType.JUSTIFIED, spacing: { before: 0, after: 120 }, indent: { firstLine: 850 }, children: [new TextRun({ text: "[ยังไม่มีข้อความในส่วนนี้]", color: "888888", size: 32, font: "TH Sarabun New" })] })
   );
 
   children.push(
-    new Paragraph({ spacing: { before: 800 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: 32 })] }),
-    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: 32 })] }),
-    new Paragraph({ spacing: { before: 120, after: 400 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "ประธานกรรมการ", size: 32 })] }),
-    new Paragraph({ spacing: { before: 400 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: 32 })] }),
-    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: 32 })] }),
-    new Paragraph({ spacing: { before: 120, after: 400 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "กรรมการ", size: 32 })] }),
-    new Paragraph({ spacing: { before: 400 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: 32 })] }),
-    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: 32 })] }),
-    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "กรรมการและเลขานุการ", size: 32 })] })
+    new Paragraph({ spacing: { before: 800 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { before: 120, after: 400 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "ประธานกรรมการ", size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { before: 600 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { before: 120, after: 400 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "กรรมการ", size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { before: 600 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(ลงชื่อ) .......................................................", size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(.......................................................)", size: 32, font: "TH Sarabun New" })] }),
+    new Paragraph({ spacing: { before: 120 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "กรรมการและเลขานุการ", size: 32, font: "TH Sarabun New" })] })
   );
 
   const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: {
+            size: 32,
+            font: "TH Sarabun New"
+          }
+        }
+      }
+    },
     sections: [{
       properties: {
         page: {
@@ -309,7 +323,7 @@ async function generateProgrammaticDocx(caseData: any, sections: any[], filename
       entityType: "Case",
       entityId: caseData.id,
       userId: userId || null,
-      afterValue: JSON.stringify({ filename, templateUsed: false }),
+      afterValue: JSON.stringify({ filename, exportMode: "fallback", templateUsed: false }),
     }
   });
 

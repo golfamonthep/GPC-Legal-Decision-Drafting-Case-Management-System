@@ -1,13 +1,32 @@
 # DOCX Template Export
 
-This system supports exporting decision drafts to a formatted DOCX document using a pre-defined template.
+This system supports exporting decision drafts to a formatted DOCX document using a pre-defined template or a programmatic fallback.
 
 ## Template Location
 
 The sanitized official template should be placed exactly at:
 `templates/docx/gpc-decision-template.docx`
 
-**WARNING:** Do NOT commit real personal-data samples or actual unsanitized decision files to the repository. If you have private test data, place it in `templates/docx/private/` which is ignored by Git.
+> [!WARNING]
+> **Data Privacy Rules:**
+> 1. Do NOT commit real personal-data samples or actual unsanitized decision files to the repository.
+> 2. If you have private test data for comparison, place it in `templates/docx/private/` which is ignored by Git.
+> 3. Do NOT commit `.env` files with production or sensitive database URLs.
+
+## Template Design Guidelines
+
+When creating or modifying the template in Microsoft Word, follow these official ก.พ.ค.ตร. styling guidelines:
+
+**Page Setup:**
+* Paper Size: A4 Portrait
+* Margins: Top 2.5 cm, Bottom 2.0 cm, Left 3.0 cm, Right 2.0 cm
+
+**Typography:**
+* Font Family: TH Sarabun New
+* Body Text: 16 pt (regular)
+* Headings: 18 pt (bold)
+* Line Spacing: Standard for Thai official documents, avoiding excessive gaps or cramped paragraphs.
+* First-line Indentation: Set to ~1.5 cm for paragraph body texts.
 
 ## Supported Placeholders
 
@@ -17,7 +36,7 @@ You can use the following placeholders in your DOCX template. The system will re
 * `{{caseType}}` - ประเภทคดี (ร้องทุกข์ / อุทธรณ์)
 * `{{blackCaseNumber}}` - หมายเลขคดีดำ
 * `{{redCaseNumber}}` - หมายเลขคดีแดง
-* `{{decisionDate}}` - วันที่วินิจฉัย (Thai format)
+* `{{decisionDate}}` - วันที่วินิจฉัย (Thai format, e.g. "2 พ.ค. 2569")
 * `{{receivedDate}}` - วันที่รับเรื่อง (Thai format)
 * `{{petitionerLabel}}` - ป้ายกำกับผู้ร้อง (ผู้อุทธรณ์ / ผู้ร้องทุกข์)
 * `{{petitionerName}}` - ชื่อผู้ร้อง
@@ -43,15 +62,17 @@ You can use the following placeholders in your DOCX template. The system will re
 * `{{section_signatures}}` - ส่วนลงนาม
 
 ### System Notifications
-* `{{systemDraftWarning}}` - ข้อความแจ้งเตือนร่างเอกสารเพื่อตรวจทาน
+* `{{systemDraftWarning}}` - ข้อความแจ้งเตือนร่างเอกสารเพื่อตรวจทาน (Ensure this is visibly separated from the official body).
 
 ## Missing Template Fallback
 
-If the `gpc-decision-template.docx` file is missing, the system will not fail. Instead, it will automatically fallback to the legacy programmatic DOCX export mode.
+If the `gpc-decision-template.docx` file is missing, the system will not fail. Instead, it will automatically fallback to the programmatic DOCX export mode. This mode generates a Word document with the recommended styles, fonts (TH Sarabun New), margins, and layout as hardcoded in the codebase.
 
-## How to Test Export
+## How to Test Export & Compare
 
 1. Place your template in `templates/docx/gpc-decision-template.docx`.
 2. Go to any case draft.
-3. Click "ส่งออกตามแม่แบบคำวินิจฉัย".
-4. The downloaded DOCX should contain your template with data filled in.
+3. If no draft exists for the case, the system will show "ยังไม่มีร่างคำวินิจฉัยสำหรับส่งออก" and disable the export.
+4. If a draft has text, click "ส่งออกตามแม่แบบคำวินิจฉัย".
+5. The downloaded DOCX should contain your template with data filled in.
+6. Open the exported DOCX side-by-side with an official sanitized sample to verify alignment, margins, font sizes, and layout.

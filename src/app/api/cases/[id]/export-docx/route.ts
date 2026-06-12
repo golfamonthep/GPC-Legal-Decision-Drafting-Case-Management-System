@@ -31,7 +31,17 @@ export async function GET(
     });
   } catch (error: any) {
     console.error("DOCX Export Error:", error);
-    const errorMessage = error.message || "ไม่สามารถส่งออกไฟล์ DOCX ได้ กรุณาลองใหม่อีกครั้ง";
+    
+    // Allow only explicit safe error messages, otherwise fallback to generic
+    const safeMessages = [
+      "ไม่พบสำนวนที่ต้องการส่งออก",
+      "ยังไม่มีร่างคำวินิจฉัยสำหรับสำนวนนี้"
+    ];
+    
+    let errorMessage = "ไม่สามารถส่งออกไฟล์ DOCX ได้ กรุณาลองใหม่อีกครั้ง";
+    if (error.message && safeMessages.includes(error.message)) {
+      errorMessage = error.message;
+    }
     
     // We shouldn't return a 500 error page, we return a JSON so the client can handle it,
     // or if the client is doing a direct navigation, returning text is safer than stack trace.
