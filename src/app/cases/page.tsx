@@ -1,6 +1,8 @@
 import { CaseTable } from "@/components/CaseTable";
 import { CaseListFilters } from "@/components/CaseListFilters";
+import Link from "next/link";
 import prisma from "@/lib/db";
+import { requirePermission } from "@/lib/auth/requirePermission";
 import { CaseStatus } from "@/types";
 import { differenceInDays } from "date-fns";
 import { Prisma } from "@/generated/prisma";
@@ -14,12 +16,15 @@ export default async function CasesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  await requirePermission("VIEW_CASES");
+
   const params = await searchParams;
   const typeFilter = params.type as string;
   const completionStatusFilter = params.completionStatus as string;
   const redNumberStatusFilter = params.redNumberStatus as string;
   const qaMissingFieldsFilter = params.qaMissingFields as string;
   const legalOfficerFilter = params.legalOfficer as string;
+  const unassignedFilter = params.unassigned as string;
 
   const where: Prisma.CaseWhereInput = {};
 
@@ -31,6 +36,19 @@ export default async function CasesPage({
     where.OR = [
       { legalOfficerName: { contains: legalOfficerFilter, mode: 'insensitive' } },
       { legalOfficer: { name: { contains: legalOfficerFilter, mode: 'insensitive' } } }
+    ];
+  }
+
+  if (unassignedFilter === "LEGAL") {
+    where.legalOfficerId = null;
+    // We only check if legalOfficerName is also empty or missing
+    where.AND = [
+      { OR: [{ legalOfficerName: null }, { legalOfficerName: "" }, { legalOfficerName: "-" }] }
+    ];
+  } else if (unassignedFilter === "COMMITTEE") {
+    where.ownerId = null;
+    where.AND = [
+      { OR: [{ committeeOwnerName: null }, { committeeOwnerName: "" }, { committeeOwnerName: "-" }] }
     ];
   }
 
@@ -57,6 +75,11 @@ export default async function CasesPage({
   }
 
   if (qaMissingFieldsFilter === "missing") {
+    if (where.OR) {
+      const existingOr = where.OR;
+      const existingAnd = Array.isArray(where.AND) ? where.AND : (where.AND ? [where.AND] : []);
+      where.AND = [...existingAnd, { OR: existingOr as any }] as Prisma.CaseWhereInput[];
+    }
     where.OR = [
       { petitionerName: "" },
       { petitionerName: "-" },
@@ -72,7 +95,7 @@ export default async function CasesPage({
   const dbCases = await prisma.case.findMany({
     where,
     orderBy: { receivedDate: 'desc' },
-    include: { legalOfficer: true }
+    include: { legalOfficer: true, owner: true }
   });
 
   const formattedCases = dbCases.map((c) => {
@@ -93,7 +116,7 @@ export default async function CasesPage({
       respondentName: c.respondentName,
       subject: c.subject,
       legalCategory: c.legalCategory,
-      ownerCommissioner: c.ownerId || "-",
+      ownerCommissioner: c.owner?.name || (c as any).committeeOwnerName || "-",
       legalOfficer: c.legalOfficer?.name || c.legalOfficerName || "-",
       receivedDate: c.receivedDate ? c.receivedDate.toISOString().split("T")[0] : "-",
       dueDates: {
@@ -117,17 +140,23 @@ export default async function CasesPage({
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold leading-6 text-slate-900">
+          <h1 className="text-2xl font-semibold leading-6 text-slate-900 font-thai">
             รายการคดีทั้งหมด
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-slate-500 font-thai">
             รายการคดีร้องทุกข์และอุทธรณ์ที่อยู่ระหว่างดำเนินการ
           </p>
         </div>
-        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex space-x-3">
+          <Link
+            href="/assignments"
+            className="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 font-thai"
+          >
+            ระบบมอบหมาย/ภาระงาน
+          </Link>
           <button
             type="button"
-            className="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            className="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 font-thai"
           >
             สร้างเรื่องใหม่
           </button>

@@ -117,8 +117,14 @@ See [Production Security Review](docs/PRODUCTION_SECURITY_REVIEW.md) for details
 - [Release Decision Log](docs/stabilization/RELEASE_DECISION_LOG.md)
 
 ## Wider Rollout and Change Management
-- [Wider Rollout Plan](docs/rollout/WIDER_ROLLOUT_PLAN.md)
-- [Change Management Plan](docs/rollout/CHANGE_MANAGEMENT_PLAN.md)
+- [Wider Rollout and Change Management](docs/rollout/WIDER_ROLLOUT_PLAN.md)
+- [Issue Priority Framework](docs/rollout/ISSUE_PRIORITY_FRAMEWORK.md)
+
+### Post-Meeting Follow-up and Decision Finalization
+- [Post-Meeting Follow-up Workflow](docs/finalization/POST_MEETING_FOLLOWUP_WORKFLOW.md)
+- [Decision Finalization Checklist](docs/finalization/DECISION_FINALIZATION_CHECKLIST.md)
+
+## Current Status
 - [Rollout Readiness Checklist](docs/rollout/ROLLOUT_READINESS_CHECKLIST.md)
 - [Support Model](docs/rollout/SUPPORT_MODEL.md)
 - [Rollback and Pause Plan](docs/rollout/ROLLBACK_AND_PAUSE_PLAN.md)

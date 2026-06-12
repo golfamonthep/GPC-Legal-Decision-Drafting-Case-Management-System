@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateDecisionDocx } from "@/lib/export/decisionDocxExport";
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
 
 // Note: In Next.js App Router, dynamic params are a Promise in Next.js 15+
 export async function GET(
@@ -7,6 +8,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireApiPermission("EXPORT_DOCX");
+
     const resolvedParams = await params;
     const caseId = resolvedParams.id;
 
@@ -14,8 +17,8 @@ export async function GET(
       return NextResponse.json({ error: "ไม่พบรหัสสำนวน (caseId missing)" }, { status: 400 });
     }
 
-    // Mock userId or retrieve from auth context when implemented
-    const userId = "mock-user-id";
+    // Use actual userId from session
+    const userId = user.id;
 
     const { buffer, filename } = await generateDecisionDocx(caseId, userId);
 
@@ -32,6 +35,10 @@ export async function GET(
   } catch (error: any) {
     console.error("DOCX Export Error:", error);
     
+    if (error.message === "FORBIDDEN") {
+      return NextResponse.json({ error: "คุณไม่มีสิทธิ์ดำเนินการนี้" }, { status: 403 });
+    }
+
     // Allow only explicit safe error messages, otherwise fallback to generic
     const safeMessages = [
       "ไม่พบสำนวนที่ต้องการส่งออก",

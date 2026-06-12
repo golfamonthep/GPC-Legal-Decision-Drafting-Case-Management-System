@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { reviewLegalWording, ReviewMode } from '@/lib/ai/legalWordingReviewer';
 import { auditLog } from '@/lib/audit';
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
 
 export async function POST(req: Request) {
   try {
+    await requireApiPermission("USE_AI_REVIEW");
     const body = await req.json();
     const { caseId, draftId, sectionId, sectionType, currentSectionText, reviewMode, userId } = body;
 
@@ -38,6 +40,13 @@ export async function POST(req: Request) {
     return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
     console.error('Error reviewing wording:', error);
+
+    if (error.message === "FORBIDDEN") {
+      return NextResponse.json({ error: "คุณไม่มีสิทธิ์ดำเนินการนี้" }, { status: 403 });
+    }
+    if (error.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+    }
 
     // Provide a descriptive error message gracefully
     if (error.message.includes('Section text is empty')) {

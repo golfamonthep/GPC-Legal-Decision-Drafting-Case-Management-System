@@ -4,7 +4,7 @@ export const revalidate = 0;
 import { DashboardCard } from "@/components/DashboardCard";
 import { CaseTable } from "@/components/CaseTable";
 import { mockCases, mockActivities } from "@/data/mock-data";
-import { FileText, AlertTriangle, Scale, Clock, Calendar } from "lucide-react";
+import { FileText, AlertTriangle, Scale, Clock, Calendar, CheckSquare } from "lucide-react";
 import { 
   getDashboardStats, 
   getOverdueCases, 
@@ -42,6 +42,7 @@ export default async function DashboardPage() {
     draftCompletions: 0,
     overdueCount: mockCases.filter(c => c.isOverdue && !isClosedOrRedCase(c)).length,
     dueSoonCount: mockCases.filter(c => !c.isOverdue && (c.daysUntilDue || 0) <= 7 && !isClosedOrRedCase(c)).length,
+    postMeetingCount: 0,
   };
 
   let dqStats = { total: 0, critical: 0, high: 0, medium: 0 };
@@ -67,6 +68,14 @@ export default async function DashboardPage() {
       });
     }
 
+    const postMeetingCases = await prisma.case.count({
+      where: {
+        proceedingNote: {
+          contains: '"_isFinalizationData":true'
+        }
+      }
+    });
+
     if (canViewDataQuality) {
       // Calculate data quality issues for dashboard
       const allCases = await prisma.case.findMany();
@@ -86,6 +95,7 @@ export default async function DashboardPage() {
       draftCompletions: dbStats.draftCompletions,
       overdueCount: dbOverdueCases.length,
       dueSoonCount: dbDueSoonCases.length,
+      postMeetingCount: postMeetingCases,
     };
 
     // Combine and map Prisma cases to UI cases
@@ -183,6 +193,17 @@ export default async function DashboardPage() {
           icon={<FileText className="h-5 w-5 text-green-500" />}
           description="ทั้งหมด"
         />
+        {hasPermission(user?.role, 'VIEW_POST_MEETING_FOLLOWUP') && (
+          <Link href="/finalization" className="block">
+            <DashboardCard
+              title="งานหลังประชุมที่ต้องติดตาม"
+              value={stats.postMeetingCount}
+              icon={<CheckSquare className="h-5 w-5 text-blue-500" />}
+              description="กดเพื่อจัดการการจัดทำฉบับสุดท้าย"
+              className="hover:border-blue-300 transition-colors cursor-pointer"
+            />
+          </Link>
+        )}
       </div>
 
       {canViewDataQuality && dqStats.total > 0 && (

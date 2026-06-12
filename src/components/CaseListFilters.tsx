@@ -79,14 +79,27 @@ export function CaseListFilters() {
           </select>
         </div>
 
+        <div>
+          <label className="block text-xs font-medium text-slate-700">สถานะการมอบหมาย</label>
+          <select 
+            className="mt-1 block w-full rounded-md border-slate-300 py-1.5 pl-3 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 border font-thai"
+            value={searchParams.get("unassigned") || ""}
+            onChange={(e) => handleFilterChange("unassigned", e.target.value)}
+          >
+            <option value="">ทั้งหมด</option>
+            <option value="LEGAL">ยังไม่มีนิติกร</option>
+            <option value="COMMITTEE">ยังไม่มีกรรมการ</option>
+          </select>
+        </div>
+
         {/* Legal officer and other specific status filters could be added here. 
             For simplicity, using text input for legal officer. */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-1">
           <label className="block text-xs font-medium text-slate-700">ค้นหานิติกร</label>
           <input 
             type="text" 
             placeholder="ชื่อนิติกร..."
-            className="mt-1 block w-full rounded-md border-slate-300 py-1.5 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 border"
+            className="mt-1 block w-full rounded-md border-slate-300 py-1.5 px-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 border font-thai"
             value={searchParams.get("legalOfficer") || ""}
             onChange={(e) => handleFilterChange("legalOfficer", e.target.value)}
           />

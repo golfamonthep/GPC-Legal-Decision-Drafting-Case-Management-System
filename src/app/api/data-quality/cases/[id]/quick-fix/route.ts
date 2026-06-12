@@ -2,19 +2,20 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireApiPermission } from '@/lib/auth/requireApiPermission';
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   try {
     const user = await requireApiPermission('CLEANUP_DATA_QUALITY');
     if (!user) {
       return NextResponse.json({ error: 'คุณไม่มีสิทธิ์เข้าถึงในการแก้ไขข้อมูล' }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = resolvedParams;
     const body = await request.json();
     const { field, value } = body;
 
     const caseData = await prisma.case.findUnique({
-      where: { id },
+      where: { id: resolvedParams.id },
       include: { legalOfficer: true }
     });
 
@@ -56,7 +57,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     const updatedCase = await prisma.$transaction(async (tx) => {
       const updated = await tx.case.update({
-        where: { id },
+        where: { id: resolvedParams.id },
         data: updateData
       });
 
@@ -68,7 +69,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
           userId: user.id,
           action: 'DATA_QUALITY_QUICK_FIX_APPLIED',
           entityType: 'Case',
-          entityId: id,
+          entityId: resolvedParams.id,
           beforeValue: `${field}: ${beforeValue}`,
           afterValue: `${field}: ${afterValue}`,
         }

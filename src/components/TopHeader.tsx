@@ -1,6 +1,9 @@
-import { Bell, Search, UserCircle, AlertTriangle } from "lucide-react";
+import { Bell, Search, AlertTriangle } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth/currentUser";
+import { UserMenu } from "./UserMenu";
 
-export function TopHeader() {
+export async function TopHeader() {
+  const user = await getCurrentUser();
   return (
     <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
@@ -35,14 +38,7 @@ export function TopHeader() {
           <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-slate-200" aria-hidden="true" />
 
           {/* Profile dropdown */}
-          <div className="flex items-center gap-x-4 cursor-pointer">
-            <UserCircle className="h-8 w-8 text-slate-300" />
-            <span className="hidden lg:flex lg:items-center">
-              <span className="text-sm font-semibold leading-6 text-slate-900" aria-hidden="true">
-                นิติกร ประจำสำนักงาน
-              </span>
-            </span>
-          </div>
+          <UserMenu user={user} />
         </div>
       </div>
     </header>

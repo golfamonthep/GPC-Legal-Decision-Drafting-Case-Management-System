@@ -54,9 +54,18 @@ export function CaseTable({ cases }: CaseTableProps) {
                 <div className="text-xs mt-1">ผู้ถูกร้อง: {c.respondentName}</div>
               </td>
               <td className="px-3 py-4 text-sm text-slate-500 max-w-[200px]">
-                <div className="font-medium text-slate-700">{c.legalOfficer !== "-" ? c.legalOfficer : (c as any).legalOfficerName || "-"}</div>
+                <div className="font-medium text-slate-700 flex flex-col gap-1">
+                  {c.legalOfficer && c.legalOfficer !== "-" ? (
+                    <span className="text-slate-900">{c.legalOfficer}</span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10 w-fit">ไม่มีนิติกร</span>
+                  )}
+                  {(!((c as any).ownerCommissioner) || (c as any).ownerCommissioner === "-") && (
+                    <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-600/10 w-fit">ไม่มีกรรมการ</span>
+                  )}
+                </div>
                 {(c as any).proceedingNote && (
-                  <div className="text-xs mt-1 truncate" title={(c as any).proceedingNote}>
+                  <div className="text-xs mt-2 truncate text-slate-400" title={(c as any).proceedingNote}>
                     {(c as any).proceedingNote}
                   </div>
                 )}

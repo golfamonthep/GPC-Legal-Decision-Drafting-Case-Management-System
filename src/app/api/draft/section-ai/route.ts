@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { generateDraftSection } from '@/lib/ai/draftSection';
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
+import prisma from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
+    const user = await requireApiPermission("USE_AI_DRAFT");
     const body = await req.json();
     const { caseId, draftId, sectionId, sectionType, userInstruction, legalCategory, userId } = body;
 
@@ -13,14 +16,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // Attempt to generate the section draft using AI
     const result = await generateDraftSection({
       caseId,
       draftId,
       sectionId,
       sectionType,
       userInstruction,
-      userId,
+      userId: user.id, // pass user.id to the service
       legalCategory,
     });
 

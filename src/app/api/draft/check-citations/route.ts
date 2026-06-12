@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { checkCitationCoverage, CoverageMode } from '@/lib/ai/citationCoverageChecker';
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
 import { auditLog } from '@/lib/audit';
 
 export async function POST(req: Request) {
   try {
+    await requireApiPermission("USE_AI_REVIEW");
     const body = await req.json();
     const { caseId, draftId, sectionId, sectionType, currentSectionText, coverageMode, userId } = body;
 
@@ -37,6 +39,13 @@ export async function POST(req: Request) {
     return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
     console.error('Error checking citation coverage:', error);
+
+    if (error.message === "FORBIDDEN") {
+      return NextResponse.json({ error: "คุณไม่มีสิทธิ์ดำเนินการนี้" }, { status: 403 });
+    }
+    if (error.message === "UNAUTHORIZED") {
+      return NextResponse.json({ error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+    }
 
     if (error.message.includes('Section text is empty')) {
       return NextResponse.json(

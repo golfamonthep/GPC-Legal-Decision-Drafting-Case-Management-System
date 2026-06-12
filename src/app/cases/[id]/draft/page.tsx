@@ -3,6 +3,9 @@ import prisma from "@/lib/db";
 import { getOrCreateDraft } from "./actions";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import { DraftEditor } from "./DraftEditor";
+import { parseFinalizationData } from "@/lib/finalization/caseFinalization";
+import { PostMeetingFollowupStatus } from "@/lib/finalization/postMeetingFollowupStatus";
+import { AlertTriangle, CheckCircle } from "lucide-react";
 import fs from "fs/promises";
 import path from "path";
 
@@ -30,6 +33,7 @@ export default async function DraftWorkspacePage({
     notFound();
   }
 
+  const finalizationData = parseFinalizationData(caseData.proceedingNote);
   const draftData = await getOrCreateDraft(caseId);
 
   let templateExists = false;
@@ -45,7 +49,33 @@ export default async function DraftWorkspacePage({
 
   return (
     <div className="flex flex-col h-full">
-      {upcomingMeeting && (
+      {finalizationData?.revisionRequired && !finalizationData.revisionCompletedAt && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 mx-8 mt-4 rounded-r-md">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800">สำนวนนี้อยู่ระหว่างการแก้ไขร่างตามมติที่ประชุม</h3>
+              <div className="mt-2 text-sm text-yellow-700">
+                <p><strong>คำสั่งแก้ไข:</strong> {finalizationData.revisionInstruction || "ไม่มีรายละเอียด"}</p>
+                <p className="mt-2 text-xs">คุณสามารถกลับไปที่หน้า <strong>รายการคดี &gt; งานหลังประชุม</strong> เพื่อบันทึกว่าแก้ไขเสร็จสิ้นแล้ว</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {finalizationData?.status === PostMeetingFollowupStatus.FINALIZED && (
+        <div className="bg-green-50 border-l-4 border-green-400 p-4 mb-4 mx-8 mt-4 rounded-r-md">
+          <div className="flex items-center">
+            <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
+            <span className="text-sm font-medium text-green-800">สำนวนนี้ถูกจัดทำเป็นฉบับสมบูรณ์แล้ว ไม่ควรแก้ไขร่างอีก</span>
+          </div>
+        </div>
+      )}
+
+      {upcomingMeeting && !finalizationData?.revisionRequired && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 mx-8 mt-4 rounded-r-md">
           <div className="flex">
             <div className="flex-shrink-0">

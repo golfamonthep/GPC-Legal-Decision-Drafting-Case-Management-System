@@ -18,6 +18,8 @@ import { differenceInYears } from "date-fns";
 import { checkGraphIntegrationStatus } from "@/lib/microsoft/graphConfig";
 import { DocumentLinkModal } from "@/components/DocumentLinkModal";
 import { CaseAssignmentPanel } from "@/components/CaseAssignmentPanel";
+import { PostMeetingPanel } from "@/components/PostMeetingPanel";
+import { parseFinalizationData } from "@/lib/finalization/caseFinalization";
 import { hasPermission } from "@/lib/auth/permissions";
 
 function formatDate(date: Date | null | undefined): string {
@@ -33,7 +35,6 @@ export default async function CaseDetailPage({
   const user = await requirePermission("VIEW_CASE_DETAIL");
   const resolvedParams = await params;
   const caseId = resolvedParams.id;
-  
   const caseData = await prisma.case.findUnique({
     where: { id: caseId },
     include: {
@@ -62,6 +63,8 @@ export default async function CaseDetailPage({
   if (!caseData) {
     notFound();
   }
+
+  const finalizationData = parseFinalizationData(caseData.proceedingNote);
 
   // Record case view audit log
   await auditLog({
@@ -319,6 +322,12 @@ export default async function CaseDetailPage({
 
         {/* Right Column: Timeline & Dates */}
         <div className="space-y-6">
+          <PostMeetingPanel 
+            caseId={caseId} 
+            finalizationData={finalizationData} 
+            canManage={hasPermission(user.role, 'MANAGE_POST_MEETING_FOLLOWUP')} 
+          />
+
           <CaseAssignmentPanel 
             caseId={caseId} 
             currentLegalOfficer={caseData.legalOfficer?.name || caseData.legalOfficerName || "-"} 
