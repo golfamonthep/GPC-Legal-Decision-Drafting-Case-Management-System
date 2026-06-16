@@ -1,6 +1,6 @@
 import prisma from "@/lib/db";
 import { checkCaseReadiness } from "./readiness";
-import { CaseEvent } from "@prisma/client";
+import type { CaseEvent } from "@/generated/prisma";
 
 export async function createMeeting(data: {
   title: string;

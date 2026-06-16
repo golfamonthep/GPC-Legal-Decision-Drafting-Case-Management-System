@@ -1,4 +1,4 @@
-import { Case, CaseEvent } from '@prisma/client';
+import type { Case, CaseEvent } from '@/generated/prisma';
 import { DataQualityIssue, DataQualitySeverity, DataQualityCategory } from './types';
 import { isClosedOrRedCase, hasRedCaseNumber } from '../caseStatus';
 

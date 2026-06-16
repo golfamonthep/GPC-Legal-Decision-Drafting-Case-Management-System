@@ -1,4 +1,4 @@
-import { Case, DecisionDraft, DecisionDraftSection } from "@prisma/client";
+import type { Case, DecisionDraft, DecisionDraftSection } from "@/generated/prisma";
 
 export type ReadinessCheckResult = {
   status: "READY" | "NEEDS_REVISION" | "PENDING_REVIEW";

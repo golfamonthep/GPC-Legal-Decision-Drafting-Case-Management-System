@@ -6,7 +6,7 @@ import { POST_MEETING_FOLLOWUP_LABELS, PostMeetingFollowupStatus } from '@/lib/f
 import { parseFinalizationData } from '@/lib/finalization/caseFinalization';
 import Link from 'next/link';
 import { CheckCircle, AlertTriangle, FileText, CheckSquare, Search } from 'lucide-react';
-import { Case, User } from '@prisma/client';
+import type { Case, User } from '@/generated/prisma';
 
 export default async function FinalizationDashboard() {
   const user = await getCurrentUser();
