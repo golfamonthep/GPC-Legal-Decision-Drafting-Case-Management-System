@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { th } from "date-fns/locale";
+import { MaintenanceActionsPanel } from "@/components/admin/MaintenanceActionsPanel";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -235,46 +236,13 @@ export default async function SystemConsolePage() {
           </div>
         </div>
 
-        {/* 7. Maintenance Readiness */}
-        <div className="bg-white rounded-lg shadow-sm ring-1 ring-slate-200 p-6 flex flex-col">
+        {/* 7. Maintenance Actions */}
+        <div className="bg-white rounded-lg shadow-sm ring-1 ring-slate-200 p-6 flex flex-col lg:col-span-2">
           <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3">
             <Zap className="w-6 h-6 text-amber-500" />
-            <h2 className="text-lg font-semibold text-slate-900">Maintenance Capabilities</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Maintenance Actions</h2>
           </div>
-          <div className="text-sm text-slate-600 mb-4 bg-blue-50 p-3 rounded-md flex gap-2">
-            <Info className="w-5 h-5 text-blue-500 flex-shrink-0" />
-            Destructive maintenance actions are not yet enabled in Phase 1. 
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 ring-1 ring-slate-100 rounded-lg bg-slate-50">
-              <div>
-                <div className="font-medium text-slate-900 text-sm">Cache Clear</div>
-                <div className="text-xs text-slate-500">Purge Next.js data cache and NextAuth sessions</div>
-              </div>
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-200 px-2 py-1 rounded">Not Implemented</span>
-            </div>
-            <div className="flex items-center justify-between p-3 ring-1 ring-slate-100 rounded-lg bg-slate-50">
-              <div>
-                <div className="font-medium text-slate-900 text-sm">Manual RAG Re-Sync</div>
-                <div className="text-xs text-slate-500">Force rebuild of document vector embeddings</div>
-              </div>
-              <span className="text-xs font-semibold text-amber-600 uppercase tracking-wider bg-amber-100 px-2 py-1 rounded">Planned</span>
-            </div>
-            <div className="flex items-center justify-between p-3 ring-1 ring-slate-100 rounded-lg bg-slate-50">
-              <div>
-                <div className="font-medium text-slate-900 text-sm">Queue Retry</div>
-                <div className="text-xs text-slate-500">Re-queue all failed background jobs</div>
-              </div>
-              <span className="text-xs font-semibold text-amber-600 uppercase tracking-wider bg-amber-100 px-2 py-1 rounded">Planned</span>
-            </div>
-            <div className="flex items-center justify-between p-3 ring-1 ring-slate-100 rounded-lg bg-slate-50">
-              <div>
-                <div className="font-medium text-slate-900 text-sm">Maintenance Mode</div>
-                <div className="text-xs text-slate-500">Lock out all non-admin users</div>
-              </div>
-              <span className="text-xs font-semibold text-amber-600 uppercase tracking-wider bg-amber-100 px-2 py-1 rounded">Planned</span>
-            </div>
-          </div>
+          <MaintenanceActionsPanel />
         </div>
       </div>
 

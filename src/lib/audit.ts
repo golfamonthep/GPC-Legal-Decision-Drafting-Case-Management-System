@@ -17,7 +17,7 @@ export async function auditLog({
   beforeValue?: string | null;
   afterValue?: string | null;
 }) {
-  await prisma.auditLog.create({
+  const record = await prisma.auditLog.create({
     data: {
       userId,
       action,
@@ -27,4 +27,5 @@ export async function auditLog({
       afterValue,
     },
   });
+  return record;
 }
