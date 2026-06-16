@@ -501,3 +501,10 @@ Do not start Prompt 23 or new AI modules before migration and production page ve
 - Mutation endpoints require explicit permission checks and structured unauthorized responses.
 - Admin maintenance routes must remain POST-only for actions and must never execute actions during render/import.
 - After permission changes, run build plus unauthenticated route smoke checks.
+- Role UAT must test both page access and direct API challenge attempts for each role.
+- A permission gap is not verified fixed until unauthenticated, unauthorized, and authorized paths are all tested.
+- A route returning build-pass but runtime 500 must be treated as UAT failure.
+- Sign-off packs must clearly distinguish tested roles from planned/blocked roles.
+- Do not claim full UAT pass when some role accounts are unavailable; record as partial with explicit blocked items.
+- `requireApiPermission` throws `"UNAUTHORIZED"` / `"FORBIDDEN"` rather than returning a `NextResponse`; API handlers must call it inside `try/catch` and map to 401/403.
+- Static code audit + build validation is a valid but incomplete substitute for live authenticated UAT; always document the distinction.
