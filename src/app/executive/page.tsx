@@ -43,6 +43,21 @@ export default async function ExecutiveDashboardPage({
   if (data.dataQuality.redNumberButNotCompleted > 0) summary.dataQuality.push(`มีเลขแดงแต่ยังไม่เสร็จสิ้น ${data.dataQuality.redNumberButNotCompleted} คดี`);
   if (data.securitySignals.permissionDenied > 10) summary.risks.push(`พบ Permission Denied บ่อยครั้ง (${data.securitySignals.permissionDenied} ครั้ง)`);
 
+  const dispatchActive = await prisma.case.count({
+    where: {
+      dispatchData: { not: null },
+      NOT: { dispatchData: { contains: '"dispatchStatus":"COMPLETED"' } }
+    }
+  });
+
+  const courtActive = await prisma.case.count({
+    where: {
+      dispatchData: {
+        contains: '"courtFollowupStatus":"COURT_CASE_IN_PROGRESS"'
+      }
+    }
+  });
+
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
       <div className="sm:flex sm:items-center sm:justify-between">
@@ -103,6 +118,8 @@ export default async function ExecutiveDashboardPage({
           icon={<AlertTriangle className="h-5 w-5 text-red-500" />} 
           className={data.overview.overdue > 0 ? "border-red-200 bg-red-50" : ""}
         />
+        <DashboardCard title="คดีอยู่ระหว่างแจ้งผล" value={dispatchActive} icon={<FileText className="h-5 w-5 text-amber-500" />} />
+        <DashboardCard title="คดีอยู่ในศาลปกครอง" value={courtActive} icon={<Scale className="h-5 w-5 text-purple-500" />} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

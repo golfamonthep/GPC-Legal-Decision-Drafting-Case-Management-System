@@ -35,7 +35,7 @@ export default async function FinalizationDashboard() {
         finalizationData: parsed
       };
     })
-    .filter((c): c is { caseRecord: Case & { legalOfficer: User | null }, finalizationData: any } => c.finalizationData !== null);
+    .filter((c) => c.finalizationData !== null) as { caseRecord: any, finalizationData: any }[];
 
   const stats = {
     total: finalizationCases.length,

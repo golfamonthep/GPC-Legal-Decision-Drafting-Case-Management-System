@@ -45,7 +45,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     });
 
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as any, {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

@@ -129,8 +129,15 @@ See [Production Security Review](docs/PRODUCTION_SECURITY_REVIEW.md) for details
 - [Support Model](docs/rollout/SUPPORT_MODEL.md)
 - [Rollback and Pause Plan](docs/rollout/ROLLBACK_AND_PAUSE_PLAN.md)
 
-## Executive Dashboard and Reporting
-- [Executive Dashboard Documentation](docs/reports/EXECUTIVE_DASHBOARD.md)
+## Reports & Dashboards
+- [Executive Dashboard & Reporting Pack](./docs/reports/EXECUTIVE_DASHBOARD.md)
+- [Wider Rollout & Change Management](./docs/rollout/ROLLOUT_PLAN.md)
+
+## Official Dispatch, Notification, and Court Follow-up
+- [Official Dispatch Workflow](./docs/dispatch/OFFICIAL_DISPATCH_WORKFLOW.md)
+- [Court Follow-up Workflow](./docs/dispatch/COURT_FOLLOWUP_WORKFLOW.md)
+- [Dispatch and Court Follow-up Checklist](./docs/dispatch/DISPATCH_AND_COURT_FOLLOWUP_CHECKLIST.md)
+
 # #   A d v a n c e d   S e a r c h   a n d   C a s e   I n t e l l i g e n c e  
  -   [ A d v a n c e d   S e a r c h   G u i d e ] ( d o c s / s e a r c h / A D V A N C E D _ S E A R C H . m d )  
  -   [ C a s e   I n t e l l i g e n c e   G u i d e ] ( d o c s / s e a r c h / C A S E _ I N T E L L I G E N C E . m d )  

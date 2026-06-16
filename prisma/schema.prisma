@@ -66,14 +66,17 @@ model Case {
   decisionResult String?
   oneDriveUrl    String?
   proceedingNote String?   @db.Text
+  dispatchData   String?   @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  documents   CaseDocument[]
-  events      CaseEvent[]
-  drafts      DecisionDraft[]
-  agendaItems MeetingAgendaItem[]
+  documents            CaseDocument[]
+  events               CaseEvent[]
+  drafts               DecisionDraft[]
+  agendaItems          MeetingAgendaItem[]
+  archiveRecords       CaseArchiveRecord[]
+  knowledgeReuseReviews KnowledgeReuseReview[]
 }
 
 model CaseDocument {
@@ -375,4 +378,96 @@ model MeetingAttendee {
   attendanceStatus String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+// Records Retention, Archiving, and Knowledge Reuse models
+model CaseArchiveRecord {
+  id                     String   @id @default(uuid())
+  caseId                 String   @unique
+  case                   Case     @relation(fields: [caseId], references: [id])
+  lifecycleStatus        String   // e.g., READY_TO_ARCHIVE, ARCHIVED
+  archiveStatus          String   // e.g., PENDING, COMPLETED
+  archiveReason          String?
+  archiveBoxNo           String?
+  archiveLocation        String?
+  digitalArchiveFolderUrl String?
+  finalRecordPackageDocumentId String?
+  archivedAt             DateTime?
+  archivedByUserId       String?
+  unarchivedAt           DateTime?
+  unarchivedByUserId     String?
+  retentionPolicyId      String?
+  retentionReviewDate    DateTime?
+  legalHold              Boolean  @default(false)
+  legalHoldReason        String?
+  note                   String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model RetentionPolicy {
+  id                    String   @id @default(uuid())
+  name                  String
+  description           String?
+  caseType              String?
+  retentionPeriodYears  Int?
+  reviewFrequencyMonths Int?
+  isActive              Boolean  @default(true)
+  requiresManualReview  Boolean @default(true)
+  createdByUserId       String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model KnowledgeReuseReview {
+  id                         String   @id @default(uuid())
+  caseId                     String
+  case                       Case     @relation(fields: [caseId], references: [id])
+  finalDecisionDocumentId    String?
+  knowledgeReuseStatus       String   // enum values defined in code
+  status                     String   @default("PENDING") // workflow status: PENDING, APPROVED, REJECTED
+  purpose                    String?  @db.Text
+  reviewNote                 String?
+  confidentialityLevel       String   @default("INTERNAL") // INTERNAL, CONFIDENTIAL, RESTRICTED
+  containsPersonalData       Boolean  @default(true)
+  requiresRedaction          Boolean  @default(true)
+  redactionCompleted         Boolean  @default(false)
+  approvedForInternalSearchAt DateTime?
+  approvedForRagAt            DateTime?
+  approvedAt                  DateTime?
+  approvedByUserId           String?
+  rejectedByUserId           String?
+  rejectedAt                 DateTime?
+  rejectionReason            String?
+  requestedByUserId          String?
+  revokedAt                  DateTime?
+  revokedByUserId            String?
+  revokeReason               String?
+  ingestionJobId             String?
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+}
+
+enum RecordLifecycleStatus {
+  ACTIVE
+  FINALIZED
+  DISPATCHED
+  COURT_FOLLOWUP
+  READY_TO_ARCHIVE
+  ARCHIVED
+  RETENTION_REVIEW_REQUIRED
+  HOLD
+  REOPENED
+}
+
+enum KnowledgeReuseStatus {
+  NOT_REVIEWED
+  NOT_ELIGIBLE
+  PENDING_REVIEW
+  APPROVED_FOR_INTERNAL_SEARCH
+  APPROVED_FOR_RAG
+  INGESTED_TO_RAG
+  REVOKED
+  NEEDS_REDACTION
+  HOLD
 }

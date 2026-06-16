@@ -21,6 +21,9 @@ import { CaseAssignmentPanel } from "@/components/CaseAssignmentPanel";
 import { PostMeetingPanel } from "@/components/PostMeetingPanel";
 import { parseFinalizationData } from "@/lib/finalization/caseFinalization";
 import { hasPermission } from "@/lib/auth/permissions";
+import { DispatchPanel } from "@/components/DispatchPanel";
+import { parseDispatchData } from "@/lib/dispatch/officialDispatchWorkflow";
+import { calculateFilingDeadline } from "@/lib/dispatch/courtDeadline";
 
 function formatDate(date: Date | null | undefined): string {
   if (!date) return "-";
@@ -65,6 +68,8 @@ export default async function CaseDetailPage({
   }
 
   const finalizationData = parseFinalizationData(caseData.proceedingNote);
+  const dispatchData = parseDispatchData(caseData.dispatchData);
+  const deadlineInfo = calculateFilingDeadline(dispatchData?.acknowledgementDate, dispatchData?.filingPeriodDays, dispatchData?.courtFollowupStatus);
 
   // Record case view audit log
   await auditLog({
@@ -326,6 +331,19 @@ export default async function CaseDetailPage({
             caseId={caseId} 
             finalizationData={finalizationData} 
             canManage={hasPermission(user.role, 'MANAGE_POST_MEETING_FOLLOWUP')} 
+          />
+
+          <DispatchPanel
+            caseId={caseId}
+            dispatchData={dispatchData}
+            deadlineInfo={deadlineInfo}
+            permissions={{
+              canManageDispatch: hasPermission(user.role, 'MANAGE_DISPATCH_WORKFLOW'),
+              canRecordNotification: hasPermission(user.role, 'RECORD_OFFICIAL_NOTIFICATION'),
+              canRecordAcknowledgement: hasPermission(user.role, 'RECORD_ACKNOWLEDGEMENT'),
+              canRecordCourtFiling: hasPermission(user.role, 'RECORD_COURT_FILING'),
+              canManageCourtFollowup: hasPermission(user.role, 'MANAGE_COURT_FOLLOWUP'),
+            }}
           />
 
           <CaseAssignmentPanel 

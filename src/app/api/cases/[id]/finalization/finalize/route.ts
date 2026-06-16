@@ -22,12 +22,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     if (!ready && overrideReason) {
-       await db.auditLog.create({
+       await prisma.auditLog.create({
         data: {
           userId: user.id,
           action: 'FINALIZATION_OVERRIDE_USED',
           entityType: 'Case',
-          entityId: params.id,
+          entityId: resolvedParams.id,
           afterValue: overrideReason,
         }
       });

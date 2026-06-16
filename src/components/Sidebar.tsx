@@ -15,7 +15,8 @@ import {
   PieChart,
   Search,
   AlertTriangle,
-  CheckSquare
+  CheckSquare,
+  Send
 } from "lucide-react";
 import { SessionUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
@@ -25,13 +26,14 @@ const navigation = [
   { name: "รายงานผู้บริหาร", href: "/executive", icon: PieChart, permission: "VIEW_EXECUTIVE_DASHBOARD" as any },
   { name: "รายการคดี", href: "/cases", icon: Files },
   { name: "งานหลังประชุม/ปิดสำนวน", href: "/finalization", icon: CheckSquare, permission: "VIEW_POST_MEETING_FOLLOWUP" as any },
+  { name: "แจ้งผล/ติดตามศาล", href: "/dispatch", icon: Send, permission: "VIEW_DISPATCH_WORKFLOW" as any },
   { name: "ค้นหาขั้นสูง", href: "/search", icon: Search, permission: "ADVANCED_CASE_SEARCH" as any },
   { name: "สารบบ", href: "/registry", icon: BookOpen },
   { name: "ตรวจคุณภาพข้อมูล", href: "/data-quality", icon: AlertTriangle, permission: "VIEW_DATA_QUALITY" as any },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },
   { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
   { name: "อัปโหลดเอกสาร", href: "/upload", icon: Upload },
-  { name: "ตั้งค่าระบบ", href: "/settings", icon: Settings },
+  { name: "ผู้ดูแลระบบ", href: "/admin/system", icon: Settings, permission: "VIEW_ADMIN_CONSOLE" as any },
 ];
 
 export function Sidebar({ user }: { user: SessionUser | null }) {

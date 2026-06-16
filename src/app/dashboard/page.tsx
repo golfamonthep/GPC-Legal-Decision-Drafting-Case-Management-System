@@ -19,6 +19,7 @@ import { hasPermission } from "@/lib/auth/permissions";
 import { detectCaseDataQualityIssues } from "@/lib/dataQuality/caseDataQuality";
 import Link from "next/link";
 import prisma from "@/lib/db";
+import { Send } from "lucide-react";
 
 function calculateDaysUntilDue(caseData: any): number | undefined {
   const now = new Date();
@@ -43,6 +44,7 @@ export default async function DashboardPage() {
     overdueCount: mockCases.filter(c => c.isOverdue && !isClosedOrRedCase(c)).length,
     dueSoonCount: mockCases.filter(c => !c.isOverdue && (c.daysUntilDue || 0) <= 7 && !isClosedOrRedCase(c)).length,
     postMeetingCount: 0,
+    dispatchPending: 0,
   };
 
   let dqStats = { total: 0, critical: 0, high: 0, medium: 0 };
@@ -76,6 +78,15 @@ export default async function DashboardPage() {
       }
     });
 
+    const dispatchPendingCases = await prisma.case.count({
+      where: {
+        dispatchData: {
+          not: null,
+          contains: '"dispatchStatus":"NOT_STARTED"'
+        }
+      }
+    });
+
     if (canViewDataQuality) {
       // Calculate data quality issues for dashboard
       const allCases = await prisma.case.findMany();
@@ -96,6 +107,7 @@ export default async function DashboardPage() {
       overdueCount: dbOverdueCases.length,
       dueSoonCount: dbDueSoonCases.length,
       postMeetingCount: postMeetingCases,
+      dispatchPending: dispatchPendingCases,
     };
 
     // Combine and map Prisma cases to UI cases
@@ -200,6 +212,17 @@ export default async function DashboardPage() {
               value={stats.postMeetingCount}
               icon={<CheckSquare className="h-5 w-5 text-blue-500" />}
               description="กดเพื่อจัดการการจัดทำฉบับสุดท้าย"
+              className="hover:border-blue-300 transition-colors cursor-pointer"
+            />
+          </Link>
+        )}
+        {hasPermission(user?.role, 'VIEW_DISPATCH_WORKFLOW') && (
+          <Link href="/dispatch" className="block">
+            <DashboardCard
+              title="งานแจ้งผล/ศาลที่ต้องติดตาม"
+              value={stats.dispatchPending}
+              icon={<Send className="h-5 w-5 text-blue-500" />}
+              description="จัดการการส่งหนังสือและศาล"
               className="hover:border-blue-300 transition-colors cursor-pointer"
             />
           </Link>
