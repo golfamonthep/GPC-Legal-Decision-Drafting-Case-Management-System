@@ -486,3 +486,13 @@ If production DB health is already OK, the next step is:
 5. Then proceed to Legal Wording Reviewer.
 
 Do not start Prompt 23 or new AI modules before migration and production page verification.
+
+---
+
+## 17. UAT & Authorization Rules
+
+- Authenticated UAT must verify backend API permission enforcement (e.g., `requireApiPermission`, `hasPermission`), not only UI visibility.
+- Do not mark UAT passed unless each role was tested with an authenticated account (or the report explicitly states it was a static code audit).
+- NextAuth middleware (`withAuth`) prevents unauthenticated access broadly, but granular authorization requires explicit role checks on every mutating API and sensitive page.
+- Maintenance actions require POST, explicit permission checks, confirmation phrases for destructive actions, and audit logging.
+- After fixing auth/permission issues, rerun production-like smoke tests.
