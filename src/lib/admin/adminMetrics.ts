@@ -91,16 +91,6 @@ export async function getAdminMetrics(userId: string): Promise<AdminMetrics> {
   const openAiConfigured = isConfigured('OPENAI_API_KEY');
   const microsoftGraphConfigured = isConfigured('MICROSOFT_TENANT_ID') && isConfigured('MICROSOFT_CLIENT_ID');
 
-  // Record audit action
-  await auditLog({
-    userId,
-    action: 'ADMIN_METRICS_VIEWED',
-    entityType: 'admin',
-    entityId: 'metrics',
-    beforeValue: null,
-    afterValue: null,
-  });
-
   return {
     totalUsers,
     activeUsers,

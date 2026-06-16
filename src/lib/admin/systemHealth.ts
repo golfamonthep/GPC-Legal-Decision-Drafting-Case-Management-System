@@ -82,15 +82,5 @@ export async function getSystemHealth(userId: string): Promise<SystemHealth> {
     alerts.push({ level: 'CRITICAL', message: 'First‑admin bootstrap flag enabled' });
   }
 
-  // 6️⃣ Record audit action (read‑only view)
-  await auditLog({
-    userId,
-    action: 'SYSTEM_HEALTH_CHECKED',
-    entityType: 'system',
-    entityId: 'health',
-    beforeValue: null,
-    afterValue: null,
-  });
-
   return { dbConnected, prismaReady, environment, config, alerts };
 }
