@@ -57,4 +57,4 @@
 * `/api/cases/[id]/finalization/finalize`: Protected by `hasPermission(user.role, 'FINALIZE_DECISION')`. Passes.
 * `/api/cases/[id]/documents/upload-placeholder`: Lacks granular permission check, but returns 501. Fails strictly, but safe.
 
-**Conclusion**: The permission matrices and static routes align with the expected behavior. Broad unauthenticated access is completely mitigated by `src/middleware.ts`. Finer-grained RAG/Library authorization gaps were identified and logged to the gap register.
+**Conclusion**: The permission matrices and static routes align with the expected behavior. Broad unauthenticated access is completely mitigated by `src/middleware.ts`. Finer-grained RAG/Library authorization gaps were identified and logged to the gap register (and critical ones fixed during the subsequent permission hardening sprint).

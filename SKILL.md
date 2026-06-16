@@ -496,3 +496,8 @@ Do not start Prompt 23 or new AI modules before migration and production page ve
 - NextAuth middleware (`withAuth`) prevents unauthenticated access broadly, but granular authorization requires explicit role checks on every mutating API and sensitive page.
 - Maintenance actions require POST, explicit permission checks, confirmation phrases for destructive actions, and audit logging.
 - After fixing auth/permission issues, rerun production-like smoke tests.
+- Permission hardening must start from the UAT gap register and fix only confirmed gaps.
+- Backend API enforcement must be verified before UI hiding is considered sufficient.
+- Mutation endpoints require explicit permission checks and structured unauthorized responses.
+- Admin maintenance routes must remain POST-only for actions and must never execute actions during render/import.
+- After permission changes, run build plus unauthenticated route smoke checks.

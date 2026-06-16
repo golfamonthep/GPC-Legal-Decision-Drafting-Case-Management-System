@@ -4,10 +4,12 @@ export const revalidate = 0;
 import prisma from "@/lib/db";
 import { AlertTriangle } from "lucide-react";
 import LibraryClient from "./LibraryClient";
+import { requirePermission } from "@/lib/auth/requirePermission";
 
 import { LegalSource } from "@/generated/prisma";
 
 export default async function LibraryPage() {
+  await requirePermission('VIEW_RECORDS_ARCHIVE');
   let legalSources: LegalSource[] = [];
   try {
     legalSources = await prisma.legalSource.findMany({

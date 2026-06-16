@@ -60,15 +60,15 @@ These routes enforce permissions by manually fetching `getCurrentUser` and check
 
 Based on the audit, the following routes might rely solely on NextAuth middleware or lack explicit granular permission requirements beyond authentication.
 
-* **`/library` and `/rag` endpoints**: They seem to be accessible to all authenticated users. Depending on the design, `VIEW_RECORDS_ARCHIVE` or similar might be required.
+* **`/rag` endpoints and `/legal-qa`**: RAG client pages might be accessible to all authenticated users. (Note: The backend API `/api/rag/qa` and `/api/rag/retrieval` are now protected by `USE_AI_REVIEW`, and the `/library` server page is protected by `VIEW_RECORDS_ARCHIVE`).
 * **`/api/cases/[id]/finalization/*` routes**: Needs manual review to ensure `FINALIZE_DECISION` or `RECORD_RED_CASE_NUMBER` are strictly checked before mutating finalization states.
 
 *Risk Assessment:* None of these missing permissions expose secrets or bypass authentication. They are "authenticated access" boundaries that may need to be tightened for specific roles in the future. 
 
 ## 5. Routes that Need Manual Review
 
-* The new `library` and `rag` API endpoints should be reviewed in the next phase to incorporate the `VIEW_RECORDS_ARCHIVE` and `APPROVE_KNOWLEDGE_REUSE` permissions where applicable.
+* The new `rag` API endpoints client UI should be reviewed in the next phase to incorporate the `VIEW_RECORDS_ARCHIVE` and `APPROVE_KNOWLEDGE_REUSE` permissions where applicable. (Backend `rag` API and `/library` server page are now protected).
 
 ## Recommendation
 
-Do not apply broad refactors to auth enforcement mechanisms without corresponding UI updates to hide buttons. A future prompt should harden the RAG, Library, and Finalization mutating APIs to explicitly use `requireApiPermission`.
+Do not apply broad refactors to auth enforcement mechanisms without corresponding UI updates to hide buttons. A future prompt should harden the Finalization mutating APIs to explicitly use `requireApiPermission`.
