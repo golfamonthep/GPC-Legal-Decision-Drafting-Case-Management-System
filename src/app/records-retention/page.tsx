@@ -1,4 +1,6 @@
 import { requirePermission } from "@/lib/auth/requirePermission";
+import { getCurrentUser } from "@/lib/auth/currentUser";
+import { hasPermission } from "@/lib/auth/permissions";
 import { getRetentionOverview, getRetentionQueue } from "@/lib/records-retention/retentionQueries";
 import { Archive, ShieldAlert, BookOpen, AlertCircle, Clock, Shield } from "lucide-react";
 import ArchivePreviewPanel from "@/components/records-retention/ArchivePreviewPanel";
@@ -7,7 +9,8 @@ export const dynamic = 'force-dynamic';
 
 export default async function RecordsRetentionPage() {
   // Server-side permission check
-  await requirePermission("VIEW_RECORDS_ARCHIVE");
+  const user = await requirePermission("VIEW_RECORDS_ARCHIVE");
+  const canPreview = hasPermission(user.role, "PREVIEW_ARCHIVE");
 
   // Fetch read-only data
   const overview = await getRetentionOverview();
@@ -154,7 +157,17 @@ export default async function RecordsRetentionPage() {
         </div>
         {/* Archive Action Preview Panel */}
         <div className="lg:col-span-3 mt-4">
-          <ArchivePreviewPanel />
+          {canPreview ? (
+            <ArchivePreviewPanel />
+          ) : (
+            <div className="bg-slate-50 shadow rounded-lg border border-slate-200 p-6 text-center">
+              <Shield className="mx-auto h-12 w-12 text-slate-300 mb-3" />
+              <h3 className="text-sm font-medium text-slate-900">ไม่มีสิทธิ์จำลองการจัดเก็บ</h3>
+              <p className="mt-1 text-sm text-slate-500">
+                คุณไม่มีสิทธิ์ (PREVIEW_ARCHIVE) ในการจำลองและตรวจสอบผลกระทบการจัดเก็บคดี
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

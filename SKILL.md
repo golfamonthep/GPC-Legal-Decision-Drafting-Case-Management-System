@@ -628,3 +628,6 @@ These patterns have caused real problems in this project. Do not repeat them:
 | Implement destructive archive features immediately | Records retention UI must start read-only. Destructive archive/delete/purge actions require separate approval, permission, confirmation, and audit. |
 | Write audit logs during retention page render | Retention pages must not mutate or audit during server component render. |
 | Implement mutating archive actions before UI previews | Dry-run preview endpoints must be POST-only, permission-protected, batch-limited, and non-mutating. UI preview panels must not expose execute controls until approved. Eligibility checks must be conservative when schema support is missing. |
+| Mix preview and execution permissions | Preview permission (`PREVIEW_ARCHIVE`) and execution permission (`EXECUTE_ARCHIVE`) must be strictly separated. |
+| Rely on UI hiding for security | UI permission visibility is not a substitute for backend API authorization. |
+| Expose execute actions prematurely | Reserved execution permissions must not enable execution UI until the endpoint exists and UAT is complete. |

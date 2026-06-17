@@ -60,7 +60,7 @@ export default function ArchivePreviewPanel() {
       if (res.status === 401) {
         setError("Unauthorized (401) - กรุณาเข้าสู่ระบบใหม่");
       } else if (res.status === 403) {
-        setError("Forbidden (403) - คุณไม่มีสิทธิ์จัดการการจัดเก็บข้อมูล (MANAGE_RECORDS_ARCHIVE)");
+        setError("Forbidden (403) - คุณไม่มีสิทธิ์ทดสอบจำลองการจัดเก็บข้อมูล (PREVIEW_ARCHIVE)");
       } else if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.error || `Error ${res.status}: ไม่สามารถตรวจสอบข้อมูลได้`);

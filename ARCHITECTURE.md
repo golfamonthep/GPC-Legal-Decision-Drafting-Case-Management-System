@@ -119,20 +119,24 @@ Next.js App Router
    b. authOptions session callback: attach id, role, status from DB to JWT session
 6. Session token carries: user.id, user.role, user.email, user.status
 7. API routes call requireApiPermission(permission):
-   a. getCurrentUser() reads session
-   b. hasPermission(user.role, permission) checks ROLE_PERMISSIONS map
-   c. Throws "UNAUTHORIZED" if no session; "FORBIDDEN" if insufficient role
-   d. Route handler must catch and return 401/403 NextResponse
+   a. getCurrentUser()
 ```
 
-### Roles and Capabilities
-| Role | Capability Summary |
-|------|--------------------|
-| ADMIN | All permissions |
-| COMMISSIONER | Read access + executive + approve knowledge reuse |
-| LEGAL_OFFICER | Full drafting + finalization + dispatch + archive prep |
-| REGISTRY_OFFICER | Case registration + import + meetings + dispatch + archive |
-| VIEWER | Read-only: dashboard, cases, documents, drafts, meetings |
+### Data Access & Security
+
+-   **Authentication**: Configured for NextAuth with credentials provider (mocking production SSO) and Azure AD OAuth. NextAuth is active in staging/production, blocking unauthenticated access broadly via `middleware.ts`.
+-   **Authorization**: Role-based access control (RBAC) enforced via server-side permission checks (`requireApiPermission`, `requirePermission`) rather than relying solely on UI hiding.
+-   **Permission Matrix**:
+    -   `ADMIN`: Full access, configuration, and UAT matrix view.
+    -   `COMMISSIONER`: Read-only, review, and approval access.
+    -   `LEGAL_OFFICER`: Draft creation, case editing, and document processing.
+    -   `REGISTRY_OFFICER`: Intake, dispatch, registry sync, and case assignment.
+    -   `VIEWER`: Read-only reporting access.
+-   **Records Retention Security Boundary**:
+    -   `PREVIEW_ARCHIVE` permission is required to run non-mutating dry-runs of archive impact.
+    -   `EXECUTE_ARCHIVE` (via `ARCHIVE_CASE`) permission is strictly reserved for the actual destruction/state-mutation endpoint (which remains intentionally unimplemented pending further UAT).
+    -   UI visibility of preview controls does NOT substitute for backend execution protection. The execution API must remain separate from the preview API.
+-   **Row Level Security (RLS)**: Expected to be handled primarily via Prisma queries mapped to user context in the application layer, given Supabase pooler usage.
 
 ---
 

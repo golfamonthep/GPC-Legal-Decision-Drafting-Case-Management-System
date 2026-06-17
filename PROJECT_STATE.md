@@ -224,23 +224,25 @@ Objectives:
 | 52 | Records Retention UAT + Archive Action Design (Completed) |
 | 53 | Archive Dry-Run Preview Endpoint + Permission-Safe UI Panel (Completed) |
 | 54 | Archive Execution Design Review + Schema Gap Decision (Completed) |
-| 55 | **Current Active Prompt**: Add Archive/Retention Schema Migration Plan and Prisma Model Updates |
+| 55 | Add Archive/Retention Schema Migration Plan and Prisma Model Updates (Completed) |
+| 56 | **Current Active Prompt**: Add Dedicated Records Retention Permissions and Role Mapping |
 
-* **Latest Execution Phase**: Phase 13 (Final report)
-* **Primary Objective**: Add safe, backward-compatible Prisma schema support for archive and records retention lifecycle without executing archive behavior.
-* **Archive Execution Readiness**: NOT READY (Blocked by permission granularity gaps and pending staging migration).
+* **Latest Execution Phase**: Phase 15 (Final report)
+* **Primary Objective**: Add dedicated Records Retention and Archive permissions to the existing permission system, map them to appropriate roles, update UI/API guards to use the dedicated permissions, and document role behavior clearly.
+* **Archive Execution Readiness**: NOT READY (Archive execution remains intentionally blocked pending further UAT and full implementation of execution endpoints).
 
 ## Progress Checklist
 - [x] Records Retention UAT verified.
 - [x] Archive action eligibility rules documented.
 - [x] Archive API contract documented.
 - [x] Archive dry-run preview endpoint built.
-- [x] **Prompt 54**: Schema, permission, audit, and reversibility gates reviewed.
-- [x] **Prompt 55**: Prisma schema updated with `ArchiveBatch`, `ArchiveBatchItem` models and retention fields on `CaseArchiveRecord`. Migration file creation skipped (local DB unreachable), manual plan documented. Archive preview logic updated to check `ALREADY_ARCHIVED`. Archive execution remains not implemented. Delete/purge remains not implemented.
+- [x] Prompt 54: Schema, permission, audit, and reversibility gates reviewed.
+- [x] Prompt 55: Prisma schema updated with `ArchiveBatch`, `ArchiveBatchItem` models and retention fields on `CaseArchiveRecord`. Migration file creation skipped (local DB unreachable), manual plan documented. Archive preview logic updated to check `ALREADY_ARCHIVED`.
+- [x] **Prompt 56**: Dedicated `PREVIEW_ARCHIVE` and `VIEW_ARCHIVE_AUDIT` permissions added. Roles mapped in `permissions.ts` and documented in `docs/records-retention-role-permission-map.md`. UI and API guards updated to check `PREVIEW_ARCHIVE` before showing or allowing dry-runs. Unauthenticated smoke script `scripts/records-retention-permission-smoke.ps1` created. Archive execution remains completely disabled. Delete/purge remains out of scope.
 
 ## Known Blockers
 * **Pilot/Live Blocked**: Full staging database verification and test account assignment must be completed by the project owner.
-* **Archive Execution Blocked**: Pending staging migration deployment by the owner and implementation of permission checks (`PREVIEW_ARCHIVE`, `EXECUTE_ARCHIVE`). Archive execution remains intentionally unimplemented.
+* **Archive Execution Blocked**: Pending implementation of execution endpoints (`POST /api/records-retention/archive/execute`) using the `EXECUTE_ARCHIVE` (via `ARCHIVE_CASE`) permission.
 
 ## Next Recommended Prompt
-**Prompt 56**: Implement Records Retention Archive Execution Action and Permissions.
+**Prompt 57**: Implement Records Retention Archive Execution Action and Audit Trail Logging.

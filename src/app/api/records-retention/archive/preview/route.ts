@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     // Permission check inside try-catch, mapping UNAUTHORIZED/FORBIDDEN to 401/403
-    await requireApiPermission("MANAGE_RECORDS_ARCHIVE");
+    await requireApiPermission("PREVIEW_ARCHIVE");
 
     const body = await req.json();
     const { caseIds } = body;
