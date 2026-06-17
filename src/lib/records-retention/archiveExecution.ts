@@ -101,11 +101,16 @@ export async function executeArchiveCases(
     // Create the batch record
     const batch = await tx.archiveBatch.create({
       data: {
-        action: "ARCHIVE",
+        status: "EXECUTED",
         reason: reason,
         policyReference: policyReference,
-        executedByUserId: actor.id,
-        environmentStatus: "STAGING_EXECUTION", // Documented for safety
+        createdByUserId: actor.id,
+        dryRun: false,
+        executedAt: new Date(),
+        totalCount: caseIds.length,
+        eligibleCount: eligibleCaseIds.length,
+        blockedCount: caseIds.length - eligibleCaseIds.length,
+        notes: "Environment: STAGING_EXECUTION",
       }
     });
 
