@@ -47,6 +47,8 @@ were unavailable during Prompt 47.
 | 50 | Preview/Staging Pilot Workflow Execution | ⚠️ CONDITIONAL GO — BLOCKED at environment confirmation. Build ✅. Static audit ✅. Live workflow tests ❌ (environment + accounts blocked). |
 | 50B | Establish Non-Production Staging DB + Pilot Seed Readiness | ⚠️ BLOCKED — staging DB not confirmed non-production. Seed script hardened (✅ fix applied). Docs created. Build ✅. |
 | 51 | Build Records Retention UI | ✅ Committed (Read-only UI and query layer built. Destructive actions deferred.) |
+| 52 | Records Retention UAT + Archive Action Design | ✅ Committed |
+| 53 | Archive Dry-Run Preview Endpoint + Permission-Safe UI Panel | ✅ Committed (Endpoint and UI panel built, dry-run guaranteed) |
 
 ---
 
@@ -218,11 +220,12 @@ Objectives:
 | 50B | Establish Non-Production Staging DB + Pilot Seed Readiness (Completed) |
 | 50C | Execute Live Pilot Seed + Workflow Tests (Handed off to owner, not independently verified) |
 | 50D | Staging Safety Audit + Confirm No Production Mutation (Completed) |
-| 51 | Records Retention UI build (BLOCKED until owner staging confirmation) |
-| 52 | **Current Active Prompt**: Records Retention UAT + Archive Action Design |
+| 51 | Records Retention UI build (Completed) |
+| 52 | Records Retention UAT + Archive Action Design (Completed) |
+| 53 | **Current Active Prompt**: Archive Dry-Run Preview Endpoint + Permission-Safe UI Panel |
 
 * **Latest Execution Phase**: Phase 16 (Final report)
-* **Primary Objective**: Validate the read-only Records Retention UI and design the future archive action workflow safely.
+* **Primary Objective**: Implement a safe archive dry-run preview endpoint and integrate a permission-safe UI panel.
 
 ## Progress Checklist
 - [x] Records Retention UAT verified (unauthenticated/structural).

@@ -255,7 +255,8 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 
 **Schema Gaps (Phase 10 Analysis)**: 
 - `CaseArchiveRecord` lacks an explicit `retentionDueDate` (destruction target date) to differentiate from `retentionReviewDate`.
-- No dedicated `ArchiveAudit` model exists; relying on the general `AuditLog`.
+- No dedicated `ArchiveActionAuditLog` model exists; relying on the general `AuditLog`.
+- Archive eligibility evaluation currently lacks detailed schema support for evaluating document completion and granular data quality issues, leading to conservative fallback checks (e.g., `SCHEMA_SUPPORT_MISSING` reason in preview).
 
 ---
 

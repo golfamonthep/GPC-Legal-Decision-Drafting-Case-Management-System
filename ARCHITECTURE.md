@@ -87,9 +87,10 @@ Next.js App Router
 - Standard Next.js `app` router layouts (`/cases/[id]/layout.tsx`).
 
 ## 8. Records Retention & Archive
-- **Records Retention UI**: Server-rendered read-only UI protected by `VIEW_RECORDS_ARCHIVE`. Queries read from `CaseArchiveRecord`. Authenticated UAT pending runtime verification.
-- **Archive Action Design Boundary**: Destructive actions are not yet implemented. Future architecture dictates a POST-only `/api/records-retention/archive` endpoint that performs dry-runs before committing transactions.
-- **Future Execution Flow**: Requires dry-run -> UI impact preview -> mandatory confirmation phrase -> audit trail creation -> soft status change (retaining documents).
+- **Records Retention UI**: Server-rendered read-only UI protected by `VIEW_RECORDS_ARCHIVE`. Queries read from `CaseArchiveRecord`. Authenticated UAT pending runtime verification. Includes a client-side **ArchivePreviewPanel** for evaluating archive actions without mutating data.
+- **Archive Action Design Boundary**: Destructive actions are not yet implemented. Future architecture dictates a POST-only `/api/records-retention/archive` endpoint that performs execution.
+- **Archive Dry-Run Preview Flow (Implemented)**: Client component submits selected `caseIds` via `POST /api/records-retention/archive/preview` endpoint (protected by `MANAGE_RECORDS_ARCHIVE`). The endpoint validates batch limits and evaluates conservative eligibility rules (e.g. checking meetings, statuses, legal hold) without modifying database state.
+- **Future Execution Flow**: Requires explicit permission -> dry-run preview -> mandatory confirmation phrase -> transaction commit -> audit trail creation -> soft status change (retaining documents).
 
 All mutations must happen in API route handlers (POST/PATCH/DELETE) or Server Actions.
 

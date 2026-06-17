@@ -42,8 +42,8 @@
 5. Archive must not purge documents.
 6. Archive must require explicit permission.
 7. Archive must require confirmation phrase.
-8. Archive must support dry-run.
-9. Archive must show impact preview before execution.
+8. Archive must support dry-run. **(Implemented: `POST /api/records-retention/archive/preview`)**
+9. Archive must show impact preview before execution. **(Implemented: UI Panel in Records Retention)**
 10. Archive must block if case is not eligible.
 11. Archive must never run during GET/page render/import.
 12. Archive must not affect non-selected records.

@@ -1,6 +1,7 @@
 import { requirePermission } from "@/lib/auth/requirePermission";
 import { getRetentionOverview, getRetentionQueue } from "@/lib/records-retention/retentionQueries";
 import { Archive, ShieldAlert, BookOpen, AlertCircle, Clock, Shield } from "lucide-react";
+import ArchivePreviewPanel from "@/components/records-retention/ArchivePreviewPanel";
 
 export const dynamic = 'force-dynamic';
 
@@ -151,32 +152,9 @@ export default async function RecordsRetentionPage() {
             </div>
           </div>
         </div>
-        {/* Archive Action Placeholder Panel */}
+        {/* Archive Action Preview Panel */}
         <div className="lg:col-span-3 mt-4">
-          <div className="bg-slate-50 border border-slate-200 border-dashed rounded-lg p-6">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <Shield className="h-6 w-6 text-slate-400" aria-hidden="true" />
-              </div>
-              <div className="ml-3 w-full">
-                <h3 className="text-sm font-medium text-slate-800">Archive action design pending approval</h3>
-                <div className="mt-2 text-sm text-slate-500">
-                  <p>
-                    The capability to execute bulk archive operations is currently disabled. Future implementations will require explicit permissions, dry-run previews, confirmation phrases, and full audit logging.
-                  </p>
-                </div>
-                <div className="mt-4">
-                  <button
-                    type="button"
-                    disabled
-                    className="inline-flex items-center rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-400 shadow-sm cursor-not-allowed border border-slate-200"
-                  >
-                    Archive Selected Cases (Disabled)
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ArchivePreviewPanel />
         </div>
       </div>
     </div>

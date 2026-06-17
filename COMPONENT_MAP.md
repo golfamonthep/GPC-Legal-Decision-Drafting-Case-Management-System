@@ -111,9 +111,10 @@
 | `/admin/permissions` | `src/app/admin/permissions/page.tsx` | `VIEW_ADMIN_CONSOLE` |
 
 ### Records Retention
-| Route | File | Permission |
-|-------|------|------------|
-| `/records-retention` | `src/app/records-retention/page.tsx` | `VIEW_RECORDS_ARCHIVE` |
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/records-retention` | `src/app/records-retention/page.tsx` | GET | `VIEW_RECORDS_ARCHIVE` |
+| `/api/records-retention/archive/preview` | route.ts | POST | `MANAGE_RECORDS_ARCHIVE` |
 
 ---
 
@@ -231,6 +232,7 @@
 | `RegistryFilters` | `src/components/RegistryFilters.tsx` | `/registry` |
 | `ImportExcel` | `src/components/ImportExcel/` | `/registry/import` |
 | `MaintenanceActionsPanel` | `src/components/admin/MaintenanceActionsPanel.tsx` | `/admin/system` |
+| `ArchivePreviewPanel` | `src/components/records-retention/ArchivePreviewPanel.tsx` | `/records-retention` |
 
 ---
 
@@ -260,7 +262,7 @@
 | Search lib | `src/lib/search/` | Case search implementation |
 | Data quality lib | `src/lib/dataQuality/` | Issue detection and fix logic |
 | Admin lib | `src/lib/admin/` | System health, usage, audit queries |
-| Records Retention | `src/lib/records-retention/retentionQueries.ts` | Read-only schema queries for archive UI |
+| Records Retention | `src/lib/records-retention/` | `retentionQueries.ts`, `archivePreview.ts` (eligibility service) |
 
 ---
 

@@ -1,6 +1,9 @@
 # Archive Action API Contract
 
-## Future API Endpoint
+## Implemented API Endpoint (Preview Only)
+`POST /api/records-retention/archive/preview`
+
+## Future Execution Endpoint
 `POST /api/records-retention/archive`
 
 ## Request Body

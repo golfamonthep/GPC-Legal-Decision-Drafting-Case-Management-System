@@ -614,3 +614,4 @@ These patterns have caused real problems in this project. Do not repeat them:
 | Treat handoff as verified completion | Handed-off execution (e.g. owner runs the script) must remain pending/blocked until confirmed by owner. |
 | Implement destructive archive features immediately | Records retention UI must start read-only. Destructive archive/delete/purge actions require separate approval, permission, confirmation, and audit. |
 | Write audit logs during retention page render | Retention pages must not mutate or audit during server component render. |
+| Implement mutating archive actions before UI previews | Dry-run preview endpoints must be POST-only, permission-protected, batch-limited, and non-mutating. UI preview panels must not expose execute controls until approved. Eligibility checks must be conservative when schema support is missing. |
