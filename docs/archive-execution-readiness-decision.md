@@ -18,8 +18,10 @@ Based on a comprehensive review of the current schema, permission structure, aud
 - [ ] No Severity A/B permission gaps remain (Current: Open permission gaps must be resolved)
 
 ## Blocking Items
-1. **Schema Reversibility Gap**: Reversing an archive requires reverting `Case.currentStatus`. Without a `previousStatusBeforeArchive` field on `CaseArchiveRecord`, the system cannot safely unarchive a case to its original state.
-2. **Batch Audit Linkage Gap**: Archiving multiple records requires bulk traceability. The `AuditLog` model lacks an `archiveBatchId` to correlate a bulk action.
+### 1. Schema Readiness
+- **Gap**: `CaseArchiveRecord` lacked `retentionDueAt`, `previousStatusBeforeArchive`, and `archiveBatchId`. `ArchiveBatch` model was missing.
+- **Status**: ✅ **Partially Resolved**. The required fields and models were added to the Prisma schema in Prompt 55. However, the migration has not been generated or deployed to the staging/production database yet.
+- **Action**: Owner must generate the migration locally and deploy to staging (`npm run db:migrate:deploy`) before archive execution can be implemented. The `AuditLog` model lacks an `archiveBatchId` to correlate a bulk action.
 3. **Data Quality / Completion Rule Gap**: The schema cannot efficiently evaluate whether all required documents are linked or specific data quality tasks are pending without complex relational joining or new explicit status fields. The dry-run currently defaults to `SCHEMA_SUPPORT_MISSING`.
 4. **Permission Granularity Gap**: `MANAGE_RECORDS_ARCHIVE` is used broadly for both preview and settings. Dedicated `PREVIEW_ARCHIVE`, `EXECUTE_ARCHIVE`, `REVERSE_ARCHIVE`, and `VIEW_ARCHIVE_AUDIT` permissions should be introduced.
 

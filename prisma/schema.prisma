@@ -31,6 +31,7 @@ model User {
   draftSectionAiLogs DraftSectionAiLog[]
   meetingsCreated    Meeting[]           @relation("MeetingCreator")
   meetingsFollowUps  MeetingAgendaItem[] @relation("FollowUpUser")
+  archiveBatchesCreated ArchiveBatch[]   @relation("ArchiveBatchCreator")
 }
 
 model Case {
@@ -77,6 +78,7 @@ model Case {
   agendaItems          MeetingAgendaItem[]
   archiveRecords       CaseArchiveRecord[]
   knowledgeReuseReviews KnowledgeReuseReview[]
+  archiveBatchItems    ArchiveBatchItem[]
 }
 
 model CaseDocument {
@@ -403,6 +405,25 @@ model CaseArchiveRecord {
   note                   String?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+
+  // Added for Prompt 55: Retention and Batching
+  previousStatusBeforeArchive String?
+  archiveBatchId              String?
+  archiveBatch                ArchiveBatch? @relation(fields: [archiveBatchId], references: [id])
+  retentionStatus             String?
+  retentionDueAt              DateTime?
+  retentionReviewedAt         DateTime?
+  retentionReviewedByUserId   String?
+  retentionReviewNotes        String?       @db.Text
+  legalHoldSetAt              DateTime?
+  legalHoldSetByUserId        String?
+
+  @@index([archiveStatus])
+  @@index([retentionStatus])
+  @@index([retentionDueAt])
+  @@index([legalHold])
+  @@index([archivedAt])
+  @@index([archiveBatchId])
 }
 
 model RetentionPolicy {
@@ -470,4 +491,43 @@ enum KnowledgeReuseStatus {
   REVOKED
   NEEDS_REDACTION
   HOLD
+}
+
+model ArchiveBatch {
+  id                 String             @id @default(uuid())
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  createdByUserId    String?
+  createdByUser      User?              @relation("ArchiveBatchCreator", fields: [createdByUserId], references: [id])
+  dryRun             Boolean            @default(false)
+  status             String             // "DRAFT", "DRY_RUN", "READY", "EXECUTED", "PARTIAL", "FAILED", "CANCELLED"
+  reason             String?
+  policyReference    String?
+  confirmationMarker String?            // Hash or marker, not raw confirmation text
+  totalCount         Int                @default(0)
+  eligibleCount      Int                @default(0)
+  blockedCount       Int                @default(0)
+  executedAt         DateTime?
+  notes              String?            @db.Text
+
+  items              ArchiveBatchItem[]
+  archiveRecords     CaseArchiveRecord[]
+}
+
+model ArchiveBatchItem {
+  id                    String       @id @default(uuid())
+  archiveBatchId        String
+  archiveBatch          ArchiveBatch @relation(fields: [archiveBatchId], references: [id], onDelete: Cascade)
+  caseId                String
+  case                  Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  createdAt             DateTime     @default(now())
+  status                String       // "ELIGIBLE", "BLOCKED", "EXECUTED", "FAILED", "SKIPPED"
+  previousCaseStatus    String?
+  previousArchiveStatus String?
+  blockedReasons        String?      @db.Text // serialized JSON or text
+  impactPreview         String?      @db.Text // serialized JSON or text
+  executedAt            DateTime?
+  resultMessage         String?      @db.Text
+
+  @@index([archiveBatchId])
 }

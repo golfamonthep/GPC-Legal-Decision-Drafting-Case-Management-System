@@ -98,6 +98,8 @@ Key rules in `db.ts`:
 | `MeetingAgendaItem` | Case scheduled for a meeting |
 | `MeetingAttendee` | Attendee of a meeting |
 | `CaseArchiveRecord` | Archive status and metadata for a case |
+| `ArchiveBatch` | Audit trail for batch archive execution actions |
+| `ArchiveBatchItem` | Individual case impact record within a batch archive action |
 | `RetentionPolicy` | Retention policy definition |
 | `KnowledgeReuseReview` | Review of whether a final decision can be added to knowledge base |
 
@@ -178,7 +180,7 @@ Case (registry entry)
   ├── DecisionDraft
   │     └── DecisionDraftSection (facts/issues/reasoning/conclusion)
   ├── MeetingAgendaItem (→ Meeting)
-  ├── CaseArchiveRecord (archive status)
+  ├── CaseArchiveRecord (archive status) -> ArchiveBatchItem (batch history)
   └── KnowledgeReuseReview (knowledge base eligibility)
 ```
 
@@ -250,14 +252,15 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 **Overview**: Manages the retention lifecycle and formal archiving of case records.
 **Key Tables**:
 - `CaseArchiveRecord` (Tracks archive status, reasoning, box numbers, and unarchiving actions)
+- `ArchiveBatch` and `ArchiveBatchItem` (Tracks batch archive execution actions, eligibility, and impact)
 - `RetentionPolicy` (Defines timeframes and rules for retention)
 - `KnowledgeReuseReview` (Controls ingestion of case data into search/RAG)
 
-**Schema Gaps (Prompt 54 Analysis)**: 
-- **Missing Fields**: `CaseArchiveRecord` lacks `retentionDueAt`, `previousStatusBeforeArchive` (required for safe reversal), and `archiveBatchId` (required for auditing).
-- **Missing Models**: No dedicated `ArchiveBatch` model exists. We rely on the general `AuditLog` but lack batching correlation.
+**Schema Gaps (Prompt 54 Analysis / Prompt 55 Fixes)**: 
+- **Missing Fields**: `CaseArchiveRecord` lacked `retentionDueAt`, `previousStatusBeforeArchive` (required for safe reversal), and `archiveBatchId` (required for auditing). **Fixed in Prompt 55.**
+- **Missing Models**: No dedicated `ArchiveBatch` model existed. **Fixed in Prompt 55.**
 - **Eligibility**: Evaluation lacks detailed schema support for evaluating document completion and granular data quality issues, leading to conservative fallback checks (`SCHEMA_SUPPORT_MISSING`).
-- **Migration Status**: No migration executed in Prompt 54. Future migration required before archive execution.
+- **Migration Status**: No migration generated in Prompt 55 because local dev DB was unavailable. A manual migration plan (`docs/archive-retention-migration-manual-plan.md`) must be executed before archive execution.
 
 ---
 

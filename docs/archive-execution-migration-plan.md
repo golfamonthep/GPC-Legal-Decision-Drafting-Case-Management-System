@@ -1,8 +1,8 @@
 # Archive Execution Migration Plan
 
 ## Overview
-This document outlines the required database schema changes to safely support archive execution, reversibility, and batch auditing. 
-**Note**: This is a design plan only. No migration has been executed.
+This document outlines the database schema changes required to safely support archive execution, reversibility, and batch auditing. 
+**Note**: The schema models were added in Prompt 55, but the SQL migration generation was skipped due to lack of a local disposable database. A manual migration plan is documented in `docs/archive-retention-migration-manual-plan.md`.
 
 ## Recommended Schema Changes
 
@@ -28,7 +28,7 @@ This document outlines the required database schema changes to safely support ar
 - `resultStatus` (`String`): e.g., `SUCCESS`, `PARTIAL`, `FAILED`.
 
 ## Migration Risk Assessment
-- **Risk Level**: Low. Adding nullable fields to `CaseArchiveRecord` and a new `ArchiveBatch` model is fully backwards-compatible and non-destructive.
+- **Risk Level**: Low. Adding nullable fields to `CaseArchiveRecord` and new `ArchiveBatch` models is fully backwards-compatible and non-destructive.
 - **Data Backfill Requirement**: Existing `CaseArchiveRecord` rows can remain with null values for the new fields since archive execution has not yet run.
-- **Staging Migration Test**: Must be tested in the staging environment before production deployment.
+- **Staging Migration Test**: Must be tested in the staging environment before production deployment. A manual migration plan must be followed.
 - **Rollback Plan**: Standard `prisma migrate resolve` or a down-migration script if the new fields cause unexpected application behavior, though this is highly unlikely.

@@ -86,14 +86,24 @@ Next.js App Router
 - Built using Tailwind CSS, Radix UI primitives, and custom components.
 - Standard Next.js `app` router layouts (`/cases/[id]/layout.tsx`).
 
-## 8. Records Retention & Archive
-- **Records Retention UI**: Server-rendered read-only UI protected by `VIEW_RECORDS_ARCHIVE`. Queries read from `CaseArchiveRecord`. Authenticated UAT pending runtime verification. Includes a client-side **ArchivePreviewPanel** for evaluating archive actions without mutating data.
+### 12. Records Retention & Archiving
+**Role**: Manages the lifecycle, safe storage, and formal archiving of finalized cases.
+
+**Key Components**:
+- **CaseArchiveRecord**: Tracks the retention status, box numbers, physical locations, and due dates (`retentionDueAt`). It also tracks `previousStatusBeforeArchive` to allow safe un-archiving transitions.
+- **ArchiveBatch**: A top-level model representing a bulk archive execution action. Links to `User` for auditing.
+- **ArchiveBatchItem**: Links `ArchiveBatch` to `Case`, storing the specific impact and exact blocked reasons (if skipped) or result message (if executed).
+
+**Design Decisions**:
+- **Read-Only First**: The UI (`/records-retention`) is designed to be read-only first. Execution API is separated and currently not implemented.
+- **Batch Auditing**: All executed archive actions (when implemented) must map to an `ArchiveBatch` to ensure auditability of bulk changes.
+- **No Cascade Deletes for Archive**: Archiving does not delete the `Case` or any sub-models. It merely changes the status to `ARCHIVED` and updates `CaseArchiveRecord`.
+- **Dry-Run Previews**: A dedicated dry-run API evaluates eligibility without mutating the database, mapping issues to standard blocked reasons.
 - **Archive Action Design Boundary**: Destructive actions are not yet implemented. Future architecture dictates a POST-only `/api/records-retention/archive` endpoint that performs execution.
 - **Archive Dry-Run Preview Flow (Implemented)**: Client component submits selected `caseIds` via `POST /api/records-retention/archive/preview` endpoint (protected by `MANAGE_RECORDS_ARCHIVE`). The endpoint validates batch limits and evaluates conservative eligibility rules (e.g. checking meetings, statuses, legal hold) without modifying database state.
 - **Future Execution Flow**: Requires explicit permission -> dry-run preview -> mandatory confirmation phrase -> transaction commit -> audit trail creation -> soft status change (retaining documents).
 - **Archive Execution Readiness**: NOT READY. Blocked by missing schema reversibility (`previousStatusBeforeArchive`), batch audit linkage (`archiveBatchId`), and granular permissions (`PREVIEW_ARCHIVE`, `EXECUTE_ARCHIVE`).
 
-All mutations must happen in API route handlers (POST/PATCH/DELETE) or Server Actions.
 
 ---
 

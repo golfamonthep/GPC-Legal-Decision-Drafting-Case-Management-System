@@ -14,7 +14,8 @@ export type BlockedReason =
   | "REQUIRED_DOCUMENTS_UNKNOWN"
   | "SCHEMA_SUPPORT_MISSING"
   | "PERMISSION_REQUIRED"
-  | "BATCH_LIMIT_EXCEEDED";
+  | "BATCH_LIMIT_EXCEEDED"
+  | "ALREADY_ARCHIVED";
 
 export interface ArchiveImpact {
   wouldMarkArchived: boolean;
@@ -139,10 +140,15 @@ export function evaluateArchiveEligibility(caseRecord: any): BlockedReason[] {
     reasons.push("ACTIVE_MEETING_LINKED");
   }
 
-  // Check legal hold
+  // Check archive records and legal hold
   if (caseRecord.archiveRecords && caseRecord.archiveRecords.length > 0) {
-    if (caseRecord.archiveRecords[0].legalHold === true) {
+    const archiveRecord = caseRecord.archiveRecords[0];
+    
+    if (archiveRecord.legalHold === true) {
       reasons.push("LEGAL_HOLD_ACTIVE");
+    }
+    if (archiveRecord.archiveStatus === "COMPLETED" || archiveRecord.archiveStatus === "ARCHIVED") {
+      reasons.push("ALREADY_ARCHIVED");
     }
   } else {
     // If we can't confirm legal hold status, be conservative

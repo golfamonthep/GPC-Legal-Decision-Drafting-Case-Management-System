@@ -19,16 +19,18 @@ This document evaluates the current database schema to determine if it can safel
 - **archiveReason**: Supported.
 - **archiveStatus**: Supported.
 - **archivePolicyReference**: Partially supported (uses `retentionPolicyId`, lacks string reference).
-- **retentionStatus**: Missing.
-- **retentionDueAt**: Missing (only has `retentionReviewDate`).
-- **retentionReviewedAt**: Missing.
+- **retentionStatus**: Supported (added in Prompt 55).
+- **retentionDueAt**: Supported (added in Prompt 55).
+- **retentionReviewedAt**: Supported (added in Prompt 55).
 - **legalHold**: Supported.
 - **isArchived**: Missing (implied via `archiveStatus`).
-- **archiveBatchId**: Missing.
-- **previousStatusBeforeArchive**: Missing (needed for safe reversal).
+- **archiveBatchId**: Supported (added in Prompt 55).
+- **previousStatusBeforeArchive**: Supported (added in Prompt 55).
 
 ## Eligibility Validation Schema Support
 Several eligibility rules rely on conservative checks returning `SCHEMA_SUPPORT_MISSING` because the schema lacks direct fields to easily confirm the absence of pending follow-ups, unresolved data quality issues, or completion of required final documents.
 
 ## Decision
-**CONDITIONALLY READY**. While `CaseArchiveRecord` exists and basic transitions are possible, safe enterprise execution requires `retentionDueAt` (destruction date vs review date), `previousStatusBeforeArchive` (for safe reversal), and `archiveBatchId` for bulk audit correlation.
+**READY (from Schema Perspective)**. In Prompt 55, `retentionDueAt`, `previousStatusBeforeArchive` (for safe reversal), and `archiveBatchId` for bulk audit correlation were successfully added to `CaseArchiveRecord` along with the `ArchiveBatch` model. 
+
+*Note: Execution remains intentionally unimplemented until a staging migration and corresponding permission checks are fully deployed.*

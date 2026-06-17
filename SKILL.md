@@ -37,7 +37,16 @@ Summary:
 - Role-by-role UAT regression completed (Prompt 47): ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER code-verified; COMMISSIONER/VIEWER blocked (no live accounts).
 - Permission hardening complete as of Prompt 46.
 - Stable tag: `stable-post-prompt-42c`.
-- Next recommended step: **Prompt 48 — Pilot Data Seeding + Controlled Real-Case Trial**.
+- Next recommended step: **Prompt 48 — Pilot Data Seeding + Controlled**
+
+### Schema Design and Migrations
+1. **Migrations**: `DATABASE_URL` is for the application at runtime (transaction mode pooler, port 6543). `DIRECT_URL` uses session-mode pooler (port 5432) for migrations.
+2. **Never** run `prisma migrate deploy` during the Vercel build process.
+3. **Additive changes only**: Archive/retention schema changes must be additive and backward-compatible. Use nullable fields or safe defaults.
+4. **Migration safety**: Do not run migration deployment (`migrate deploy`) in schema design prompts. Migration SQL must be inspected for `DROP`/`ALTER` destructive operations before commit.
+5. **Execution separation**: Schema support (e.g., adding `ArchiveBatch` models) must be kept strictly separate from the implementation of execution logic. Archive execution remains separate from schema support.
+
+- Real-Case Trial.
 - `DATABASE_URL` uses Supabase transaction-mode pooler (host `aws-1-ap-northeast-2.pooler.supabase.com:6543`).
 - `DIRECT_URL` uses session-mode pooler (port 5432) for migrations.
 - 6 migrations applied to production.
