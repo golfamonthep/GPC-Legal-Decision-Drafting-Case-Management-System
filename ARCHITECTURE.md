@@ -103,6 +103,10 @@ Next.js App Router
 - **Archive Execution Flow (Staging Only)**: Requires explicit `ARCHIVE_CASE` permission. Enforces a strict environment gate (production blocked). Requires dry-run preview first. Requires reason and exact confirmation phrase. Transaction commits the batch, updates statuses, and writes to audit trail.
 - **Archive Execution UI Flow**: `ArchivePreviewPanel` acts as a state machine: Preview -> Eligibility Check -> Reason/Confirmation -> Execute -> Audit Result.
 - **Archive Execution Readiness**: STAGING-ONLY. Blocked from production execution by an environment gate.
+- **Archive UAT Verification Flow**: Must verify unauthenticated, unauthorized, preview-only, execute-authorized, blocked-case, eligible-case, audit verification, reversal feasibility, and production-block paths.
+- **Archive Audit Verification Flow**: Ensure `actor.id`, action, case ID, batch ID, timestamp, reason, before/after states (`previousStatusBeforeArchive`) are recorded, and no raw confirmation phrases or secrets are stored.
+- **Archive Reversal Feasibility Flow**: Schema preserves `previousStatusBeforeArchive` and `ArchiveBatchItem.previousCaseStatus`. Reversal is conceptually ready (no data loss, documents linked) but implementation is deferred.
+- **Archive Production Block Boundary**: Production execution is explicitly disabled by `assertArchiveExecutionEnvironment()`. A dedicated release gate prompt is required to override this block.
 
 
 ---

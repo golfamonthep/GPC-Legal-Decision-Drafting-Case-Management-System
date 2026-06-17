@@ -751,6 +751,10 @@ Prerequisites:
 - Prisma Client is generated to the project-specific generated client path (`src/generated/prisma`).
 - `requireApiPermission` throws `"UNAUTHORIZED"` / `"FORBIDDEN"` rather than returning `NextResponse`; API handlers must call it inside `try/catch` and map errors to 401/403.
 - Pilot/live workflow remains blocked until staging DB and role accounts are manually verified.
+- Archive execution UAT must verify unauthenticated, unauthorized, preview-only, execute-authorized, blocked-case, eligible-case, audit, reversal, and production-block paths.
+- Production block must be verified separately from staging success.
+- Archive is not ready for production if audit or reversal feasibility is unverified.
+- UAT pass requires actual staging execution with pilot records; otherwise mark blocked/partial.
 
 ### Before starting work:
 1. Read `SKILL.md` (this file)

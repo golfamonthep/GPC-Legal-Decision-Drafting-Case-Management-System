@@ -54,6 +54,7 @@ were unavailable during Prompt 47.
 | 56 | Dedicated Records Retention Permissions and Role Mapping | ✅ Committed |
 | 57 | Archive Execution Endpoint (Staging-only) | ✅ Committed |
 | 58 | Archive Execution UI (Preview-first, Staging-only) | ✅ Committed (UI state machine, safety gates built) |
+| 59 | Archive Execution UAT and Rollback/Reversal Verification | ✅ Committed (UAT documented/partial; audit/reversal verified) |
 
 ---
 
@@ -231,12 +232,16 @@ Objectives:
 | 54 | Archive Execution Design Review + Schema Gap Decision (Completed) |
 | 55 | Add Archive/Retention Schema Migration Plan and Prisma Model Updates (Completed) |
 | 56 | Add Dedicated Records Retention Permissions and Role Mapping (Completed) |
-| 57 | Implement Archive Execution Endpoint — Staging Only, Dry-Run Required First (Completed) |
-| 58 | **Current Active Prompt**: Archive Execution UI — Confirmation, Impact Preview, and Audit Result (Completed) |
+| 58 | Archive Execution UI — Confirmation, Impact Preview, and Audit Result (Completed) |
+| 59 | **Current Active Prompt**: Archive Execution UAT and Rollback/Reversal Verification (Completed) |
 
 * **Latest Execution Phase**: Phase 14 (Final report)
-* **Primary Objective**: Build the user-facing archive execution UI for Records Retention, requiring a successful dry-run impact preview, reason, and exact confirmation phrase before allowing staging-only archive execution.
+* **Primary Objective**: Perform UAT for archive execution in staging/preview only, verifying preview-first behavior, safety gates, audit, and reversal feasibility without enabling production execution.
 * **Archive Execution Readiness**: STAGING-ONLY READY (Production disabled).
+* **Archive UAT Status**: PARTIAL / BLOCKED — Staging execution with pilot records was not completed.
+* **Archive Audit Verification Status**: VERIFIED via code audit.
+* **Archive Reversal Readiness Status**: Conceptually ready, implementation deferred.
+* **Production Release Readiness**: BLOCKED pending production release gate and manual staging execution tests.
 
 ## Progress Checklist
 - [x] Records Retention UAT verified.
@@ -247,11 +252,12 @@ Objectives:
 - [x] Prompt 55: Prisma schema updated with `ArchiveBatch`, `ArchiveBatchItem` models and retention fields.
 - [x] Prompt 56: Dedicated `PREVIEW_ARCHIVE` and `VIEW_ARCHIVE_AUDIT` permissions added and mapped.
 - [x] Prompt 57: Archive execution endpoint implemented with strict staging-only environment gates.
-- [x] **Prompt 58**: Archive execution UI implemented with Preview-first requirement, Reason requirement, Confirmation Phrase requirement, and Environment Status blocks.
+- [x] Prompt 58: Archive execution UI implemented with Preview-first requirement, Reason requirement, Confirmation Phrase requirement, and Environment Status blocks.
+- [x] **Prompt 59**: Archive execution UAT documented, audit verified, and reversal feasibility verified. Staging UAT execution marked as blocked/partial pending live tests.
 
 ## Known Blockers
 * **Pilot/Live Blocked**: Full staging database verification and test account assignment must be completed by the project owner.
 * **Production Archive Execution Blocked**: Pending owner UAT sign-off on staging and a subsequent production release prompt to remove the environment gate.
 
 ## Next Recommended Prompt
-**Prompt 59**: Production Deployment Sign-off and Release Gate OR Microsoft Graph Document Sync (Owner Decision).
+**Prompt 60**: Production Deployment Sign-off and Release Gate OR Microsoft Graph Document Sync (Owner Decision).

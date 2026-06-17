@@ -263,6 +263,7 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 - **Migration Status**: No migration generated in Prompt 55 because local dev DB was unavailable. A manual migration plan (`docs/archive-retention-migration-manual-plan.md`) must be executed before archive execution.
 - **Execution Endpoint (Prompt 57)**: The `POST /api/records-retention/archive/execute` endpoint was added. It inserts records into `ArchiveBatch` and `ArchiveBatchItem`, updates `CaseArchiveRecord` (including `previousStatusBeforeArchive` and `archiveBatchId`), and creates an `AuditLog`. Execution remains strictly limited to staging via environment gates.
 - **Execution UI (Prompt 58)**: `ArchivePreviewPanel.tsx` now supports the full state machine from dry-run preview to execution, requiring an exact confirmation phrase. It surfaces the `ArchiveBatch.id` (`archiveBatchId`) on success for clear auditability. Production execution remains blocked.
+- **Execution UAT & Reversal Verification (Prompt 59)**: Schema was verified capable of safely preserving previous state (`previousStatusBeforeArchive`, `ArchiveBatchItem.previousCaseStatus`) and maintaining `archiveBatchId` linkage for auditing. Reversal is conceptually ready with no data loss, but explicit implementation is deferred to a future prompt.
 
 ---
 

@@ -404,7 +404,7 @@ Component: [`MaintenanceActionsPanel.tsx`](file:///c:/APP/src/components/admin/M
 | Pilot Workflow Checklist | `docs/pilot-workflow-checklist.md` | Checklist of end-to-end UAT checks for pilot (Coverage includes `/cases`, `/finalization`, `/search`, etc.) |
 | Controlled Trial Protocol | `docs/controlled-real-case-trial-protocol.md` | Guidelines on using real cases in trial |
 | Cleanup Strategy | `docs/pilot-data-cleanup-strategy.md` | Strategy for removing pilot data safely |
-| Archive Execution Docs | `docs/archive-execution-readiness-decision.md`, `docs/archive-execution-migration-plan.md`, `docs/archive-execution-permission-plan.md`, `docs/archive-execution-implementation-roadmap.md`, `docs/archive-execution-ui-state-machine.md` | Comprehensive readiness evaluation and implementation plans for safe archive execution. |
+| Archive Execution Docs | `docs/archive-execution-readiness-decision.md`, `docs/archive-execution-migration-plan.md`, `docs/archive-execution-permission-plan.md`, `docs/archive-execution-implementation-roadmap.md`, `docs/archive-execution-ui-state-machine.md`, `docs/archive-execution-uat-report.md`, `docs/archive-execution-audit-verification.md`, `docs/archive-reversal-verification-report.md` | Comprehensive readiness evaluation and implementation plans for safe archive execution, including Prompt 59 UAT and verification reports. |
 | Archive Schema Docs | `docs/archive-retention-schema-implementation-notes.md`, `docs/archive-retention-migration-manual-plan.md` | Implementation notes and manual migration plan for archive database schema support. |
 | Permission Smoke Script | `scripts/records-retention-permission-smoke.ps1` | Unauthenticated smoke test for the Records Retention page and API guards. |
 | Archive UI Smoke Script | `scripts/archive-execution-ui-smoke.ps1` | Unauthenticated smoke test for the Archive Execution UI and environment API. |
@@ -430,8 +430,9 @@ All routes below were verified as build-successful and structurally permission-p
 | Data Quality | `/data-quality`, `/api/data-quality/issues`, `/api/data-quality/export`, `/api/data-quality/cases/[id]/quick-fix` | ✅ | ❌ Blocked |
 | Library/RAG | `/library`, `/rag`, `/rag/retrieval-test`, `/legal-qa`, `/api/rag/qa`, `/api/rag/retrieval` | ✅ | ❌ Blocked |
 | Admin/Maintenance | `/admin/readiness`, `/admin/system`, `/admin/users`, `/api/admin/*`, `/api/admin/maintenance/actions` | ✅ | ❌ Blocked |
+| Records Retention (Prompt 59) | `/records-retention`, `/api/records-retention/archive/preview`, `/api/records-retention/archive/execute`, `/api/records-retention/archive/environment` | ✅ | ❌ Blocked (Environment/Accounts) |
 
-### Known Weak Spots (Post Prompt 50)
+### Known Weak Spots (Post Prompt 59)
 
 | Spot | Route | Issue | Priority |
 |------|-------|-------|----------|
