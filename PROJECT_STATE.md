@@ -41,7 +41,8 @@ were unavailable during Prompt 47.
 | 45 | Authenticated UAT execution + documentation | ✅ Committed |
 | 46 | Targeted permission gap hardening (RAG API, library page) | ✅ Committed |
 | 47 | Full authenticated role-by-role regression UAT + sign-off pack | ✅ Committed (partial — 2 roles code-audited only) |
-| 47.5 | Project intelligence files audit + creation | 🔄 This prompt |
+| 47.5 | Project intelligence files audit + creation | ✅ Committed |
+| 48 | Pilot Data Seeding + Controlled Real-Case Trial | ✅ Committed (Dry-run executed, docs ready) |
 
 ---
 
@@ -141,7 +142,7 @@ were unavailable during Prompt 47.
 | ADMIN role fully verified | ✅ |
 | All roles live-verified | ⚠️ Partial — 2 roles blocked |
 
-**Overall**: **Conditionally Production Ready** — suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Expand to COMMISSIONER/VIEWER when accounts available.
+**Overall**: **Conditionally Production Ready** — suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Expand to COMMISSIONER/VIEWER when accounts available. Pilot seed script is dry-run safe and ready for execution.
 
 ---
 
@@ -162,28 +163,26 @@ were unavailable during Prompt 47.
 
 ## 11. Required Before Next Major Step
 
-Before proceeding to Prompt 48 (Pilot Data Seeding + Controlled Real-Case Trial):
+Before proceeding to Prompt 49 (Records Retention UI) or Prompt 50 (Microsoft Graph):
 
 - [x] Project intelligence baseline committed and pushed
-- [ ] Pilot seed data prepared (anonymized real cases or realistic synthetic cases)
+- [x] Pilot seed data prepared (anonymized real cases or realistic synthetic cases)
+- [ ] Management approval to execute actual pilot seeding
 - [ ] COMMISSIONER/VIEWER role accounts available for live UAT (or documented as ongoing gap)
 
 ---
 
 ## 12. Current Recommended Next Action
 
-**Prompt 48: Pilot Data Seeding + Controlled Real-Case Trial**
+**Prompt 49: Records Retention UI build** (or Prompt 50 Microsoft Graph if prioritized)
 
 Objectives:
-1. Seed 3–5 realistic (anonymized) pilot cases into production (or staging).
-2. Walk through the full case lifecycle end-to-end with real accounts.
-3. Verify all workflow stages function correctly under real data conditions.
-4. Document any issues found during the pilot trial.
-5. Confirm system is ready for supervised pilot with real staff.
+1. Build UI for archiving completed cases.
+2. Build UI for records retention policy management.
 
 **Prerequisites met?**
-- Intelligence baseline: ✅ (this prompt)
-- COMMISSIONER/VIEWER live UAT: ⚠️ Partial (documented gap; proceed with available roles)
+- Intelligence baseline: ✅
+- Pilot data readiness: ✅ (Prompt 48 complete)
 
 ---
 

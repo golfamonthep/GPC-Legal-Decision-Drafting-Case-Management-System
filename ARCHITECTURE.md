@@ -171,6 +171,8 @@ GET /api/integrations/microsoft/status
 5. **Prisma client path** — Always import from `src/generated/prisma`, never from `@prisma/client`.
 6. **Maintenance actions** — Must be POST-only, permission-guarded, confirmation-protected, and audit-logged. Never executed during render/import phase.
 7. **No seed on production** — `prisma/seed.ts` is development only; never run on production unless explicitly confirmed.
+8. **Pilot Seeding Mechanism** — Pilot data seed is managed via `scripts/seed-pilot-data.ts`. It uses upsert, is dry-run by default, and demands explicit flags to touch production data (`ALLOW_PRODUCTION_PILOT_SEED=YES`).
+9. **Controlled Trial Process** — Trials use anonymized or sanitized cases first, monitored carefully before moving to full production usage. Cleanups rely on manual identifier tags (`PILOT_`) instead of destructive scripts.
 
 ---
 

@@ -125,6 +125,7 @@ currentStatus, meetingDate, decisionResult, oneDriveUrl,
 proceedingNote (Text), dispatchData (Text),
 createdAt, updatedAt
 ```
+- **Pilot Data Note**: Seeded pilot cases must be prefixed with `PILOT-CASE-` in `blackNumber` to ensure they can be safely identified and cleaned up. Real records must not use this prefix.
 
 ### DecisionDraft / DecisionDraftSection
 - Each Case can have multiple drafts

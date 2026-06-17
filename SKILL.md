@@ -206,6 +206,11 @@ Rules:
 - In production, reject localhost, 127.0.0.1, `base`, or placeholder database hosts.
 - Do not run seed on production unless explicitly instructed.
 - Run migrations only when the user confirms.
+- Pilot data must be anonymized and clearly prefixed (e.g. PILOT_).
+- Seed scripts must be dry-run by default and manual only.
+- Production seeding requires explicit confirmation and safe guard flags.
+- Cleanup must identify pilot records by prefix/tag and never delete real records.
+- Controlled real-case trials must start with 3–5 sanitized cases, not broad rollout.
 
 ---
 
