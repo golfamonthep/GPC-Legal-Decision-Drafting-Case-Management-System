@@ -75,13 +75,14 @@ I confirm that:
 
 ## Post-Approval Actions (Development Agent)
 
-Agent cannot directly reach the Vercel staging database because credentials are not shared. The owner must run the seed script locally pointing to staging, or the tests remain blocked.
+Agent cannot directly reach the Vercel staging database because credentials are not shared. The owner must run the seed script locally pointing to staging, or the tests remain blocked. Handed-off execution is **not** verified completion. **No database mutations occurred during Prompt 50C execution by the agent.**
 
 1. Owner runs: `PILOT_SEED_CONFIRM=YES ALLOW_STAGING_PILOT_SEED=YES npx tsx scripts/seed-pilot-data.ts`  
    (with staging `DATABASE_URL` loaded from local shell variable)
-2. Agent updates `docs/pilot-seed-validation-report.md`
-3. Agent updates `docs/staging-environment-readiness-report.md`
-4. Proceed to live pilot workflow tests (Blocked on role accounts)
+2. Owner manually verifies in Supabase that production was not touched and staging contains pilot records.
+3. Agent updates `docs/pilot-seed-validation-report.md`
+4. Agent updates `docs/staging-environment-readiness-report.md`
+5. Proceed to live pilot workflow tests (Blocked on role accounts and owner verification)
 
 ---
 

@@ -436,12 +436,21 @@ All routes below were verified as build-successful and structurally permission-p
 | Vercel Preview Env Checklist | `docs/vercel-preview-env-checklist.md` | **NEW (Prompt 50B)** Owner checklist for confirming Preview DB is non-production and approving seed |
 | Staging Database Setup Guide | `docs/staging-database-setup-guide.md` | **NEW (Prompt 50B)** Step-by-step guide for creating a staging Supabase project or local staging DB |
 | Staging Role Account Readiness | `docs/staging-role-account-readiness.md` | **NEW (Prompt 50B)** Role account plan including Azure AD auth constraint documentation |
+| Prompt 50C Safety Audit | `docs/prompt-50c-safety-audit.md` | **NEW (Prompt 50D)** Documentation of execution safety boundary, proving no unauthorized db mutations occurred. |
 
 ### Scripts Modified
 
 | Script | Path | Change |
 |--------|------|--------|
 | Pilot Seed Script | `scripts/seed-pilot-data.ts` | **FIXED (Prompt 50B)** Production detection changed from URL-based to `NODE_ENV=production`; added `ALLOW_STAGING_PILOT_SEED=YES` flag for staging Supabase pooler connections |
+
+### DB Mutation Command Policy (Prompt 50D)
+
+| Command | Allowed Environment | Danger Level | Policy |
+|---------|---------------------|--------------|--------|
+| `npx prisma db push --accept-data-loss` | Local (Disposable) | 🔴 CRITICAL | **NEVER** use on staging or production. Overwrites schema destructively. |
+| `npx prisma migrate deploy` | Staging / Production | 🟢 SAFE | Standard mechanism for schema changes in persistent environments. |
+| `npx tsx scripts/seed-pilot-data.ts` | Staging (Pilot test) | 🟡 HIGH | Requires strict DB separation confirmation and explicit owner approval flags. |
 
 ### Pilot Seed Execution Flow
 

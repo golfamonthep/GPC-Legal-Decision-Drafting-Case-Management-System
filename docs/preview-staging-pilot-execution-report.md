@@ -179,12 +179,14 @@ No live workflow was executed. Defects below are from static code audit and prio
 | Live authenticated workflow tests | ❌ BLOCKED (all roles) |
 | Pilot data seeded to preview/staging | ❌ BLOCKED (handed off to owner execution) |
 
-### Prompt 50C Handoff Required
+### Prompt 50C Handoff Required (Safety Audit Confirmed)
 
 1. **Owner has confirmed** the Vercel preview deployment uses a separate non-production database.
 2. Owner has explicitly approved execution of the pilot seed against this staging database.
-3. The Agent environment does not have direct network access to the Vercel staging database credentials (which are secured in the Vercel Dashboard) and cannot spoof Microsoft Entra ID authentication.
-4. **Action**: The owner must execute the seed script locally (`$env:PILOT_SEED_CONFIRM="YES" npx tsx scripts/seed-pilot-data.ts`) pointing to the staging DB, then assign roles to real test accounts via `/admin/users`, and manually run the live workflow tests.
+3. **Safety Audit (Prompt 50D)**: The Agent environment did not mutate any database during Prompt 50C. All commands failed safely against local endpoints. Handed-off execution is NOT verified completion. Real staging seed remains pending unless the owner confirms successful execution and staging DB separation themselves.
+4. The Agent environment does not have direct network access to the Vercel staging database credentials (which are secured in the Vercel Dashboard) and cannot spoof Microsoft Entra ID authentication.
+5. **Action**: The owner must execute the seed script locally (`$env:PILOT_SEED_CONFIRM="YES" npx tsx scripts/seed-pilot-data.ts`) pointing to the staging DB, verify in Supabase that production was not touched, assign roles to real test accounts via `/admin/users`, and manually run the live workflow tests.
+6. **DO NOT PROCEED** to controlled real-case trial until this safety audit is verified by the owner.
 
 ### Recommended Next Prompt
 

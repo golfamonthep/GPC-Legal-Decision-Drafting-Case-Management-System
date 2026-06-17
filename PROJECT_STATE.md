@@ -159,7 +159,7 @@ were unavailable during Prompt 47.
 
 **Prompt 51: Build Records Retention UI**
 
-While the owner executes the pilot seed and live workflow tests against the staging DB, proceed to implementing the Records Retention UI or Microsoft Graph document sync feature.
+Execution of Prompt 51 is **BLOCKED** until the owner completes the live workflow tests against the verified staging DB, or explicitly approves proceeding with building the UI while tests are ongoing.
 
 ---
 
@@ -215,8 +215,9 @@ Objectives:
 | 49 | Execute Pilot Data Dry-Run + Seed Preview/Staging Only |
 | 50 | Preview/Staging Pilot Workflow Execution (CONDITIONAL GO, BLOCKED on env) |
 | 50B | Establish Non-Production Staging DB + Pilot Seed Readiness (Completed) |
-| 50C | Execute Live Pilot Seed + Workflow Tests (Handed off to owner) |
-| 51 | Records Retention UI build (or Microsoft Graph sync if prioritized) |
+| 50C | Execute Live Pilot Seed + Workflow Tests (Handed off to owner, not independently verified) |
+| 50D | Staging Safety Audit + Confirm No Production Mutation (Completed) |
+| 51 | Records Retention UI build (BLOCKED until owner staging confirmation) |
 | 52+ | Production pilot handoff / staff training |
 
 ---

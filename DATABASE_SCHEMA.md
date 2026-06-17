@@ -237,6 +237,12 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 - Prisma client import path (`src/generated/prisma`) and adapter config (`@prisma/adapter-pg`) remain the same for staging.
 - Seed script dependency: All models used by seed (`User`, `Case`, `DecisionDraft`, `DecisionDraftSection`, `Meeting`, `AuditLog`) must exist in staging schema.
 
+### Migration Policy (Prompt 50D)
+- Local development may use `prisma db push` **only** with a disposable local DB if explicitly allowed.
+- Staging and production **must** use `prisma migrate deploy`.
+- **Never** use `prisma db push --accept-data-loss` outside of a disposable local DB environment.
+- **Never** run migrations automatically during the Vercel build process. All staging/production migrations must be run manually via `DIRECT_URL`.
+
 ---
 
 ## 10. Enums Defined in Schema

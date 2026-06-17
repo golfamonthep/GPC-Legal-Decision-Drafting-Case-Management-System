@@ -236,6 +236,10 @@ Important:
 - **Staging Supabase projects use pooler URLs** — the same URL pattern as production Supabase. Use `NODE_ENV=production` (not URL content) to detect true production environment in scripts.
 - **Use separate flag names for staging vs. production overrides** — `ALLOW_STAGING_PILOT_SEED=YES` for staging, `ALLOW_PRODUCTION_PILOT_SEED=YES` for production. Never use the production flag for staging.
 - **Prisma client initializes at import time** — dry-run scripts still require a DATABASE_URL even if they make no DB calls. This is expected behavior, not a bug.
+- **Never use `prisma db push --accept-data-loss` on staging or production.** Use migration-based schema changes only (`prisma migrate deploy`).
+- **Any command reading `.env*` can expose secrets in terminal logs.** Do not commit terminal or task logs to the repository.
+- **Pilot seed execution must not proceed if DB target cannot be proven non-production.**
+- **Handed-off execution is not the same as verified execution.** If a step was handed off to the owner (e.g., Prompt 50C), it must remain marked as blocked/pending verification until the owner confirms success.
 - Pilot seed execution must be separated into dry-run, preview/staging, and production approval phases.
 - Never run production seed without explicit owner approval and guard flags.
 - Seed validation must confirm prefix/tag, idempotency, and no real data.
@@ -591,3 +595,6 @@ These patterns have caused real problems in this project. Do not repeat them:
 | Detect production via DATABASE_URL content | Use `NODE_ENV=production` for production detection in scripts; URL content is unreliable (staging also uses pooler) |
 | Use `ALLOW_PRODUCTION_PILOT_SEED=YES` for staging | Use `ALLOW_STAGING_PILOT_SEED=YES` for staging; reserve production flag for production only |
 | Assume seeded `@example.test` users can log in | Azure AD OAuth requires real Microsoft accounts; seed creates DB records only |
+| Use `prisma db push` on staging/production | Use `prisma migrate deploy`. `db push` is for local disposable DBs only. |
+| Read `.env*` without redacting logs | Terminal logs containing `.env` values must never be committed. |
+| Treat handoff as verified completion | Handed-off execution (e.g. owner runs the script) must remain pending/blocked until confirmed by owner. |

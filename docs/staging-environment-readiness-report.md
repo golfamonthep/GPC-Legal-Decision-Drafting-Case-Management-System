@@ -118,6 +118,14 @@ Do NOT document actual URL values.
 | Not in build/start/deploy | ✅ | Script is manual-only via `npx tsx` |
 | **Old issue: URL-based production detection** | ✅ FIXED | Staging Supabase (pooler) would have blocked seed unless production flag was set — now uses separate `ALLOW_STAGING_PILOT_SEED` flag |
 
+### Next Steps
+
+1. **Owner explicitly verifies** the Preview `DATABASE_URL` against Production `DATABASE_URL`.
+2. **Owner provides sign-off** using `docs/vercel-preview-env-checklist.md`.
+3. **Owner establishes Staging DB** following `docs/staging-database-setup-guide.md` if Preview currently points to production.
+4. **Owner executes the real seed locally** targeting the staging database (Prompt 50C was handed off, not verified by the agent).
+5. **DO NOT proceed to controlled real-case trial** until the safety audit (Prompt 50D) is acknowledged and the staging DB is manually verified by the owner.
+
 **Fix applied**: `scripts/seed-pilot-data.ts` was updated to use `NODE_ENV=production` as the primary production detector, with a separate `ALLOW_STAGING_PILOT_SEED=YES` flag required for staging Supabase pooler connections.
 
 ---

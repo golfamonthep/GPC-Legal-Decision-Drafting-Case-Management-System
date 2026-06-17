@@ -194,11 +194,16 @@ GET /api/integrations/microsoft/status
     - Seed flags: `PILOT_SEED_CONFIRM=YES` (enables real mode) + `ALLOW_STAGING_PILOT_SEED=YES` (for Supabase pooler URLs outside production NODE_ENV).
     - NEVER set `ALLOW_PRODUCTION_PILOT_SEED=YES` for a staging environment.
     - Azure AD (Microsoft Entra ID) authentication means `@example.test` seed users cannot log in via OAuth. Live pilot tests require real staff Microsoft accounts assigned to pilot roles in the staging DB.
-13. **Staging Environment Boundary**:
-    - Production: Vercel Production deployment → Production Supabase DB → Real case data
-    - Staging: Vercel Preview deployment or local dev → Staging Supabase DB (separate project) → Pilot data only
+13. **Staging Environment Boundary (Prompt 50D)**:
+    - **Production**: Vercel Production deployment → Production Supabase DB → Real case data.
+    - **Preview/Staging**: Vercel Preview deployment or local dev → Staging Supabase DB (separate project) → Pilot data only.
+    - **Local**: Local dev server → Ephemeral local database (e.g. `localhost:51213`).
     - Both environments use the same codebase; only the DATABASE_URL differs.
     - Migrations must be applied to staging separately before seeding.
+14. **Command Execution Safety Boundary (Prompt 50D)**:
+    - Destructive commands like `npx prisma db push --accept-data-loss` are strictly confined to the Local (ephemeral) boundary.
+    - They must never be executed against Staging or Production boundaries.
+    - Reading `.env*` files in terminal sessions risks leaking environment boundary secrets into logs and is prohibited outside local debug sessions with masked logs.
 
 ---
 
