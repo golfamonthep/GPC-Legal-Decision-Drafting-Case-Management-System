@@ -267,6 +267,21 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 - **Production Archive Release Gate (Prompt 60)**: Archive schema may exist, but production use is blocked until runtime UAT and reversal verification are complete. Release decision is currently NO-GO.
 - **Staging Archive Migration Readiness (Prompt 61A/61B)**: Pilot archive records rely on archive/retention schema changes. No production migration in this prompt. Migration remains blocked awaiting explicit staging environment target confirmation by the owner.
 
+## 11. External Document Sync (Microsoft Graph)
+
+**Overview**: Future additive schema designed to track external document sources and metadata without modifying existing core tables.
+
+**Proposed Models (Not Migrated Yet)**:
+- `ExternalDocumentSource`: Tracks configured external locations (e.g., SharePoint sites).
+- `ExternalDocumentItem`: Tracks individual document metadata (eTag, webUrl, mimeType).
+- `DocumentSyncRun`: Tracks execution of a batch sync job.
+- `DocumentSyncRunItem`: Tracks individual items processed within a `DocumentSyncRun`.
+
+**Design Notes**:
+- Completely additive models with low migration risk.
+- Currently, no migration has been executed. Implementation remains in the planning phase.
+
+
 ---
 
 ## 11. Enums Defined in Schema

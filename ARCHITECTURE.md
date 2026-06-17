@@ -54,7 +54,7 @@ It includes AI-assisted legal drafting (RAG-based), knowledge library management
 | System Administration | ✅ Active | Read-only admin console (health, jobs, users, audit) |
 | Maintenance Actions | ✅ Active | POST-only audited maintenance actions (orphan cleanup, etc.) |
 | Records Retention | ✅ Read-only UI | Archive records and retention UI built; destructive actions deferred |
-| Microsoft Graph | ⚠️ Partial | Document metadata fields present; live sync not fully implemented |
+| Microsoft Graph Document Sync | ⚠️ Mock-only | Foundation UI, status/preview APIs built; live sync disabled |
 
 ---
 
@@ -108,6 +108,18 @@ Next.js App Router
 - **Archive Reversal Feasibility Flow**: Schema preserves `previousStatusBeforeArchive` and `ArchiveBatchItem.previousCaseStatus`. Reversal is conceptually ready (no data loss, documents linked) but implementation is deferred.
 - **Archive Production Block Boundary**: Production execution is explicitly disabled by `assertArchiveExecutionEnvironment()`. A dedicated release gate prompt is required to override this block.
 - **Archive Production Release Gate**: Currently NO-GO. Required staging execution with pilot records must pass before production release.
+
+### 13. Microsoft Graph Document Sync Foundation
+**Role**: Provides metadata integration with external Microsoft 365 / SharePoint / OneDrive sources.
+
+**Design Decisions**:
+- **Mock-Only Foundation**: The current implementation strictly uses a mock data provider.
+- **Live Sync Disabled**: Live Microsoft Graph calls are explicitly disabled and require explicit approval/enablement.
+- **Read-Only**: No database mutations, real document uploads, or real document downloads occur. No delete/purge actions exist.
+- **Status Endpoint**: `/api/document-sync/microsoft/status` exposes safe configuration presence without revealing real secrets.
+- **Preview Endpoint**: `/api/document-sync/microsoft/preview` returns mock metadata.
+- **Future Schema**: Additive `ExternalDocumentSource` and `ExternalDocumentItem` models are planned.
+
 
 ---
 

@@ -20,6 +20,7 @@ These pages use `requirePermission` which enforces authentication and role check
 * `/executive` -> `VIEW_EXECUTIVE_DASHBOARD`
 * `/registry/import` -> `IMPORT_REGISTRY`
 * `/search` -> `ADVANCED_CASE_SEARCH`
+* `/document-sync` -> `VIEW_DOCUMENT_SYNC`
 
 ## 2. API Routes with Permission Guard
 
@@ -47,6 +48,8 @@ These routes use `requireApiPermission` to ensure strict backend checks.
 * `/api/registry/import` -> `IMPORT_REGISTRY`
 * `/api/reports/executive/export` -> `EXPORT_EXECUTIVE_REPORT`
 * `/api/search/cases/export` -> `EXPORT_SEARCH_RESULTS`
+* `/api/document-sync/microsoft/status` -> `VIEW_DOCUMENT_SYNC`
+* `/api/document-sync/microsoft/preview` -> `PREVIEW_DOCUMENT_SYNC`
 
 ## 3. Routes that Manually Call `hasPermission`
 

@@ -23,3 +23,7 @@
    - Missing models/fields: `previousStatusBeforeArchive`, `archiveBatchId`, `ArchiveBatch` model.
    - Missing API: The actual `POST /api/records-retention/archive` endpoint is intentionally missing until gaps are resolved.
    - Status: Archive Execution is NOT READY. Production release is NO-GO.
+
+5. **Microsoft Graph Document Sync Gaps**
+   - Missing implementation: Live Graph call, delete/purge, true metadata mapping.
+   - Status: Foundation and UI built as mock-only. Production live sync remains intentionally disabled.

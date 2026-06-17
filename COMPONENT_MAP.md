@@ -118,6 +118,11 @@
 | `/api/records-retention/archive/execute` | route.ts | POST | `ARCHIVE_CASE` |
 | `/api/records-retention/archive/environment` | route.ts | GET | `PREVIEW_ARCHIVE` |
 
+### Integrations / Document Sync
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/document-sync` | `src/app/document-sync/page.tsx` | GET | `VIEW_DOCUMENT_SYNC` |
+
 ---
 
 ## 3. API Routes
@@ -128,6 +133,8 @@
 | `/api/auth/[...nextauth]` | `src/app/api/auth/[...nextauth]/route.ts` | GET/POST | Public | NextAuth handler |
 | `/api/health/db` | `src/app/api/health/db/route.ts` | GET | Public | DB health check |
 | `/api/integrations/microsoft/status` | `src/app/api/integrations/microsoft/status/route.ts` | GET | `VIEW_INTEGRATION_STATUS` | MS Graph status |
+| `/api/document-sync/microsoft/status` | `src/app/api/document-sync/microsoft/status/route.ts` | GET | `VIEW_DOCUMENT_SYNC` | Status for mock sync |
+| `/api/document-sync/microsoft/preview` | `src/app/api/document-sync/microsoft/preview/route.ts` | POST | `PREVIEW_DOCUMENT_SYNC` | Preview for mock sync |
 
 ### Cases
 | Route | File | Method | Permission |
@@ -265,6 +272,7 @@
 | Data quality lib | `src/lib/dataQuality/` | Issue detection and fix logic |
 | Admin lib | `src/lib/admin/` | System health, usage, audit queries |
 | Records Retention | `src/lib/records-retention/` | `retentionQueries.ts`, `archivePreview.ts`, `archiveExecution.ts`, `archiveEnvironmentGate.ts` |
+| Microsoft Graph Sync | `src/lib/microsoft-graph/` | `config.ts`, `types.ts`, `client.ts`, `mock.ts` |
 
 ---
 
@@ -415,6 +423,7 @@ Component: [`MaintenanceActionsPanel.tsx`](file:///c:/APP/src/components/admin/M
 | **Staging Environment Verification Script** | `scripts/verify-staging-environment.ps1` | **NEW (Prompt 61A/61B)** Validates endpoints on staging safely (Skipped in 61B due to unconfirmed environment) |
 | **Archive Pilot Seed Script** | `scripts/seed-archive-pilot-records.ts` | **NEW (Prompt 61A/61B)** Seeds safe mock cases for archive UAT (Execution blocked in 61B) |
 | **Archive Pilot Plan & Roles** | `docs/archive-pilot-records-plan.md`, `docs/archive-staging-role-account-checklist.md`, `docs/staging-archive-readiness-report.md` | **NEW (Prompt 61A/61B)** Comprehensive plans for staging tests (Updated in 61B for owner confirmation gate) |
+| **Microsoft Graph Sync Docs** | `docs/microsoft-graph-document-sync-foundation.md`, etc. | **NEW (Prompt 62)** Foundation docs for Graph sync |
 
 ---
 

@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   CheckSquare,
   Send,
-  Archive
+  Archive,
+  Cloud
 } from "lucide-react";
 import { SessionUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
@@ -36,6 +37,7 @@ const navigation = [
   { name: "อัปโหลดเอกสาร", href: "/upload", icon: Upload },
   { name: "ผู้ดูแลระบบ", href: "/admin/system", icon: Settings, permission: "VIEW_ADMIN_CONSOLE" as any },
   { name: "การเก็บรักษาและคลังสำนวน", href: "/records-retention", icon: Archive, permission: "VIEW_RECORDS_ARCHIVE" as any },
+  { name: "การเชื่อมต่อเอกสาร Microsoft 365", href: "/document-sync", icon: Cloud, permission: "VIEW_DOCUMENT_SYNC" as any },
 ];
 
 export function Sidebar({ user }: { user: SessionUser | null }) {
