@@ -160,11 +160,11 @@ export async function executeArchiveCases(
       // Create batch item
       await tx.archiveBatchItem.create({
         data: {
-          batchId: batch.id,
+          archiveBatchId: batch.id,
           caseId,
-          statusBefore: previousStatus,
-          statusAfter: "ARCHIVED",
-          success: true,
+          previousCaseStatus: previousStatus,
+          status: "EXECUTED",
+          executedAt: new Date(),
         }
       });
 
