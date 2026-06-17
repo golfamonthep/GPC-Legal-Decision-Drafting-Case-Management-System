@@ -777,32 +777,6 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 
 **Every future prompt must follow this protocol:**
 
-### Before starting work:
-
----
-
-## 19. Anti-Patterns to Avoid
-
-These patterns have caused real problems in this project. Do not repeat them:
-
-| Anti-Pattern | Correct Approach |
-|--------------|------------------|
-| Import from `@prisma/client` | Always import from `src/generated/prisma` |
-| Run `prisma migrate deploy` in Vercel build | Run migrations manually with `DIRECT_URL` |
-| Assume build success = runtime success | Always verify `/api/health/db` post-deploy |
-| Write audit logs in React Server Component render | Write mutations only in API routes / Server Actions |
-| Call `requireApiPermission` without try/catch | Always wrap in try/catch; return 401/403 NextResponse |
-| Claim full UAT when accounts unavailable | Document as partial; list blocked items explicitly |
-| Commit `.env`, `.env.local`, secrets, tokens, passwords | Never commit — always verify with `git grep` |
-| Mix mock data with production data | Always guard with `NODE_ENV` checks |
-| Trust Windows build for Linux/Vercel path casing | Use lowercase filenames; verify on Vercel |
-| Claim untracked files are deployed | Always run `git status --untracked-files=all` before claiming parity |
-| Run broad PowerShell bulk edits across routes | Make targeted, specific changes; one concern per PR |
-| Use `prisma migrate dev` on production | Use `prisma migrate deploy` only on production |
-| Auto-overwrite human draft text | AI output must be manually inserted; never auto-overwrite |
-| Draft full legal decision in one AI call | Draft section-by-section only |
-| Skip updating intelligence files after a prompt | Always update relevant docs as the final step |
-| Assume Vercel preview = separate staging DB | Verify in Vercel dashboard → Project → Settings → Environment Variables → Preview tab before any seed |
 | Execute pilot seed before environment is confirmed | Always confirm non-production environment classification first; block and document if uncertain |
 | Claim pilot workflow passed with static audit only | Static audit + build = partial pass; live authenticated role tests are required for full pass |
 | Leave temporary developer scripts untracked | Add to `.gitignore` or commit as utility; never leave ambiguous in working tree |

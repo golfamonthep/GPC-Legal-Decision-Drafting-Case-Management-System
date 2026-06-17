@@ -150,10 +150,10 @@ export default function ArchivePreviewPanel() {
       <div className="px-4 py-5 sm:px-6 border-b border-slate-200 bg-slate-50 rounded-t-lg">
         <h3 className="text-base font-semibold leading-6 text-slate-900 flex items-center gap-2">
           <ShieldAlert className="w-5 h-5 text-indigo-500" />
-          ระบบจำลองและดำเนินการจัดเก็บข้อมูล (Archive Execution Panel)
+          การจัดเก็บสำนวน (Archive Execution Panel)
         </h3>
         <p className="mt-1 text-sm text-slate-500">
-          ตรวจสอบผลกระทบและดำเนินการจัดเก็บ (Staging-only archive execution. Production execution is disabled.)
+          แสดงตัวอย่างเท่านั้น ยังไม่มีการจัดเก็บ (Staging-only archive execution. Production execution is disabled.)
         </p>
       </div>
 
@@ -175,7 +175,7 @@ export default function ArchivePreviewPanel() {
         <div className="space-y-4">
           <div>
             <label htmlFor="caseIds" className="block text-sm font-medium leading-6 text-slate-900">
-              Case IDs (คั่นด้วยเครื่องหมายจุลภาค ,)
+              ระบุ Case IDs (สำหรับการทดสอบระบบเท่านั้น คั่นด้วยเครื่องหมายจุลภาค ,)
             </label>
             <div className="mt-2">
               <input
@@ -193,7 +193,7 @@ export default function ArchivePreviewPanel() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="reason" className="block text-sm font-medium leading-6 text-slate-900">
-                เหตุผลการจัดเก็บ <span className="text-red-500">*</span>
+                เหตุผลในการจัดเก็บ <span className="text-red-500">*</span>
               </label>
               <div className="mt-2">
                 <input
@@ -232,7 +232,7 @@ export default function ArchivePreviewPanel() {
             disabled={loading || executing || caseIdsInput.trim() === ""}
             className="inline-flex items-center rounded-md bg-slate-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "กำลังตรวจสอบ..." : "Preview Archive Impact"}
+            {loading ? "กำลังตรวจสอบ..." : "ตรวจสอบผลกระทบก่อนจัดเก็บ"}
           </button>
         </div>
 
@@ -252,7 +252,8 @@ export default function ArchivePreviewPanel() {
               <div className="ml-3 text-sm text-green-800">
                 <p className="font-bold">จัดเก็บข้อมูลสำเร็จ</p>
                 <p>จำนวนที่จัดเก็บ: {executeResult.archivedCount}</p>
-                <p>Batch ID: {executeResult.archiveBatchId}</p>
+                <p>เลขชุดดำเนินการ (Batch ID): {executeResult.archiveBatchId}</p>
+                <p className="text-xs mt-1 text-green-700">Audit recorded. Viewable in admin audit tools.</p>
               </div>
             </div>
           </div>
@@ -260,7 +261,7 @@ export default function ArchivePreviewPanel() {
 
         {result && !executeResult && (
           <div className="mt-6 border-t border-slate-200 pt-6">
-            <h4 className="text-sm font-semibold text-slate-900 mb-4">ผลการจำลอง (Preview Results)</h4>
+            <h4 className="text-sm font-semibold text-slate-900 mb-4">ผลการตรวจสอบสิทธิ์/เงื่อนไข</h4>
             
             {result.warnings && result.warnings.length > 0 && (
               <div className="mb-4 space-y-2">
@@ -275,11 +276,11 @@ export default function ArchivePreviewPanel() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-green-50 p-4 rounded-lg border border-green-200 flex flex-col items-center justify-center">
                 <span className="text-2xl font-bold text-green-700">{result.eligibleCount}</span>
-                <span className="text-sm text-green-800 mt-1">ผ่านเงื่อนไข (Eligible)</span>
+                <span className="text-sm text-green-800 mt-1">รายการที่ดำเนินการได้</span>
               </div>
               <div className="bg-red-50 p-4 rounded-lg border border-red-200 flex flex-col items-center justify-center">
                 <span className="text-2xl font-bold text-red-700">{result.blockedCount}</span>
-                <span className="text-sm text-red-800 mt-1">ไม่ผ่านเงื่อนไข (Blocked)</span>
+                <span className="text-sm text-red-800 mt-1">รายการที่ยังดำเนินการไม่ได้</span>
               </div>
             </div>
 
@@ -304,7 +305,7 @@ export default function ArchivePreviewPanel() {
                   
                   {!item.eligible && item.blockedReasons.length > 0 && (
                     <div className="mt-2">
-                      <span className="text-xs font-semibold text-slate-700">Blocked Reasons:</span>
+                      <span className="text-xs font-semibold text-slate-700">เหตุผลที่ไม่ผ่านเงื่อนไข:</span>
                       <ul className="mt-1 list-disc list-inside text-xs text-red-600">
                         {item.blockedReasons.map((reason, i) => (
                           <li key={i}>{reason}</li>
@@ -321,7 +322,7 @@ export default function ArchivePreviewPanel() {
                  <div className="space-y-4">
                    <h4 className="text-sm font-medium text-slate-900 flex items-center gap-2">
                      <Shield className="w-5 h-5 text-indigo-500" />
-                     ยืนยันการจัดเก็บ (Staging Execution)
+                     ดำเนินการจัดเก็บในสภาพแวดล้อมทดสอบเท่านั้น
                    </h4>
                    <p className="text-xs text-slate-500">
                      ตรวจสอบผล Preview ให้แน่ใจ การดำเนินการนี้จะเปลี่ยนสถานะเอกสารเป็น ARCHIVED ทันที
@@ -329,7 +330,7 @@ export default function ArchivePreviewPanel() {
                    
                    <div>
                      <label htmlFor="phrase" className="block text-xs font-medium text-slate-700">
-                       พิมพ์วลียืนยัน: <span className="font-mono text-indigo-600 font-bold">ARCHIVE PILOT CASES</span>
+                       รหัสยืนยัน: <span className="font-mono text-indigo-600 font-bold">ARCHIVE PILOT CASES</span> หรือ <span className="font-mono text-indigo-600 font-bold">ยืนยันจัดเก็บสำนวน</span>
                      </label>
                      <input
                         type="text"
@@ -344,10 +345,10 @@ export default function ArchivePreviewPanel() {
                    <button
                       type="button"
                       onClick={handleExecute}
-                      disabled={executing || result.eligibleCount === 0 || !reason || !confirmationPhrase}
+                      disabled={executing || result.eligibleCount === 0 || !reason || !(confirmationPhrase === "ARCHIVE PILOT CASES" || confirmationPhrase === "ยืนยันจัดเก็บสำนวน")}
                       className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {executing ? "กำลังดำเนินการ..." : "ยืนยันและดำเนินการจัดเก็บ (Execute)"}
+                      {executing ? "กำลังดำเนินการ..." : "ดำเนินการจัดเก็บ (Execute)"}
                     </button>
                  </div>
                ) : (

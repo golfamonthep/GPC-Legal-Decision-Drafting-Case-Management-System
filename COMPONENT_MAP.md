@@ -234,7 +234,7 @@
 | `RegistryFilters` | `src/components/RegistryFilters.tsx` | `/registry` |
 | `ImportExcel` | `src/components/ImportExcel/` | `/registry/import` |
 | `MaintenanceActionsPanel` | `src/components/admin/MaintenanceActionsPanel.tsx` | `/admin/system` |
-| `ArchivePreviewPanel` | `src/components/records-retention/ArchivePreviewPanel.tsx` | `/records-retention` |
+| `ArchivePreviewPanel` | `src/components/records-retention/ArchivePreviewPanel.tsx` | `/records-retention` (contains preview and execution state machine) |
 
 ---
 
@@ -404,9 +404,10 @@ Component: [`MaintenanceActionsPanel.tsx`](file:///c:/APP/src/components/admin/M
 | Pilot Workflow Checklist | `docs/pilot-workflow-checklist.md` | Checklist of end-to-end UAT checks for pilot (Coverage includes `/cases`, `/finalization`, `/search`, etc.) |
 | Controlled Trial Protocol | `docs/controlled-real-case-trial-protocol.md` | Guidelines on using real cases in trial |
 | Cleanup Strategy | `docs/pilot-data-cleanup-strategy.md` | Strategy for removing pilot data safely |
-| Archive Execution Docs | `docs/archive-execution-readiness-decision.md`, `docs/archive-execution-migration-plan.md`, `docs/archive-execution-permission-plan.md`, `docs/archive-execution-implementation-roadmap.md` | **NEW (Prompt 54)** Comprehensive readiness evaluation and implementation plans for safe archive execution. |
-| Archive Schema Docs | `docs/archive-retention-schema-implementation-notes.md`, `docs/archive-retention-migration-manual-plan.md` | **NEW (Prompt 55)** Implementation notes and manual migration plan for archive database schema support. |
-| Permission Smoke Script | `scripts/records-retention-permission-smoke.ps1` | **NEW (Prompt 56)** Unauthenticated smoke test for the Records Retention page and API guards. |
+| Archive Execution Docs | `docs/archive-execution-readiness-decision.md`, `docs/archive-execution-migration-plan.md`, `docs/archive-execution-permission-plan.md`, `docs/archive-execution-implementation-roadmap.md`, `docs/archive-execution-ui-state-machine.md` | Comprehensive readiness evaluation and implementation plans for safe archive execution. |
+| Archive Schema Docs | `docs/archive-retention-schema-implementation-notes.md`, `docs/archive-retention-migration-manual-plan.md` | Implementation notes and manual migration plan for archive database schema support. |
+| Permission Smoke Script | `scripts/records-retention-permission-smoke.ps1` | Unauthenticated smoke test for the Records Retention page and API guards. |
+| Archive UI Smoke Script | `scripts/archive-execution-ui-smoke.ps1` | Unauthenticated smoke test for the Archive Execution UI and environment API. |
 | Dry-Run Execution Report | - `docs/pilot-seeding-dry-run-results.md` - Validation results for pilot dry-run (Prompt 50A)<br>- `docs/incident-response-runbook.md` - Remediation steps for common project incidents<br>- `docs/records-retention-uat-results.md` - UAT results for Records Retention UI (Prompt 52)<br>- `docs/archive-action-design.md` - Design document for future archive workflows (Prompt 52)<br>- `docs/archive-action-api-contract.md` - API contract for the future POST archive endpoint<br>- `docs/archive-action-ui-flow.md` - Planned UI flow for case archiving<br>- `docs/archive-eligibility-rules.md` - Business rules for case archive eligibility |
 | Seed Validation Report | `docs/pilot-seed-validation-report.md` | Output report from actual staging/preview seed execution |
 | **Preview/Staging Pilot Execution Report** | `docs/preview-staging-pilot-execution-report.md` | **NEW (Prompt 50)** Full execution report including environment check, role account status, workflow pass/fail, and GO/NO-GO decision |

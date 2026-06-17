@@ -96,13 +96,13 @@ Next.js App Router
 
 **Design Decisions**:
 - **Read-Only First**: The UI (`/records-retention`) is designed to be read-only first. Execution API is separated and currently not implemented.
-- **Batch Auditing**: All executed archive actions (when implemented) must map to an `ArchiveBatch` to ensure auditability of bulk changes.
+- **Batch Auditing**: All executed archive actions map to an `ArchiveBatch` to ensure auditability of bulk changes, and individual impacts to `ArchiveBatchItem`.
 - **No Cascade Deletes for Archive**: Archiving does not delete the `Case` or any sub-models. It merely changes the status to `ARCHIVED` and updates `CaseArchiveRecord`.
-- **Dry-Run Previews**: A dedicated dry-run API evaluates eligibility without mutating the database, mapping issues to standard blocked reasons.
 - **Archive Action Design Boundary**: Destructive actions are not yet implemented. Future architecture dictates a POST-only `/api/records-retention/archive` endpoint that performs execution.
-- **Archive Dry-Run Preview Flow (Implemented)**: Client component submits selected `caseIds` via `POST /api/records-retention/archive/preview` endpoint (protected by `MANAGE_RECORDS_ARCHIVE`). The endpoint validates batch limits and evaluates conservative eligibility rules (e.g. checking meetings, statuses, legal hold) without modifying database state.
-- **Future Execution Flow**: Requires explicit permission -> dry-run preview -> mandatory confirmation phrase -> transaction commit -> audit trail creation -> soft status change (retaining documents).
-- **Archive Execution Readiness**: NOT READY. Blocked by missing schema reversibility (`previousStatusBeforeArchive`), batch audit linkage (`archiveBatchId`), and granular permissions (`PREVIEW_ARCHIVE`, `EXECUTE_ARCHIVE`).
+- **Archive Dry-Run Preview Flow**: Client component submits selected `caseIds` via `POST /api/records-retention/archive/preview` endpoint (protected by `PREVIEW_ARCHIVE`). The endpoint validates batch limits and evaluates conservative eligibility rules (e.g. checking meetings, statuses, legal hold) without modifying database state.
+- **Archive Execution Flow (Staging Only)**: Requires explicit `ARCHIVE_CASE` permission. Enforces a strict environment gate (production blocked). Requires dry-run preview first. Requires reason and exact confirmation phrase. Transaction commits the batch, updates statuses, and writes to audit trail.
+- **Archive Execution UI Flow**: `ArchivePreviewPanel` acts as a state machine: Preview -> Eligibility Check -> Reason/Confirmation -> Execute -> Audit Result.
+- **Archive Execution Readiness**: STAGING-ONLY. Blocked from production execution by an environment gate.
 
 
 ---
