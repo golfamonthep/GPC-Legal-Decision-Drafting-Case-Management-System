@@ -16,7 +16,8 @@ import {
   Search,
   AlertTriangle,
   CheckSquare,
-  Send
+  Send,
+  Archive
 } from "lucide-react";
 import { SessionUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
@@ -34,6 +35,7 @@ const navigation = [
   { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
   { name: "อัปโหลดเอกสาร", href: "/upload", icon: Upload },
   { name: "ผู้ดูแลระบบ", href: "/admin/system", icon: Settings, permission: "VIEW_ADMIN_CONSOLE" as any },
+  { name: "การเก็บรักษาและคลังสำนวน", href: "/records-retention", icon: Archive, permission: "VIEW_RECORDS_ARCHIVE" as any },
 ];
 
 export function Sidebar({ user }: { user: SessionUser | null }) {

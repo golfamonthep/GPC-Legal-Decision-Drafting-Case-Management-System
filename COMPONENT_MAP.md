@@ -24,6 +24,7 @@
 | Library/RAG | `/library`, `/library/[id]/chunks`, `/rag`, `/rag/retrieval-test`, `/legal-qa` | `/api/rag/*` | `VIEW_DRAFT` / requires auth |
 | Admin/System | `/admin/system`, `/admin/users`, `/admin/readiness`, `/admin/permissions` | `/api/admin/*` | `VIEW_ADMIN_CONSOLE` |
 | Maintenance Actions | (within `/admin/system`) | `/api/admin/maintenance/actions` | `MANAGE_SYSTEM_SETTINGS` |
+| Records Retention | `/records-retention` | — (server-fetched) | `VIEW_RECORDS_ARCHIVE` |
 | Health/Integrations | — | `/api/health/db`, `/api/integrations/microsoft/status` | Public / `VIEW_INTEGRATION_STATUS` |
 
 ---
@@ -108,6 +109,11 @@
 | `/admin/users` | `src/app/admin/users/page.tsx` | `MANAGE_USERS` |
 | `/admin/readiness` | `src/app/admin/readiness/page.tsx` | `VIEW_ADMIN_CONSOLE` |
 | `/admin/permissions` | `src/app/admin/permissions/page.tsx` | `VIEW_ADMIN_CONSOLE` |
+
+### Records Retention
+| Route | File | Permission |
+|-------|------|------------|
+| `/records-retention` | `src/app/records-retention/page.tsx` | `VIEW_RECORDS_ARCHIVE` |
 
 ---
 
@@ -254,6 +260,7 @@
 | Search lib | `src/lib/search/` | Case search implementation |
 | Data quality lib | `src/lib/dataQuality/` | Issue detection and fix logic |
 | Admin lib | `src/lib/admin/` | System health, usage, audit queries |
+| Records Retention | `src/lib/records-retention/retentionQueries.ts` | Read-only schema queries for archive UI |
 
 ---
 

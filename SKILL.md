@@ -598,3 +598,5 @@ These patterns have caused real problems in this project. Do not repeat them:
 | Use `prisma db push` on staging/production | Use `prisma migrate deploy`. `db push` is for local disposable DBs only. |
 | Read `.env*` without redacting logs | Terminal logs containing `.env` values must never be committed. |
 | Treat handoff as verified completion | Handed-off execution (e.g. owner runs the script) must remain pending/blocked until confirmed by owner. |
+| Implement destructive archive features immediately | Records retention UI must start read-only. Destructive archive/delete/purge actions require separate approval, permission, confirmation, and audit. |
+| Write audit logs during retention page render | Retention pages must not mutate or audit during server component render. |

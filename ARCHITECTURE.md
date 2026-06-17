@@ -53,7 +53,7 @@ It includes AI-assisted legal drafting (RAG-based), knowledge library management
 | Legal Q&A | ✅ Active | Retrieval-augmented grounded Q&A with citations |
 | System Administration | ✅ Active | Read-only admin console (health, jobs, users, audit) |
 | Maintenance Actions | ✅ Active | POST-only audited maintenance actions (orphan cleanup, etc.) |
-| Records Retention | ✅ Schema ready | Archive records and retention policy models; UI not yet built |
+| Records Retention | ✅ Read-only UI | Archive records and retention UI built; destructive actions deferred |
 | Microsoft Graph | ⚠️ Partial | Document metadata fields present; live sync not fully implemented |
 
 ---
@@ -212,7 +212,7 @@ GET /api/integrations/microsoft/status
 | Risk | Severity | Mitigation |
 |------|----------|------------|
 | Live Microsoft Graph sync not implemented | Medium | Schema ready; implement when priority arises |
-| Records Retention UI missing | Medium | DB models exist; UI build deferred |
+| Destructive Records Retention actions missing | Medium | UI is read-only; destructive archive/purge needs strong auditing boundaries |
 | Bulk embedding timeout on Vercel | High | Consider background job queue or Supabase pg_cron |
 | JWT token staleness after role change | Medium | Force re-login after admin role updates |
 | pgvector index performance at scale | Medium | Monitor query times; add HNSW index when needed |

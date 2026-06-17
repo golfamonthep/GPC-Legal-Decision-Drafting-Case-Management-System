@@ -1,14 +1,19 @@
 # Permission Gap Register
 
-| Gap ID | Route / API | Role / Context | Expected Behavior | Actual Behavior | Severity | Recommended Fix | Fixed Now? |
-|--------|-------------|----------------|-------------------|-----------------|----------|-----------------|------------|
-| GAP-001 | `/api/rag/qa`, `/api/rag/retrieval` | Any authenticated user | Only roles with AI/Drafting permissions (e.g., `USE_AI_DRAFT` or `USE_AI_REVIEW`) can access | NextAuth middleware requires authentication, but no granular permission check is performed | B (High) - Unrestricted token usage by any internal user | Add `requireApiPermission('USE_AI_REVIEW')` | Yes (Added requireApiPermission) |
-| GAP-002 | `/library`, `/rag/retrieval-test`, `/legal-qa` | Any authenticated user | Only roles with knowledge archive permissions can access | Accessible to any authenticated user | C (Medium) | Add `requirePermission('VIEW_RECORDS_ARCHIVE')` to server pages / middleware | Partially Yes (Fixed `/library`) |
-| GAP-003 | `/api/cases/[id]/documents/upload-placeholder` | Any authenticated user | Only roles with `UPLOAD_DOCUMENTS` can access | Missing granular permission check (currently returns 501 safely) | C (Medium) | Add `hasPermission(user.role, 'UPLOAD_DOCUMENTS')` check | No (Deferred) |
-| GAP-004 | `/api/cases/[id]/finalization/*` (except `red-number` and `finalize`) | Authenticated users | Strict mutation boundaries for finalization steps | All finalization routes verified to use `hasPermission` with correct permissions (`MANAGE_POST_MEETING_FOLLOWUP`, `MARK_DRAFT_REVISED`, `CLOSE_CASE_AFTER_DECISION`) | C (Medium) | Verified — all finalization APIs already enforce correct permissions | Yes (Verified, no change needed) |
+## Known Gaps
 
-**Notes:**
-* All routes are currently protected against unauthenticated access via `src/middleware.ts` (`withAuth`). There are no Severity A (unauthenticated access) gaps found.
-* The deferred items are scheduled for a future prompt focused specifically on hardening the RAG, Library, and Finalization mutating APIs.
-* **Prompt 50 static audit**: No new Severity A or B gaps found. `next.config.ts` emits a deprecation warning (`"middleware"` → `"proxy"`) but this is not a permission gap.
-* **Live authenticated audit**: Not completed — blocked on environment confirmation. All 67 routes build-verified as structurally permission-protected.
+1. **Upload Document Permission Gap**
+   - File: `src/app/api/cases/[id]/documents/upload-placeholder/route.ts`
+   - Description: The `UPLOAD_DOCUMENTS` permission is missing from the server-side checks.
+   - Status: Deferred (Medium Priority)
+
+2. **RAG Page Auth**
+   - Files: `/rag/retrieval-test`, `/legal-qa`
+   - Description: Partially hardened in Prompt 46, requires full authorization guard implementation.
+   - Status: Deferred (Medium Priority)
+
+3. **Records Retention Full Lifecycle Gaps**
+   - Missing fields: `CaseArchiveRecord` model lacks precise destruction due date field (only `retentionReviewDate` is present).
+   - Missing model: No direct `ArchiveActionAuditLog` model (though general `AuditLog` can suffice, explicit fields might be missing for compliance).
+   - Missing feature: There's no UI for actual deletion/destruction. The current implementation is strictly read-only by design.
+   - Status: Acknowledged. No destructive actions will be implemented without further schema updates and rigorous auditing mechanisms.

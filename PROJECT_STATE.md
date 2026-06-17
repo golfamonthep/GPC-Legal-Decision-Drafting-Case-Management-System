@@ -46,6 +46,7 @@ were unavailable during Prompt 47.
 | 49 | Execute Pilot Data Dry-Run + Seed Preview/Staging Only | ✅ Committed (Dry-run passed, Preview/Staging seed pending approval) |
 | 50 | Preview/Staging Pilot Workflow Execution | ⚠️ CONDITIONAL GO — BLOCKED at environment confirmation. Build ✅. Static audit ✅. Live workflow tests ❌ (environment + accounts blocked). |
 | 50B | Establish Non-Production Staging DB + Pilot Seed Readiness | ⚠️ BLOCKED — staging DB not confirmed non-production. Seed script hardened (✅ fix applied). Docs created. Build ✅. |
+| 51 | Build Records Retention UI | ✅ Committed (Read-only UI and query layer built. Destructive actions deferred.) |
 
 ---
 
@@ -72,7 +73,7 @@ were unavailable during Prompt 47.
 | Search / Case Intelligence | ✅ Complete | ✅ Code-audited |
 | System Administration Console | ✅ Complete | ✅ Code-audited |
 | Maintenance Actions Console | ✅ Complete | ✅ Code-audited |
-| Records Retention (DB schema) | ✅ Schema only | ❌ UI not built |
+| Records Retention UI | ✅ Read-only UI | ⚠️ Pending live UAT |
 | Microsoft Graph (fields) | ⚠️ Partial schema | ❌ Live sync not implemented |
 
 ---
@@ -83,7 +84,7 @@ were unavailable during Prompt 47.
 |-----|----------|-------|
 | COMMISSIONER role — live UAT blocked | Medium | No live account available during Prompts 47–50B |
 | VIEWER role — live UAT blocked | Low | No live account available during Prompts 47–50B |
-| Records Retention UI | Medium | DB models complete; pages/API not built |
+| Records Retention Actions | Medium | UI built as read-only; destructive archive/purge actions intentionally deferred |
 | Microsoft Graph live document sync | Medium | Fields in schema; actual sync not implemented |
 | Background job queue for bulk embedding | Medium | Risk of Vercel timeout on large ingestion |
 | pgvector HNSW index | Low | Standard index present; HNSW for scale not added |
@@ -157,9 +158,9 @@ were unavailable during Prompt 47.
 
 ## 9. Next Recommended Action
 
-**Prompt 51: Build Records Retention UI**
+**Prompt 52: Production Pilot Handoff / Staff Training**
 
-Execution of Prompt 51 is **BLOCKED** until the owner completes the live workflow tests against the verified staging DB, or explicitly approves proceeding with building the UI while tests are ongoing.
+Execution of Prompt 52 is **BLOCKED** until the owner completes the live workflow tests against the verified staging DB, or explicitly approves proceeding with handoff planning while tests are ongoing.
 
 ---
 
