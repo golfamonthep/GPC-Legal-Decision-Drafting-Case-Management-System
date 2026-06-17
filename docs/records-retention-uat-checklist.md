@@ -31,3 +31,5 @@
 - [ ] Archive action must be audited.
 - [ ] Unauthorized users must be blocked.
 - [ ] Archive must not delete records.
+  
+- [ ] Archive execution readiness confirmed (Currently NOT READY due to schema/permission gaps). 

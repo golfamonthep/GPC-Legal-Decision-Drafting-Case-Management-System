@@ -48,3 +48,10 @@
 11. Archive must never run during GET/page render/import.
 12. Archive must not affect non-selected records.
 13. Archive must not expose confidential case details in logs.
+  
+## 10. Readiness Decision (Prompt 54)  
+Archive execution is **NOT READY**.  
+It is blocked by:  
+1. Missing schema fields (previousStatusBeforeArchive for reversibility, rchiveBatchId for audit grouping).  
+2. Missing granular permissions (PREVIEW_ARCHIVE, EXECUTE_ARCHIVE).  
+Execution remains intentionally not implemented until these gates are addressed in future prompts. 

@@ -222,22 +222,25 @@ Objectives:
 | 50D | Staging Safety Audit + Confirm No Production Mutation (Completed) |
 | 51 | Records Retention UI build (Completed) |
 | 52 | Records Retention UAT + Archive Action Design (Completed) |
-| 53 | **Current Active Prompt**: Archive Dry-Run Preview Endpoint + Permission-Safe UI Panel |
+| 53 | Archive Dry-Run Preview Endpoint + Permission-Safe UI Panel (Completed) |
+| 54 | **Current Active Prompt**: Archive Execution Design Review + Schema Gap Decision |
 
 * **Latest Execution Phase**: Phase 16 (Final report)
-* **Primary Objective**: Implement a safe archive dry-run preview endpoint and integrate a permission-safe UI panel.
+* **Primary Objective**: Review archive execution design, inspect schema and permission support, and produce a gap decision document.
+* **Archive Execution Readiness**: NOT READY (Blocked by schema reversibility and permission granularity gaps).
 
 ## Progress Checklist
-- [x] Records Retention UAT verified (unauthenticated/structural).
+- [x] Records Retention UAT verified.
 - [x] Archive action eligibility rules documented.
 - [x] Archive API contract documented.
 - [x] Archive UI flow documented.
-- [x] Disabled UI placeholder added for archive execution.
-- [x] Build and deployment validation passed.
+- [x] Disabled UI placeholder added.
+- [x] Archive dry-run preview endpoint built.
+- [x] **Prompt 54**: Schema, permission, audit, and reversibility gates reviewed. Readiness decided as NOT READY.
 
 ## Known Blockers
-* **Pilot/Live Blocked**: Full staging database verification and test account assignment must be completed by the project owner before unlocking the live workflow.
-* **Archive Execution Blocked**: Archive endpoints are documented but purposefully left unimplemented to prevent destructive data actions.
+* **Pilot/Live Blocked**: Full staging database verification and test account assignment must be completed by the project owner.
+* **Archive Execution Blocked**: Archive execution requires schema updates (`previousStatusBeforeArchive`, `archiveBatchId`, `retentionDueAt`) and permission updates (`PREVIEW_ARCHIVE`, `EXECUTE_ARCHIVE`). Execution remains intentionally unimplemented.
 
 ## Next Recommended Prompt
-**Prompt 53**: Build safe Archive API endpoint as dry-run only (or proceed with Staging DB verification if owner is ready).
+**Prompt 55**: Add Archive/Retention Schema Migration Plan and Prisma Model Updates.

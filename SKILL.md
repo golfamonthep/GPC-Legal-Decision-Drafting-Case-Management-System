@@ -552,6 +552,10 @@ Prerequisites:
 - Archive action requires permission, confirmation, dry-run, impact preview, and audit.
 - Eligibility rules must be explicit before archive implementation.
 - Do not add destructive lifecycle actions without separate approval.
+- Archive execution requires schema, permission, audit, reversibility, eligibility, and UAT gates before implementation.
+- If any gate is missing, implement only documentation/planning, not execution.
+- Archive migration planning must be separated from migration execution.
+- Delete/purge remains out of scope unless separately approved.
 
 ---
 

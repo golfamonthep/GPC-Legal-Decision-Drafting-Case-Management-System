@@ -22,3 +22,6 @@
 - Blocked reasons (if ineligible) are visible to the user.
 - No confidential data (like subject names) is displayed in raw error toasts or logs.
 - No action is available or visible for unauthorized roles.
+  
+## Execution Readiness  
+Archive execution is currently **NOT READY** and unimplemented. The UI must remain in dry-run preview mode only. 

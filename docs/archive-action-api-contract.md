@@ -52,3 +52,6 @@
 
 ## Important Implementation Rule
 Because `requireApiPermission` throws `"UNAUTHORIZED"` / `"FORBIDDEN"`, the route must call it inside `try/catch` and map thrown values to 401/403.
+  
+## Execution Readiness  
+Archive execution is currently **NOT READY** and unimplemented. Do not implement the POST /api/records-retention/archive endpoint until schema reversibility and permission granularity gaps are resolved. 

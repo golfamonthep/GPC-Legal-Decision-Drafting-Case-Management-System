@@ -91,6 +91,7 @@ Next.js App Router
 - **Archive Action Design Boundary**: Destructive actions are not yet implemented. Future architecture dictates a POST-only `/api/records-retention/archive` endpoint that performs execution.
 - **Archive Dry-Run Preview Flow (Implemented)**: Client component submits selected `caseIds` via `POST /api/records-retention/archive/preview` endpoint (protected by `MANAGE_RECORDS_ARCHIVE`). The endpoint validates batch limits and evaluates conservative eligibility rules (e.g. checking meetings, statuses, legal hold) without modifying database state.
 - **Future Execution Flow**: Requires explicit permission -> dry-run preview -> mandatory confirmation phrase -> transaction commit -> audit trail creation -> soft status change (retaining documents).
+- **Archive Execution Readiness**: NOT READY. Blocked by missing schema reversibility (`previousStatusBeforeArchive`), batch audit linkage (`archiveBatchId`), and granular permissions (`PREVIEW_ARCHIVE`, `EXECUTE_ARCHIVE`).
 
 All mutations must happen in API route handlers (POST/PATCH/DELETE) or Server Actions.
 

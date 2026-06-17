@@ -253,10 +253,11 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 - `RetentionPolicy` (Defines timeframes and rules for retention)
 - `KnowledgeReuseReview` (Controls ingestion of case data into search/RAG)
 
-**Schema Gaps (Phase 10 Analysis)**: 
-- `CaseArchiveRecord` lacks an explicit `retentionDueDate` (destruction target date) to differentiate from `retentionReviewDate`.
-- No dedicated `ArchiveActionAuditLog` model exists; relying on the general `AuditLog`.
-- Archive eligibility evaluation currently lacks detailed schema support for evaluating document completion and granular data quality issues, leading to conservative fallback checks (e.g., `SCHEMA_SUPPORT_MISSING` reason in preview).
+**Schema Gaps (Prompt 54 Analysis)**: 
+- **Missing Fields**: `CaseArchiveRecord` lacks `retentionDueAt`, `previousStatusBeforeArchive` (required for safe reversal), and `archiveBatchId` (required for auditing).
+- **Missing Models**: No dedicated `ArchiveBatch` model exists. We rely on the general `AuditLog` but lack batching correlation.
+- **Eligibility**: Evaluation lacks detailed schema support for evaluating document completion and granular data quality issues, leading to conservative fallback checks (`SCHEMA_SUPPORT_MISSING`).
+- **Migration Status**: No migration executed in Prompt 54. Future migration required before archive execution.
 
 ---
 
