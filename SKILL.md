@@ -229,6 +229,18 @@ Important:
 - `DIRECT_URL` is for migrations if schema/config supports it.
 - Do not change Prisma schema casually.
 - If schema changes, create a migration and explain why.
+- **Vercel preview deployments share the production database by default.** Always verify the "Preview" environment variable tab in the Vercel dashboard before executing any seed or mutation against a preview deployment.
+- Pilot seed execution must be separated into dry-run, preview/staging, and production approval phases.
+- Never run production seed without explicit owner approval and guard flags.
+- Seed validation must confirm prefix/tag, idempotency, and no real data.
+- Cleanup must be planned before real seed.
+- Cleanup must identify pilot records by prefix/tag and never delete real records.
+- Controlled real-case trials must start with 3–5 sanitized cases, not broad rollout.
+- **Preview/staging pilot workflow execution must verify end-to-end workflows with pilot-only data.** Static code audit is insufficient — live authenticated role tests are required for a full pass.
+- **Pilot workflow pass requires route, role, API, and data-scope verification** — build-only or static-audit-only must be recorded as partial, not full pass.
+- **Core workflow failures must be classified (Severity A–D) before applying code fixes.**
+- **Production mutation remains prohibited until explicit real-case trial approval.**
+- Untracked scripts (`curl_all.ps1`, `test_routes.ps1`, etc.) that are localhost-only developer tools should be added to `.gitignore`, not committed.
 
 Required checks after Prisma-related work:
 ```bash
@@ -564,3 +576,7 @@ These patterns have caused real problems in this project. Do not repeat them:
 | Auto-overwrite human draft text | AI output must be manually inserted; never auto-overwrite |
 | Draft full legal decision in one AI call | Draft section-by-section only |
 | Skip updating intelligence files after a prompt | Always update relevant docs as the final step |
+| Assume Vercel preview = separate staging DB | Verify in Vercel dashboard → Project → Settings → Environment Variables → Preview tab before any seed |
+| Execute pilot seed before environment is confirmed | Always confirm non-production environment classification first; block and document if uncertain |
+| Claim pilot workflow passed with static audit only | Static audit + build = partial pass; live authenticated role tests are required for full pass |
+| Leave temporary developer scripts untracked | Add to `.gitignore` or commit as utility; never leave ambiguous in working tree |

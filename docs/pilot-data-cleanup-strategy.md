@@ -40,7 +40,11 @@ Pilot records can be identified using the `PILOT-` and `PILOT_` prefixes.
 If a script is required later, recommend Prompt 49B: Safe Pilot Data Cleanup Tool with Dry-Run and Audit.
 
 ## 8. Cleanup Readiness
+
 - Pilot records can be reliably identified by `PILOT_` or `PILOT-` prefix.
 - No destructive cleanup script was run.
 - Real data deletion is explicitly prohibited.
-- Cleanup execution not yet performed (waiting for real seed to happen).
+- Cleanup execution not yet performed — seed was BLOCKED in Prompt 50 (environment not confirmed non-production).
+- When seed is eventually executed in a confirmed non-production DB, cleanup will be manual via Prisma Studio or Supabase SQL Editor, targeting prefix-matched records only.
+- Dual-person review required before cleanup execution.
+- Prompt 50 outcome: no pilot data exists in any environment requiring cleanup at this time.

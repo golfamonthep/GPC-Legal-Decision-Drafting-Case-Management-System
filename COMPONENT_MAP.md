@@ -395,8 +395,37 @@ Component: [`MaintenanceActionsPanel.tsx`](file:///c:/APP/src/components/admin/M
 | Cleanup Strategy | `docs/pilot-data-cleanup-strategy.md` | Strategy for removing pilot data safely |
 | Dry-Run Execution Report | `docs/pilot-dry-run-execution-report.md` | Output report from dry-run seed validation |
 | Seed Validation Report | `docs/pilot-seed-validation-report.md` | Output report from actual staging/preview seed execution |
+| **Preview/Staging Pilot Execution Report** | `docs/preview-staging-pilot-execution-report.md` | **NEW (Prompt 50)** Full execution report including environment check, role account status, workflow pass/fail, and GO/NO-GO decision |
 
 ---
 
-*Last updated: Prompt 47.5 (2026-06-17)*
+## Prompt 50 — Pilot Workflow Route Coverage (Static Audit)
+
+All routes below were verified as build-successful and structurally permission-protected. Live authenticated tests are blocked pending environment confirmation.
+
+| Phase | Routes Audited | Static Audit | Live Test |
+|-------|---------------|-------------|-----------|
+| Case Registry | `/cases`, `/cases/[id]`, `/registry`, `/api/registry/import` | ✅ | ❌ Blocked |
+| Assignment | `/assignments`, `/api/assignments`, `/api/cases/[id]/assignment`, `/api/assignments/bulk` | ✅ | ❌ Blocked |
+| Drafting | `/cases/[id]/draft`, `/api/draft/*`, `/api/cases/[id]/export-docx` | ✅ | ❌ Blocked |
+| Finalization | `/finalization`, `/api/cases/[id]/finalization/*`, `/api/cases/[id]/export-final-docx` | ✅ | ❌ Blocked |
+| Dispatch | `/dispatch`, `/api/cases/[id]/documents`, `/api/cases/[id]/documents/upload-placeholder` | ✅ | ❌ Blocked |
+| Meetings | `/meetings`, `/meetings/new`, `/meetings/[id]`, `/api/meetings`, `/api/meetings/[id]/agenda` | ✅ | ❌ Blocked |
+| Search/Reports | `/search`, `/case-intelligence`, `/executive`, `/api/search/cases/export`, `/api/reports/executive/export` | ✅ | ❌ Blocked |
+| Data Quality | `/data-quality`, `/api/data-quality/issues`, `/api/data-quality/export`, `/api/data-quality/cases/[id]/quick-fix` | ✅ | ❌ Blocked |
+| Library/RAG | `/library`, `/rag`, `/rag/retrieval-test`, `/legal-qa`, `/api/rag/qa`, `/api/rag/retrieval` | ✅ | ❌ Blocked |
+| Admin/Maintenance | `/admin/readiness`, `/admin/system`, `/admin/users`, `/api/admin/*`, `/api/admin/maintenance/actions` | ✅ | ❌ Blocked |
+
+### Known Weak Spots (Post Prompt 50)
+
+| Spot | Route | Issue | Priority |
+|------|-------|-------|----------|
+| Upload permission | `/api/cases/[id]/documents/upload-placeholder` | Missing `UPLOAD_DOCUMENTS` check (GAP-003, deferred) | Medium |
+| RAG page auth | `/rag/retrieval-test`, `/legal-qa` | Only partially hardened (GAP-002) | Medium |
+| Middleware deprecation | `next.config.ts` | `"middleware"` should be `"proxy"` (Next.js 16 deprecation warning) | Low |
+
+---
+
+*Last updated: Prompt 50 (2026-06-17)*
 *Update this file whenever routes, components, or API handlers are added, removed, or significantly modified.*
+

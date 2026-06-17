@@ -211,6 +211,23 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 7. `Case`
 8. `User`
 
+### Seed Validation Observations (Prompt 50)
+- Dry-run confirmed: pilot seed script plans 5 users, 8 cases, 1 draft, 1 meeting = ~15 records.
+- Real seed NOT executed: preview/staging DB not confirmed non-production.
+- Pilot users are identifiable by `@example.test` email domain and `Pilot ` name prefix.
+- Pilot cases are identifiable by `PILOT-CASE-` prefix in `blackNumber`.
+- Pilot draft is identifiable by `PILOT_DRAFT_` prefix in `title`.
+- Pilot meeting is identifiable by `PILOT-MTG-` prefix in `meetingNo`.
+- `AuditLog.action = 'PILOT_SEED_EXECUTED'` is written by the seed script on real execution.
+- **Model dependencies for pilot workflow**:
+  - Registry/case listing: `Case`, `User`
+  - Drafting: `Case`, `DecisionDraft`, `DecisionDraftSection`, `User`
+  - Finalization: `Case`, `DecisionDraft`, `AuditLog`
+  - Meetings: `Meeting`, `MeetingAgendaItem`, `Case`
+  - Assignments: `Case`, `User` (legalOfficerId)
+  - Data quality: `Case` (missing fields detection)
+  - RAG/Library: `LegalSource`, `DocumentChunk`, `LegalAnswer` (no pilot records seeded yet)
+
 ---
 
 ## 10. Enums Defined in Schema
@@ -264,5 +281,5 @@ enum KnowledgeReuseStatus {
 
 ---
 
-*Last updated: Prompt 47.5 (2026-06-17)*
+*Last updated: Prompt 50 (2026-06-17)*
 *Update this file whenever schema changes, new migrations are added, or Prisma model descriptions change.*

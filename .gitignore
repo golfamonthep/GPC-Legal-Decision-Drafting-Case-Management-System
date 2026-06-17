@@ -44,3 +44,9 @@ next-env.d.ts
 
 private-test-data/
 templates/docx/private/
+
+# localhost-only developer test scripts (not for deployment)
+curl_all.ps1
+curl_test.ps1
+test_routes.ps1
+push.bat

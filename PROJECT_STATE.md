@@ -22,7 +22,7 @@ were unavailable during Prompt 47.
 | Item | Value |
 |------|-------|
 | Branch | `main` |
-| Latest commit | `376ab9c` — docs: add authenticated regression UAT sign-off pack (Prompt 47) |
+| Latest commit | `5a82d11` — feat: validate pilot seed dry-run workflow and fix db import |
 | Stable tag | `stable-post-prompt-42c` |
 | Vercel status | Deployed (assumed Ready — verify after each push) |
 | Database connectivity | ✅ `/api/health/db` returns `status: ok`, `canConnect: true` |
@@ -44,6 +44,7 @@ were unavailable during Prompt 47.
 | 47.5 | Project intelligence files audit + creation | ✅ Committed |
 | 48 | Pilot Data Seeding + Controlled Real-Case Trial | ✅ Committed (Dry-run executed, docs ready) |
 | 49 | Execute Pilot Data Dry-Run + Seed Preview/Staging Only | ✅ Committed (Dry-run passed, Preview/Staging seed pending approval) |
+| 50 | Preview/Staging Pilot Workflow Execution | ⚠️ CONDITIONAL GO — BLOCKED at environment confirmation. Build ✅. Static audit ✅. Live workflow tests ❌ (environment + accounts blocked). |
 
 ---
 
@@ -79,13 +80,15 @@ were unavailable during Prompt 47.
 
 | Gap | Severity | Notes |
 |-----|----------|-------|
-| COMMISSIONER role — live UAT blocked | Medium | No live account available during Prompt 47 |
-| VIEWER role — live UAT blocked | Low | No live account available during Prompt 47 |
+| COMMISSIONER role — live UAT blocked | Medium | No live account available during Prompts 47–50 |
+| VIEWER role — live UAT blocked | Low | No live account available during Prompts 47–50 |
 | Records Retention UI | Medium | DB models complete; pages/API not built |
 | Microsoft Graph live document sync | Medium | Fields in schema; actual sync not implemented |
 | Background job queue for bulk embedding | Medium | Risk of Vercel timeout on large ingestion |
 | pgvector HNSW index | Low | Standard index present; HNSW for scale not added |
-| Real test data (pilot cases) | High | Needed before pilot trial (Prompt 48) |
+| Preview/staging pilot seed | High | Blocked — Vercel preview DB not confirmed non-production |
+| GAP-003: upload-placeholder permission | Medium | `UPLOAD_DOCUMENTS` check missing; deferred |
+| GAP-002: `/rag/retrieval-test`, `/legal-qa` | Medium | Partially hardened; full hardening deferred |
 
 ---
 
@@ -102,13 +105,14 @@ were unavailable during Prompt 47.
 
 ## 7. Last Verified Smoke Test Summary
 
-**Date**: Prompt 47 (2026-06-16)
-**Method**: Static code audit + build validation (not all roles live-authenticated)
+**Date**: Prompt 50 (2026-06-17)
+**Method**: Static code audit + build validation + remote environment probe
 
 | Check | Result |
 |-------|--------|
-| Build | ✅ Passed |
-| `/api/health/db` | ✅ ok, canConnect: true |
+| Build | ✅ Passed (all 67 routes, TypeScript clean) |
+| `/api/health/db` (production) | ✅ ok, canConnect: true (prior baseline) |
+| `/api/health/db` (preview) | ⚠️ 401 — authenticated route; DB classification unknown |
 | Login page renders | ✅ Confirmed |
 | `/api/auth/session` | ✅ Responds |
 | Unauthenticated access → redirect | ✅ Middleware enforces |
@@ -118,6 +122,8 @@ were unavailable during Prompt 47.
 | COMMISSIONER (live) | ⚠️ Code-audited only |
 | VIEWER (live) | ⚠️ Code-audited only |
 | Secret scan | ✅ No actual values in tracked files |
+| All 67 routes compiled | ✅ Passed |
+| Pilot workflow live tests | ❌ Blocked — environment + accounts not confirmed |
 
 ---
 
@@ -143,7 +149,7 @@ were unavailable during Prompt 47.
 | ADMIN role fully verified | ✅ |
 | All roles live-verified | ⚠️ Partial — 2 roles blocked |
 
-**Overall**: **Conditionally Production Ready** — suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Expand to COMMISSIONER/VIEWER when accounts available. Pilot seed script is dry-run safe, dry-run executed successfully. Real Preview/Staging pilot seed pending explicit approval.
+**Overall**: **Conditionally Production Ready** — suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Preview/staging seed blocked until Vercel preview DB is confirmed non-production. Expand to COMMISSIONER/VIEWER when accounts available. Prompt 50 result: CONDITIONAL GO (no Severity A/B defects; live workflow tests blocked).
 
 ---
 
@@ -164,10 +170,12 @@ were unavailable during Prompt 47.
 
 ## 11. Required Before Next Major Step
 
-Before proceeding to Prompt 49 (Records Retention UI) or Prompt 50 (Microsoft Graph):
+Before proceeding to Prompt 50B (Live Pilot Seed + Workflow Tests):
 
 - [x] Pilot seed data prepared (anonymized real cases or realistic synthetic cases)
 - [x] Pilot seed dry-run executed successfully
+- [x] `curl_all.ps1` git-ignored (Prompt 50 cleanup)
+- [ ] **CRITICAL**: Owner confirms Vercel preview deployment uses a separate non-production database
 - [ ] Management approval to execute actual preview/staging pilot seeding
 - [ ] Management approval to execute actual production pilot seeding
 - [ ] COMMISSIONER/VIEWER role accounts available for live UAT (or documented as ongoing gap)
@@ -176,15 +184,19 @@ Before proceeding to Prompt 49 (Records Retention UI) or Prompt 50 (Microsoft Gr
 
 ## 12. Current Recommended Next Action
 
-**Prompt 49: Records Retention UI build** (or Prompt 50 Microsoft Graph if prioritized)
+**Prompt 50B: Confirm preview DB classification → Approve pilot seed → Execute live workflow tests**
 
 Objectives:
-1. Build UI for archiving completed cases.
-2. Build UI for records retention policy management.
+1. Owner checks Vercel dashboard: Project → Settings → Environment Variables → Preview tab.
+2. If separate preview DB confirmed: run `PILOT_SEED_CONFIRM=YES npx tsx scripts/seed-pilot-data.ts` against staging DB.
+3. Execute live authenticated workflow tests for all pilot phases.
+4. Record pass/fail in `docs/preview-staging-pilot-execution-report.md`.
+5. Update GO/NO-GO decision.
 
 **Prerequisites met?**
 - Intelligence baseline: ✅
-- Pilot data readiness: ✅ (Prompt 48 complete)
+- Pilot data readiness: ✅ (Prompt 48 complete, dry-run passed)
+- Environment classification: ❌ REQUIRED — blocks all live tests
 
 ---
 
@@ -194,11 +206,12 @@ Objectives:
 |--------|------|
 | 48 | Pilot Data Seeding + Controlled Real-Case Trial |
 | 49 | Execute Pilot Data Dry-Run + Seed Preview/Staging Only |
-| 50 | Records Retention UI build (if prioritized) |
-| 51 | Microsoft Graph live document sync implementation |
+| 50 | Preview/Staging Pilot Workflow Execution (this prompt — CONDITIONAL GO, BLOCKED on env) |
+| 50B | Confirm preview DB classification → Approve seed → Live workflow tests |
+| 51 | Records Retention UI build (or Microsoft Graph sync if prioritized) |
 | 52+ | Production pilot handoff / staff training |
 
 ---
 
-*Last updated: Prompt 47.5 (2026-06-17)*
+*Last updated: Prompt 50 (2026-06-17)*
 *All future prompts must update this file to reflect new completed prompts, changed module statuses, and updated smoke test results.*

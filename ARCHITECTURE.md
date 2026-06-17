@@ -177,6 +177,13 @@ GET /api/integrations/microsoft/status
    - *Seed Validation Flow*: Manual inspection using Prisma Studio or UI to verify data prefixed with `PILOT_` exists.
    - *Cleanup Readiness Flow*: Safe manual query strategy targeting `PILOT_` prefix; destructive auto-cleanup scripts are prohibited.
 9. **Controlled Trial Process** — Trials use anonymized or sanitized cases first, monitored carefully before moving to full production usage. Cleanups rely on manual identifier tags (`PILOT_`) instead of destructive scripts.
+10. **Preview/Staging Pilot Validation Gate (Prompt 50)**:
+    - Vercel preview deployments likely share the production Supabase database unless a separate `DATABASE_URL` is set under "Preview" in Vercel dashboard.
+    - Before executing any real seed against a Vercel-deployed environment, the owner MUST verify the database classification via the Vercel dashboard (Project → Settings → Environment Variables → Preview tab).
+    - If the preview DB is not confirmed non-production, the pilot is BLOCKED at environment confirmation phase.
+    - Pilot workflow execution must not proceed past static code audit until environment + role accounts are confirmed.
+    - **Defect classification must precede code fixes** for any workflow failure found during pilot tests.
+    - *Staging-only validation flow*: Build pass → Secret scan → Remote environment probe → DB classification → Role account confirmation → Pilot seed → Live workflow tests → Pass/fail record → GO/NO-GO decision.
 
 ---
 
@@ -193,5 +200,5 @@ GET /api/integrations/microsoft/status
 
 ---
 
-*Last updated: Prompt 47.5 (2026-06-17)*
-*Next expected update: After Prompt 48 (Pilot Data Seeding)*
+*Last updated: Prompt 50 (2026-06-17)*
+*Next expected update: After Prompt 50B (Live Pilot Seed + Workflow Tests)*

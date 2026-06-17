@@ -10,3 +10,5 @@
 **Notes:**
 * All routes are currently protected against unauthenticated access via `src/middleware.ts` (`withAuth`). There are no Severity A (unauthenticated access) gaps found.
 * The deferred items are scheduled for a future prompt focused specifically on hardening the RAG, Library, and Finalization mutating APIs.
+* **Prompt 50 static audit**: No new Severity A or B gaps found. `next.config.ts` emits a deprecation warning (`"middleware"` → `"proxy"`) but this is not a permission gap.
+* **Live authenticated audit**: Not completed — blocked on environment confirmation. All 67 routes build-verified as structurally permission-protected.
