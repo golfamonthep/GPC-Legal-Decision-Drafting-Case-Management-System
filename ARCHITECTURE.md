@@ -184,6 +184,21 @@ GET /api/integrations/microsoft/status
     - Pilot workflow execution must not proceed past static code audit until environment + role accounts are confirmed.
     - **Defect classification must precede code fixes** for any workflow failure found during pilot tests.
     - *Staging-only validation flow*: Build pass → Secret scan → Remote environment probe → DB classification → Role account confirmation → Pilot seed → Live workflow tests → Pass/fail record → GO/NO-GO decision.
+11. **Environment Variable Scope Strategy (Prompt 50B)**:
+    - Vercel supports per-scope env vars: Production, Preview, Development.
+    - A truly separate staging database must be configured as a **Preview-scope** `DATABASE_URL` pointing to a different Supabase project.
+    - HTTP 401 from `/api/health/db` proves auth middleware is working; it does NOT prove DB separation.
+    - DB classification can only be confirmed by inspecting the Vercel dashboard env variable values.
+12. **Pilot Seed Gate (Prompt 50B)**:
+    - Real seed execution requires ALL of: confirmed non-production DB, owner sign-off, migrations applied to staging, dry-run pass, cleanup plan ready.
+    - Seed flags: `PILOT_SEED_CONFIRM=YES` (enables real mode) + `ALLOW_STAGING_PILOT_SEED=YES` (for Supabase pooler URLs outside production NODE_ENV).
+    - NEVER set `ALLOW_PRODUCTION_PILOT_SEED=YES` for a staging environment.
+    - Azure AD (Microsoft Entra ID) authentication means `@example.test` seed users cannot log in via OAuth. Live pilot tests require real staff Microsoft accounts assigned to pilot roles in the staging DB.
+13. **Staging Environment Boundary**:
+    - Production: Vercel Production deployment → Production Supabase DB → Real case data
+    - Staging: Vercel Preview deployment or local dev → Staging Supabase DB (separate project) → Pilot data only
+    - Both environments use the same codebase; only the DATABASE_URL differs.
+    - Migrations must be applied to staging separately before seeding.
 
 ---
 
@@ -200,5 +215,5 @@ GET /api/integrations/microsoft/status
 
 ---
 
-*Last updated: Prompt 50 (2026-06-17)*
-*Next expected update: After Prompt 50B (Live Pilot Seed + Workflow Tests)*
+*Last updated: Prompt 50B (2026-06-17)*
+*Next expected update: After Prompt 50C (Live Pilot Seed + Workflow Tests once staging DB confirmed)*

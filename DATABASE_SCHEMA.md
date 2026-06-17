@@ -228,6 +228,15 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
   - Data quality: `Case` (missing fields detection)
   - RAG/Library: `LegalSource`, `DocumentChunk`, `LegalAnswer` (no pilot records seeded yet)
 
+### Staging Migration Readiness (Prompt 50B)
+- 6 migrations exist in `prisma/migrations/` — all must be applied to staging DB before pilot seed.
+- Staging DB must have `CREATE EXTENSION vector` applied before migrations (required for `DocumentChunk.embedding` column).
+- Migration command for staging: `DIRECT_URL=<staging-direct-url> npm run db:migrate:deploy` (never commit the URL).
+- Schema parity required: staging DB schema must match production schema exactly.
+- Schema drift risk: Low — only 6 well-documented migrations applied.
+- Prisma client import path (`src/generated/prisma`) and adapter config (`@prisma/adapter-pg`) remain the same for staging.
+- Seed script dependency: All models used by seed (`User`, `Case`, `DecisionDraft`, `DecisionDraftSection`, `Meeting`, `AuditLog`) must exist in staging schema.
+
 ---
 
 ## 10. Enums Defined in Schema
@@ -281,5 +290,5 @@ enum KnowledgeReuseStatus {
 
 ---
 
-*Last updated: Prompt 50 (2026-06-17)*
+*Last updated: Prompt 50B (2026-06-17)*
 *Update this file whenever schema changes, new migrations are added, or Prisma model descriptions change.*

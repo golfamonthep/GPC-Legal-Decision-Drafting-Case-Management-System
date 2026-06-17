@@ -426,6 +426,73 @@ All routes below were verified as build-successful and structurally permission-p
 
 ---
 
-*Last updated: Prompt 50 (2026-06-17)*
+## Prompt 50B — Staging Verification Docs and Seed Flow
+
+### New Documents Created
+
+| Document | Path | Purpose |
+|----------|------|---------|
+| Staging Environment Readiness Report | `docs/staging-environment-readiness-report.md` | **NEW (Prompt 50B)** Comprehensive staging readiness assessment including blockers, seed script status, migration readiness, and go/no-go gate |
+| Vercel Preview Env Checklist | `docs/vercel-preview-env-checklist.md` | **NEW (Prompt 50B)** Owner checklist for confirming Preview DB is non-production and approving seed |
+| Staging Database Setup Guide | `docs/staging-database-setup-guide.md` | **NEW (Prompt 50B)** Step-by-step guide for creating a staging Supabase project or local staging DB |
+| Staging Role Account Readiness | `docs/staging-role-account-readiness.md` | **NEW (Prompt 50B)** Role account plan including Azure AD auth constraint documentation |
+
+### Scripts Modified
+
+| Script | Path | Change |
+|--------|------|--------|
+| Pilot Seed Script | `scripts/seed-pilot-data.ts` | **FIXED (Prompt 50B)** Production detection changed from URL-based to `NODE_ENV=production`; added `ALLOW_STAGING_PILOT_SEED=YES` flag for staging Supabase pooler connections |
+
+### Pilot Seed Execution Flow
+
+```
+Owner completes docs/vercel-preview-env-checklist.md
+    │
+    ▼
+Owner confirms Preview DATABASE_URL ≠ Production DATABASE_URL
+    │
+    ▼
+Agent applies Prisma migrations to staging DB
+    │  DIRECT_URL=<staging> npm run db:migrate:deploy
+    │
+    ▼
+Agent runs real pilot seed against staging
+    │  DATABASE_URL=<staging>
+    │  PILOT_SEED_CONFIRM=YES
+    │  ALLOW_STAGING_PILOT_SEED=YES
+    │  npx tsx scripts/seed-pilot-data.ts
+    │
+    ▼
+Agent verifies pilot records in staging DB
+    │  Confirms PILOT-CASE-* records exist
+    │  Confirms PILOT-MTG-* records exist
+    │  Confirms AuditLog action=PILOT_SEED_EXECUTED
+    │
+    ▼
+Owner assigns pilot roles to real Microsoft accounts
+    │  Via /admin/users on staging deployment
+    │
+    ▼
+Live authenticated pilot workflow tests
+    │  (Prompt 50C)
+```
+
+### Route Smoke Check Scope (Prompt 50B — Not Yet Executed)
+
+Not executed — staging DB not confirmed. When confirmed, verify:
+
+| Route | Auth Requirement | Expected Result |
+|-------|-----------------|----------------|
+| `/login` | None | 200 OK |
+| `/api/auth/session` | None | JSON `{}` |
+| `/api/health/db` | Auth (admin session) | `{status: ok, canConnect: true}` |
+| `/dashboard` | Auth | 200 or redirect to login |
+| `/cases` | Auth | 200 or redirect |
+| `/library` | Auth + permission | 200 or redirect |
+| `/admin/system` | Auth + admin | 200 or redirect |
+
+---
+
+*Last updated: Prompt 50B (2026-06-17)*
 *Update this file whenever routes, components, or API handlers are added, removed, or significantly modified.*
 

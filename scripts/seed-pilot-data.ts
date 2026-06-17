@@ -2,13 +2,28 @@ import prisma from '../src/lib/db';
 
 async function main() {
   const isDryRun = process.env.PILOT_SEED_DRY_RUN === 'true' || process.env.PILOT_SEED_CONFIRM !== 'YES';
-  const isProduction = process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('pooler');
-  
+
+  // Production detection: use NODE_ENV only. Do NOT rely on DATABASE_URL content,
+  // because staging Supabase projects also use pooler URLs, which would cause false positives.
+  const isProductionEnv = process.env.NODE_ENV === 'production';
+
+  // Staging Supabase projects use pooler URLs — allow staging seed via ALLOW_STAGING_PILOT_SEED.
+  // Production requires the harder ALLOW_PRODUCTION_PILOT_SEED flag — never set this for staging.
+  const isStagingPoolerUrl = process.env.DATABASE_URL?.includes('pooler') && !isProductionEnv;
+  const requiresOverride = isProductionEnv || isStagingPoolerUrl;
+
   console.log(`Starting Pilot Data Seeding...`);
   console.log(`Mode: ${isDryRun ? 'DRY RUN' : 'REAL'}`);
-  
-  if (isProduction && process.env.ALLOW_PRODUCTION_PILOT_SEED !== 'YES') {
-    console.error("ERROR: Production environment detected. Set ALLOW_PRODUCTION_PILOT_SEED=YES to proceed.");
+  console.log(`Production ENV: ${isProductionEnv}`);
+  console.log(`Pooler URL detected (staging flag required): ${isStagingPoolerUrl}`);
+
+  if (isProductionEnv && process.env.ALLOW_PRODUCTION_PILOT_SEED !== 'YES') {
+    console.error("ERROR: Production environment (NODE_ENV=production) detected. Set ALLOW_PRODUCTION_PILOT_SEED=YES to proceed. WARNING: this will mutate production data.");
+    process.exit(1);
+  }
+
+  if (isStagingPoolerUrl && process.env.ALLOW_STAGING_PILOT_SEED !== 'YES') {
+    console.error("BLOCKED: Supabase pooler URL detected outside of production NODE_ENV. This likely means a staging Supabase project. Set ALLOW_STAGING_PILOT_SEED=YES to confirm you are targeting a confirmed non-production staging database.");
     process.exit(1);
   }
 
@@ -18,6 +33,7 @@ async function main() {
   } else {
     console.log("--- REAL SEED MODE ---");
   }
+
 
   const pilotUsers = [
     { email: 'uat-admin@example.test', name: 'Pilot Admin', role: 'ADMIN', status: 'ACTIVE' },

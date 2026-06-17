@@ -230,6 +230,12 @@ Important:
 - Do not change Prisma schema casually.
 - If schema changes, create a migration and explain why.
 - **Vercel preview deployments share the production database by default.** Always verify the "Preview" environment variable tab in the Vercel dashboard before executing any seed or mutation against a preview deployment.
+- **HTTP 401 from `/api/health/db` proves auth is working — it does NOT prove the database is separate from production.** Do not infer DB classification from auth responses alone.
+- **Real pilot seed requires confirmed non-production DB, owner approval, dry-run pass, and cleanup plan.** All four conditions must be met before executing any real seed.
+- **Environment variable values must be verified by name/scope only.** Never document actual secret values, connection strings, or passwords anywhere in tracked files.
+- **Staging Supabase projects use pooler URLs** — the same URL pattern as production Supabase. Use `NODE_ENV=production` (not URL content) to detect true production environment in scripts.
+- **Use separate flag names for staging vs. production overrides** — `ALLOW_STAGING_PILOT_SEED=YES` for staging, `ALLOW_PRODUCTION_PILOT_SEED=YES` for production. Never use the production flag for staging.
+- **Prisma client initializes at import time** — dry-run scripts still require a DATABASE_URL even if they make no DB calls. This is expected behavior, not a bug.
 - Pilot seed execution must be separated into dry-run, preview/staging, and production approval phases.
 - Never run production seed without explicit owner approval and guard flags.
 - Seed validation must confirm prefix/tag, idempotency, and no real data.
@@ -241,6 +247,7 @@ Important:
 - **Core workflow failures must be classified (Severity A–D) before applying code fixes.**
 - **Production mutation remains prohibited until explicit real-case trial approval.**
 - Untracked scripts (`curl_all.ps1`, `test_routes.ps1`, etc.) that are localhost-only developer tools should be added to `.gitignore`, not committed.
+- **Microsoft Entra ID (Azure AD) OAuth authentication means DB-seeded `@example.test` users cannot log in** without real Microsoft accounts. Live pilot UAT requires real staff Microsoft accounts assigned to pilot roles in the staging DB via the admin UI.
 
 Required checks after Prisma-related work:
 ```bash
@@ -580,3 +587,7 @@ These patterns have caused real problems in this project. Do not repeat them:
 | Execute pilot seed before environment is confirmed | Always confirm non-production environment classification first; block and document if uncertain |
 | Claim pilot workflow passed with static audit only | Static audit + build = partial pass; live authenticated role tests are required for full pass |
 | Leave temporary developer scripts untracked | Add to `.gitignore` or commit as utility; never leave ambiguous in working tree |
+| Infer DB classification from 401 response | HTTP 401 proves auth protection only; DB classification requires Vercel dashboard inspection |
+| Detect production via DATABASE_URL content | Use `NODE_ENV=production` for production detection in scripts; URL content is unreliable (staging also uses pooler) |
+| Use `ALLOW_PRODUCTION_PILOT_SEED=YES` for staging | Use `ALLOW_STAGING_PILOT_SEED=YES` for staging; reserve production flag for production only |
+| Assume seeded `@example.test` users can log in | Azure AD OAuth requires real Microsoft accounts; seed creates DB records only |
