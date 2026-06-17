@@ -21,3 +21,13 @@
 - [ ] `npm run build` passes with no errors.
 - [ ] Runtime route opens without 500 error on valid data.
 - [ ] Prisma queries do not crash the Vercel deployment.
+
+## Archive Action Safety (Phase 11)
+- [ ] Archive action is absent or disabled by default.
+- [ ] No mutation on page render.
+- [ ] Future archive endpoint must be POST-only.
+- [ ] Confirmation phrase required.
+- [ ] Dry-run required before execution.
+- [ ] Archive action must be audited.
+- [ ] Unauthorized users must be blocked.
+- [ ] Archive must not delete records.

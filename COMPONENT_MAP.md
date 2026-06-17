@@ -400,7 +400,7 @@ Component: [`MaintenanceActionsPanel.tsx`](file:///c:/APP/src/components/admin/M
 | Pilot Workflow Checklist | `docs/pilot-workflow-checklist.md` | Checklist of end-to-end UAT checks for pilot (Coverage includes `/cases`, `/finalization`, `/search`, etc.) |
 | Controlled Trial Protocol | `docs/controlled-real-case-trial-protocol.md` | Guidelines on using real cases in trial |
 | Cleanup Strategy | `docs/pilot-data-cleanup-strategy.md` | Strategy for removing pilot data safely |
-| Dry-Run Execution Report | `docs/pilot-dry-run-execution-report.md` | Output report from dry-run seed validation |
+| Dry-Run Execution Report | - `docs/pilot-seeding-dry-run-results.md` - Validation results for pilot dry-run (Prompt 50A)<br>- `docs/incident-response-runbook.md` - Remediation steps for common project incidents<br>- `docs/records-retention-uat-results.md` - UAT results for Records Retention UI (Prompt 52)<br>- `docs/archive-action-design.md` - Design document for future archive workflows (Prompt 52)<br>- `docs/archive-action-api-contract.md` - API contract for the future POST archive endpoint<br>- `docs/archive-action-ui-flow.md` - Planned UI flow for case archiving<br>- `docs/archive-eligibility-rules.md` - Business rules for case archive eligibility |
 | Seed Validation Report | `docs/pilot-seed-validation-report.md` | Output report from actual staging/preview seed execution |
 | **Preview/Staging Pilot Execution Report** | `docs/preview-staging-pilot-execution-report.md` | **NEW (Prompt 50)** Full execution report including environment check, role account status, workflow pass/fail, and GO/NO-GO decision |
 

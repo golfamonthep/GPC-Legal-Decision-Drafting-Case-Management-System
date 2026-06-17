@@ -530,7 +530,7 @@ Prerequisites:
 - Backend API enforcement must be verified before UI hiding is considered sufficient.
 - Mutation endpoints require explicit permission checks and structured unauthorized responses.
 - Admin maintenance routes must remain POST-only for actions and must never execute actions during render/import.
-- After permission changes, run build plus unauthenticated route smoke checks.
+- After permission changes, run build plus unauthenticated route smoke tests.
 - Role UAT must test both page access and direct API challenge attempts for each role.
 - A permission gap is not verified fixed until unauthenticated, unauthorized, and authorized paths are all tested.
 - A route returning build-pass but runtime 500 must be treated as UAT failure.
@@ -538,6 +538,20 @@ Prerequisites:
 - Do not claim full UAT pass when some role accounts are unavailable; record as partial with explicit blocked items.
 - `requireApiPermission` throws `"UNAUTHORIZED"` / `"FORBIDDEN"` rather than returning a `NextResponse`; API handlers must call it inside `try/catch` and map to 401/403.
 - Static code audit + build validation is a valid but incomplete substitute for live authenticated UAT; always document the distinction.
+- Do not run `prisma migrate deploy` inside the Vercel build command.
+- Do not use `prisma db push --accept-data-loss` on staging or production.
+- Do not write audit logs or database mutations during React Server Component render.
+- Maintenance/archive actions must be POST-only, permission-protected, confirmation-protected, and audited.
+- Do not expose secrets to the client or logs.
+- Never commit `.env*` files or real secret values.
+- Prisma Client is generated to the project-specific generated client path (`src/generated/prisma`).
+- `requireApiPermission` throws `"UNAUTHORIZED"` / `"FORBIDDEN"` rather than returning `NextResponse`; API handlers must call it inside `try/catch` and map errors to 401/403.
+- Pilot/live workflow remains blocked until staging DB and role accounts are manually verified.
+- Archive workflow must be designed before execution.
+- Archive is not delete and must preserve audit trail.
+- Archive action requires permission, confirmation, dry-run, impact preview, and audit.
+- Eligibility rules must be explicit before archive implementation.
+- Do not add destructive lifecycle actions without separate approval.
 
 ---
 

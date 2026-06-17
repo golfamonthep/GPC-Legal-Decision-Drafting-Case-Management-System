@@ -17,3 +17,10 @@
    - Missing model: No direct `ArchiveActionAuditLog` model (though general `AuditLog` can suffice, explicit fields might be missing for compliance).
    - Missing feature: There's no UI for actual deletion/destruction. The current implementation is strictly read-only by design.
    - Status: Acknowledged. No destructive actions will be implemented without further schema updates and rigorous auditing mechanisms.
+
+4. **Archive Action Design Gaps (Phase 10)**
+   - Missing fields: `legalHold` is present in `CaseArchiveRecord` but `retentionDueDate` requires clearer distinction from `retentionReviewDate`. No archive reversal fields are documented explicitly in the UI flow.
+   - Missing permissions: `MANAGE_RECORDS_RETENTION` is missing (using `MANAGE_RECORDS_ARCHIVE` instead).
+   - Missing model: No dedicated `ArchiveAudit` model exists. We rely on the general `AuditLog`.
+   - Missing API: The actual `POST /api/records-retention/archive` endpoint is missing.
+   - Missing UAT: Authenticated runtime UAT is missing for `/records-retention` (unauthenticated UAT was verified).

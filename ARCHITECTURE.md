@@ -83,7 +83,15 @@ Next.js App Router
 ### Rule: No database mutations in Server Component render
 - Server Components may **read** data from the database.
 - Do **not** write audit logs or mutate state during RSC render.
-- All mutations must happen in API route handlers (POST/PATCH/DELETE) or Server Actions.
+- Built using Tailwind CSS, Radix UI primitives, and custom components.
+- Standard Next.js `app` router layouts (`/cases/[id]/layout.tsx`).
+
+## 8. Records Retention & Archive
+- **Records Retention UI**: Server-rendered read-only UI protected by `VIEW_RECORDS_ARCHIVE`. Queries read from `CaseArchiveRecord`. Authenticated UAT pending runtime verification.
+- **Archive Action Design Boundary**: Destructive actions are not yet implemented. Future architecture dictates a POST-only `/api/records-retention/archive` endpoint that performs dry-runs before committing transactions.
+- **Future Execution Flow**: Requires dry-run -> UI impact preview -> mandatory confirmation phrase -> audit trail creation -> soft status change (retaining documents).
+
+All mutations must happen in API route handlers (POST/PATCH/DELETE) or Server Actions.
 
 ---
 

@@ -245,7 +245,21 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 
 ---
 
-## 10. Enums Defined in Schema
+## 10. Records Retention & Archiving
+
+**Overview**: Manages the retention lifecycle and formal archiving of case records.
+**Key Tables**:
+- `CaseArchiveRecord` (Tracks archive status, reasoning, box numbers, and unarchiving actions)
+- `RetentionPolicy` (Defines timeframes and rules for retention)
+- `KnowledgeReuseReview` (Controls ingestion of case data into search/RAG)
+
+**Schema Gaps (Phase 10 Analysis)**: 
+- `CaseArchiveRecord` lacks an explicit `retentionDueDate` (destruction target date) to differentiate from `retentionReviewDate`.
+- No dedicated `ArchiveAudit` model exists; relying on the general `AuditLog`.
+
+---
+
+## 11. Enums Defined in Schema
 
 ```prisma
 enum RecordLifecycleStatus {
