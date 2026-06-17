@@ -232,6 +232,10 @@ GET /api/integrations/microsoft/status
     - Destructive commands like `npx prisma db push --accept-data-loss` are strictly confined to the Local (ephemeral) boundary.
     - They must never be executed against Staging or Production boundaries.
     - Reading `.env*` files in terminal sessions risks leaking environment boundary secrets into logs and is prohibited outside local debug sessions with masked logs.
+15. **Staging Archive Pilot Readiness Flow (Prompt 61A)**:
+    - Staging execution requires manual migration of `ArchiveBatch` schema to staging.
+    - Pilot seed flow for archive explicitly tests execution boundaries using categorized fake records (`PILOT_ARCHIVE_ELIGIBLE_`, etc.).
+    - Role-account UAT preparation flow identifies precise Microsoft accounts required for staging UAT.
 
 ---
 

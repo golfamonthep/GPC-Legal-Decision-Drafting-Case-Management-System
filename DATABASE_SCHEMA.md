@@ -265,6 +265,7 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 - **Execution UI (Prompt 58)**: `ArchivePreviewPanel.tsx` now supports the full state machine from dry-run preview to execution, requiring an exact confirmation phrase. It surfaces the `ArchiveBatch.id` (`archiveBatchId`) on success for clear auditability. Production execution remains blocked.
 - **Execution UAT & Reversal Verification (Prompt 59)**: Schema was verified capable of safely preserving previous state (`previousStatusBeforeArchive`, `ArchiveBatchItem.previousCaseStatus`) and maintaining `archiveBatchId` linkage for auditing. Reversal is conceptually ready with no data loss, but explicit implementation is deferred to a future prompt.
 - **Production Archive Release Gate (Prompt 60)**: Archive schema may exist, but production use is blocked until runtime UAT and reversal verification are complete. Release decision is currently NO-GO.
+- **Staging Archive Migration Readiness (Prompt 61A)**: Pilot archive records rely on archive/retention schema changes. No production migration in this prompt. Migration remains blocked awaiting explicit staging environment target confirmation.
 
 ---
 

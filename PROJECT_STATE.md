@@ -233,15 +233,17 @@ Objectives:
 | 55 | Add Archive/Retention Schema Migration Plan and Prisma Model Updates (Completed) |
 | 56 | Add Dedicated Records Retention Permissions and Role Mapping (Completed) |
 | 58 | Archive Execution UI — Confirmation, Impact Preview, and Audit Result (Completed) |
+| 59 | Archive Execution UAT and Rollback/Reversal Verification (Completed - UAT blocked) |
 | 60 | Production Archive Release Gate — NO-GO Pack and Operator SOP (Completed) |
+| 61A | Establish Verified Staging DB + Archive Pilot Records (Prepared/Blocked on environment) |
 
 * **Latest Execution Phase**: Phase 14 (Final report)
-* **Primary Objective**: Create the Production Archive Release Gate, Operator SOP, rollback/reversal plan, monitoring plan, and approval pack.
+* **Primary Objective**: Establish verified staging DB and archive pilot records for staging archive UAT.
 * **Archive Execution Readiness**: STAGING-ONLY READY (Production disabled).
-* **Archive UAT Status**: PARTIAL / BLOCKED — Staging execution with pilot records was not completed.
+* **Archive UAT Status**: PARTIAL / BLOCKED — Staging DB blocked, pilot records not executed.
 * **Archive Audit Verification Status**: VERIFIED via code audit.
 * **Archive Reversal Readiness Status**: Conceptually ready, implementation deferred.
-* **Production Release Readiness**: NO-GO. Pending production release gate and manual staging execution tests.
+* **Production Release Readiness**: NO-GO. Pending staging execution tests.
 
 ## Progress Checklist
 - [x] Records Retention UAT verified.
