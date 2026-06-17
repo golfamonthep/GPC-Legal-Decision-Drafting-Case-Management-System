@@ -46,3 +46,31 @@
 
 ## 9. GO/NO-GO for Prompt 61B live staging UAT
 - **Decision**: NO-GO (BLOCKED until verified)
+
+## Prompt 61B Owner Confirmation Gate
+
+Required confirmations:
+1. Preview/Staging `DATABASE_URL` points to a dedicated staging Supabase database.
+2. Production `DATABASE_URL` points to a separate production Supabase database.
+3. The staging DB is safe to mutate with fake `PILOT_ARCHIVE_` records.
+4. Staging has no real case data or production copy unless explicitly sanitized and approved.
+5. Staging has or will have:
+   * `ALLOW_STAGING_ARCHIVE_EXECUTION=YES`
+   * `ALLOW_ARCHIVE_PILOT_SEED=YES`
+6. Production does not have:
+   * `ALLOW_STAGING_ARCHIVE_EXECUTION=YES`
+   * `ALLOW_ARCHIVE_PILOT_SEED=YES`
+   * any production archive execution enablement flag
+7. Migration target is staging only.
+8. Pilot seed target is staging only.
+
+**Decision**: BLOCKED
+**Reason**: Owner confirmation has not been provided in the prompt or project docs. Stopping before migration and seed.
+
+## Phase 9: GO/NO-GO for Live Staging Archive UAT (Prompt 61C)
+**Decision**: BLOCKED
+**Blockers**:
+- Staging DB separation is not owner-confirmed.
+- Migration has not been applied to staging.
+- Pilot records have not been seeded.
+- Role accounts readiness cannot be confirmed on staging.

@@ -236,9 +236,10 @@ Objectives:
 | 59 | Archive Execution UAT and Rollback/Reversal Verification (Completed - UAT blocked) |
 | 60 | Production Archive Release Gate — NO-GO Pack and Operator SOP (Completed) |
 | 61A | Establish Verified Staging DB + Archive Pilot Records (Prepared/Blocked on environment) |
+| 61B | Execute Staging DB Migration and Pilot Seed (Blocked on owner confirmation) |
 
 * **Latest Execution Phase**: Phase 14 (Final report)
-* **Primary Objective**: Establish verified staging DB and archive pilot records for staging archive UAT.
+* **Primary Objective**: Safely apply staging migration and seed archive pilot records pending owner confirmation.
 * **Archive Execution Readiness**: STAGING-ONLY READY (Production disabled).
 * **Archive UAT Status**: PARTIAL / BLOCKED — Staging DB blocked, pilot records not executed.
 * **Archive Audit Verification Status**: VERIFIED via code audit.

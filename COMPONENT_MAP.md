@@ -412,9 +412,9 @@ Component: [`MaintenanceActionsPanel.tsx`](file:///c:/APP/src/components/admin/M
 | Dry-Run Execution Report | - `docs/pilot-seeding-dry-run-results.md` - Validation results for pilot dry-run (Prompt 50A)<br>- `docs/incident-response-runbook.md` - Remediation steps for common project incidents<br>- `docs/records-retention-uat-results.md` - UAT results for Records Retention UI (Prompt 52)<br>- `docs/archive-action-design.md` - Design document for future archive workflows (Prompt 52)<br>- `docs/archive-action-api-contract.md` - API contract for the future POST archive endpoint<br>- `docs/archive-action-ui-flow.md` - Planned UI flow for case archiving<br>- `docs/archive-eligibility-rules.md` - Business rules for case archive eligibility |
 | Pilot Seed Validation Report | `docs/pilot-seed-validation-report.md` | Output report from actual staging/preview seed execution |
 | **Preview/Staging Pilot Execution Report** | `docs/preview-staging-pilot-execution-report.md` | **NEW (Prompt 50)** Full execution report including environment check, role account status, workflow pass/fail, and GO/NO-GO decision |
-| **Staging Environment Verification Script** | `scripts/verify-staging-environment.ps1` | **NEW (Prompt 61A)** Validates endpoints on staging safely |
-| **Archive Pilot Seed Script** | `scripts/seed-archive-pilot-records.ts` | **NEW (Prompt 61A)** Seeds safe mock cases for archive UAT |
-| **Archive Pilot Plan & Roles** | `docs/archive-pilot-records-plan.md`, `docs/archive-staging-role-account-checklist.md`, `docs/staging-archive-readiness-report.md` | **NEW (Prompt 61A)** Comprehensive plans for staging tests |
+| **Staging Environment Verification Script** | `scripts/verify-staging-environment.ps1` | **NEW (Prompt 61A/61B)** Validates endpoints on staging safely (Skipped in 61B due to unconfirmed environment) |
+| **Archive Pilot Seed Script** | `scripts/seed-archive-pilot-records.ts` | **NEW (Prompt 61A/61B)** Seeds safe mock cases for archive UAT (Execution blocked in 61B) |
+| **Archive Pilot Plan & Roles** | `docs/archive-pilot-records-plan.md`, `docs/archive-staging-role-account-checklist.md`, `docs/staging-archive-readiness-report.md` | **NEW (Prompt 61A/61B)** Comprehensive plans for staging tests (Updated in 61B for owner confirmation gate) |
 
 ---
 

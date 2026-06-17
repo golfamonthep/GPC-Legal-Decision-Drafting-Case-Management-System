@@ -215,6 +215,11 @@ Rules:
 - In production, reject localhost, 127.0.0.1, `base`, or placeholder database hosts.
 - Do not run seed on production unless explicitly instructed.
 - Run migrations only when the user confirms.
+- Staging must be verified before pilot seed or archive UAT. Staging migration and seed require explicit owner-confirmed DB separation.
+- Pilot seed scripts must default to dry-run and fail closed. Pilot seed execute mode requires dry-run pass first. Missing DB URL / refused connection is safe fail-closed, not a reason to bypass.
+- Pilot archive records must use clear fake prefixes.
+- Code audit does not unblock production release.
+- Prompt 61B does not run archive execution.
 - Pilot data must be anonymized and clearly prefixed (e.g. PILOT_).
 - Seed scripts must be dry-run by default and manual only.
 - Pilot seed execution must be separated into dry-run, preview/staging, and production approval phases.
