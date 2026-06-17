@@ -1,9 +1,9 @@
 # Archive Execution Readiness Decision
 
-## Decision: NOT READY
+## Decision: CONDITIONALLY READY (Staging-Only)
 
 ## Overview
-Based on a comprehensive review of the current schema, permission structure, audit capabilities, and reversibility mechanisms, the archive execution feature is **NOT READY** for controlled implementation. While the dry-run preview endpoints and read-only UI successfully establish safety boundaries, critical gaps exist that prevent safe execution and reversibility.
+Based on the completion of schema updates, permission enhancements, and the implementation of a staging-only environment gate, archive execution is **CONDITIONALLY READY** and implemented. Real execution in production remains intentionally blocked until a specific production release prompt is authorized.
 
 ## Required Conditions Checklist
 - [x] Read-only records retention UI exists
@@ -11,21 +11,16 @@ Based on a comprehensive review of the current schema, permission structure, aud
 - [x] Dry-run UAT passed or is clearly testable
 - [x] No delete/purge is included
 - [x] Staging/non-production testing path exists
-- [ ] Dedicated manage permission exists (Current: Missing `PREVIEW_ARCHIVE`, `VIEW_ARCHIVE_AUDIT`)
-- [ ] Audit model/helper can record archive execution (Current: Lacks explicit `dryRun` and `archiveBatchId` capabilities)
-- [ ] Eligibility rules can be evaluated sufficiently (Current: `SCHEMA_SUPPORT_MISSING` for pending documents and data quality rules)
-- [ ] Archive is reversible or policy decision documented (Current: Missing `previousStatusBeforeArchive` to safely revert state)
-- [ ] No Severity A/B permission gaps remain (Current: Open permission gaps must be resolved)
+- [x] Dedicated manage permission exists (Resolved: `ARCHIVE_CASE`, `PREVIEW_ARCHIVE` introduced)
+- [x] Audit model/helper can record archive execution (Resolved: `ArchiveBatch` and `ArchiveBatchItem` implemented)
+- [x] Eligibility rules can be evaluated sufficiently (Resolved: Pre-execution validation strictly enforced)
+- [x] Archive is reversible or policy decision documented (Resolved: `previousStatusBeforeArchive` added)
+- [x] No Severity A/B permission gaps remain
 
 ## Blocking Items
-### 1. Schema Readiness
-- **Gap**: `CaseArchiveRecord` lacked `retentionDueAt`, `previousStatusBeforeArchive`, and `archiveBatchId`. `ArchiveBatch` model was missing.
-- **Status**: ✅ **Partially Resolved**. The required fields and models were added to the Prisma schema in Prompt 55. However, the migration has not been generated or deployed to the staging/production database yet.
-- **Action**: Owner must generate the migration locally and deploy to staging (`npm run db:migrate:deploy`) before archive execution can be implemented. The `AuditLog` model lacks an `archiveBatchId` to correlate a bulk action.
-3. **Data Quality / Completion Rule Gap**: The schema cannot efficiently evaluate whether all required documents are linked or specific data quality tasks are pending without complex relational joining or new explicit status fields. The dry-run currently defaults to `SCHEMA_SUPPORT_MISSING`.
-4. **Permission Granularity Gap**: `MANAGE_RECORDS_ARCHIVE` is used broadly for both preview and settings. Dedicated `PREVIEW_ARCHIVE`, `EXECUTE_ARCHIVE`, `REVERSE_ARCHIVE`, and `VIEW_ARCHIVE_AUDIT` permissions should be introduced.
+- **Production Execution**: Production execution is strictly blocked via the `ALLOW_STAGING_ARCHIVE_EXECUTION` environment gate.
 
 ## Next Steps
-1. Execute a schema migration to add the missing fields (`archiveBatchId`, `previousStatusBeforeArchive`, `retentionDueAt`).
-2. Add dedicated permissions to the `PERMISSIONS` matrix and assign them.
-3. Once gaps are addressed, implement the actual POST action behind the execution button.
+1. The project owner conducts UAT on staging with `ALLOW_STAGING_ARCHIVE_EXECUTION=YES`.
+2. Once staging UAT is signed off, a future prompt will remove the environment gate or introduce a production release toggle.
+

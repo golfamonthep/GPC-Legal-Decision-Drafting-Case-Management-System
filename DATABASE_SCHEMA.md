@@ -262,6 +262,7 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 - **Eligibility**: Evaluation lacks detailed schema support for evaluating document completion and granular data quality issues, leading to conservative fallback checks (`SCHEMA_SUPPORT_MISSING`).
 - **Migration Status**: No migration generated in Prompt 55 because local dev DB was unavailable. A manual migration plan (`docs/archive-retention-migration-manual-plan.md`) must be executed before archive execution.
 - **Permissions (Prompt 56)**: Dedicated permissions (`PREVIEW_ARCHIVE`, `VIEW_ARCHIVE_AUDIT`) and execution gates (`EXECUTE_ARCHIVE` via `ARCHIVE_CASE`) were added at the code level (`permissions.ts`). No database schema changes were required for this permission system update, as roles are managed in code and mapped to NextAuth sessions.
+- **Execution Endpoint (Prompt 57)**: The `POST /api/records-retention/archive/execute` endpoint was added. It inserts records into `ArchiveBatch` and `ArchiveBatchItem`, updates `CaseArchiveRecord` (including `previousStatusBeforeArchive` and `archiveBatchId`), and creates an `AuditLog`. Execution remains strictly limited to staging via environment gates.
 
 ---
 

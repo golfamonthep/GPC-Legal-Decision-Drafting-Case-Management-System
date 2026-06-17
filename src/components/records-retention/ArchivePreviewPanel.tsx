@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ShieldAlert, Info, AlertTriangle, CheckCircle, Shield } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ShieldAlert, Info, AlertTriangle, CheckCircle, Shield, Check } from "lucide-react";
 
 interface CasePreviewResult {
   caseId: string;
@@ -27,17 +27,42 @@ interface ArchivePreviewResponse {
   error?: string;
 }
 
+interface EnvStatus {
+  executionEnabled: boolean;
+  environmentSafe: boolean;
+  blockedReasons: string[];
+}
+
 export default function ArchivePreviewPanel() {
   const [caseIdsInput, setCaseIdsInput] = useState("");
   const [reason, setReason] = useState("");
   const [policyReference, setPolicyReference] = useState("");
+  const [confirmationPhrase, setConfirmationPhrase] = useState("");
+  
   const [loading, setLoading] = useState(false);
+  const [executing, setExecuting] = useState(false);
+  
   const [result, setResult] = useState<ArchivePreviewResponse | null>(null);
+  const [executeResult, setExecuteResult] = useState<any | null>(null);
+  
   const [error, setError] = useState<string | null>(null);
+  const [envStatus, setEnvStatus] = useState<EnvStatus | null>(null);
+
+  useEffect(() => {
+    fetch("/api/records-retention/archive/environment")
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) {
+          setEnvStatus(data);
+        }
+      })
+      .catch(err => console.error("Failed to check env status", err));
+  }, []);
 
   const handlePreview = async () => {
     setError(null);
     setResult(null);
+    setExecuteResult(null);
 
     const ids = caseIdsInput
       .split(",")
@@ -75,32 +100,77 @@ export default function ArchivePreviewPanel() {
     }
   };
 
+  const handleExecute = async () => {
+    if (!result || result.eligibleCount === 0) return;
+    
+    setError(null);
+    setExecuting(true);
+    
+    const ids = caseIdsInput
+      .split(",")
+      .map(id => id.trim())
+      .filter(id => id.length > 0);
+
+    try {
+      const res = await fetch("/api/records-retention/archive/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          caseIds: ids, 
+          reason, 
+          policyReference,
+          confirmationPhrase 
+        })
+      });
+
+      if (res.status === 401) {
+        setError("Unauthorized (401) - กรุณาเข้าสู่ระบบใหม่");
+      } else if (res.status === 403) {
+        setError("Forbidden (403) - คุณไม่มีสิทธิ์จัดเก็บข้อมูล (ARCHIVE_CASE)");
+      } else if (res.status === 423) {
+        const data = await res.json().catch(() => ({}));
+        setError(`Environment Blocked (423): ${data.error || "ระบบไม่อนุญาตให้จัดเก็บในสภาพแวดล้อมนี้"}`);
+      } else if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || `Error ${res.status}: ไม่สามารถจัดเก็บข้อมูลได้`);
+      } else {
+        const data = await res.json();
+        setExecuteResult(data);
+        setConfirmationPhrase(""); // reset
+      }
+    } catch (err: any) {
+      setError("เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์เพื่อจัดเก็บข้อมูล");
+    } finally {
+      setExecuting(false);
+    }
+  };
+
   return (
     <div className="bg-white shadow rounded-lg border border-slate-200 mt-6">
       <div className="px-4 py-5 sm:px-6 border-b border-slate-200 bg-slate-50 rounded-t-lg">
         <h3 className="text-base font-semibold leading-6 text-slate-900 flex items-center gap-2">
           <ShieldAlert className="w-5 h-5 text-indigo-500" />
-          ระบบจำลองการจัดเก็บข้อมูล (Archive Dry-Run Preview)
+          ระบบจำลองและดำเนินการจัดเก็บข้อมูล (Archive Execution Panel)
         </h3>
         <p className="mt-1 text-sm text-slate-500">
-          ตรวจสอบผลกระทบและเงื่อนไขการจัดเก็บก่อนดำเนินการจริง (ปัจจุบันระบบรองรับเฉพาะการจำลองเท่านั้น)
+          ตรวจสอบผลกระทบและดำเนินการจัดเก็บ (Staging-only archive execution. Production execution is disabled.)
         </p>
       </div>
 
       <div className="px-4 py-5 sm:p-6 space-y-6">
-        <div className="rounded-md bg-blue-50 p-4 border border-blue-200">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <Info className="h-5 w-5 text-blue-400" aria-hidden="true" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">Dry-run preview only. No records will be archived.</h3>
-              <div className="mt-2 text-sm text-blue-700">
-                <p>การดำเนินการนี้จะไม่มีผลต่อฐานข้อมูล เป็นเพียงการตรวจสอบสถานะเท่านั้น</p>
+        {envStatus && !envStatus.executionEnabled && (
+          <div className="rounded-md bg-amber-50 p-4 border border-amber-200">
+            <div className="flex">
+              <Shield className="h-5 w-5 text-amber-400" />
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-amber-800">Production Execution Disabled</h3>
+                <div className="mt-2 text-sm text-amber-700">
+                  <p>ระบบถูกจำกัดให้สามารถทำงานได้แค่จำลองผลลัพธ์ (Dry-run preview) สาเหตุ: {envStatus.blockedReasons.join(", ")}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="space-y-4">
           <div>
@@ -123,7 +193,7 @@ export default function ArchivePreviewPanel() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="reason" className="block text-sm font-medium leading-6 text-slate-900">
-                เหตุผลการจัดเก็บ (Optional)
+                เหตุผลการจัดเก็บ <span className="text-red-500">*</span>
               </label>
               <div className="mt-2">
                 <input
@@ -133,6 +203,7 @@ export default function ArchivePreviewPanel() {
                   className="block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   value={reason}
                   onChange={e => setReason(e.target.value)}
+                  placeholder="ต้องระบุเหตุผล"
                 />
               </div>
             </div>
@@ -158,8 +229,8 @@ export default function ArchivePreviewPanel() {
           <button
             type="button"
             onClick={handlePreview}
-            disabled={loading || caseIdsInput.trim() === ""}
-            className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || executing || caseIdsInput.trim() === ""}
+            className="inline-flex items-center rounded-md bg-slate-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "กำลังตรวจสอบ..." : "Preview Archive Impact"}
           </button>
@@ -173,8 +244,21 @@ export default function ArchivePreviewPanel() {
             </div>
           </div>
         )}
+        
+        {executeResult && (
+          <div className="rounded-md bg-green-50 p-4 border border-green-200">
+            <div className="flex">
+              <CheckCircle className="h-5 w-5 text-green-400" />
+              <div className="ml-3 text-sm text-green-800">
+                <p className="font-bold">จัดเก็บข้อมูลสำเร็จ</p>
+                <p>จำนวนที่จัดเก็บ: {executeResult.archivedCount}</p>
+                <p>Batch ID: {executeResult.archiveBatchId}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {result && (
+        {result && !executeResult && (
           <div className="mt-6 border-t border-slate-200 pt-6">
             <h4 className="text-sm font-semibold text-slate-900 mb-4">ผลการจำลอง (Preview Results)</h4>
             
@@ -228,34 +312,62 @@ export default function ArchivePreviewPanel() {
                       </ul>
                     </div>
                   )}
-
-                  {item.eligible && (
-                    <div className="mt-3 text-xs text-slate-600 grid grid-cols-2 gap-2 bg-white p-3 rounded border border-slate-100">
-                      <div className="col-span-2 font-semibold mb-1">Impact Preview:</div>
-                      <div>Change Status: {item.impact.wouldMarkArchived ? "Yes" : "No"}</div>
-                      <div>Preserve Docs: {item.impact.wouldPreserveDocuments ? "Yes" : "No"}</div>
-                      <div>Preserve Audit: {item.impact.wouldPreserveAuditTrail ? "Yes" : "No"}</div>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
 
-            <div className="mt-8 border-t border-slate-200 pt-6 bg-slate-50 p-4 rounded-lg flex items-start gap-4">
-               <Shield className="w-6 h-6 text-slate-400 flex-shrink-0" />
-               <div>
-                 <h4 className="text-sm font-medium text-slate-900">Execution Blocked</h4>
-                 <p className="text-xs text-slate-500 mt-1">
-                   Real archive execution is currently disabled for safety. Only dry-run previews are permitted.
-                 </p>
-                 <button
-                    type="button"
-                    disabled
-                    className="mt-3 inline-flex items-center rounded-md bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-500 cursor-not-allowed"
-                  >
-                    Pending approval to execute
-                  </button>
-               </div>
+            <div className="mt-8 border-t border-slate-200 pt-6 bg-slate-50 p-4 rounded-lg">
+               {envStatus && envStatus.executionEnabled ? (
+                 <div className="space-y-4">
+                   <h4 className="text-sm font-medium text-slate-900 flex items-center gap-2">
+                     <Shield className="w-5 h-5 text-indigo-500" />
+                     ยืนยันการจัดเก็บ (Staging Execution)
+                   </h4>
+                   <p className="text-xs text-slate-500">
+                     ตรวจสอบผล Preview ให้แน่ใจ การดำเนินการนี้จะเปลี่ยนสถานะเอกสารเป็น ARCHIVED ทันที
+                   </p>
+                   
+                   <div>
+                     <label htmlFor="phrase" className="block text-xs font-medium text-slate-700">
+                       พิมพ์วลียืนยัน: <span className="font-mono text-indigo-600 font-bold">ARCHIVE PILOT CASES</span>
+                     </label>
+                     <input
+                        type="text"
+                        id="phrase"
+                        className="mt-1 block w-full rounded-md border-0 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        value={confirmationPhrase}
+                        onChange={(e) => setConfirmationPhrase(e.target.value)}
+                        placeholder="พิมพ์เพื่อยืนยัน"
+                     />
+                   </div>
+
+                   <button
+                      type="button"
+                      onClick={handleExecute}
+                      disabled={executing || result.eligibleCount === 0 || !reason || !confirmationPhrase}
+                      className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {executing ? "กำลังดำเนินการ..." : "ยืนยันและดำเนินการจัดเก็บ (Execute)"}
+                    </button>
+                 </div>
+               ) : (
+                 <div className="flex items-start gap-4">
+                   <Shield className="w-6 h-6 text-slate-400 flex-shrink-0" />
+                   <div>
+                     <h4 className="text-sm font-medium text-slate-900">Execution Blocked</h4>
+                     <p className="text-xs text-slate-500 mt-1">
+                       Real archive execution is currently disabled for safety. Only dry-run previews are permitted.
+                     </p>
+                     <button
+                        type="button"
+                        disabled
+                        className="mt-3 inline-flex items-center rounded-md bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-500 cursor-not-allowed"
+                      >
+                        Pending approval to execute
+                      </button>
+                   </div>
+                 </div>
+               )}
             </div>
           </div>
         )}

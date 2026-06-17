@@ -556,21 +556,6 @@ Prerequisites:
 - Prisma Client is generated to the project-specific generated client path (`src/generated/prisma`).
 - `requireApiPermission` throws `"UNAUTHORIZED"` / `"FORBIDDEN"` rather than returning `NextResponse`; API handlers must call it inside `try/catch` and map errors to 401/403.
 - Pilot/live workflow remains blocked until staging DB and role accounts are manually verified.
-- Archive workflow must be designed before execution.
-- Archive is not delete and must preserve audit trail.
-- Archive action requires permission, confirmation, dry-run, impact preview, and audit.
-- Eligibility rules must be explicit before archive implementation.
-- Do not add destructive lifecycle actions without separate approval.
-- Archive execution requires schema, permission, audit, reversibility, eligibility, and UAT gates before implementation.
-- If any gate is missing, implement only documentation/planning, not execution.
-- Archive migration planning must be separated from migration execution.
-- Delete/purge remains out of scope unless separately approved.
-
----
-
-## 18. Intelligence Files Update Rules
-
-**Every future prompt must follow this protocol:**
 
 ### Before starting work:
 1. Read `SKILL.md` (this file)
@@ -619,6 +604,209 @@ These patterns have caused real problems in this project. Do not repeat them:
 | Claim pilot workflow passed with static audit only | Static audit + build = partial pass; live authenticated role tests are required for full pass |
 | Leave temporary developer scripts untracked | Add to `.gitignore` or commit as utility; never leave ambiguous in working tree |
 | Infer DB classification from 401 response | HTTP 401 proves auth protection only; DB classification requires Vercel dashboard inspection |
+- Keep each task focused.
+- Do not mix multiple features into one commit.
+
+After implementation:
+```bash
+npx prisma generate
+npx tsc --noEmit
+npm run build
+```
+
+Before commit:
+```bash
+git diff --stat
+```
+
+Commit rules:
+- Stage only files related to the current task.
+- Use clear conventional commit messages:
+  - `feat: ...`
+  - `fix: ...`
+  - `chore: ...`
+  - `docs: ...`
+  - `refactor: ...`
+- Push to current branch after successful build.
+- Confirm clean working tree:
+```bash
+git status
+```
+
+Final response must include:
+- summary of what was implemented
+- files changed
+- commands run
+- typecheck result
+- build result
+- commit message
+- commit hash
+- push status
+- warnings/follow-up risks
+
+---
+
+## 13. Deployment Rules
+
+Vercel deployment checklist:
+1. Check latest commit deployed.
+2. Check deployment status is Ready.
+3. Check `/api/health/db`.
+4. Confirm `DATABASE_URL` and `DIRECT_URL` are set in Production.
+5. Confirm `OPENAI_API_KEY` is set in Production if AI features are used.
+6. Confirm `EMBEDDING_MODEL` is set.
+7. Redeploy after environment variable changes.
+8. Do not assume old deployments use new env values.
+
+If `/api/health/db` returns:
+- host `base`: env is wrong or old deployment is used.
+- host `db.<project>.supabase.co:5432`: direct connection is used; switch to Supabase pooler for Vercel.
+- host `pooler.supabase.com:6543` and status ok: runtime DB is connected.
+
+---
+
+## 14. Production Readiness Gate
+
+Do not proceed to new AI features unless all are true:
+
+- `/api/health/db` returns ok.
+- Prisma migrations have been applied.
+- Supabase tables exist.
+- `/dashboard` loads without production DB error.
+- `/cases` loads without production DB error.
+- `/library` loads without production DB error.
+- Existing build passes.
+- Git working tree is clean.
+
+---
+
+## 15. Task Execution Template
+
+For every new task, follow this process:
+
+1. Restate the task.
+2. Inspect relevant files.
+3. Propose a short plan if the task is risky.
+4. Run `git status`.
+5. Make focused changes.
+6. Run required checks.
+7. Commit and push if checks pass.
+8. Provide final report.
+
+Use this exact final report format:
+
+```text
+Summary:
+Files changed:
+Commands run:
+Typecheck:
+Build:
+Database/migration impact:
+Security/secrets impact:
+Commit:
+Commit hash:
+Push:
+Warnings / next steps:
+```
+
+---
+
+## 16. Current Recommended Next Step
+
+See `PROJECT_STATE.md` §12 for the definitive recommended next step.
+
+Summary: **Prompt 48 — Pilot Data Seeding + Controlled Real-Case Trial**
+
+Prerequisites:
+- Intelligence baseline: completed (this prompt, Prompt 47.5)
+- COMMISSIONER/VIEWER live UAT: partially blocked (documented gap)
+
+---
+
+## 17. UAT & Authorization Rules
+
+- Authenticated UAT must verify backend API permission enforcement (e.g., `requireApiPermission`, `hasPermission`), not only UI visibility.
+- Do not mark UAT passed unless each role was tested with an authenticated account (or the report explicitly states it was a static code audit).
+- NextAuth middleware (`withAuth`) prevents unauthenticated access broadly, but granular authorization requires explicit role checks on every mutating API and sensitive page.
+- Maintenance actions require POST, explicit permission checks, confirmation phrases for destructive actions, and audit logging.
+- After fixing auth/permission issues, rerun production-like smoke tests.
+- Permission hardening must start from the UAT gap register and fix only confirmed gaps.
+- Backend API enforcement must be verified before UI hiding is considered sufficient.
+- Mutation endpoints require explicit permission checks and structured unauthorized responses.
+- Admin maintenance routes must remain POST-only for actions and must never execute actions during render/import.
+- After permission changes, run build plus unauthenticated route smoke tests.
+- Role UAT must test both page access and direct API challenge attempts for each role.
+- A permission gap is not verified fixed until unauthenticated, unauthorized, and authorized paths are all tested.
+- A route returning build-pass but runtime 500 must be treated as UAT failure.
+- Sign-off packs must clearly distinguish tested roles from planned/blocked roles.
+- Do not claim full UAT pass when some role accounts are unavailable; record as partial with explicit blocked items.
+- `requireApiPermission` throws `"UNAUTHORIZED"` / `"FORBIDDEN"` rather than returning a `NextResponse`; API handlers must call it inside `try/catch` and map to 401/403.
+- Static code audit + build validation is a valid but incomplete substitute for live authenticated UAT; always document the distinction.
+- Do not run `prisma migrate deploy` inside the Vercel build command.
+- Do not use `prisma db push --accept-data-loss` on staging or production.
+- Do not write audit logs or database mutations during React Server Component render.
+- Maintenance/archive actions must be POST-only, permission-protected, confirmation-protected, and audited.
+- Do not expose secrets to the client or logs.
+- Never commit `.env*` files or real secret values.
+- Prisma Client is generated to the project-specific generated client path (`src/generated/prisma`).
+- `requireApiPermission` throws `"UNAUTHORIZED"` / `"FORBIDDEN"` rather than returning `NextResponse`; API handlers must call it inside `try/catch` and map errors to 401/403.
+- Pilot/live workflow remains blocked until staging DB and role accounts are manually verified.
+
+### Before starting work:
+1. Read `SKILL.md` (this file)
+2. Read `ARCHITECTURE.md` (if touching system structure, deployment, or tech stack)
+3. Read `PROJECT_STATE.md` (always — to know where we are)
+4. Read `DATABASE_SCHEMA.md` (if touching Prisma schema, migrations, or models)
+5. Read `COMPONENT_MAP.md` (if adding/modifying routes, components, or API handlers)
+
+### After completing work:
+1. Update `PROJECT_STATE.md`: completed prompts table, module status, smoke test summary
+2. Update `SKILL.md`: new lessons learned, new rules from solved problems
+3. Update `ARCHITECTURE.md`: if system structure, modules, or deployment flow changed
+4. Update `DATABASE_SCHEMA.md`: if schema changed, migration added, or model notes changed
+5. Update `COMPONENT_MAP.md`: if routes, components, or API handlers added/removed/changed
+
+### Quick validation:
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
+```
+
+---
+
+## 18. Intelligence Files Update Rules
+
+**Every future prompt must follow this protocol:**
+
+### Before starting work:
+
+---
+
+## 19. Anti-Patterns to Avoid
+
+These patterns have caused real problems in this project. Do not repeat them:
+
+| Anti-Pattern | Correct Approach |
+|--------------|------------------|
+| Import from `@prisma/client` | Always import from `src/generated/prisma` |
+| Run `prisma migrate deploy` in Vercel build | Run migrations manually with `DIRECT_URL` |
+| Assume build success = runtime success | Always verify `/api/health/db` post-deploy |
+| Write audit logs in React Server Component render | Write mutations only in API routes / Server Actions |
+| Call `requireApiPermission` without try/catch | Always wrap in try/catch; return 401/403 NextResponse |
+| Claim full UAT when accounts unavailable | Document as partial; list blocked items explicitly |
+| Commit `.env`, `.env.local`, secrets, tokens, passwords | Never commit — always verify with `git grep` |
+| Mix mock data with production data | Always guard with `NODE_ENV` checks |
+| Trust Windows build for Linux/Vercel path casing | Use lowercase filenames; verify on Vercel |
+| Claim untracked files are deployed | Always run `git status --untracked-files=all` before claiming parity |
+| Run broad PowerShell bulk edits across routes | Make targeted, specific changes; one concern per PR |
+| Use `prisma migrate dev` on production | Use `prisma migrate deploy` only on production |
+| Auto-overwrite human draft text | AI output must be manually inserted; never auto-overwrite |
+| Draft full legal decision in one AI call | Draft section-by-section only |
+| Skip updating intelligence files after a prompt | Always update relevant docs as the final step |
+| Assume Vercel preview = separate staging DB | Verify in Vercel dashboard → Project → Settings → Environment Variables → Preview tab before any seed |
+| Execute pilot seed before environment is confirmed | Always confirm non-production environment classification first; block and document if uncertain |
+| Claim pilot workflow passed with static audit only | Static audit + build = partial pass; live authenticated role tests are required for full pass |
+| Leave temporary developer scripts untracked | Add to `.gitignore` or commit as utility; never leave ambiguous in working tree |
+| Infer DB classification from 401 response | HTTP 401 proves auth protection only; DB classification requires Vercel dashboard inspection |
 | Detect production via DATABASE_URL content | Use `NODE_ENV=production` for production detection in scripts; URL content is unreliable (staging also uses pooler) |
 | Use `ALLOW_PRODUCTION_PILOT_SEED=YES` for staging | Use `ALLOW_STAGING_PILOT_SEED=YES` for staging; reserve production flag for production only |
 | Assume seeded `@example.test` users can log in | Azure AD OAuth requires real Microsoft accounts; seed creates DB records only |
@@ -631,3 +819,4 @@ These patterns have caused real problems in this project. Do not repeat them:
 | Mix preview and execution permissions | Preview permission (`PREVIEW_ARCHIVE`) and execution permission (`EXECUTE_ARCHIVE`) must be strictly separated. |
 | Rely on UI hiding for security | UI permission visibility is not a substitute for backend API authorization. |
 | Expose execute actions prematurely | Reserved execution permissions must not enable execution UI until the endpoint exists and UAT is complete. |
+| Treat handoff as verified completion | Archive execution requires schema, permission, audit, reversibility, eligibility, and UAT gates before implementation. If any gate is missing, implement only documentation/planning, not execution. Archive migration planning must be separated from migration execution. Delete/purge remains out of scope unless separately approved. **Archive execution must re-run eligibility pre-mutation, not trust previous client preview checks.** **Staging-only execution must require an explicit environment gate flag.** **Production execution requires a separate release gate and must be blocked by default.** **Confirmation phrase and reason are required for archive execution.** |

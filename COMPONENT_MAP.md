@@ -115,6 +115,8 @@
 |-------|------|--------|------------|
 | `/records-retention` | `src/app/records-retention/page.tsx` | GET | `VIEW_RECORDS_ARCHIVE` |
 | `/api/records-retention/archive/preview` | route.ts | POST | `PREVIEW_ARCHIVE` |
+| `/api/records-retention/archive/execute` | route.ts | POST | `ARCHIVE_CASE` |
+| `/api/records-retention/archive/environment` | route.ts | GET | `PREVIEW_ARCHIVE` |
 
 ---
 
@@ -262,7 +264,7 @@
 | Search lib | `src/lib/search/` | Case search implementation |
 | Data quality lib | `src/lib/dataQuality/` | Issue detection and fix logic |
 | Admin lib | `src/lib/admin/` | System health, usage, audit queries |
-| Records Retention | `src/lib/records-retention/` | `retentionQueries.ts`, `archivePreview.ts` (eligibility service) |
+| Records Retention | `src/lib/records-retention/` | `retentionQueries.ts`, `archivePreview.ts`, `archiveExecution.ts`, `archiveEnvironmentGate.ts` |
 
 ---
 

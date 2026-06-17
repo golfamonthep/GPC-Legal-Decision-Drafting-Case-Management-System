@@ -225,11 +225,12 @@ Objectives:
 | 53 | Archive Dry-Run Preview Endpoint + Permission-Safe UI Panel (Completed) |
 | 54 | Archive Execution Design Review + Schema Gap Decision (Completed) |
 | 55 | Add Archive/Retention Schema Migration Plan and Prisma Model Updates (Completed) |
-| 56 | **Current Active Prompt**: Add Dedicated Records Retention Permissions and Role Mapping |
+| 56 | Add Dedicated Records Retention Permissions and Role Mapping (Completed) |
+| 57 | **Current Active Prompt**: Implement Archive Execution Endpoint — Staging Only, Dry-Run Required First |
 
-* **Latest Execution Phase**: Phase 15 (Final report)
-* **Primary Objective**: Add dedicated Records Retention and Archive permissions to the existing permission system, map them to appropriate roles, update UI/API guards to use the dedicated permissions, and document role behavior clearly.
-* **Archive Execution Readiness**: NOT READY (Archive execution remains intentionally blocked pending further UAT and full implementation of execution endpoints).
+* **Latest Execution Phase**: Phase 14 (Final report)
+* **Primary Objective**: Implement the safe archive execution endpoint that runs only in confirmed non-production staging/preview environments, gated by environment checks and confirmation phrase.
+* **Archive Execution Readiness**: CONDITIONALLY READY (Staging-only enabled, production disabled).
 
 ## Progress Checklist
 - [x] Records Retention UAT verified.
@@ -237,12 +238,13 @@ Objectives:
 - [x] Archive API contract documented.
 - [x] Archive dry-run preview endpoint built.
 - [x] Prompt 54: Schema, permission, audit, and reversibility gates reviewed.
-- [x] Prompt 55: Prisma schema updated with `ArchiveBatch`, `ArchiveBatchItem` models and retention fields on `CaseArchiveRecord`. Migration file creation skipped (local DB unreachable), manual plan documented. Archive preview logic updated to check `ALREADY_ARCHIVED`.
-- [x] **Prompt 56**: Dedicated `PREVIEW_ARCHIVE` and `VIEW_ARCHIVE_AUDIT` permissions added. Roles mapped in `permissions.ts` and documented in `docs/records-retention-role-permission-map.md`. UI and API guards updated to check `PREVIEW_ARCHIVE` before showing or allowing dry-runs. Unauthenticated smoke script `scripts/records-retention-permission-smoke.ps1` created. Archive execution remains completely disabled. Delete/purge remains out of scope.
+- [x] Prompt 55: Prisma schema updated with `ArchiveBatch`, `ArchiveBatchItem` models and retention fields.
+- [x] Prompt 56: Dedicated `PREVIEW_ARCHIVE` and `VIEW_ARCHIVE_AUDIT` permissions added and mapped.
+- [x] **Prompt 57**: Archive execution endpoint implemented with strict staging-only environment gates. Dry-run required, batch limit enforced, and audit trail integrated. Production execution remains blocked by design.
 
 ## Known Blockers
 * **Pilot/Live Blocked**: Full staging database verification and test account assignment must be completed by the project owner.
-* **Archive Execution Blocked**: Pending implementation of execution endpoints (`POST /api/records-retention/archive/execute`) using the `EXECUTE_ARCHIVE` (via `ARCHIVE_CASE`) permission.
+* **Production Archive Execution Blocked**: Pending owner UAT sign-off on staging and a subsequent production release prompt to remove the environment gate.
 
 ## Next Recommended Prompt
-**Prompt 57**: Implement Records Retention Archive Execution Action and Audit Trail Logging.
+**Prompt 58**: Production Deployment Sign-off and Release Gate OR Microsoft Graph Document Sync (Owner Decision).
