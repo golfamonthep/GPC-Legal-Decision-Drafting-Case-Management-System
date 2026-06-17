@@ -177,43 +177,42 @@ No live workflow was executed. Defects below are from static code audit and prio
 | Build verification | ✅ PASSED |
 | Static code audit of all routes | ✅ PASSED |
 | Live authenticated workflow tests | ❌ BLOCKED (all roles) |
-| Pilot data seeded to preview/staging | ❌ BLOCKED (environment not confirmed) |
+| Pilot data seeded to preview/staging | ❌ BLOCKED (handed off to owner execution) |
 
-### Required Before Controlled Real-Case Trial
+### Prompt 50C Handoff Required
 
-1. **Owner must confirm** whether the Vercel preview deployment uses a separate non-production database (check Vercel dashboard → Project → Settings → Environment Variables → filter by "Preview").
-2. If preview = separate DB: approve seed execution, confirm it executes successfully, then re-run live workflow tests.
-3. If preview = production DB: establish a local staging environment with a separate DB before executing pilot seed.
-4. COMMISSIONER and VIEWER live accounts remain blocked (documented since Prompt 47).
-5. All role accounts must be seeded and verified in the confirmed non-production DB before live workflow tests proceed.
+1. **Owner has confirmed** the Vercel preview deployment uses a separate non-production database.
+2. Owner has explicitly approved execution of the pilot seed against this staging database.
+3. The Agent environment does not have direct network access to the Vercel staging database credentials (which are secured in the Vercel Dashboard) and cannot spoof Microsoft Entra ID authentication.
+4. **Action**: The owner must execute the seed script locally (`$env:PILOT_SEED_CONFIRM="YES" npx tsx scripts/seed-pilot-data.ts`) pointing to the staging DB, then assign roles to real test accounts via `/admin/users`, and manually run the live workflow tests.
 
 ### Recommended Next Prompt
 
-**Prompt 50B** — Confirm preview database classification (Vercel dashboard check), then execute real pilot seed if non-production confirmed.
+**Prompt 51** — Records Retention UI build (or Microsoft Graph sync if prioritized), while the owner executes the pilot workflow tests.
 
 ---
 
 ## Phase 16 — Controlled Real-Case Trial Readiness
 
-**Status: NOT READY**
+**Status: READY FOR OWNER EXECUTION**
 
 | Gate | Status |
 |------|--------|
 | Pilot dry-run passed | ✅ |
-| Preview/staging environment confirmed non-production | ❌ BLOCKED |
-| Pilot users seeded to non-production DB | ❌ BLOCKED |
-| Live workflow tests with pilot data | ❌ BLOCKED |
-| Remaining approval needed | ✅ Owner must confirm preview DB classification |
+| Preview/staging environment confirmed non-production | ✅ CONFIRMED |
+| Pilot users seeded to non-production DB | ❌ BLOCKED (Handoff to owner) |
+| Live workflow tests with pilot data | ❌ BLOCKED (Handoff to owner) |
+| Remaining approval needed | ✅ Owner approved staging seed |
 
 ---
 
 ## Phase 17 — Cleanup Readiness
 
-- No preview/staging pilot data was seeded (blocked).
+- No preview/staging pilot data was seeded by the agent (handed off).
 - `docs/pilot-data-cleanup-strategy.md` is complete and accurate.
 - Cleanup script was not run.
 - Production records were not touched.
-- When seed is eventually run in a confirmed non-production DB:
+- When seed is run by the owner in the staging DB:
   - Pilot prefix: `PILOT-CASE-`, `PILOT_DRAFT_`, `PILOT-MTG-`, `@example.test`
   - Cleanup: manual via Prisma Studio or Supabase SQL Editor targeting prefix-matched records only
   - Dual-person review required before executing cleanup
@@ -225,29 +224,29 @@ No live workflow was executed. Defects below are from static code audit and prio
 | Item | Result |
 |------|--------|
 | Intelligence files read | ✅ All 5 files |
-| Intelligence files updated | ✅ All 5 files updated below |
-| Preview/staging environment confirmed | ❌ BLOCKED — returns 401; likely shares production DB |
-| Pilot dataset used | ❌ BLOCKED |
-| Roles tested (live) | ❌ All 7 roles blocked |
-| Workflows tested (live) | ❌ All 10 workflows blocked |
+| Intelligence files updated | ✅ All 5 files updated |
+| Preview/staging environment confirmed | ✅ Owner confirmed non-production |
+| Pilot dataset used | ❌ Handoff to owner |
+| Roles tested (live) | ❌ All 7 roles blocked (Handoff to owner) |
+| Workflows tested (live) | ❌ All 10 workflows blocked (Handoff to owner) |
 | APIs tested (live) | ❌ All blocked |
 | Static code audit | ✅ All 67 routes build-verified |
 | Defects found | 4 (0 Severity A, 0 Severity B, 2 Severity C, 2 Severity D) |
 | Defects fixed | 1 (DEF-004: curl_all.ps1 → git-ignored) |
 | Defects deferred | 3 (DEF-001, DEF-002, DEF-003) |
-| Go/No-Go Decision | **CONDITIONAL GO** (blocked on environment confirmation) |
+| Go/No-Go Decision | **GO FOR OWNER EXECUTION** |
 | Real data used | ❌ None |
 | Production data touched | ❌ None |
-| Cleanup readiness | ✅ Strategy ready; no data to clean yet |
+| Cleanup readiness | ✅ Strategy ready |
 | Controlled real-case trial readiness | ❌ NOT READY |
 | Build result | ✅ PASSED |
 | Secret scan result | ✅ CLEAN |
 | `curl_all.ps1` decision | Added to `.gitignore` |
 | Commit | Pending push |
 | Vercel deployment status | Assumed stable (prior build) |
-| Recommended next prompt | **Prompt 50B**: Confirm preview DB classification → approve seed → live workflow tests |
+| Recommended next prompt | **Prompt 51**: Records Retention UI build |
 
 ---
 
 **Important final statement:**  
-Preview/staging pilot workflow execution is **not fully passed**; it is partially prepared/executed and pending missing environment confirmation and missing role accounts/seeded data.
+Live Pilot workflow execution remains blocked in the automated agent environment due to security boundaries (no staging DB credentials, no Microsoft test credentials). The execution phase is officially handed off to the owner. Do not proceed to real-case production trial execution until a non-production staging database is seeded and verified manually by the owner.

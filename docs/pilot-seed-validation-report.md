@@ -1,10 +1,19 @@
 # Pilot Seed Validation Report
 
-**Status**: Real seed not executed — validation pending.
+**Status**: Blocked — Execution handed off to owner.
 
-**Blocker (Prompt 50B)**: Non-production staging database not confirmed. Owner must complete `docs/vercel-preview-env-checklist.md` before seed can execute.
+**Approval Received (Prompt 50C)**: The owner has confirmed that the Preview DB is safe, non-production, and separate from production. They have provided explicit approval to execute the pilot seed.
 
-**Seed script fix applied (Prompt 50B)**: Production detection now uses `NODE_ENV=production` only (not URL content). Staging Supabase pooler URLs now require `ALLOW_STAGING_PILOT_SEED=YES` flag instead of the production override flag.
+**Blocker**: The agent does not have access to the staging `DATABASE_URL` (which is stored securely in the Vercel Dashboard and not shared to prevent credential leaks). Furthermore, Microsoft Entra ID integration requires real staff accounts to be mapped to the seeded roles, which the agent cannot do.
 
-**Next action**: Owner confirms staging DB → Agent runs real seed → Updates this report with record counts and validation results.
+**Required Owner Action**:
+1. Run the seed script locally with the staging `DATABASE_URL`:
+   ```powershell
+   $env:DATABASE_URL = "<staging-database-url>"
+   $env:PILOT_SEED_CONFIRM = "YES"
+   $env:ALLOW_STAGING_PILOT_SEED = "YES"
+   npx tsx scripts/seed-pilot-data.ts
+   ```
+2. Map real staff Microsoft accounts to the seeded roles via the admin UI (`/admin/users`).
+3. Execute the live pilot workflow tests manually and report back.
 

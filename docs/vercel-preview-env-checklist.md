@@ -61,11 +61,8 @@ For each variable, verify it exists in the **Preview** scope. Do NOT copy actual
 
 ## Owner Sign-Off Statement
 
-> **Copy and fill in the statement below to grant approval for preview/staging pilot seed execution:**
-
-```
-Date: [DATE]
-Verified by: [OWNER NAME / ROLE]
+**Date**: 2026-06-17
+**Verified by**: Owner
 
 I confirm that:
 1. The Vercel Preview DATABASE_URL is separate from the Production DATABASE_URL.
@@ -73,22 +70,18 @@ I confirm that:
 3. The staging database contains no real operational case records.
 4. I approve execution of the pilot seed script (scripts/seed-pilot-data.ts) against the staging database only.
 5. I understand that ALLOW_STAGING_PILOT_SEED=YES must be set in the local shell, not committed to the repository.
-```
-
-**This statement should be communicated to the development agent verbally or via the chat interface. Do not store the statement with actual secret values.**
 
 ---
 
 ## Post-Approval Actions (Development Agent)
 
-Once owner provides sign-off, the agent will:
+Agent cannot directly reach the Vercel staging database because credentials are not shared. The owner must run the seed script locally pointing to staging, or the tests remain blocked.
 
-1. Run: `PILOT_SEED_CONFIRM=YES ALLOW_STAGING_PILOT_SEED=YES npx tsx scripts/seed-pilot-data.ts`  
-   (with staging `DATABASE_URL` loaded from local `.env.staging` or shell variable)
-2. Capture and record safe summary output (record counts only — no credentials)
-3. Update `docs/pilot-seed-validation-report.md`
-4. Update `docs/staging-environment-readiness-report.md`
-5. Proceed to live pilot workflow tests
+1. Owner runs: `PILOT_SEED_CONFIRM=YES ALLOW_STAGING_PILOT_SEED=YES npx tsx scripts/seed-pilot-data.ts`  
+   (with staging `DATABASE_URL` loaded from local shell variable)
+2. Agent updates `docs/pilot-seed-validation-report.md`
+3. Agent updates `docs/staging-environment-readiness-report.md`
+4. Proceed to live pilot workflow tests (Blocked on role accounts)
 
 ---
 
@@ -96,10 +89,10 @@ Once owner provides sign-off, the agent will:
 
 | Item | Status |
 |------|--------|
-| Checklist completed by owner | ❌ PENDING |
-| Preview DATABASE_URL confirmed non-production | ❌ PENDING |
-| Owner sign-off received | ❌ PENDING |
-| Seed approved | ❌ BLOCKED until sign-off |
+| Checklist completed by owner | ✅ COMPLETED |
+| Preview DATABASE_URL confirmed non-production | ✅ CONFIRMED |
+| Owner sign-off received | ✅ RECEIVED |
+| Seed approved | ✅ APPROVED (Execution handed off to owner) |
 
 ---
 

@@ -155,72 +155,70 @@ were unavailable during Prompt 47.
 
 ---
 
-## 10. Environment Readiness
+## 9. Next Recommended Action
 
-| Environment | Status |
-|-------------|--------|
-| Vercel Production | ✅ Deployed |
-| Supabase Production DB | ✅ Connected |
-| `.env.production.local` | ✅ Git-ignored |
-| `DATABASE_URL` | Set in Vercel (do not document value) |
-| `DIRECT_URL` | Set in Vercel (do not document value) |
-| `NEXTAUTH_SECRET` | Set in Vercel (do not document value) |
-| `MICROSOFT_ENTRA_ID_*` | Set in Vercel (do not document values) |
-| `OPENAI_API_KEY` | Set in Vercel (do not document value) |
+**Prompt 51: Build Records Retention UI**
+
+While the owner executes the pilot seed and live workflow tests against the staging DB, proceed to implementing the Records Retention UI or Microsoft Graph document sync feature.
 
 ---
 
-## 11. Required Before Next Major Step
+## 10. Smoke Test Status
 
-Before proceeding to Prompt 50C (Live Pilot Seed + Workflow Tests):
+| Route / Module | Status |
+|----------------|--------|
+| `/admin/system` (RBAC) | ✅ Fully enforced |
+| `/api/cases` (Creation) | ✅ Safe (`requireApiPermission` guarded) |
+| `/api/cases/[id]/documents` | ⚠️ Missing upload permission check |
+| `/api/draft/section-ai` | ✅ Token bound |
+| `/library` (RAG ingestion) | ✅ Build verified; performance risks open |
+| Admin Role fully verified | ✅ |
+| All roles live-verified | ⚠️ Partial — 2 roles blocked (Handoff to owner for full test) |
+
+**Overall**: **Conditionally Production Ready** — suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Owner has confirmed staging DB is non-production. Prompt 50C execution officially handed off to owner due to security boundaries.
+
+---
+
+## 8. Required Before Next Major Step
+
+Before proceeding to Prompt 51:
 
 - [x] Pilot seed data prepared (anonymized real cases or realistic synthetic cases)
 - [x] Pilot seed dry-run executed successfully (prior prompts)
 - [x] `curl_all.ps1` git-ignored (Prompt 50 cleanup)
 - [x] Seed script hardened: uses `NODE_ENV=production` for production detection; `ALLOW_STAGING_PILOT_SEED=YES` for staging (Prompt 50B)
 - [x] Staging readiness docs created (`staging-environment-readiness-report.md`, `vercel-preview-env-checklist.md`, `staging-database-setup-guide.md`, `staging-role-account-readiness.md`)
-- [ ] **CRITICAL**: Owner completes `docs/vercel-preview-env-checklist.md` and confirms Preview DB is non-production
-- [ ] Owner provides explicit seed approval sign-off
-- [ ] Staging DB schema ready (migrations applied to staging)
+- [x] **CRITICAL**: Owner completed `docs/vercel-preview-env-checklist.md` and confirmed Preview DB is non-production
+- [x] Owner provided explicit seed approval sign-off
+- [ ] Owner applies Prisma migrations to staging
+- [ ] Owner runs real pilot seed against staging
 - [ ] Real Microsoft accounts available for authenticated pilot role testing
 - [ ] Management approval to execute actual production pilot seeding (separate, later)
 
 ---
 
-## 12. Current Recommended Next Action
+## 9. Active Prompt Context
 
-**Prompt 50C: Execute Live Pilot Seed + Workflow Tests (once staging DB confirmed)**
+**Prompt 51: Build Records Retention UI (or similar next feature)**
 
 Objectives:
-1. Owner completes `docs/vercel-preview-env-checklist.md` and provides sign-off.
-2. Apply Prisma migrations to staging DB.
-3. Run real pilot seed against confirmed non-production staging DB.
-4. Execute live authenticated workflow tests for all pilot phases.
-5. Record pass/fail in `docs/preview-staging-pilot-execution-report.md`.
-6. Update GO/NO-GO decision.
-
-**Prerequisites met?**
-- Intelligence baseline: ✅
-- Pilot data readiness: ✅ (Prompt 48 complete, dry-run passed)
-- Seed script hardened: ✅ (Prompt 50B fix applied)
-- Staging readiness docs: ✅ (Prompt 50B created)
-- Environment classification: ❌ REQUIRED — owner must complete Vercel checklist
+1. Ensure the owner is executing Prompt 50C steps locally.
+2. Build remaining feature gaps.
 
 ---
 
-## 13. Future Prompt Sequencing (Recommended)
+## 10. Progress Tracker
 
 | Prompt | Task |
 |--------|------|
 | 48 | Pilot Data Seeding + Controlled Real-Case Trial |
 | 49 | Execute Pilot Data Dry-Run + Seed Preview/Staging Only |
 | 50 | Preview/Staging Pilot Workflow Execution (CONDITIONAL GO, BLOCKED on env) |
-| 50B | Establish Non-Production Staging DB + Pilot Seed Readiness (this prompt — BLOCKED on owner verification) |
-| 50C | Execute Live Pilot Seed + Workflow Tests (pending owner staging DB confirmation) |
+| 50B | Establish Non-Production Staging DB + Pilot Seed Readiness (Completed) |
+| 50C | Execute Live Pilot Seed + Workflow Tests (Handed off to owner) |
 | 51 | Records Retention UI build (or Microsoft Graph sync if prioritized) |
 | 52+ | Production pilot handoff / staff training |
 
 ---
 
-*Last updated: Prompt 50B (2026-06-17)*
 *All future prompts must update this file to reflect new completed prompts, changed module statuses, and updated smoke test results.*
