@@ -1,5 +1,11 @@
 # SKILL.md — GPC Legal Decision Drafting & Case Management System
 
+> **MANDATORY AGENT WORKFLOW RULE**
+> Every future prompt MUST:
+> 1. **Start** by reading `SKILL.md`, `ARCHITECTURE.md`, `PROJECT_STATE.md`, `DATABASE_SCHEMA.md`, and `COMPONENT_MAP.md` when they exist.
+> 2. **End** by updating the relevant intelligence files to reflect new lessons, architecture changes, schema changes, component/API changes, and project state.
+> Failure to follow this workflow risks repeating solved problems and introducing regressions.
+
 ## 1. Mission
 
 You are assisting development of a production-grade Thai legal decision drafting and case management system for ก.พ.ค.ตร. (คณะกรรมการพิทักษ์ระบบคุณธรรมข้าราชการตำรวจ).
@@ -23,24 +29,20 @@ This is a legal/government workflow system. Reliability, traceability, source co
 
 ## 2. Current Project Status
 
-The project has already reached this stage:
+The project has reached **Prompt 47.5** — see `PROJECT_STATE.md` for the definitive status table.
 
-- Next.js + TypeScript + Tailwind application exists.
-- Prisma v7 is used with generated client output under `src/generated/prisma`.
-- PostgreSQL/Supabase is used as production database.
-- Vercel deployment is active.
-- `DATABASE_URL` uses Supabase transaction-mode pooler:
-  - host pattern: `aws-1-ap-northeast-2.pooler.supabase.com:6543`
-  - do not use direct `db.<project>.supabase.co:5432` for Vercel runtime.
-- `DIRECT_URL` is intended for migrations through Supabase session-mode pooler:
-  - host pattern: `aws-1-ap-northeast-2.pooler.supabase.com:5432`
-- `/api/health/db` currently confirms production database connectivity.
-- Core case management pages exist.
-- Legal Knowledge Library exists.
-- Document ingestion, chunking, retrieval test, and grounded Legal Q&A have been implemented.
-- AI Draft Section Assistant has been implemented.
-- Production database still needs migration if Supabase shows no tables.
-- Do not proceed to additional AI features until migration and production pages are verified.
+Summary:
+- All core modules are **implemented and deployed** on Vercel.
+- Production database connectivity: **confirmed** (`/api/health/db` returns ok).
+- Role-by-role UAT regression completed (Prompt 47): ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER code-verified; COMMISSIONER/VIEWER blocked (no live accounts).
+- Permission hardening complete as of Prompt 46.
+- Stable tag: `stable-post-prompt-42c`.
+- Next recommended step: **Prompt 48 — Pilot Data Seeding + Controlled Real-Case Trial**.
+- `DATABASE_URL` uses Supabase transaction-mode pooler (host `aws-1-ap-northeast-2.pooler.supabase.com:6543`).
+- `DIRECT_URL` uses session-mode pooler (port 5432) for migrations.
+- 6 migrations applied to production.
+- Do NOT run `prisma migrate deploy` inside Vercel build.
+- Do NOT run `db:seed` on production without explicit confirmation.
 
 ---
 
@@ -476,16 +478,13 @@ Warnings / next steps:
 
 ## 16. Current Recommended Next Step
 
-If production DB health is already OK, the next step is:
+See `PROJECT_STATE.md` §12 for the definitive recommended next step.
 
-1. Apply production migration:
-   `npx prisma migrate deploy`
-2. Confirm Supabase tables exist.
-3. Verify `/dashboard`, `/cases`, `/library`.
-4. Import real registry data or seed test data only if explicitly confirmed.
-5. Then proceed to Legal Wording Reviewer.
+Summary: **Prompt 48 — Pilot Data Seeding + Controlled Real-Case Trial**
 
-Do not start Prompt 23 or new AI modules before migration and production page verification.
+Prerequisites:
+- Intelligence baseline: completed (this prompt, Prompt 47.5)
+- COMMISSIONER/VIEWER live UAT: partially blocked (documented gap)
 
 ---
 
@@ -508,3 +507,52 @@ Do not start Prompt 23 or new AI modules before migration and production page ve
 - Do not claim full UAT pass when some role accounts are unavailable; record as partial with explicit blocked items.
 - `requireApiPermission` throws `"UNAUTHORIZED"` / `"FORBIDDEN"` rather than returning a `NextResponse`; API handlers must call it inside `try/catch` and map to 401/403.
 - Static code audit + build validation is a valid but incomplete substitute for live authenticated UAT; always document the distinction.
+
+---
+
+## 18. Intelligence Files Update Rules
+
+**Every future prompt must follow this protocol:**
+
+### Before starting work:
+1. Read `SKILL.md` (this file)
+2. Read `ARCHITECTURE.md` (if touching system structure, deployment, or tech stack)
+3. Read `PROJECT_STATE.md` (always — to know where we are)
+4. Read `DATABASE_SCHEMA.md` (if touching Prisma schema, migrations, or models)
+5. Read `COMPONENT_MAP.md` (if adding/modifying routes, components, or API handlers)
+
+### After completing work:
+1. Update `PROJECT_STATE.md`: completed prompts table, module status, smoke test summary
+2. Update `SKILL.md`: new lessons learned, new rules from solved problems
+3. Update `ARCHITECTURE.md`: if system structure, modules, or deployment flow changed
+4. Update `DATABASE_SCHEMA.md`: if schema changed, migration added, or model notes changed
+5. Update `COMPONENT_MAP.md`: if routes, components, or API handlers added/removed/changed
+
+### Quick validation:
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
+```
+
+---
+
+## 19. Anti-Patterns to Avoid
+
+These patterns have caused real problems in this project. Do not repeat them:
+
+| Anti-Pattern | Correct Approach |
+|--------------|------------------|
+| Import from `@prisma/client` | Always import from `src/generated/prisma` |
+| Run `prisma migrate deploy` in Vercel build | Run migrations manually with `DIRECT_URL` |
+| Assume build success = runtime success | Always verify `/api/health/db` post-deploy |
+| Write audit logs in React Server Component render | Write mutations only in API routes / Server Actions |
+| Call `requireApiPermission` without try/catch | Always wrap in try/catch; return 401/403 NextResponse |
+| Claim full UAT when accounts unavailable | Document as partial; list blocked items explicitly |
+| Commit `.env`, `.env.local`, secrets, tokens, passwords | Never commit — always verify with `git grep` |
+| Mix mock data with production data | Always guard with `NODE_ENV` checks |
+| Trust Windows build for Linux/Vercel path casing | Use lowercase filenames; verify on Vercel |
+| Claim untracked files are deployed | Always run `git status --untracked-files=all` before claiming parity |
+| Run broad PowerShell bulk edits across routes | Make targeted, specific changes; one concern per PR |
+| Use `prisma migrate dev` on production | Use `prisma migrate deploy` only on production |
+| Auto-overwrite human draft text | AI output must be manually inserted; never auto-overwrite |
+| Draft full legal decision in one AI call | Draft section-by-section only |
+| Skip updating intelligence files after a prompt | Always update relevant docs as the final step |

@@ -1,0 +1,386 @@
+# COMPONENT_MAP.md — GPC Legal Decision Drafting & Case Management System
+
+> **Mandatory Read-First Rule**: All future prompts must read this file when adding or modifying
+> routes, components, or API handlers. Update this file after any structural changes.
+
+---
+
+## 1. Route Groups Overview
+
+| Group | Page Routes | API Routes | Required Permission |
+|-------|-------------|-----------|---------------------|
+| Auth/Public | `/login` | `/api/auth/[...nextauth]`, `/api/health/db` | None (public) |
+| Dashboard | `/dashboard` | — | `VIEW_DASHBOARD` |
+| Cases | `/cases`, `/cases/[id]`, `/cases/[id]/draft` | Multiple `/api/cases/*` | `VIEW_CASES` etc. |
+| Registry | `/registry`, `/registry/import` | `/api/registry/import` | `IMPORT_REGISTRY` |
+| Drafting | `/cases/[id]/draft` | `/api/draft/*` | `VIEW_DRAFT`, `EDIT_DRAFT`, `USE_AI_DRAFT` |
+| Finalization | `/finalization` | `/api/cases/[id]/finalization/*` | `VERIFY_FINAL_READINESS` etc. |
+| Dispatch | `/dispatch` | — | `VIEW_DISPATCH_WORKFLOW` |
+| Assignments | `/assignments` | `/api/assignments/*` | `VIEW_ASSIGNMENTS` |
+| Meetings | `/meetings`, `/meetings/new`, `/meetings/[id]` | `/api/meetings/*` | `VIEW_MEETINGS` |
+| Search/Intelligence | `/search`, `/case-intelligence` | `/api/search/cases/export` | `ADVANCED_CASE_SEARCH` |
+| Executive/Reports | `/executive` | `/api/reports/executive/export` | `VIEW_EXECUTIVE_DASHBOARD` |
+| Data Quality | `/data-quality` | `/api/data-quality/*` | `VIEW_DATA_QUALITY` |
+| Library/RAG | `/library`, `/library/[id]/chunks`, `/rag`, `/rag/retrieval-test`, `/legal-qa` | `/api/rag/*` | `VIEW_DRAFT` / requires auth |
+| Admin/System | `/admin/system`, `/admin/users`, `/admin/readiness`, `/admin/permissions` | `/api/admin/*` | `VIEW_ADMIN_CONSOLE` |
+| Maintenance Actions | (within `/admin/system`) | `/api/admin/maintenance/actions` | `MANAGE_SYSTEM_SETTINGS` |
+| Health/Integrations | — | `/api/health/db`, `/api/integrations/microsoft/status` | Public / `VIEW_INTEGRATION_STATUS` |
+
+---
+
+## 2. App Page Routes
+
+### Auth / Public
+| Route | File | Notes |
+|-------|------|-------|
+| `/` | `src/app/page.tsx` | Root redirect (→ /dashboard) |
+| `/login` | `src/app/login/page.tsx` | NextAuth sign-in page; Azure AD |
+
+### Dashboard
+| Route | File | Key Components | Permission |
+|-------|------|----------------|------------|
+| `/dashboard` | `src/app/dashboard/page.tsx` | `DashboardCard`, `Sidebar`, `TopHeader` | `VIEW_DASHBOARD` |
+
+### Cases
+| Route | File | Key Components | Permission |
+|-------|------|----------------|------------|
+| `/cases` | `src/app/cases/page.tsx` | `CaseTable`, `CaseListFilters`, `StatusBadge` | `VIEW_CASES` |
+| `/cases/[id]` | `src/app/cases/[id]/page.tsx` | `CaseDetailActions`, `DocumentList`, `Timeline`, `CaseAssignmentPanel`, `DispatchPanel` | `VIEW_CASE_DETAIL` |
+| `/cases/[id]/draft` | `src/app/cases/[id]/draft/page.tsx` | Draft sections, AI draft panel | `VIEW_DRAFT` |
+
+### Registry
+| Route | File | Key Components | Permission |
+|-------|------|----------------|------------|
+| `/registry` | `src/app/registry/page.tsx` | `RegistryTable`, `RegistryFilters` | `VIEW_CASES` |
+| `/registry/import` | `src/app/registry/import/page.tsx` | `ImportExcel` component | `IMPORT_REGISTRY` |
+
+### Finalization
+| Route | File | Permission |
+|-------|------|------------|
+| `/finalization` | `src/app/finalization/page.tsx` | `VERIFY_FINAL_READINESS` |
+
+### Dispatch
+| Route | File | Permission |
+|-------|------|------------|
+| `/dispatch` | `src/app/dispatch/page.tsx` | `VIEW_DISPATCH_WORKFLOW` |
+
+### Assignments
+| Route | File | Key Components | Permission |
+|-------|------|----------------|------------|
+| `/assignments` | `src/app/assignments/page.tsx` | `CaseAssignmentPanel` | `VIEW_ASSIGNMENTS` |
+
+### Meetings
+| Route | File | Key Components | Permission |
+|-------|------|----------------|------------|
+| `/meetings` | `src/app/meetings/page.tsx` | Meeting list | `VIEW_MEETINGS` |
+| `/meetings/new` | `src/app/meetings/new/page.tsx` | Meeting creation form | `MANAGE_MEETINGS` |
+| `/meetings/[id]` | `src/app/meetings/[id]/page.tsx` | `PostMeetingPanel` | `VIEW_MEETINGS` |
+
+### Search / Intelligence
+| Route | File | Permission |
+|-------|------|------------|
+| `/search` | `src/app/search/page.tsx` | `ADVANCED_CASE_SEARCH` |
+| `/case-intelligence` | `src/app/case-intelligence/page.tsx` | `ADVANCED_CASE_SEARCH` |
+
+### Executive
+| Route | File | Permission |
+|-------|------|------------|
+| `/executive` | `src/app/executive/page.tsx` | `VIEW_EXECUTIVE_DASHBOARD` |
+
+### Data Quality
+| Route | File | Permission |
+|-------|------|------------|
+| `/data-quality` | `src/app/data-quality/page.tsx` | `VIEW_DATA_QUALITY` |
+
+### Library / RAG / Legal Q&A
+| Route | File | Permission |
+|-------|------|------------|
+| `/library` | `src/app/library/page.tsx` | `VIEW_DRAFT` (server-checked) |
+| `/library/[id]/chunks` | `src/app/library/[id]/chunks/page.tsx` | Requires auth |
+| `/rag` | `src/app/rag/page.tsx` | `USE_AI_DRAFT` (requires verification) |
+| `/rag/retrieval-test` | `src/app/rag/retrieval-test/page.tsx` | Requires auth |
+| `/legal-qa` | `src/app/legal-qa/page.tsx` | Requires auth |
+
+### Admin / System
+| Route | File | Permission |
+|-------|------|------------|
+| `/admin/system` | `src/app/admin/system/page.tsx` | `VIEW_ADMIN_CONSOLE` |
+| `/admin/users` | `src/app/admin/users/page.tsx` | `MANAGE_USERS` |
+| `/admin/readiness` | `src/app/admin/readiness/page.tsx` | `VIEW_ADMIN_CONSOLE` |
+| `/admin/permissions` | `src/app/admin/permissions/page.tsx` | `VIEW_ADMIN_CONSOLE` |
+
+---
+
+## 3. API Routes
+
+### Auth / Health
+| Route | File | Method | Permission | Notes |
+|-------|------|--------|------------|-------|
+| `/api/auth/[...nextauth]` | `src/app/api/auth/[...nextauth]/route.ts` | GET/POST | Public | NextAuth handler |
+| `/api/health/db` | `src/app/api/health/db/route.ts` | GET | Public | DB health check |
+| `/api/integrations/microsoft/status` | `src/app/api/integrations/microsoft/status/route.ts` | GET | `VIEW_INTEGRATION_STATUS` | MS Graph status |
+
+### Cases
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/api/cases/[id]/assignment` | route.ts | GET/PATCH | `VIEW_CASE_DETAIL` / `ASSIGN_CASES` |
+| `/api/cases/[id]/documents` | route.ts | GET/POST | `VIEW_DOCUMENTS` / `LINK_DOCUMENTS` |
+| `/api/cases/[id]/documents/upload-placeholder` | route.ts | POST | `UPLOAD_DOCUMENTS` |
+| `/api/cases/[id]/export-docx` | route.ts | POST | `EXPORT_DOCX` |
+| `/api/cases/[id]/export-final-docx` | route.ts | POST | `EXPORT_FINAL_DECISION_DOCX` |
+| `/api/cases/[id]/finalization` | route.ts | GET/PATCH | `VERIFY_FINAL_READINESS` |
+| `/api/cases/[id]/finalization/close` | route.ts | POST | `CLOSE_CASE_AFTER_DECISION` |
+| `/api/cases/[id]/finalization/finalize` | route.ts | POST | `FINALIZE_DECISION` |
+| `/api/cases/[id]/finalization/red-number` | route.ts | POST | `RECORD_RED_CASE_NUMBER` |
+| `/api/cases/[id]/finalization/revision` | route.ts | POST | `MARK_DRAFT_REVISION_REQUIRED` |
+
+### Registry
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/api/registry/import` | route.ts | POST | `IMPORT_REGISTRY` |
+
+### Draft / AI
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/api/draft/section-ai` | route.ts | POST | `USE_AI_DRAFT` |
+| `/api/draft/review-wording` | route.ts | POST | `USE_AI_REVIEW` |
+| `/api/draft/check-citations` | route.ts | POST | `VIEW_DRAFT` |
+
+### Assignments
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/api/assignments` | route.ts | GET/POST | `VIEW_ASSIGNMENTS` / `ASSIGN_CASES` |
+| `/api/assignments/bulk` | route.ts | POST | `ASSIGN_CASES` |
+| `/api/assignments/export` | route.ts | GET | `EXPORT_WORKLOAD_REPORT` |
+
+### Meetings
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/api/meetings` | route.ts | GET/POST | `VIEW_MEETINGS` / `MANAGE_MEETINGS` |
+| `/api/meetings/[id]` | route.ts | GET/PATCH/DELETE | `VIEW_MEETINGS` / `MANAGE_MEETINGS` |
+| `/api/meetings/[id]/agenda` | route.ts | GET/POST/PATCH | `VIEW_MEETINGS` / `ADD_CASE_TO_MEETING` |
+
+### RAG / Legal Q&A
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/api/rag/qa` | route.ts | POST | Requires auth + permission (hardened in Prompt 46) |
+| `/api/rag/retrieval` | route.ts | POST | Requires auth + permission (hardened in Prompt 46) |
+
+### Executive / Reports
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/api/reports/executive/export` | route.ts | GET | `EXPORT_EXECUTIVE_REPORT` |
+
+### Search
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/api/search/cases/export` | route.ts | GET | `EXPORT_SEARCH_RESULTS` |
+
+### Data Quality
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/api/data-quality/issues` | route.ts | GET | `VIEW_DATA_QUALITY` |
+| `/api/data-quality/export` | route.ts | GET | `EXPORT_DATA_QUALITY_REPORT` |
+| `/api/data-quality/cases/[id]/quick-fix` | route.ts | POST | `CLEANUP_DATA_QUALITY` |
+
+### Admin / System
+| Route | File | Method | Permission |
+|-------|------|--------|------------|
+| `/api/admin/audit` | route.ts | GET | `VIEW_AUDIT_LOGS` |
+| `/api/admin/jobs` | route.ts | GET | `VIEW_RAG_JOBS` |
+| `/api/admin/security-signals` | route.ts | GET | `VIEW_SECURITY_MONITORING` |
+| `/api/admin/system-health` | route.ts | GET | `VIEW_SYSTEM_HEALTH` |
+| `/api/admin/usage` | route.ts | GET | `VIEW_USAGE_METRICS` |
+| `/api/admin/users` | route.ts | GET/POST | `MANAGE_USERS` |
+| `/api/admin/users/[id]` | route.ts | GET/PATCH/DELETE | `MANAGE_USERS` |
+
+### Maintenance Actions
+| Route | File | Method | Permission | Notes |
+|-------|------|--------|------------|-------|
+| `/api/admin/maintenance/actions` | route.ts | GET/POST | `MANAGE_SYSTEM_SETTINGS` | POST-only for mutations; GET for dry-run |
+| `/api/admin/maintenance/actions/metadata` | route.ts | GET | `VIEW_ADMIN_CONSOLE` | Returns action definitions |
+
+---
+
+## 4. Key Components
+
+| Component | File | Used In |
+|-----------|------|---------|
+| `Sidebar` | `src/components/Sidebar.tsx` | All authenticated pages via layout |
+| `TopHeader` | `src/components/TopHeader.tsx` | All authenticated pages via layout |
+| `UserMenu` | `src/components/UserMenu.tsx` | TopHeader |
+| `DashboardCard` | `src/components/DashboardCard.tsx` | `/dashboard` |
+| `CaseTable` | `src/components/CaseTable.tsx` | `/cases` |
+| `CaseListFilters` | `src/components/CaseListFilters.tsx` | `/cases` |
+| `StatusBadge` | `src/components/StatusBadge.tsx` | Case lists, case detail |
+| `Timeline` | `src/components/Timeline.tsx` | `/cases/[id]` |
+| `CaseDetailActions` | `src/components/CaseDetailActions.tsx` | `/cases/[id]` |
+| `CaseAssignmentPanel` | `src/components/CaseAssignmentPanel.tsx` | `/cases/[id]`, `/assignments` |
+| `DocumentList` | `src/components/DocumentList.tsx` | `/cases/[id]` |
+| `DocumentLinkModal` | `src/components/DocumentLinkModal.tsx` | `/cases/[id]` |
+| `EditCaseModal` | `src/components/EditCaseModal.tsx` | `/cases/[id]` |
+| `DispatchPanel` | `src/components/DispatchPanel.tsx` | `/cases/[id]`, `/dispatch` |
+| `PostMeetingPanel` | `src/components/PostMeetingPanel.tsx` | `/meetings/[id]` |
+| `RegistryTable` | `src/components/RegistryTable.tsx` | `/registry` |
+| `RegistryFilters` | `src/components/RegistryFilters.tsx` | `/registry` |
+| `ImportExcel` | `src/components/ImportExcel/` | `/registry/import` |
+| `MaintenanceActionsPanel` | `src/components/admin/MaintenanceActionsPanel.tsx` | `/admin/system` |
+
+---
+
+## 5. Key Lib / Service Modules
+
+| Module | Path | Purpose |
+|--------|------|---------|
+| `db.ts` | `src/lib/db.ts` | Prisma client singleton |
+| `permissions.ts` | `src/lib/auth/permissions.ts` | `PERMISSIONS`, `ROLE_PERMISSIONS`, `hasPermission()` |
+| `authOptions.ts` | `src/lib/auth/authOptions.ts` | NextAuth configuration (Azure AD provider) |
+| `currentUser.ts` | `src/lib/auth/currentUser.ts` | `getCurrentUser()` — reads session from NextAuth |
+| `requireApiPermission.ts` | `src/lib/auth/requireApiPermission.ts` | `requireApiPermission(permission)` — throws UNAUTHORIZED/FORBIDDEN |
+| `requirePermission.ts` | `src/lib/auth/requirePermission.ts` | Server component permission guard |
+| `audit.ts` | `src/lib/audit.ts` | Audit log write helper |
+| `caseStatus.ts` | `src/lib/caseStatus.ts` | Case status transitions and labels |
+| `chunking.ts` | `src/lib/chunking.ts` | Document text chunking for RAG |
+| `dateUtils.ts` | `src/lib/dateUtils.ts` | Thai date formatting utilities |
+| RAG modules | `src/lib/rag/` | Retrieval, embedding, Q&A orchestration |
+| AI modules | `src/lib/ai/` | OpenAI API wrappers |
+| Export modules | `src/lib/export/` | DOCX and XLSX export |
+| Microsoft modules | `src/lib/microsoft/` | Microsoft Graph integration helpers |
+| Finalization lib | `src/lib/finalization/` | Finalization workflow logic |
+| Dispatch lib | `src/lib/dispatch/` | Dispatch workflow logic |
+| Meetings lib | `src/lib/meetings/` | Meeting management logic |
+| Assignments lib | `src/lib/assignments/` | Assignment logic |
+| Reports lib | `src/lib/reports/` | Executive report generation |
+| Search lib | `src/lib/search/` | Case search implementation |
+| Data quality lib | `src/lib/dataQuality/` | Issue detection and fix logic |
+| Admin lib | `src/lib/admin/` | System health, usage, audit queries |
+
+---
+
+## 6. Auth / Permission Guard Map
+
+| Guard | Location | Scope | Behavior |
+|-------|----------|-------|----------|
+| `withAuth` (NextAuth middleware) | `src/middleware.ts` | All routes except public | Redirects to `/login` if no session |
+| `requireApiPermission(perm)` | API route handlers | API routes with mutations | Throws `UNAUTHORIZED`/`FORBIDDEN`; caller must catch → 401/403 |
+| `requirePermission(perm)` | Server components | Page-level permission check | Returns 403 page or redirects |
+| `hasPermission(role, perm)` | `src/lib/auth/permissions.ts` | Any code | Returns boolean; no side effects |
+
+### Critical: requireApiPermission usage pattern
+```typescript
+// CORRECT
+export async function POST(req: Request) {
+  try {
+    const user = await requireApiPermission('EDIT_CASE');
+    // ... handler logic
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === 'UNAUTHORIZED') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (err instanceof Error && err.message === 'FORBIDDEN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+  }
+}
+```
+
+---
+
+## 7. Middleware Configuration
+
+```typescript
+// src/middleware.ts
+// Protected: all routes EXCEPT:
+// - /login
+// - /api/auth/*
+// - /api/health/*
+// - _next/static, _next/image, favicon.ico
+```
+
+Public routes (no session required):
+- `/login`
+- `/api/auth/*` (NextAuth endpoints)
+- `/api/health/db`
+
+---
+
+## 8. Admin / System Console Map
+
+| Feature | Page | API | Permission |
+|---------|------|-----|------------|
+| System health overview | `/admin/system` | `/api/admin/system-health` | `VIEW_SYSTEM_HEALTH` |
+| User management | `/admin/users` | `/api/admin/users`, `/api/admin/users/[id]` | `MANAGE_USERS` |
+| Audit logs viewer | `/admin/system` | `/api/admin/audit` | `VIEW_AUDIT_LOGS` |
+| RAG jobs monitor | `/admin/system` | `/api/admin/jobs` | `VIEW_RAG_JOBS` |
+| Security signals | `/admin/system` | `/api/admin/security-signals` | `VIEW_SECURITY_MONITORING` |
+| Usage metrics | `/admin/system` | `/api/admin/usage` | `VIEW_USAGE_METRICS` |
+| Permissions inspector | `/admin/permissions` | — | `VIEW_ADMIN_CONSOLE` |
+| Production readiness | `/admin/readiness` | — | `VIEW_ADMIN_CONSOLE` |
+| Maintenance actions | `/admin/system` | `/api/admin/maintenance/actions` | `MANAGE_SYSTEM_SETTINGS` |
+
+---
+
+## 9. Maintenance Actions Map
+
+Component: [`MaintenanceActionsPanel.tsx`](file:///c:/APP/src/components/admin/MaintenanceActionsPanel.tsx)
+
+| Action | HTTP | Permission | Confirmation Required | Audit Logged |
+|--------|------|------------|----------------------|--------------|
+| Orphan chunk cleanup | POST | `MANAGE_SYSTEM_SETTINGS` | Yes (phrase input) | Yes |
+| Stale job cleanup | POST | `MANAGE_SYSTEM_SETTINGS` | Yes (phrase input) | Yes |
+| Dry-run (preview) | GET | `VIEW_ADMIN_CONSOLE` | No | No |
+
+**Rules**:
+- All mutation actions are POST-only.
+- Confirmation phrase required for destructive actions.
+- Every action is audit-logged with user ID, action type, and result.
+- Actions must never execute during page render or module import.
+
+---
+
+## 10. RAG / Library Map
+
+| Feature | Page/API | Lib Module | Notes |
+|---------|----------|-----------|-------|
+| Library browser | `/library` | — | Requires `VIEW_DRAFT` (server-checked) |
+| Chunk viewer | `/library/[id]/chunks` | — | Requires auth |
+| RAG ingestion | `/rag` | `src/lib/rag/` | Requires permission (verify) |
+| Retrieval test | `/rag/retrieval-test` | `src/lib/rag/` | Requires auth |
+| Legal Q&A | `/legal-qa` | `src/lib/rag/`, `src/lib/ai/` | Requires auth |
+| RAG Q&A API | `/api/rag/qa` | `src/lib/rag/`, `src/lib/ai/` | Protected (hardened Prompt 46) |
+| RAG retrieval API | `/api/rag/retrieval` | `src/lib/rag/` | Protected (hardened Prompt 46) |
+
+---
+
+## 11. Known Sensitive Routes
+
+| Route | Sensitivity | Notes |
+|-------|-------------|-------|
+| `/api/rag/qa` | High | AI with legal content; requires permission |
+| `/api/rag/retrieval` | High | Knowledge base access; requires permission |
+| `/api/admin/maintenance/actions` | Critical | Destructive operations; POST + permission + confirmation |
+| `/api/admin/users` | High | User management |
+| `/api/cases/[id]/finalization/finalize` | High | Irreversible case finalization |
+| `/api/cases/[id]/finalization/close` | High | Case closure |
+| `/api/registry/import` | Medium | Bulk data import |
+
+---
+
+## 12. Where to Update When Adding New Features
+
+| Change Type | Files to Update |
+|-------------|----------------|
+| New page route | Add to this file (COMPONENT_MAP.md) §2 |
+| New API route | Add to this file §3; check permission in SKILL.md §17 |
+| New component | Add to this file §4 |
+| New lib module | Add to this file §5 |
+| New permission | Update `src/lib/auth/permissions.ts`; update DATABASE_SCHEMA.md if needed |
+| Schema change | Update DATABASE_SCHEMA.md; create migration; update this file if model referenced |
+| New module | Update ARCHITECTURE.md §3; update PROJECT_STATE.md §4 |
+| Completed prompt | Update PROJECT_STATE.md §3, §4, §7 |
+
+---
+
+*Last updated: Prompt 47.5 (2026-06-17)*
+*Update this file whenever routes, components, or API handlers are added, removed, or significantly modified.*
