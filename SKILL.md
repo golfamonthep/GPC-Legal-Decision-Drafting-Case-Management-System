@@ -798,3 +798,7 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 | Rely on UI hiding for security | UI permission visibility is not a substitute for backend API authorization. |
 | Expose execute actions prematurely | Reserved execution permissions must not enable execution UI until the endpoint exists and UAT is complete. |
 | Treat handoff as verified completion | Archive execution requires schema, permission, audit, reversibility, eligibility, and UAT gates before implementation. If any gate is missing, implement only documentation/planning, not execution. Archive migration planning must be separated from migration execution. Delete/purge remains out of scope unless separately approved. **Archive execution must re-run eligibility pre-mutation, not trust previous client preview checks.** **Staging-only execution must require an explicit environment gate flag.** **Production execution requires a separate release gate and must be blocked by default.** **Confirmation phrase and reason are required for archive execution.** |
+| Code audit as UAT substitute | Code audit cannot substitute for live staging UAT. |
+| Production release without staging execution | Production release gate must be NO-GO if staging execution did not run. |
+| Runtime audit verification | Runtime audit verification is required before production archive release. |
+| Reversal feasibility | Reversal feasibility must be tested, not only documented. |

@@ -29,4 +29,4 @@
 Archive execution UI is **IMPLEMENTED** but strictly gated to **STAGING ONLY**.
 The UI enforces a Preview-First requirement, requires an exact confirmation phrase, and requires a reason.
 Production execution remains intentionally disabled and is enforced by both the UI (which hides the execute button based on an environment API check) and the backend API (which returns 423 Locked).
-Destructive delete/purge actions remain out of scope and unimplemented.
+Destructive delete/purge actions remain out of scope and unimplemented. Production release is NO-GO.

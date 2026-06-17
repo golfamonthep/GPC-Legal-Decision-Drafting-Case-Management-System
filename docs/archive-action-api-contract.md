@@ -52,4 +52,4 @@
 Because `requireApiPermission` throws `"UNAUTHORIZED"` / `"FORBIDDEN"`, the route must call it inside `try/catch` and map thrown values to 401/403.
   
 ## Execution Readiness  
-Archive execution is currently implemented but heavily gated behind `ALLOW_STAGING_ARCHIVE_EXECUTION=YES` and blocks production execution. Reversibility and audit batch support exist. Production readiness requires UAT sign-off and removing the environment gate flag restriction in a future prompt.
+Archive execution is currently implemented but heavily gated behind `ALLOW_STAGING_ARCHIVE_EXECUTION=YES` and blocks production execution. Reversibility and audit batch support exist. Production readiness requires UAT sign-off and removing the environment gate flag restriction in a future prompt. Production release is NO-GO.

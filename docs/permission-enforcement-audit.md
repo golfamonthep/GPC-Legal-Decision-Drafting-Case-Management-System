@@ -68,7 +68,7 @@ Based on the audit, the following routes might rely solely on NextAuth middlewar
 ## 5. Routes that Need Manual Review
 
 * The new `rag` API endpoints client UI should be reviewed in the next phase to incorporate the `VIEW_RECORDS_ARCHIVE` and `APPROVE_KNOWLEDGE_REUSE` permissions where applicable. (Backend `rag` API and `/library` server page are now protected).
-* **Archive Execution**: The `POST /api/records-retention/archive/preview` endpoint correctly enforces `MANAGE_RECORDS_ARCHIVE`. However, `MANAGE_RECORDS_ARCHIVE` is too broad. A new `PREVIEW_ARCHIVE` and `EXECUTE_ARCHIVE` permission must be introduced before building the final execution route.
+* **Archive Execution**: The `POST /api/records-retention/archive/preview` endpoint correctly enforces `MANAGE_RECORDS_ARCHIVE`. However, `MANAGE_RECORDS_ARCHIVE` is too broad. A new `PREVIEW_ARCHIVE` and `EXECUTE_ARCHIVE` permission must be introduced before building the final execution route. Code audit passed is not live UAT passed. Production release is NO-GO.
 
 ## Recommendation
 

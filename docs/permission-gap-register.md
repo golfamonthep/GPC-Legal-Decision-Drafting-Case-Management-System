@@ -22,4 +22,4 @@
    - Missing permissions: `PREVIEW_ARCHIVE`, `EXECUTE_ARCHIVE`, `REVERSE_ARCHIVE`, and `VIEW_ARCHIVE_AUDIT` are missing. `MANAGE_RECORDS_ARCHIVE` is too broad.
    - Missing models/fields: `previousStatusBeforeArchive`, `archiveBatchId`, `ArchiveBatch` model.
    - Missing API: The actual `POST /api/records-retention/archive` endpoint is intentionally missing until gaps are resolved.
-   - Status: Archive Execution is NOT READY.
+   - Status: Archive Execution is NOT READY. Production release is NO-GO.

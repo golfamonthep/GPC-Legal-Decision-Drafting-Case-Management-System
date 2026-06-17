@@ -25,4 +25,6 @@
 
 **Reversal conceptually ready**. The database schema and archive execution endpoints safely preserve all prior state necessary for reversal (`previousStatusBeforeArchive`, `ArchiveBatchItem`, `AuditLog`).
 
-**Implementation Deferred**: Reversal endpoints and UI were not requested and will not be implemented in this prompt. Wait for an explicit future prompt requesting reverse/unarchive functionality.
+Reversal conceptually ready is not reversal implemented.
+
+**Implementation Deferred**: Reversal endpoints and UI were not requested and will not be implemented in this prompt. Wait for an explicit future prompt requesting reverse/unarchive functionality. Production release is NO-GO.

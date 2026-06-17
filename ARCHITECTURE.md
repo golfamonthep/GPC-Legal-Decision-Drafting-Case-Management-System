@@ -107,7 +107,7 @@ Next.js App Router
 - **Archive Audit Verification Flow**: Ensure `actor.id`, action, case ID, batch ID, timestamp, reason, before/after states (`previousStatusBeforeArchive`) are recorded, and no raw confirmation phrases or secrets are stored.
 - **Archive Reversal Feasibility Flow**: Schema preserves `previousStatusBeforeArchive` and `ArchiveBatchItem.previousCaseStatus`. Reversal is conceptually ready (no data loss, documents linked) but implementation is deferred.
 - **Archive Production Block Boundary**: Production execution is explicitly disabled by `assertArchiveExecutionEnvironment()`. A dedicated release gate prompt is required to override this block.
-
+- **Archive Production Release Gate**: Currently NO-GO. Required staging execution with pilot records must pass before production release.
 
 ---
 

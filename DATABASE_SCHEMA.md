@@ -264,6 +264,7 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 - **Execution Endpoint (Prompt 57)**: The `POST /api/records-retention/archive/execute` endpoint was added. It inserts records into `ArchiveBatch` and `ArchiveBatchItem`, updates `CaseArchiveRecord` (including `previousStatusBeforeArchive` and `archiveBatchId`), and creates an `AuditLog`. Execution remains strictly limited to staging via environment gates.
 - **Execution UI (Prompt 58)**: `ArchivePreviewPanel.tsx` now supports the full state machine from dry-run preview to execution, requiring an exact confirmation phrase. It surfaces the `ArchiveBatch.id` (`archiveBatchId`) on success for clear auditability. Production execution remains blocked.
 - **Execution UAT & Reversal Verification (Prompt 59)**: Schema was verified capable of safely preserving previous state (`previousStatusBeforeArchive`, `ArchiveBatchItem.previousCaseStatus`) and maintaining `archiveBatchId` linkage for auditing. Reversal is conceptually ready with no data loss, but explicit implementation is deferred to a future prompt.
+- **Production Archive Release Gate (Prompt 60)**: Archive schema may exist, but production use is blocked until runtime UAT and reversal verification are complete. Release decision is currently NO-GO.
 
 ---
 
