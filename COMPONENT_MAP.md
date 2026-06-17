@@ -390,9 +390,11 @@ Component: [`MaintenanceActionsPanel.tsx`](file:///c:/APP/src/components/admin/M
 | Pilot Seed PS1 | `scripts/pilot-seed.ps1` | PowerShell wrapper to execute seed-pilot-data |
 | Pilot Seed Check | `scripts/pilot-seed-check.ps1` | Validates presence of pilot seed docs and scripts |
 | Pilot Trial Plan | `docs/pilot-data-trial-plan.md` | Strategic plan for pilot trial execution |
-| Pilot Workflow Checklist | `docs/pilot-workflow-checklist.md` | Checklist of end-to-end UAT checks for pilot |
+| Pilot Workflow Checklist | `docs/pilot-workflow-checklist.md` | Checklist of end-to-end UAT checks for pilot (Coverage includes `/cases`, `/finalization`, `/search`, etc.) |
 | Controlled Trial Protocol | `docs/controlled-real-case-trial-protocol.md` | Guidelines on using real cases in trial |
 | Cleanup Strategy | `docs/pilot-data-cleanup-strategy.md` | Strategy for removing pilot data safely |
+| Dry-Run Execution Report | `docs/pilot-dry-run-execution-report.md` | Output report from dry-run seed validation |
+| Seed Validation Report | `docs/pilot-seed-validation-report.md` | Output report from actual staging/preview seed execution |
 
 ---
 

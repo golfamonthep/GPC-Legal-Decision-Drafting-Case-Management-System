@@ -38,3 +38,9 @@ Pilot records can be identified using the `PILOT-` and `PILOT_` prefixes.
 
 ## 7. Future Cleanup Script
 If a script is required later, recommend Prompt 49B: Safe Pilot Data Cleanup Tool with Dry-Run and Audit.
+
+## 8. Cleanup Readiness
+- Pilot records can be reliably identified by `PILOT_` or `PILOT-` prefix.
+- No destructive cleanup script was run.
+- Real data deletion is explicitly prohibited.
+- Cleanup execution not yet performed (waiting for real seed to happen).

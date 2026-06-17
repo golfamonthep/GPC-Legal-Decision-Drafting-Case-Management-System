@@ -172,6 +172,10 @@ GET /api/integrations/microsoft/status
 6. **Maintenance actions** — Must be POST-only, permission-guarded, confirmation-protected, and audit-logged. Never executed during render/import phase.
 7. **No seed on production** — `prisma/seed.ts` is development only; never run on production unless explicitly confirmed.
 8. **Pilot Seeding Mechanism** — Pilot data seed is managed via `scripts/seed-pilot-data.ts`. It uses upsert, is dry-run by default, and demands explicit flags to touch production data (`ALLOW_PRODUCTION_PILOT_SEED=YES`).
+   - *Pilot Seed Dry-Run Flow*: Seed script defaults to non-mutating logging mode. It validates target counts safely.
+   - *Preview/Staging Seed Flow*: Runs only when DB is non-production and explicit flags are passed.
+   - *Seed Validation Flow*: Manual inspection using Prisma Studio or UI to verify data prefixed with `PILOT_` exists.
+   - *Cleanup Readiness Flow*: Safe manual query strategy targeting `PILOT_` prefix; destructive auto-cleanup scripts are prohibited.
 9. **Controlled Trial Process** — Trials use anonymized or sanitized cases first, monitored carefully before moving to full production usage. Cleanups rely on manual identifier tags (`PILOT_`) instead of destructive scripts.
 
 ---

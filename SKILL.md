@@ -208,7 +208,10 @@ Rules:
 - Run migrations only when the user confirms.
 - Pilot data must be anonymized and clearly prefixed (e.g. PILOT_).
 - Seed scripts must be dry-run by default and manual only.
-- Production seeding requires explicit confirmation and safe guard flags.
+- Pilot seed execution must be separated into dry-run, preview/staging, and production approval phases.
+- Never run production seed without explicit owner approval and guard flags.
+- Seed validation must confirm prefix/tag, idempotency, and no real data.
+- Cleanup must be planned before real seed.
 - Cleanup must identify pilot records by prefix/tag and never delete real records.
 - Controlled real-case trials must start with 3–5 sanitized cases, not broad rollout.
 

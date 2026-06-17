@@ -199,6 +199,18 @@ RetrievalQuery → RetrievalResult + LegalAnswer
 LegalAnswer → LegalAnswerCitation → DocumentChunk
 ```
 
+### Cleanup Dependency Notes
+Due to Prisma `onDelete: Cascade` on most relation fields, deleting the top-level `Case` will cascade and delete associated `CaseEvent`, `CaseDocument`, `DecisionDraft` and `MeetingAgendaItem`.
+To avoid database constraint errors during seed or cleanup, delete in this strict order:
+1. `MeetingAgendaItem`
+2. `Meeting`
+3. `DecisionDraftSection`
+4. `DecisionDraft`
+5. `CaseEvent`
+6. `CaseDocument`
+7. `Case`
+8. `User`
+
 ---
 
 ## 10. Enums Defined in Schema

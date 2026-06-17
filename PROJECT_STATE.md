@@ -43,6 +43,7 @@ were unavailable during Prompt 47.
 | 47 | Full authenticated role-by-role regression UAT + sign-off pack | ✅ Committed (partial — 2 roles code-audited only) |
 | 47.5 | Project intelligence files audit + creation | ✅ Committed |
 | 48 | Pilot Data Seeding + Controlled Real-Case Trial | ✅ Committed (Dry-run executed, docs ready) |
+| 49 | Execute Pilot Data Dry-Run + Seed Preview/Staging Only | ✅ Committed (Dry-run passed, Preview/Staging seed pending approval) |
 
 ---
 
@@ -142,7 +143,7 @@ were unavailable during Prompt 47.
 | ADMIN role fully verified | ✅ |
 | All roles live-verified | ⚠️ Partial — 2 roles blocked |
 
-**Overall**: **Conditionally Production Ready** — suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Expand to COMMISSIONER/VIEWER when accounts available. Pilot seed script is dry-run safe and ready for execution.
+**Overall**: **Conditionally Production Ready** — suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Expand to COMMISSIONER/VIEWER when accounts available. Pilot seed script is dry-run safe, dry-run executed successfully. Real Preview/Staging pilot seed pending explicit approval.
 
 ---
 
@@ -165,9 +166,10 @@ were unavailable during Prompt 47.
 
 Before proceeding to Prompt 49 (Records Retention UI) or Prompt 50 (Microsoft Graph):
 
-- [x] Project intelligence baseline committed and pushed
 - [x] Pilot seed data prepared (anonymized real cases or realistic synthetic cases)
-- [ ] Management approval to execute actual pilot seeding
+- [x] Pilot seed dry-run executed successfully
+- [ ] Management approval to execute actual preview/staging pilot seeding
+- [ ] Management approval to execute actual production pilot seeding
 - [ ] COMMISSIONER/VIEWER role accounts available for live UAT (or documented as ongoing gap)
 
 ---
@@ -191,9 +193,10 @@ Objectives:
 | Prompt | Task |
 |--------|------|
 | 48 | Pilot Data Seeding + Controlled Real-Case Trial |
-| 49 | Records Retention UI build (if prioritized) |
-| 50 | Microsoft Graph live document sync implementation |
-| 51+ | Production pilot handoff / staff training |
+| 49 | Execute Pilot Data Dry-Run + Seed Preview/Staging Only |
+| 50 | Records Retention UI build (if prioritized) |
+| 51 | Microsoft Graph live document sync implementation |
+| 52+ | Production pilot handoff / staff training |
 
 ---
 

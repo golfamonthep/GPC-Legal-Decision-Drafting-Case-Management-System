@@ -22,3 +22,6 @@
 | 16. Maintenance Actions | ADMIN | `/admin/system` | Can view dry-run actions safely | N/A | | |
 | 17. Audit Log Review | ADMIN | `/admin/system` | Seed and actions logged | `PILOT_SEED_EXECUTED` | | |
 | 18. Rollback / Cleanup | ADMIN | Database direct | Pilot data safely removed via manual queries | All pilot data | | |
+
+## Dry-Run Status
+Dry-run executed successfully. Real mutation was avoided. Real preview/staging seed validation is pending explicit approval.

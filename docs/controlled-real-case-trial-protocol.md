@@ -34,3 +34,13 @@ Before using real data in a pilot test, remove/replace:
 - **Success Criteria**: Cases can be ingested, assigned, drafted, approved, and dispatched without workarounds.
 - **Stop Criteria**: System 500 errors, broken access controls, or data leak risks.
 - **Rollback**: If trial fails critically, progress cases to a "Cancelled" state manually, and fix the system before resuming. Do not delete real case records arbitrarily.
+
+## 7. Current Trial Readiness Status
+- **Pilot Dry-Run Passed**: Yes.
+- **Preview/Staging Seed Executed**: No (Pending explicit owner approval).
+- **System Ready for Real-Case Trial**: Pending successful preview/staging pilot validation.
+- **Remaining Blockers**:
+  - Explicit approval for preview/staging pilot seed.
+  - Role accounts availability.
+  - Final UAT gap closure.
+- **Stop Criteria**: Any system 500 errors, broken access controls, data leak risks, or failure of real data anonymization.
