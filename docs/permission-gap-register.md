@@ -31,3 +31,5 @@
 6. **Microsoft Graph Metadata Dry Run Gap**
    - Missing implementation: Live metadata dry run Graph call and API endpoint.
    - Status: Blocked pending Prompt 63 owner confirmation.
+## Microsoft Graph Sync Report 
+No permission gaps found. Report routes are safely protected by VIEW_DOCUMENT_SYNC and API uses requireApiPermission. 

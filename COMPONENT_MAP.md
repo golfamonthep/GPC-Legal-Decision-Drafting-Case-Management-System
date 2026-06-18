@@ -542,3 +542,7 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 * Metadata persistence service and endpoints (Blocked/Planned for next prompt).  
 * Staging metadata run endpoint and Read-only sync run listing endpoint (Blocked/Planned).  
 * Scripts/runbooks/docs added for staging metadata persistence. 
+* syncRunReports service.
+* report API: /api/document-sync/microsoft/report
+* report page/dashboard: /document-sync/report
+* UAT report docs: docs/microsoft-graph-metadata-persistence-uat-report.md

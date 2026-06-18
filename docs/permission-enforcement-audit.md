@@ -79,3 +79,6 @@ Based on the audit, the following routes might rely solely on NextAuth middlewar
 ## Recommendation
 
 Do not apply broad refactors to auth enforcement mechanisms without corresponding UI updates to hide buttons. A future prompt should harden the Finalization mutating APIs to explicitly use `requireApiPermission`.
+## Microsoft Graph Sync Report Route Audit (Prompt 66)
+- GET /document-sync/report -> requirePermission('VIEW_DOCUMENT_SYNC')
+- GET /api/document-sync/microsoft/report -> requireApiPermission('VIEW_DOCUMENT_SYNC')

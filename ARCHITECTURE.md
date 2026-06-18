@@ -283,3 +283,7 @@ GET /api/integrations/microsoft/status
 * Staging-only persistence boundary enforced.
 * Future content ingestion boundary: Content download remains strictly blocked pending future prompt and UAT.
 
+* metadata sync report dashboard architecture.
+* read-only dashboard/report API.
+* run history flow.
+* UAT gate and production block.

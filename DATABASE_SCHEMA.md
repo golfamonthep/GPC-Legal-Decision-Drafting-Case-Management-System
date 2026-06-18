@@ -346,3 +346,7 @@ enum KnowledgeReuseStatus {
 * No document content stored.  
 * No token storage.  
 * Future Document/RAG linkage deferred. 
+* sync run/report models verified or pending: Pending migration to staging.
+* no document content stored.
+* no token storage.
+* no official Document/RAG linkage.

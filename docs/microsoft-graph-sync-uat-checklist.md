@@ -33,3 +33,15 @@ This checklist outlines the criteria to verify the safety and read-only nature o
 - [ ] No file content is downloaded.
 - [ ] No DB mutation occurs.
 - [ ] No RAG indexing occurs.
+# Microsoft Graph Sync UAT Checklist
+
+**Date**: 2026-06-18
+**Prompt**: 66
+
+- [x] Dashboard UI renders blocked/empty state safely.
+- [x] Dashboard API is protected by VIEW_DOCUMENT_SYNC.
+- [x] Production environment defaults to Sync Disabled.
+- [x] No content download count.
+- [x] No document creation count.
+- [x] No RAG indexing count.
+- [ ] Authenticated staging metadata persistence UAT (BLOCKED).

@@ -820,3 +820,6 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 * Raw tokens secrets raw Graph responses and document content must never be stored.
 * Creating official Document records or RAG indexing requires a separate prompt and UAT.
 
+* Metadata persistence UAT must verify read-only report routes, protected run history, no content download, no Document creation, and no RAG indexing.
+* Dashboard/report routes must not call Graph live or mutate DB during render.
+* Production Graph persistence remains blocked until separate release gate.
