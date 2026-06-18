@@ -531,3 +531,157 @@ model ArchiveBatchItem {
 
   @@index([archiveBatchId])
 }
+ 
+
+enum ExternalProvider {
+  MICROSOFT_GRAPH
+}
+
+enum ExternalSourceType {
+  SHAREPOINT_SITE
+  ONEDRIVE_FOLDER
+}
+
+enum ExternalDocumentSyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+  IGNORED
+}
+
+enum DocumentSyncRunStatus {
+  STARTED
+  COMPLETED
+  FAILED
+  PARTIAL
+}
+
+enum DocumentSyncRunMode {
+  MANUAL
+  SCHEDULED
+}
+
+model ExternalDocumentSource {
+  id               String   @id @default(uuid())
+  provider         ExternalProvider
+  sourceType       ExternalSourceType
+  displayName      String?
+  safeDescription  String?
+  
+  siteIdHash       String?
+  driveIdHash      String?
+  folderItemIdHash String?
+  rawIdsStored     Boolean  @default(false)
+  
+  enabled          Boolean  @default(true)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  createdById      String?
+  lastCheckedAt    DateTime?
+
+  items            ExternalDocumentItem[]
+  syncRuns         DocumentSyncRun[]
+}
+
+model ExternalDocumentItem {
+  id                  String   @id @default(uuid())
+  sourceId            String
+  source              ExternalDocumentSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  
+  provider            ExternalProvider
+  sourceType          ExternalSourceType
+  
+  externalItemKeyHash String
+  externalETagHash    String?
+  
+  safeDisplayName     String
+  itemKind            String?
+  extension           String?
+  mimeType            String?
+  sizeBytes           BigInt?
+  
+  createdAtExternal   DateTime?
+  lastModifiedAtExternal DateTime?
+  
+  hasWebUrl           Boolean  @default(false)
+  webUrlStored        Boolean  @default(false)
+  
+  syncStatus          ExternalDocumentSyncStatus @default(PENDING)
+  lastSeenAt          DateTime @default(now())
+  lastSyncedAt        DateTime?
+  
+  linkedDocumentId    String?
+  linkedCaseId        String?
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([provider])
+  @@index([sourceId])
+  @@index([externalItemKeyHash])
+  @@index([syncStatus])
+  @@index([lastSeenAt])
+}
+
+model DocumentSyncRun {
+  id                 String   @id @default(uuid())
+  sourceId           String?
+  source             ExternalDocumentSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  
+  provider           ExternalProvider
+  mode               DocumentSyncRunMode @default(MANUAL)
+  
+  dryRun             Boolean  @default(true)
+  metadataOnly       Boolean  @default(true)
+  contentDownloaded  Boolean  @default(false)
+  dbMutated          Boolean  @default(false)
+  ragIndexed         Boolean  @default(false)
+  
+  status             DocumentSyncRunStatus @default(STARTED)
+  
+  startedAt          DateTime @default(now())
+  completedAt        DateTime?
+  startedById        String?
+  
+  totalSeen          Int      @default(0)
+  wouldSyncCount     Int      @default(0)
+  wouldSkipCount     Int      @default(0)
+  persistedItemCount Int      @default(0)
+  warningCount       Int      @default(0)
+  
+  errorCode          String?
+  errorSummary       String?
+
+  items              DocumentSyncRunItem[]
+
+  @@index([provider])
+  @@index([status])
+}
+
+model DocumentSyncRunItem {
+  id                  String   @id @default(uuid())
+  runId               String
+  run                 DocumentSyncRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  
+  externalItemKeyHash String
+  safeDisplayName     String
+  itemKind            String?
+  extension           String?
+  mimeType            String?
+  sizeBytes           BigInt?
+  
+  status              ExternalDocumentSyncStatus @default(PENDING)
+  wouldSync           Boolean  @default(false)
+  wouldSkip           Boolean  @default(false)
+  skipReasons         String?
+  
+  contentDownloaded   Boolean  @default(false)
+  documentCreated     Boolean  @default(false)
+  ragIndexed          Boolean  @default(false)
+  
+  createdAt           DateTime @default(now())
+
+  @@index([runId])
+  @@index([externalItemKeyHash])
+}

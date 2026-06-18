@@ -537,3 +537,8 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 *Last updated: Prompt 50B (2026-06-17)*
 *Update this file whenever routes, components, or API handlers are added, removed, or significantly modified.*
 
+  
+## Prompt 65 Updates  
+* Metadata persistence service and endpoints (Blocked/Planned for next prompt).  
+* Staging metadata run endpoint and Read-only sync run listing endpoint (Blocked/Planned).  
+* Scripts/runbooks/docs added for staging metadata persistence. 

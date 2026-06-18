@@ -276,3 +276,10 @@ GET /api/integrations/microsoft/status
 
 *Last updated: Prompt 50B (2026-06-17)*
 *Next expected update: After Prompt 50C (Live Pilot Seed + Workflow Tests once staging DB confirmed)*
+ 
+## Microsoft Graph Metadata Persistence Architecture
+* Sync run record flow: captures metadata dry-run records and statistics.
+* Model Boundary: ExternalDocumentSource / ExternalDocumentItem / DocumentSyncRun / DocumentSyncRunItem.
+* Staging-only persistence boundary enforced.
+* Future content ingestion boundary: Content download remains strictly blocked pending future prompt and UAT.
+

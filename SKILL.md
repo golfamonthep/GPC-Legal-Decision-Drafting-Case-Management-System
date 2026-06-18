@@ -814,3 +814,9 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 | Runtime audit verification | Runtime audit verification is required before production archive release. |
 | Reversal feasibility | Reversal feasibility must be tested, not only documented. |
 | Microsoft Graph connectivity | Live connectivity must be staging-only and owner-confirmed. Token acquisition must never occur during render. Status endpoint must not acquire tokens. Connectivity endpoint must be POST-only, permission-protected, and sanitized. Document content ingestion requires a separate prompt and UAT. |
+ 
+* Graph metadata persistence requires staging DB confirmation metadata-only schema and explicit persistence flag.
+* Metadata persistence must store sanitized metadata/run records only.
+* Raw tokens secrets raw Graph responses and document content must never be stored.
+* Creating official Document records or RAG indexing requires a separate prompt and UAT.
+

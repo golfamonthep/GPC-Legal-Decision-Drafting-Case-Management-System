@@ -339,3 +339,10 @@ enum KnowledgeReuseStatus {
 
 *Last updated: Prompt 50B (2026-06-17)*
 *Update this file whenever schema changes, new migrations are added, or Prisma model descriptions change.*
+  
+## Prompt 65 Updates  
+* Microsoft Graph metadata persistence models added (ExternalDocumentSource, ExternalDocumentItem, DocumentSyncRun, DocumentSyncRunItem).  
+* Migration status: Generated locally, blocked for staging.  
+* No document content stored.  
+* No token storage.  
+* Future Document/RAG linkage deferred. 
