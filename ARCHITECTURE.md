@@ -287,3 +287,11 @@ GET /api/integrations/microsoft/status
 * read-only dashboard/report API.
 * run history flow.
 * UAT gate and production block.
+
+## Microsoft Graph Content Ingestion Prototype Architecture
+* content ingestion prototype architecture is staging-only.
+* content ingestion gate controls execution.
+* content extractor boundary limits extraction.
+* prototype run records and items.
+* no official Document and no RAG indexing boundary enforced.
+

@@ -797,7 +797,13 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 | Read `.env*` without redacting logs | Terminal logs containing `.env` values must never be committed. |
 | Write audit logs during retention page render | Retention pages must not mutate or audit during server component render. |
 
-### Microsoft Graph Document Sync Rules (Prompt 63 & 64)
+### Microsoft Graph Document Sync Rules (Prompt 63, 64 & 68)
+- Content ingestion prototype is staging-only and safe-test-files-only.
+- First prototype supports only `.txt` and `.md`.
+- PDF/DOCX/OCR/RAG require separate prompts.
+- Full content must not be logged or exposed.
+- Production content ingestion remains blocked.
+
 - **Live Sync Disabled**: Live Microsoft Graph calls must be disabled in production unless a dedicated release gate is approved.
 - **Owner Confirmation Required**: Do not implement or execute live connectivity tests without explicit owner confirmation of staging environments and safe test folders.
 - **Metadata Dry Run Scope**: Metadata-only Graph dry runs must not download content, persist DB records, or index RAG.

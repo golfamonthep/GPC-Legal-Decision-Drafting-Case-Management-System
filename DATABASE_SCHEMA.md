@@ -350,3 +350,11 @@ enum KnowledgeReuseStatus {
 * no document content stored.
 * no token storage.
 * no official Document/RAG linkage.
+
+## Prompt 68 Updates
+* Prototype run/item models (Planned but Blocked due to missing Prompt 67).
+* Migration status: Blocked.
+* No official Document records created.
+* No RAG records created.
+* No token storage.
+

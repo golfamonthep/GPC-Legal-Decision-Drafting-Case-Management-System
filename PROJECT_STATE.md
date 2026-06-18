@@ -58,6 +58,8 @@ were unavailable during Prompt 47.
 | 62 | Microsoft Graph Document Sync Foundation | ✅ Committed (Mock UI/API built, live sync disabled) |
 | 63 | Microsoft Graph Live Auth Configuration Checklist + Staging-Only Connectivity Test | ✅ Committed (Blocked on owner confirmation) |
 | 64 | Microsoft Graph Metadata-Only Staging Sync Dry Run | ✅ Committed (Blocked on owner confirmation) |
+| 67 | Microsoft Graph Document Content Ingestion Design Gate | ❌ MISSING / NO-GO |
+| 68 | Microsoft Graph Content Ingestion Staging Prototype | ⚠️ BLOCKED (Missing Prompt 67 Design Gate) |
 
 ---
 
@@ -243,6 +245,8 @@ Objectives:
 | 62 | Microsoft Graph Document Sync Foundation (Completed) |
 | 63 | Microsoft Graph Live Auth Configuration Checklist + Staging-Only Connectivity Test (Blocked on owner confirmation) |
 | 64 | Microsoft Graph Metadata-Only Staging Sync Dry Run (Blocked on owner confirmation) |
+| 67 | Microsoft Graph Document Content Ingestion Design Gate (Missing) |
+| 68 | Microsoft Graph Content Ingestion Staging Prototype (Blocked due to missing Prompt 67) |
 
 * **Latest Execution Phase**: Phase 19 (Final report)
 * **Primary Objective**: Safely apply staging migration and seed archive pilot records pending owner confirmation.

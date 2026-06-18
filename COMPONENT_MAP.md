@@ -546,3 +546,15 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 * report API: /api/document-sync/microsoft/report
 * report page/dashboard: /document-sync/report
 * UAT report docs: docs/microsoft-graph-metadata-persistence-uat-report.md
+
+## Prompt 68 Updates
+* contentIngestionGate (Planned / Blocked)
+* contentExtractor (Planned / Blocked)
+* contentIngestionPrototype service (Planned / Blocked)
+* preview endpoint (Planned / Blocked)
+* prototype endpoint (Planned / Blocked)
+* runs endpoint (Planned / Blocked)
+* UI panel/page (Planned / Blocked)
+* smoke script (Planned / Blocked)
+* runbook/UAT docs: docs/microsoft-graph-content-ingestion-prototype-readiness-report.md
+
