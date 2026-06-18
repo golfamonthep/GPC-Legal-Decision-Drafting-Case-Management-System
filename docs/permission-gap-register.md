@@ -27,3 +27,7 @@
 5. **Microsoft Graph Document Sync Gaps**
    - Missing implementation: Live Graph call, delete/purge, true metadata mapping.
    - Status: Foundation and UI built as mock-only. Production live sync remains intentionally disabled. Staging live connectivity test is blocked pending owner confirmation.
+
+6. **Microsoft Graph Metadata Dry Run Gap**
+   - Missing implementation: Live metadata dry run Graph call and API endpoint.
+   - Status: Blocked pending Prompt 63 owner confirmation.

@@ -281,6 +281,7 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 - Completely additive models with low migration risk.
 - Currently, no migration has been executed. Implementation remains in the planning phase.
 - **Prompt 63 Update**: No schema changes occurred. Graph sync data persistence remains intentionally disabled. Future schema migration remains separate.
+- **Prompt 64 Update**: No schema changes occurred. Graph metadata persistence is intentionally excluded from the metadata dry run. Future persistence models remain planned but blocked until live sync is fully approved.
 
 
 ---

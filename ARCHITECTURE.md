@@ -124,6 +124,10 @@ Next.js App Router
 - **Server-Side Token Acquisition Boundary**: Tokens must never be sent to the browser or stored persistently.
 - **Metadata-Only Connectivity Boundary**: API integration is strictly limited to retrieving lists and metadata, rejecting any content payloads.
 - **Production Disabled Boundary**: Live tests are explicitly disabled in production, enforcing a fail-closed posture for live tenant credentials.
+- **Metadata-Only Dry-Run Flow (Prompt 64)**: Flow is designed to retrieve and sanitize metadata without DB mutation, but remains blocked pending owner confirmation.
+- **Graph Metadata Normalization Boundary (Prompt 64)**: All Graph metadata must be normalized to prevent exposing raw secrets or internal tenant IDs to the client.
+- **No-Content/No-Persistence/No-RAG Boundary (Prompt 64)**: The metadata dry-run phase strictly prohibits downloading file contents, persisting records in the database, or indexing into the RAG vector store.
+- **Future Metadata Persistence Boundary**: Any future persistence of Graph metadata must be evaluated as a separate feature, with its own schema migrations and security review.
 
 
 ---

@@ -51,6 +51,7 @@ These routes use `requireApiPermission` to ensure strict backend checks.
 * `/api/document-sync/microsoft/status` -> `VIEW_DOCUMENT_SYNC`
 * `/api/document-sync/microsoft/preview` -> `PREVIEW_DOCUMENT_SYNC`
 * `/api/document-sync/microsoft/connectivity-test` -> `MANAGE_DOCUMENT_SYNC` (Planned)
+* `/api/document-sync/microsoft/metadata-dry-run` -> `PREVIEW_DOCUMENT_SYNC` / `MANAGE_DOCUMENT_SYNC` (Planned)
 
 ## 3. Routes that Manually Call `hasPermission`
 

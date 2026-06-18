@@ -24,3 +24,12 @@ This checklist outlines the criteria to verify the safety and read-only nature o
 - [ ] Live Graph connectivity test is POST-only, requires MANAGE_DOCUMENT_SYNC, and sanitizes output.
 - [ ] Production execution is explicitly blocked.
 - [ ] Staging connectivity script handles fail-closed gracefully.
+
+## Metadata Dry Run Gate (Prompt 64)
+
+- [ ] Owner-confirmed Prompt 63 staging connectivity is required before metadata dry run implementation.
+- [ ] Metadata dry run endpoint (`/api/document-sync/microsoft/metadata-dry-run`) must be permission-protected.
+- [ ] Endpoint must return sanitized normalized metadata only.
+- [ ] No file content is downloaded.
+- [ ] No DB mutation occurs.
+- [ ] No RAG indexing occurs.

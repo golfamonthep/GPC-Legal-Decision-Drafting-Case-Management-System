@@ -52,3 +52,6 @@ Immediately stop the test and revoke Graph credentials if:
 - Real case records are found in the test folder.
 - Raw tokens or secrets are exposed in browser logs, network payloads, or UI.
 - Any unexpected database mutations occur.
+
+## Metadata Dry Run
+A separate runbook for the Metadata Dry Run is located in `docs/microsoft-graph-metadata-dry-run-runbook.md`. It remains blocked until staging connectivity is confirmed.

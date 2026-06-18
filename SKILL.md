@@ -795,9 +795,15 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 | Assume seeded `@example.test` users can log in | Azure AD OAuth requires real Microsoft accounts; seed creates DB records only |
 | Use `prisma db push` on staging/production | Use `prisma migrate deploy`. `db push` is for local disposable DBs only. |
 | Read `.env*` without redacting logs | Terminal logs containing `.env` values must never be committed. |
-| Treat handoff as verified completion | Handed-off execution (e.g. owner runs the script) must remain pending/blocked until confirmed by owner. |
-| Implement destructive archive features immediately | Records retention UI must start read-only. Destructive archive/delete/purge actions require separate approval, permission, confirmation, and audit. |
 | Write audit logs during retention page render | Retention pages must not mutate or audit during server component render. |
+
+### Microsoft Graph Document Sync Rules (Prompt 63 & 64)
+- **Live Sync Disabled**: Live Microsoft Graph calls must be disabled in production unless a dedicated release gate is approved.
+- **Owner Confirmation Required**: Do not implement or execute live connectivity tests without explicit owner confirmation of staging environments and safe test folders.
+- **Metadata Dry Run Scope**: Metadata-only Graph dry runs must not download content, persist DB records, or index RAG.
+- **Sanitization**: Dry-run responses must be sanitized and limited to prevent leaking secrets or raw identifiers.
+- **Real Ingestion Blocked**: Real document ingestion requires separate staging UAT and owner approval.
+
 | Implement mutating archive actions before UI previews | Dry-run preview endpoints must be POST-only, permission-protected, batch-limited, and non-mutating. UI preview panels must not expose execute controls until approved. Eligibility checks must be conservative when schema support is missing. |
 | Mix preview and execution permissions | Preview permission (`PREVIEW_ARCHIVE`) and execution permission (`EXECUTE_ARCHIVE`) must be strictly separated. |
 | Rely on UI hiding for security | UI permission visibility is not a substitute for backend API authorization. |

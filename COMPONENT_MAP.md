@@ -424,6 +424,9 @@ Component: [`MaintenanceActionsPanel.tsx`](file:///c:/APP/src/components/admin/M
 | **Archive Pilot Seed Script** | `scripts/seed-archive-pilot-records.ts` | **NEW (Prompt 61A/61B)** Seeds safe mock cases for archive UAT (Execution blocked in 61B) |
 | **Archive Pilot Plan & Roles** | `docs/archive-pilot-records-plan.md`, `docs/archive-staging-role-account-checklist.md`, `docs/staging-archive-readiness-report.md` | **NEW (Prompt 61A/61B)** Comprehensive plans for staging tests (Updated in 61B for owner confirmation gate) |
 | **Microsoft Graph Sync Docs** | `docs/microsoft-graph-document-sync-foundation.md`, `docs/microsoft-graph-live-auth-readiness-report.md`, `docs/microsoft-graph-live-permission-checklist.md`, `docs/microsoft-graph-env-checklist.md`, `docs/microsoft-graph-sync-uat-checklist.md`, `docs/microsoft-graph-staging-connectivity-test-runbook.md` | **NEW (Prompt 63)** Foundation and staging connectivity test readiness docs |
+| **Microsoft Graph Metadata Dry Run Docs** | `docs/microsoft-graph-metadata-dry-run-report.md`, `docs/microsoft-graph-metadata-normalization-contract.md`, `docs/microsoft-graph-metadata-dry-run-runbook.md` | **NEW (Prompt 64)** Metadata dry run readiness and rules |
+
+*Note: The metadata dry-run service (`src/lib/microsoft-graph/metadataDryRun.ts`), API route (`/api/document-sync/microsoft/metadata-dry-run`), UI dry-run panel, and smoke script (`scripts/test-microsoft-graph-metadata-dry-run.ps1`) are planned but currently **BLOCKED** pending owner confirmation.*
 
 ---
 

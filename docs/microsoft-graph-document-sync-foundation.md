@@ -49,3 +49,9 @@
 * Production sync
 * Delete/purge
 * Bidirectional writeback
+
+### 5. Metadata Dry Run Scope (Prompt 64)
+* Metadata-only dry run implementation remains **blocked** pending owner-confirmed Prompt 63 connectivity.
+* When implemented, the metadata dry run will list safe metadata from the configured test folder.
+* It must normalize metadata according to the contract, preventing raw secrets from leaking.
+* It must not download file content, persist DB records, or index RAG.

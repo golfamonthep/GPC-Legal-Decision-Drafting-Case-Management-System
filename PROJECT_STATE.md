@@ -56,6 +56,8 @@ were unavailable during Prompt 47.
 | 58 | Archive Execution UI (Preview-first, Staging-only) | ✅ Committed (UI state machine, safety gates built) |
 | 59 | Archive Execution UAT and Rollback/Reversal Verification | ✅ Committed (UAT documented/partial; audit/reversal verified) |
 | 62 | Microsoft Graph Document Sync Foundation | ✅ Committed (Mock UI/API built, live sync disabled) |
+| 63 | Microsoft Graph Live Auth Configuration Checklist + Staging-Only Connectivity Test | ✅ Committed (Blocked on owner confirmation) |
+| 64 | Microsoft Graph Metadata-Only Staging Sync Dry Run | ✅ Committed (Blocked on owner confirmation) |
 
 ---
 
@@ -240,6 +242,7 @@ Objectives:
 | 61B | Execute Staging DB Migration and Pilot Seed (Blocked on owner confirmation) |
 | 62 | Microsoft Graph Document Sync Foundation (Completed) |
 | 63 | Microsoft Graph Live Auth Configuration Checklist + Staging-Only Connectivity Test (Blocked on owner confirmation) |
+| 64 | Microsoft Graph Metadata-Only Staging Sync Dry Run (Blocked on owner confirmation) |
 
 * **Latest Execution Phase**: Phase 19 (Final report)
 * **Primary Objective**: Safely apply staging migration and seed archive pilot records pending owner confirmation.
@@ -249,7 +252,7 @@ Objectives:
 * **Archive Reversal Readiness Status**: Conceptually ready, implementation deferred.
 * **Production Release Readiness**: NO-GO. Pending staging execution tests.
 * **Microsoft Graph Sync Readiness**: STAGING-ONLY BLOCKED (Production disabled). Live connectivity test remains blocked pending owner confirmation.
-
+* **Microsoft Graph Metadata Dry Run Readiness**: STAGING-ONLY BLOCKED. Implementation blocked pending owner confirmation.
 ## Progress Checklist
 - [x] Records Retention UAT verified.
 - [x] Archive action eligibility rules documented.
@@ -267,6 +270,7 @@ Objectives:
 * **Pilot/Live Blocked**: Full staging database verification and test account assignment must be completed by the project owner.
 * **Production Archive Execution Blocked**: Pending owner UAT sign-off on staging and a subsequent production release prompt to remove the environment gate.
 * **Production Archive Release Decision**: NO-GO.
+* **Microsoft Graph Metadata Dry Run Blocked**: Pending owner confirmation of staging connectivity.
 
 ## Next Recommended Prompt
-**Prompt 61**: Production Deployment Sign-off and Live Pilot Launch OR Microsoft Graph Document Sync (Owner Decision).
+**Prompt 65**: Live Staging Authentication + Microsoft Graph End-to-End Pilot Sync (Pending Owner Confirmation).
