@@ -1,7 +1,7 @@
 # Microsoft Graph Sync UAT Checklist
 
-**Date**: 2026-06-17
-**Prompt**: 62
+**Date**: 2026-06-18
+**Prompt**: 63
 
 This checklist outlines the criteria to verify the safety and read-only nature of the Microsoft Graph Document Sync foundation.
 
@@ -17,3 +17,10 @@ This checklist outlines the criteria to verify the safety and read-only nature o
 - [ ] No real document content is uploaded or downloaded.
 - [ ] No delete/purge functionality exists in the UI or APIs.
 - [ ] The project build passes successfully (`npm run build`).
+
+## Connectivity Test Gate (Prompt 63)
+
+- [ ] Owner-confirmed staging environment setup is required before any live Graph call.
+- [ ] Live Graph connectivity test is POST-only, requires MANAGE_DOCUMENT_SYNC, and sanitizes output.
+- [ ] Production execution is explicitly blocked.
+- [ ] Staging connectivity script handles fail-closed gracefully.

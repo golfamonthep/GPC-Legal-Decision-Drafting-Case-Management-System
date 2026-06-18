@@ -119,6 +119,11 @@ Next.js App Router
 - **Status Endpoint**: `/api/document-sync/microsoft/status` exposes safe configuration presence without revealing real secrets.
 - **Preview Endpoint**: `/api/document-sync/microsoft/preview` returns mock metadata.
 - **Future Schema**: Additive `ExternalDocumentSource` and `ExternalDocumentItem` models are planned.
+- **Graph Live Auth Connectivity Flow**: Client credential acquisition is strictly isolated to server-side logic only.
+- **Graph Environment Gate**: Token acquisition and API calls are explicitly blocked by environment flags (`ALLOW_MICROSOFT_GRAPH_LIVE_TEST`).
+- **Server-Side Token Acquisition Boundary**: Tokens must never be sent to the browser or stored persistently.
+- **Metadata-Only Connectivity Boundary**: API integration is strictly limited to retrieving lists and metadata, rejecting any content payloads.
+- **Production Disabled Boundary**: Live tests are explicitly disabled in production, enforcing a fail-closed posture for live tenant credentials.
 
 
 ---

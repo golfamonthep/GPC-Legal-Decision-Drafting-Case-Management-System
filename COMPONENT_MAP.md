@@ -423,7 +423,7 @@ Component: [`MaintenanceActionsPanel.tsx`](file:///c:/APP/src/components/admin/M
 | **Staging Environment Verification Script** | `scripts/verify-staging-environment.ps1` | **NEW (Prompt 61A/61B)** Validates endpoints on staging safely (Skipped in 61B due to unconfirmed environment) |
 | **Archive Pilot Seed Script** | `scripts/seed-archive-pilot-records.ts` | **NEW (Prompt 61A/61B)** Seeds safe mock cases for archive UAT (Execution blocked in 61B) |
 | **Archive Pilot Plan & Roles** | `docs/archive-pilot-records-plan.md`, `docs/archive-staging-role-account-checklist.md`, `docs/staging-archive-readiness-report.md` | **NEW (Prompt 61A/61B)** Comprehensive plans for staging tests (Updated in 61B for owner confirmation gate) |
-| **Microsoft Graph Sync Docs** | `docs/microsoft-graph-document-sync-foundation.md`, etc. | **NEW (Prompt 62)** Foundation docs for Graph sync |
+| **Microsoft Graph Sync Docs** | `docs/microsoft-graph-document-sync-foundation.md`, `docs/microsoft-graph-live-auth-readiness-report.md`, `docs/microsoft-graph-live-permission-checklist.md`, `docs/microsoft-graph-env-checklist.md`, `docs/microsoft-graph-sync-uat-checklist.md`, `docs/microsoft-graph-staging-connectivity-test-runbook.md` | **NEW (Prompt 63)** Foundation and staging connectivity test readiness docs |
 
 ---
 

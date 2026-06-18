@@ -239,14 +239,16 @@ Objectives:
 | 61A | Establish Verified Staging DB + Archive Pilot Records (Prepared/Blocked on environment) |
 | 61B | Execute Staging DB Migration and Pilot Seed (Blocked on owner confirmation) |
 | 62 | Microsoft Graph Document Sync Foundation (Completed) |
+| 63 | Microsoft Graph Live Auth Configuration Checklist + Staging-Only Connectivity Test (Blocked on owner confirmation) |
 
-* **Latest Execution Phase**: Phase 14 (Final report)
+* **Latest Execution Phase**: Phase 19 (Final report)
 * **Primary Objective**: Safely apply staging migration and seed archive pilot records pending owner confirmation.
 * **Archive Execution Readiness**: STAGING-ONLY READY (Production disabled).
 * **Archive UAT Status**: PARTIAL / BLOCKED — Staging DB blocked, pilot records not executed.
 * **Archive Audit Verification Status**: VERIFIED via code audit.
 * **Archive Reversal Readiness Status**: Conceptually ready, implementation deferred.
 * **Production Release Readiness**: NO-GO. Pending staging execution tests.
+* **Microsoft Graph Sync Readiness**: STAGING-ONLY BLOCKED (Production disabled). Live connectivity test remains blocked pending owner confirmation.
 
 ## Progress Checklist
 - [x] Records Retention UAT verified.

@@ -280,6 +280,7 @@ To avoid database constraint errors during seed or cleanup, delete in this stric
 **Design Notes**:
 - Completely additive models with low migration risk.
 - Currently, no migration has been executed. Implementation remains in the planning phase.
+- **Prompt 63 Update**: No schema changes occurred. Graph sync data persistence remains intentionally disabled. Future schema migration remains separate.
 
 
 ---

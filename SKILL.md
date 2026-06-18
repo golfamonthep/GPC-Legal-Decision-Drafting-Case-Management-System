@@ -807,3 +807,4 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 | Production release without staging execution | Production release gate must be NO-GO if staging execution did not run. |
 | Runtime audit verification | Runtime audit verification is required before production archive release. |
 | Reversal feasibility | Reversal feasibility must be tested, not only documented. |
+| Microsoft Graph connectivity | Live connectivity must be staging-only and owner-confirmed. Token acquisition must never occur during render. Status endpoint must not acquire tokens. Connectivity endpoint must be POST-only, permission-protected, and sanitized. Document content ingestion requires a separate prompt and UAT. |

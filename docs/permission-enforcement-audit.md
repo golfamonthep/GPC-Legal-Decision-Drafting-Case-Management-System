@@ -50,6 +50,7 @@ These routes use `requireApiPermission` to ensure strict backend checks.
 * `/api/search/cases/export` -> `EXPORT_SEARCH_RESULTS`
 * `/api/document-sync/microsoft/status` -> `VIEW_DOCUMENT_SYNC`
 * `/api/document-sync/microsoft/preview` -> `PREVIEW_DOCUMENT_SYNC`
+* `/api/document-sync/microsoft/connectivity-test` -> `MANAGE_DOCUMENT_SYNC` (Planned)
 
 ## 3. Routes that Manually Call `hasPermission`
 
@@ -72,6 +73,7 @@ Based on the audit, the following routes might rely solely on NextAuth middlewar
 
 * The new `rag` API endpoints client UI should be reviewed in the next phase to incorporate the `VIEW_RECORDS_ARCHIVE` and `APPROVE_KNOWLEDGE_REUSE` permissions where applicable. (Backend `rag` API and `/library` server page are now protected).
 * **Archive Execution**: The `POST /api/records-retention/archive/preview` endpoint correctly enforces `MANAGE_RECORDS_ARCHIVE`. However, `MANAGE_RECORDS_ARCHIVE` is too broad. A new `PREVIEW_ARCHIVE` and `EXECUTE_ARCHIVE` permission must be introduced before building the final execution route. Code audit passed is not live UAT passed. Production release is NO-GO.
+* **Microsoft Graph Connectivity**: The endpoint must require `MANAGE_DOCUMENT_SYNC` and run strictly within an environment-gated execution path (production blocked, live staging blocked until owner confirms).
 
 ## Recommendation
 
