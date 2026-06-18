@@ -33,3 +33,7 @@
    - Status: Blocked pending Prompt 63 owner confirmation.
 ## Microsoft Graph Sync Report 
 No permission gaps found. Report routes are safely protected by VIEW_DOCUMENT_SYNC and API uses requireApiPermission. 
+
+## Microsoft Graph Content Ingestion Prototype
+- **Status**: BLOCKED (Prompt 67 Missing)
+- **Note**: Permission enforcement for content ingestion is blocked until the prototype is unblocked.

@@ -82,3 +82,7 @@ Do not apply broad refactors to auth enforcement mechanisms without correspondin
 ## Microsoft Graph Sync Report Route Audit (Prompt 66)
 - GET /document-sync/report -> requirePermission('VIEW_DOCUMENT_SYNC')
 - GET /api/document-sync/microsoft/report -> requireApiPermission('VIEW_DOCUMENT_SYNC')
+
+## Microsoft Graph Content Ingestion Prototype
+- **Status**: BLOCKED (Prompt 67 Missing)
+- **Note**: Permission enforcement audit for content ingestion is blocked until the prototype is unblocked.
