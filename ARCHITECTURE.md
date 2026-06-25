@@ -295,3 +295,9 @@ GET /api/integrations/microsoft/status
 * prototype run records and items.
 * no official Document and no RAG indexing boundary enforced.
 
+## Staging Operator Trial Architecture (Prompt 71)
+* staging operator trial flow.
+* evidence collection flow.
+* defect classification flow.
+* production block verification flow.
+

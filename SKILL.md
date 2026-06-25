@@ -829,3 +829,9 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 * Metadata persistence UAT must verify read-only report routes, protected run history, no content download, no Document creation, and no RAG indexing.
 * Dashboard/report routes must not call Graph live or mutate DB during render.
 * Production Graph persistence remains blocked until separate release gate.
+
+## Staging Operator Trial Rules (Prompt 71)
+* Operator trial evidence must be sanitized and must not include raw IDs, secrets, tokens, full content, or real document names.
+* Staging operator trial is required before any file-type expansion.
+* Evidence pack status must distinguish PASSED, CONDITIONAL PASS, BLOCKED, and FAILED.
+* Production content ingestion remains NO-GO after staging operator trial unless separate production release gate is approved.

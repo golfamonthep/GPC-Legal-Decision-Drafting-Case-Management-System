@@ -60,6 +60,7 @@ were unavailable during Prompt 47.
 | 64 | Microsoft Graph Metadata-Only Staging Sync Dry Run | ✅ Committed (Blocked on owner confirmation) |
 | 67 | Microsoft Graph Document Content Ingestion Design Gate | ❌ MISSING / NO-GO |
 | 68 | Microsoft Graph Content Ingestion Staging Prototype | ⚠️ BLOCKED (Missing Prompt 67 Design Gate) |
+| 69 | Content Ingestion Prototype UAT + Quarantine Workflow | ✅ Committed (Quarantine UI/API added, live UAT blocked) |
 
 ---
 
@@ -247,8 +248,9 @@ Objectives:
 | 64 | Microsoft Graph Metadata-Only Staging Sync Dry Run (Blocked on owner confirmation) |
 | 67 | Microsoft Graph Document Content Ingestion Design Gate (Missing) |
 | 68 | Microsoft Graph Content Ingestion Staging Prototype (Blocked due to missing Prompt 67) |
+| 69 | Content Ingestion Prototype UAT + Quarantine Workflow (Completed - UAT blocked) |
 
-* **Latest Execution Phase**: Phase 19 (Final report)
+* **Latest Execution Phase**: Phase 20 (Final checks)
 * **Primary Objective**: Safely apply staging migration and seed archive pilot records pending owner confirmation.
 * **Archive Execution Readiness**: STAGING-ONLY READY (Production disabled).
 * **Archive UAT Status**: PARTIAL / BLOCKED — Staging DB blocked, pilot records not executed.
@@ -299,3 +301,18 @@ Objectives:
 * authenticated staging prototype status: Blocked.
 * production block status: ACTIVE.
 * next recommended prompt: Prompt 67 (Microsoft Graph Document Content Ingestion Design Gate).
+
+## Microsoft Graph Content Ingestion Prototype UAT + Quarantine Workflow (Prompt 69)
+* Prompt 69 status: Quarantine workflow implemented (UI + API mock); live execution blocked.
+* prototype implementation status: Shell only.
+* migration status: Schema updated, migration deferred to manual plan.
+* UI status: Quarantine review panel added.
+* UAT status: Blocked pending Prompt 67 and staging confirmation.
+
+## Staging Operator Trial for Graph Content Prototype (Prompt 71)
+* Prompt 71 status: Evidence pack created.
+* operator trial result: BLOCKED.
+* evidence pack location: docs/evidence/graph-content-operator-trial/
+* defects summary: No defects found (execution blocked).
+* production block status: Pending verification.
+* next recommended prompt: Prompt 72 (or owner confirmation step).

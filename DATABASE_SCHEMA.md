@@ -358,3 +358,11 @@ enum KnowledgeReuseStatus {
 * No RAG records created.
 * No token storage.
 
+## Prompt 71 Updates
+* any verification notes: Trial blocked, no verification done.
+* no official Document records.
+* no RAG records.
+* no token storage.
+* no Microsoft 365 writeback.
+* evidence/trial did or did not mutate staging prototype tables: Did NOT mutate (execution blocked).
+

@@ -1,39 +1,14 @@
 # Permission Gap Register
 
-## Known Gaps
+**Operator Trial Status:** BLOCKED
+**Evidence Pack Location:** `docs/evidence/graph-content-operator-trial/`
 
-1. **Upload Document Permission Gap**
-   - File: `src/app/api/cases/[id]/documents/upload-placeholder/route.ts`
-   - Description: The `UPLOAD_DOCUMENTS` permission is missing from the server-side checks.
-   - Status: Deferred (Medium Priority)
+## Status Updates
+- **Defects:** None found (Trial was blocked).
+- **Production Block:** Verification pending live execution.
+- **Official Document Creation:** Blocked.
+- **RAG Indexing:** Blocked.
+- **Microsoft 365 Writeback:** Blocked.
 
-2. **RAG Page Auth**
-   - Files: `/rag/retrieval-test`, `/legal-qa`
-   - Description: Partially hardened in Prompt 46, requires full authorization guard implementation.
-   - Status: Deferred (Medium Priority)
-
-3. **Records Retention Full Lifecycle Gaps**
-   - Missing fields: `CaseArchiveRecord` model lacks precise destruction due date field (only `retentionReviewDate` is present).
-   - Missing model: No direct `ArchiveActionAuditLog` model (though general `AuditLog` can suffice, explicit fields might be missing for compliance).
-   - Missing feature: There's no UI for actual deletion/destruction. The current implementation is strictly read-only by design.
-   - Status: Acknowledged. No destructive actions will be implemented without further schema updates and rigorous auditing mechanisms.
-
-4. **Archive Action Design Gaps (Prompt 54 Update)**
-   - Missing permissions: `PREVIEW_ARCHIVE`, `EXECUTE_ARCHIVE`, `REVERSE_ARCHIVE`, and `VIEW_ARCHIVE_AUDIT` are missing. `MANAGE_RECORDS_ARCHIVE` is too broad.
-   - Missing models/fields: `previousStatusBeforeArchive`, `archiveBatchId`, `ArchiveBatch` model.
-   - Missing API: The actual `POST /api/records-retention/archive` endpoint is intentionally missing until gaps are resolved.
-   - Status: Archive Execution is NOT READY. Production release is NO-GO.
-
-5. **Microsoft Graph Document Sync Gaps**
-   - Missing implementation: Live Graph call, delete/purge, true metadata mapping.
-   - Status: Foundation and UI built as mock-only. Production live sync remains intentionally disabled. Staging live connectivity test is blocked pending owner confirmation.
-
-6. **Microsoft Graph Metadata Dry Run Gap**
-   - Missing implementation: Live metadata dry run Graph call and API endpoint.
-   - Status: Blocked pending Prompt 63 owner confirmation.
-## Microsoft Graph Sync Report 
-No permission gaps found. Report routes are safely protected by VIEW_DOCUMENT_SYNC and API uses requireApiPermission. 
-
-## Microsoft Graph Content Ingestion Prototype
-- **Status**: BLOCKED (Prompt 67 Missing)
-- **Note**: Permission enforcement for content ingestion is blocked until the prototype is unblocked.
+## Next Prompt Criteria
+Prompt 72 or a manual owner approval step must confirm staging DB separation and complete Prompt 70 hardening before the staging operator trial can proceed.

@@ -558,3 +558,7 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 * smoke script (Planned / Blocked)
 * runbook/UAT docs: docs/microsoft-graph-content-ingestion-prototype-readiness-report.md
 
+## Prompt 71 Updates
+* evidence pack docs: docs/evidence/graph-content-operator-trial/
+* defect log: docs/evidence/graph-content-operator-trial/defect-log.md
+

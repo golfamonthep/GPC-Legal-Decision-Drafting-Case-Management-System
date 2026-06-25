@@ -1,4 +1,4 @@
-# Permission Enforcement Audit
+# Microsoft Graph Content Quarantine Review SOP
 
 **Operator Trial Status:** BLOCKED
 **Evidence Pack Location:** `docs/evidence/graph-content-operator-trial/`
