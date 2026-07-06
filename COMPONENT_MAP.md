@@ -578,3 +578,9 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 * smoke script (Blocked)
 * runbook/UAT docs (Created as Blocked)
 
+## Prompt 74 Updates
+* DOCX/PDF evidence pack docs: `docs/evidence/graph-docx-pdf-parser-spike/`
+* smoke script if added: `scripts/run-docx-pdf-parser-spike-smoke.ps1`
+* parser spike UAT docs: `docs/microsoft-graph-docx-pdf-parser-spike-uat-report.md`
+* defect log: `docs/evidence/graph-docx-pdf-parser-spike/defect-log.md`
+

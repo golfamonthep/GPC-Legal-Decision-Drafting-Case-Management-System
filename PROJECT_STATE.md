@@ -61,6 +61,10 @@ were unavailable during Prompt 47.
 | 67 | Microsoft Graph Document Content Ingestion Design Gate | ❌ MISSING / NO-GO |
 | 68 | Microsoft Graph Content Ingestion Staging Prototype | ⚠️ BLOCKED (Missing Prompt 67 Design Gate) |
 | 69 | Content Ingestion Prototype UAT + Quarantine Workflow | ✅ Committed (Quarantine UI/API added, live UAT blocked) |
+| 71 | Staging Operator Trial for Graph Content Prototype | ⚠️ BLOCKED (Evidence pack created, execution blocked) |
+| 72 | DOCX/PDF File-Type Expansion Design Gate | ❌ NO-GO (Docs created, expansion blocked) |
+| 73 | DOCX/PDF Parser Spike Implementation | ⚠️ BLOCKED (Parser spike blocked pending owner confirmation) |
+| 74 | DOCX/PDF Parser Spike UAT + Evidence Pack | ⚠️ BLOCKED (Evidence pack created, UAT blocked) |
 
 ---
 
@@ -332,3 +336,11 @@ Objectives:
 * authenticated staging parser spike status: BLOCKED.
 * production block status: ACTIVE.
 * next recommended prompt: Manual owner tests for Prompt 71 or Prompt 74.
+
+## DOCX/PDF Parser Spike UAT + Evidence Pack (Prompt 74)
+* Prompt 74 status: Evidence pack created. UAT BLOCKED.
+* parser spike UAT result: BLOCKED.
+* evidence pack location: `docs/evidence/graph-docx-pdf-parser-spike/`
+* defects summary: No execution defects found (execution blocked). Missing implementation documented.
+* production block status: Active/Blocked.
+* next recommended prompt: Prompt 75 (or manual owner tests for Prompt 71/74).

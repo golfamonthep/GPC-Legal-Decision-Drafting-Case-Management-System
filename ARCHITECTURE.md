@@ -308,10 +308,14 @@ GET /api/integrations/microsoft/status
 * quarantine expansion boundary.
 * future staging UAT boundary.
 
-## DOCX/PDF Parser Spike Architecture (Prompt 73)
+## DOCX/PDF Parser Spike Architecture (Prompt 73 & 74)
 * DOCX/PDF parser spike architecture.
 * parser spike gate.
 * parser service boundary.
 * file-type expansion endpoints.
 * no Document/no RAG boundary.
+* DOCX/PDF parser spike UAT flow.
+* evidence collection flow.
+* parser safety verification flow.
+* production block verification flow.
 
