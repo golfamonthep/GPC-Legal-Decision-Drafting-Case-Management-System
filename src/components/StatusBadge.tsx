@@ -1,5 +1,6 @@
 import { CaseStatus } from "../types";
 import { cn } from "../lib/utils";
+import { isClosedCaseStatus } from "../lib/caseStatus";
 
 interface StatusBadgeProps {
   status: CaseStatus;
@@ -9,10 +10,13 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   let colorClass = "bg-gray-100 text-gray-800"; // Default
 
-  switch (status) {
-    case "รับเรื่อง":
-      colorClass = "bg-slate-100 text-slate-700 border border-slate-200";
-      break;
+  if (isClosedCaseStatus(status as string)) {
+    colorClass = "bg-green-100 text-green-800 border border-green-200";
+  } else {
+    switch (status) {
+      case "รับเรื่อง":
+        colorClass = "bg-slate-100 text-slate-700 border border-slate-200";
+        break;
     case "รอคำแก้":
       colorClass = "bg-amber-50 text-amber-700 border border-amber-200";
       break;
@@ -28,9 +32,10 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     case "มีมติแล้ว":
       colorClass = "bg-emerald-50 text-emerald-700 border border-emerald-200";
       break;
-    case "แจ้งผลแล้ว":
-      colorClass = "bg-gray-100 text-gray-700 border border-gray-200";
-      break;
+      case "แจ้งผลแล้ว":
+        colorClass = "bg-gray-100 text-gray-700 border border-gray-200";
+        break;
+    }
   }
 
   return (

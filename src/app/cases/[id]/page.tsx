@@ -13,8 +13,8 @@ import { th } from "date-fns/locale";
 import { auditLog } from "@/lib/audit";
 import { CaseStatus } from "@/types";
 import { CaseDetailActions } from "@/components/CaseDetailActions";
-import { isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
-import { differenceInYears } from "date-fns";
+import { isClosedCaseStatus, hasRedCaseNumber, isClosedOrRedCase } from "@/lib/caseStatus";
+import { differenceInYears, differenceInDays } from "date-fns";
 import { checkGraphIntegrationStatus } from "@/lib/microsoft/graphConfig";
 import { DocumentLinkModal } from "@/components/DocumentLinkModal";
 import { CaseAssignmentPanel } from "@/components/CaseAssignmentPanel";
@@ -115,7 +115,11 @@ export default async function CaseDetailPage({
 
   const graphStatus = checkGraphIntegrationStatus();
 
-  const isOverdue = false; // Logic for overdue could be added here if needed
+  let isOverdue = false;
+  if (caseData.dueDate90) {
+    const daysUntilDue = differenceInDays(caseData.dueDate90, new Date());
+    isOverdue = daysUntilDue < 0 && !isClosedOrRedCase(caseData);
+  }
 
   // Data QA Indicators Logic
   const qaWarnings: string[] = [];

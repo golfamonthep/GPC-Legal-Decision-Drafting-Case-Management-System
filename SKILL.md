@@ -874,3 +874,9 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - Next.js 16 deprecated middleware file convention to proxy.
 - Avoid nested React component definitions (e.g., StatusIcon inside page render) which causes state wipe on every re-render.
 - Avoid sync setState inside useEffect loops to prevent cascading re-renders.
+
+
+## Prompt 79 Pilot Testing Lessons
+- DO NOT WRITE NEW FEATURES WITHOUT A PLAN. System is in Feature Freeze.
+- ALWAYS PREFER isClosedOrRedCase FOR OVERDUE LOGIC. Thai legal systems have complex completed states.
+- NEVER EXPOSE MOCK DATA ON PRODUCTION/PILOT.

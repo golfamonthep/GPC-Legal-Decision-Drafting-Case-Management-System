@@ -6,7 +6,7 @@ import { requirePermission } from "@/lib/auth/requirePermission";
 import { CaseStatus } from "@/types";
 import { differenceInDays } from "date-fns";
 import { Prisma } from "@/generated/prisma";
-import { isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
+import { isClosedCaseStatus, hasRedCaseNumber, isClosedOrRedCase } from "@/lib/caseStatus";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -104,7 +104,7 @@ export default async function CasesPage({
     
     if (c.dueDate90) {
       daysUntilDue = differenceInDays(c.dueDate90, new Date());
-      isOverdue = daysUntilDue < 0;
+      isOverdue = daysUntilDue < 0 && !isClosedOrRedCase(c);
     }
 
     return {

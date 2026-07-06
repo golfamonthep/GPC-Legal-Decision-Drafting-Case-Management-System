@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateDecisionDocx } from "@/lib/export/decisionDocxExport";
 import { requireApiPermission } from "@/lib/auth/requireApiPermission";
+import { auditLog } from "@/lib/audit";
 
 // Note: In Next.js App Router, dynamic params are a Promise in Next.js 15+
 export async function GET(
@@ -22,8 +23,15 @@ export async function GET(
 
     const { buffer, filename } = await generateDecisionDocx(caseId, userId);
 
-    // Ensure we send filename properly encoded in Content-Disposition
     const encodedFilename = encodeURIComponent(filename);
+
+    await auditLog({
+      userId,
+      action: "EXPORT_DOCX",
+      entityType: "Case",
+      entityId: caseId,
+      afterValue: `Exported: ${filename}`
+    });
 
     return new Response(buffer as unknown as BodyInit, {
       status: 200,
