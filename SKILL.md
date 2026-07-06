@@ -880,3 +880,10 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - DO NOT WRITE NEW FEATURES WITHOUT A PLAN. System is in Feature Freeze.
 - ALWAYS PREFER isClosedOrRedCase FOR OVERDUE LOGIC. Thai legal systems have complex completed states.
 - NEVER EXPOSE MOCK DATA ON PRODUCTION/PILOT.
+
+## Prompt 80 Stabilization Rules & Lessons
+- System Readiness Decision: Proceed with Path D (Pilot User SOP and Training Manual).
+- Codebase is 100% ready for limited staging pilot with no critical blockers.
+- Focus shifted to operational onboarding, Entra ID provision, and Vercel preview database separation.
+- Defer Linter fixings (e.g. any types) until post-pilot to prevent regression.
+- Next step logic (Prompt 81): Execute Pilot Launch and Data Seeding.
