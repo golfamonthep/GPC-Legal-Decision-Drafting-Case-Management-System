@@ -839,3 +839,10 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 * Staging operator trial is required before any file-type expansion.
 * Evidence pack status must distinguish PASSED, CONDITIONAL PASS, BLOCKED, and FAILED.
 * Production content ingestion remains NO-GO after staging operator trial unless separate production release gate is approved.
+
+## DOCX/PDF Parser Spike Rules (Prompt 73)
+* DOCX/PDF parser spike is staging-only and fake-file-only.
+* Searchable PDF only; OCR/scanned/encrypted PDFs remain blocked.
+* Parser libraries must be server-side only and must not run during render.
+* Full extracted content must not be logged or exposed.
+* Production DOCX/PDF ingestion remains NO-GO.

@@ -372,3 +372,11 @@ enum KnowledgeReuseStatus {
 * future parser fields/models if needed: Documented but not implemented.
 * no content storage expansion.
 
+## Prompt 73 Updates
+* parser spike schema decision: BLOCKED / NO CHANGES.
+* migration status: N/A.
+* no official Document records.
+* no RAG records.
+* no token storage.
+* no Microsoft 365 writeback.
+

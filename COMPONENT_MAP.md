@@ -567,3 +567,14 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 * optional UI placeholder if added: skipped.
 * no parser implementation: yes, skipped.
 
+## Prompt 73 Updates
+* docxPdfParserSpikeGate (Blocked)
+* docxPdfExtractor (Blocked)
+* docxPdfParserSpikePrototype service (Blocked)
+* DOCX/PDF preview endpoint (Blocked)
+* DOCX/PDF prototype endpoint (Blocked)
+* DOCX/PDF runs endpoint (Blocked)
+* UI panel/page (Blocked)
+* smoke script (Blocked)
+* runbook/UAT docs (Created as Blocked)
+

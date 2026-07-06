@@ -323,3 +323,12 @@ Objectives:
 * DOCX/PDF expansion decision: NO-GO (pending Prompt 71 operator trial).
 * remaining blockers: Prompt 71 operator trial completion, parser/security approvals.
 * next recommended prompt: Prompt 73 (or manual owner tests for Prompt 71).
+
+## DOCX/PDF Parser Spike Status (Prompt 73)
+* Prompt 73 status: BLOCKED.
+* parser spike gate result: BLOCKED.
+* dependency decision: BLOCKED.
+* implementation status: BLOCKED.
+* authenticated staging parser spike status: BLOCKED.
+* production block status: ACTIVE.
+* next recommended prompt: Manual owner tests for Prompt 71 or Prompt 74.
