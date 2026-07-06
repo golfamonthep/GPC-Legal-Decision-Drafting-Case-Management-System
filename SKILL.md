@@ -906,3 +906,12 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - **Issue Fixing Rules**: Fix only issues directly scoped in the prompt (e.g., Red Number completion rule). Do not execute sweeping refactors (like fixing 1700 any-type warnings) during a Feature Freeze unless explicitly requested.
 - **Data Integrity Consistency**: If a strict business rule exists (e.g., cases with red numbers must be considered closed), enforce it eagerly at the source (Data Import) AND ensure filter logic (DB Queries) perfectly mirrors memory logic (isClosedOrRedCase) to prevent reporting inflation.
 - **Scope Control Reminder**: Defer large architectural asks (e.g. Graph Live Document Sync) that risk pilot stability.
+ 
+  
+ # #   P r o m p t   8 4   P i l o t   S i g n - O f f   L e a r n i n g s  
+ -   * * S e l e c t e d   P a t h * * :   P a t h   F   ( P i l o t   R e a d i n e s s   R e v i e w   a n d   C o n t r o l l e d   L a u n c h   S i g n - O f f ) .  
+ -   * * S t a b i l i z a t i o n   R u l e s * * :   O n l y   t r a n s i t i o n   t o   l a u n c h   s i g n - o f f   i f   b u i l d   p a s s e s ,   t y p e c h e c k   p a s s e s ,   v a l i d a t i o n   p a s s e s ,   a n d   N O   P 0 / P 1   i s s u e s   e x i s t .  
+ -   * * C o n t r o l l e d   L a u n c h   L i m i t a t i o n s * * :   M u s t   r e q u i r e   m a n d a t o r y   h u m a n   l e g a l   r e v i e w   f o r   R A G   A I   f e a t u r e s .   D a s h b o a r d   d e p e n d e n c i e s   r e q u i r e   v a l i d a t e d   i m p o r t   m a p p i n g .   D O C X   t e m p l a t e s   a r e   c o n s i d e r e d   u n v e r i f i e d   d r a f t s   u n t i l   w e t - s i g n e d .  
+ -   * * K n o w n   R e m a i n i n g   R i s k s * * :   V e r c e l   D B   P r e v i e w   c o n n e c t i v i t y   i s s u e s   ( P R E - 6 ) ,   T y p e S c r i p t   ` a n y `   t e c h   d e b t   ( P R E - 4 ) ,   M i c r o s o f t   G r a p h   l i v e   s y n c   p o s t - p i l o t   s c o p e   l i m i t   ( P R E - 5 ) .  
+ -   * * F e a t u r e   F r e e z e   M a i n t e n a n c e * * :   N o   n e w   w o r k f l o w   m o d u l e s   w e r e   i m p l e m e n t e d   d u r i n g   s t a b i l i z a t i o n ,   a d h e r i n g   s t r i c t l y   t o   f r e e z e   p r o t o c o l s .  
+ 
