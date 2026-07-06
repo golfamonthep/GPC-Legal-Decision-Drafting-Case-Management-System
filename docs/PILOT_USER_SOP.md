@@ -1,76 +1,100 @@
-# Pilot User SOP and Training Manual (GPC Legal System)
+# Pilot User Standard Operating Procedure (SOP)
 
-## 1. Introduction
-This manual provides standard operating procedures (SOPs) for the limited Pilot rollout of the GPC Legal Decision Drafting & Case Management System. The Pilot environment uses a staging database (Staging DB) and is strictly separated from production data.
+## 1. Purpose
+The purpose of this document is to guide internal users during the controlled Pilot phase of the GPC Legal Decision Drafting & Case Management System. It establishes safe operating procedures, defines workflow limitations, and outlines mandatory compliance rules.
 
-## 2. Practical Pilot User Guide
-**Accessing the System:**
-- Log in using your designated Microsoft Entra ID (Azure AD) pilot account.
-- Note your Role on the dashboard (Admin, Registry Officer, Legal Officer, Commissioner, Viewer).
-- Only perform actions that correspond to your assigned role.
+## 2. Pilot Scope
+- **Environment**: Staging / Pilot Database only.
+- **Allowed Activities**: Case search, assignment tracking, document drafting using AI support, registry import.
+- **Limitations**: The system is NOT a substitute for official legal judgment. All outputs must be manually reviewed.
+- **Case Volume**: Up to 50 active pilot cases.
+- **Pilot Duration**: 4 weeks.
+- **Data Privacy**: Only sanitized or non-highly classified test cases should be uploaded.
 
-## 3. Admin / Operator Guide
-**User & Role Management:**
-- Navigate to `/admin/users` to view registered accounts.
-- Map Microsoft Entra ID accounts to appropriate roles.
-- Monitor system health and audit logs.
-- Manage system dictionaries and case status workflows if required.
+## 3. User Roles
+- **Admin**: System configuration and role management.
+- **Registry Officer**: Importing registry Excel files and verifying data accuracy.
+- **Legal Officer**: Reviewing cases, updating status, drafting documents, using Legal Q&A.
+- **Commissioner / Reviewer**: Final review and approval of case status.
+- **Executive Viewer**: Viewing dashboards and tracking metrics.
 
-## 4. Legal Officer Workflow Guide
-**Case Assignment & Drafting:**
-- View assigned cases in the Dashboard or Case List (`/cases`).
-- Review the case details, schedule meetings, and update proceedings (`/cases/[id]`).
-- Use the **AI Draft Section Assistant** cautiously. Always review AI-generated texts.
-- Request legal insights via the **Legal Q&A (RAG)** tab for historical reference.
-- Export case outputs to DOCX format and manually adjust any specific official formatting (e.g., Sarabun font alignment).
+## 4. Login Procedure
+1. Access the Pilot URL (provided by Pilot Coordinator).
+2. Use authorized Microsoft Entra ID pilot credentials.
+3. Verify your assigned role in the top right corner.
 
-## 5. Reviewer / Executive Quick Guide
-**Metrics & Status Overview:**
-- Navigate to `/dashboard` or `/executive` to view overarching case statistics.
-- Monitor "Overdue" markers. Cases that are marked "เสร็จสิ้น" (Closed) or have a "เลขแดง" (Red Number) will not trigger overdue alarms.
-- Do not attempt to modify case details; your role is view-only for operational data.
+## 5. Dashboard Usage
+- Review assigned case loads and overdue metrics.
+- Note: Metrics reflect staging data and should not be used for official organizational reporting.
 
-## 6. Known Limitations
-- **DOCX Generation:** The AI-generated DOCX may not perfectly align with Thai official document standards (ระเบียบงานสารบรรณ). Manual formatting in Microsoft Word is required.
-- **RAG Latency:** Complex retrieval queries might take several seconds due to Vercel's serverless architecture and vector search size.
-- **Data Import (Excel):** The Excel importer requires an exact template structure. Missing required columns may cause rows to be skipped.
+## 6. Registry Import Procedure
+1. Navigate to the Import section.
+2. Upload the standard Excel registry format.
+3. Review the preview for red/black number distinction and duplicates.
+4. Confirm import.
 
-## 7. Do/Don't Rules for Legal Q&A
-- **DO** use the RAG system to find relevant previous cases or specific regulations.
-- **DO** manually verify the citations returned by the AI.
-- **DON'T** trust AI outputs blindly without cross-referencing actual legal documents.
-- **DON'T** assume the AI has context outside of the approved knowledge base.
+## 7. Case List Usage
+- Use filters (status, officer, date) to locate cases.
+- Verify status reflects the current real-world status.
 
-## 8. Manual Verification Checklist
-Before approving a drafted document:
-- [ ] Has the document been reviewed by a human legal expert?
-- [ ] Are all cited laws and previous cases accurate?
-- [ ] Is the generated DOCX layout formatted properly in Microsoft Word?
-- [ ] Are case statuses up to date in the Case Management module?
+## 8. Case Detail Usage
+- Review plaintiff, defendant, and case history.
+- Cross-reference uploaded documents with physical files if necessary.
 
-## 9. Issue Reporting Template
-If an error or hallucination occurs, report it using this format:
-- **Date/Time:** 
-- **User Role:** 
-- **Action Performed:** (e.g., Exporting DOCX for Case ID XXX)
-- **Expected Outcome:** 
-- **Actual Outcome:** 
-- **Error Message (if any):** 
-- **Screenshot Attached:** [Yes/No]
+## 9. Case Status Handling
+- Update status sequentially based on the workflow.
+- Ensure all mandatory fields are filled before progressing to "Closed/Completed".
 
-## 10. Pilot Acceptance Criteria
-- 100% of Pilot cases successfully imported via Excel without data corruption.
-- Legal Officers can create, edit, and export drafts for their assigned cases.
-- Legal Q&A (RAG) refuses to answer questions outside the knowledge base correctly.
-- Admin role can successfully reassign permissions.
+## 10. Completed Case Rules
+A case must be treated as completed and must not be counted as overdue if:
+- status = "เสร็จสิ้น"
+- status = "เสร็จสิ้น (ศาลปกครอง)"
+- case has "เลขแดง" (Red Number)
+- case contains text indicating "แดงแล้ว"
 
-## 11. Pilot Rollback / Stop Criteria
-- **Immediate Stop:** If any actual Production data leaks into the Staging environment.
-- **Immediate Stop:** If sensitive endpoints become publicly accessible without authentication.
-- **Rollback:** If DOCX generation crashes repeatedly affecting workflow progress.
+## 11. Overdue Case Interpretation
+- Overdue cases are those past their SLA that do not meet the "Completed Case Rules" above.
+- If an overdue case is actually closed, update the status immediately.
 
-## 12. Training Agenda
-- **Day 1 (Morning):** System Overview & Login Setup (All Roles)
-- **Day 1 (Afternoon):** Registry Import & Case Assignment (Admin/Registry Officer)
-- **Day 2 (Morning):** Drafting, Meetings, and RAG usage (Legal Officers)
-- **Day 2 (Afternoon):** Dashboard Monitoring (Executives) & Open Q&A
+## 12. Legal Q&A Usage
+- Use Legal Q&A to search for precedents and legal reasoning.
+- **Mandatory**: Validate all citations against official source documents.
+
+## 13. Knowledge Library Usage
+- Search existing jurisprudence and uploaded regulations.
+
+## 14. DOCX/Template Usage
+- Generate draft documents using provided templates.
+- Always review the exported DOCX file manually for formatting and content accuracy.
+
+## 15. Document Export Procedure
+- Navigate to Case Detail > Export.
+- Select the target template and download.
+
+## 16. Audit Log Expectations
+- All status changes, exports, and document views are tracked.
+- Do not share accounts.
+
+## 17. Error Reporting Procedure
+- Use the Pilot Issue Report Template to document any errors.
+- Submit reports to the Pilot Coordinator immediately.
+
+## 18. Data Privacy Rules
+- Do not upload un-redacted highly sensitive cases outside the agreed Pilot scope.
+
+## 19. Manual Legal Review Rules
+- ALL AI-generated text and templates must be verified by a responsible legal officer before official use.
+
+## 20. What Users Must Not Do
+- Do not use Pilot outputs for official court filings without manual review.
+- Do not share login credentials.
+- Do not treat AI answers as definitive legal advice.
+
+## 21. Daily Pilot Checklist
+- [ ] Log in and verify role.
+- [ ] Check assigned cases.
+- [ ] Update case statuses accurately.
+
+## 22. End-of-Week Pilot Checklist
+- [ ] Verify all completed cases are marked appropriately.
+- [ ] Submit weekly issue reports to the coordinator.

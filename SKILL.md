@@ -886,4 +886,11 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - Codebase is 100% ready for limited staging pilot with no critical blockers.
 - Focus shifted to operational onboarding, Entra ID provision, and Vercel preview database separation.
 - Defer Linter fixings (e.g. any types) until post-pilot to prevent regression.
-- Next step logic (Prompt 81): Execute Pilot Launch and Data Seeding.
+- Next step logic (Prompt 81): Controlled Pilot SOP, Training Pack, and Acceptance Criteria.
+
+## Prompt 81 Pilot SOP Rules & Lessons
+- **Controlled Pilot Requirement**: A system without SOP, acceptance criteria, issue reporting, and stop criteria is not ready for real users, even if the code builds.
+- **Stop/Rollback Criteria**: Must be strictly defined before a pilot begins to prevent data corruption or AI hallucination harm.
+- **Manual Review**: All AI-assisted output in the pilot MUST require manual review by a responsible legal officer.
+- **Training Agendas**: Must explicitly cover what the system CANNOT do (e.g., provide final legal judgment).
+- **Next Step Logic (Prompt 82)**: Pilot Launch Execution and Data Seeding.
