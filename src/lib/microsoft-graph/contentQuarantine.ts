@@ -36,7 +36,7 @@ export async function persistQuarantineItems(
   // Staging-gate check is assumed handled by the caller or endpoint.
   // We assume the schema exists, but we wrap in try-catch in case it's deferred.
   try {
-    const records = await prisma.graphContentIngestionQuarantineItem.createMany({
+    const records = await (prisma as any).graphContentIngestionQuarantineItem.createMany({
       data: items,
       skipDuplicates: true,
     });
@@ -53,7 +53,7 @@ export async function listQuarantineItemsForReview(options?: {
   limit?: number;
 }) {
   try {
-    const items = await prisma.graphContentIngestionQuarantineItem.findMany({
+    const items = await (prisma as any).graphContentIngestionQuarantineItem.findMany({
       where: options?.status ? { quarantineStatus: options.status } : undefined,
       take: options?.limit || 100,
       orderBy: { createdAt: 'desc' },
@@ -86,7 +86,7 @@ export async function updateQuarantineReviewStatus(input: {
   }
 
   try {
-    const updated = await prisma.graphContentIngestionQuarantineItem.update({
+    const updated = await (prisma as any).graphContentIngestionQuarantineItem.update({
       where: { id: input.itemId },
       data: {
         quarantineStatus: input.newStatus,
