@@ -108,6 +108,83 @@ export default async function DocumentSyncPage() {
         </div>
       </div>
 
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-red-200 mt-6">
+        <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-red-800">รายการที่ถูกกักกัน (Quarantine Review)</h2>
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded shadow-sm mb-4">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm text-red-700 font-medium">ข้อกำหนดความปลอดภัย (Security Boundaries)</p>
+            <ul className="list-disc list-inside text-sm text-red-600 ml-2">
+              <li>ไม่ดาวน์โหลดเนื้อหาไฟล์ที่ถูกกักกัน</li>
+              <li>ไม่ลบหรือแก้ไขไฟล์ใน Microsoft 365</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-gray-50 p-3 rounded border text-center">
+            <p className="text-xs text-gray-500 mb-1">ทั้งหมด (Total)</p>
+            <p className="text-xl font-bold text-gray-700">0</p>
+          </div>
+          <div className="bg-yellow-50 p-3 rounded border text-center">
+            <p className="text-xs text-yellow-600 mb-1">รอตรวจสอบ (Review Pending)</p>
+            <p className="text-xl font-bold text-yellow-700">0</p>
+          </div>
+          <div className="bg-red-50 p-3 rounded border text-center">
+            <p className="text-xs text-red-600 mb-1">ปฏิเสธ (Rejected)</p>
+            <p className="text-xl font-bold text-red-700">0</p>
+          </div>
+          <div className="bg-blue-50 p-3 rounded border text-center">
+            <p className="text-xs text-blue-600 mb-1">ส่งต่อให้ผู้ดูแลระบบ (Escalated)</p>
+            <p className="text-xl font-bold text-blue-700">0</p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">File Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เหตุผลที่ถูกกันไว้</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              <tr>
+                <td colSpan={4} className="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500 italic">
+                  ไม่มีรายการถูกกักกัน (Mock View Only)
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-purple-200 mt-6">
+        <h2 className="text-xl font-semibold mb-4 border-b pb-2 text-purple-800">รายการเสนอสร้างเอกสารทางการ (Official Document Candidate)</h2>
+        <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded shadow-sm mb-4">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm text-purple-700 font-medium">Official document integration: Design gate only</p>
+            <ul className="list-disc list-inside text-sm text-purple-600 ml-2">
+              <li>Not implemented</li>
+              <li>Pending legal/reviewer approval</li>
+              <li>No official Document creation</li>
+              <li>No case linkage</li>
+              <li>No RAG indexing</li>
+              <li>No production</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-4">
+            <button 
+              disabled 
+              className="px-4 py-2 bg-gray-300 text-gray-500 rounded cursor-not-allowed font-medium text-sm"
+            >
+              อนุมัติสำหรับทดสอบใน Staging เท่านั้น (Disabled)
+            </button>
+        </div>
+      </div>
+
     </div>
   );
 }

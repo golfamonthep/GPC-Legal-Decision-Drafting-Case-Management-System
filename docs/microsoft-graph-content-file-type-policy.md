@@ -17,3 +17,15 @@ First prototype supports only .txt and .md. PDF, DOCX, Excel, images, OCR, encry
 8. Official Document creation remains blocked.
 9. RAG indexing remains blocked.
 10. Production remains NO-GO.
+
+## Gap Register Update (Prompt 75)
+1. official document candidate permissions missing or pending
+2. official candidate schema missing
+3. review workflow missing
+4. promotion workflow missing
+5. case linkage policy pending
+6. duplicate/versioning policy pending
+7. rollback policy pending
+8. production release gate NO-GO
+9. RAG indexing still separate gate
+10. Microsoft 365 writeback still separate gate

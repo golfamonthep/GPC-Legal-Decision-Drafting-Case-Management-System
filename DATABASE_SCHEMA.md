@@ -388,3 +388,11 @@ enum KnowledgeReuseStatus {
 * no Microsoft 365 writeback: Pass (blocked execution).
 * staging prototype tables mutated: No (execution blocked).
 
+
+## Graph Official Document Schema Models (Proposed Only - Not Implemented)
+- proposed official document candidate models: OfficialDocumentImportCandidate, OfficialDocumentImportReview, OfficialDocumentImportAudit.
+- no schema change in Prompt 75.
+- no official Document records.
+- no case links.
+- no RAG records.
+- no token storage.

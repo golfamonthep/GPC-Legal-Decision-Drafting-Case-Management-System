@@ -344,3 +344,10 @@ Objectives:
 * defects summary: No execution defects found (execution blocked). Missing implementation documented.
 * production block status: Active/Blocked.
 * next recommended prompt: Prompt 75 (or manual owner tests for Prompt 71/74).
+
+## Prompt 75 Status
+- Prompt 75: Official Document Workflow Integration Design Gate — Completed (Docs only).
+- Prompt 74 dependency result: BLOCKED (Parser Spike UAT could not be run).
+- Official integration gate decision: NO-GO.
+- Remaining blockers: Missing staging environment, owner approval, and DOCX/PDF parser spike.
+- Next recommended prompt: Prompt 76 (to address staging blockers or next design gate).

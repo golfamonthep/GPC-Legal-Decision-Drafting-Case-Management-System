@@ -584,3 +584,8 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 * parser spike UAT docs: `docs/microsoft-graph-docx-pdf-parser-spike-uat-report.md`
 * defect log: `docs/evidence/graph-docx-pdf-parser-spike/defect-log.md`
 
+
+## Prompt 75 Updates
+- official integration design docs: docs/microsoft-graph-official-document-integration-design-gate.md, docs/microsoft-graph-official-document-candidate-policy.md, etc.
+- optional UI placeholder added to src/app/document-sync/page.tsx
+- no implementation routes added.

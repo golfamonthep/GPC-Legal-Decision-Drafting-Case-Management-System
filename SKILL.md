@@ -850,3 +850,10 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 * Parser libraries must be server-side only and must not run during render.
 * Full extracted content must not be logged or exposed.
 * Production DOCX/PDF ingestion remains NO-GO.
+
+## Graph Official Document Workflow Rules
+- Official document workflow integration requires a design gate before implementation.
+- Parser output must become a reviewable candidate before any official Document record.
+- Candidate creation, review, promotion, case linkage, and RAG indexing are separate gates.
+- No automatic case linkage.
+- No automatic RAG indexing.

@@ -319,3 +319,11 @@ GET /api/integrations/microsoft/status
 * parser safety verification flow.
 * production block verification flow.
 
+
+## Graph Official Document Architecture Boundaries
+- official document integration design gate.
+- candidate workflow boundary.
+- review/promotion boundary.
+- provenance/audit boundary.
+- case linkage boundary.
+- RAG boundary.
