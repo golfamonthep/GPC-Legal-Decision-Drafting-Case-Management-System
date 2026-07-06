@@ -339,3 +339,7 @@ GET /api/integrations/microsoft/status
 - no architecture changes were made.
 - system verified to be structurally sound and deployed correctly.
 - warning on Next.js middleware deprecation noted (requires migrating to proxy in future).
+
+## Pilot Feedback and Issue Tracking (Prompt 82)
+- Issue tracking relies on documented markdown templates and shared tracking boards rather than a dedicated application database model.
+- This adheres strictly to the Feature Freeze constraint and avoids unnecessary UI overhead during the pilot phase.

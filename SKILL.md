@@ -893,4 +893,10 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - **Stop/Rollback Criteria**: Must be strictly defined before a pilot begins to prevent data corruption or AI hallucination harm.
 - **Manual Review**: All AI-assisted output in the pilot MUST require manual review by a responsible legal officer.
 - **Training Agendas**: Must explicitly cover what the system CANNOT do (e.g., provide final legal judgment).
-- **Next Step Logic (Prompt 82)**: Pilot Launch Execution and Data Seeding.
+- **Next Step Logic (Prompt 82)**: Pilot Feedback Loop and Issue Triage System.
+
+## Prompt 82 Pilot Feedback Loop & Triage Lessons
+- **Feature Freeze Reinforcement**: Never add a new UI feature for issue tracking if a document or spreadsheet can accomplish the same goal during a Pilot.
+- **Triage Discipline**: Strict categorization (Severity 1-5, Bug vs. Enhancement) is required to stop uncontrolled scope expansion.
+- **Accuracy over Convenience**: If a workaround is annoying but safe, it remains a workaround until scheduled for a fix. Legal and data safety always win over UX convenience during stabilization.
+- **Evidence-Based Prompts**: The next prompt (Prompt 83) should be entirely based on actual logged issues, not developer assumptions.

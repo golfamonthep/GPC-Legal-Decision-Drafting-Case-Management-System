@@ -410,3 +410,7 @@ enum KnowledgeReuseStatus {
 - no schema change in Prompt 77.
 - prisma validation passed without errors.
 - schema fully aligns with current application logic.
+
+## Pilot Feedback and Issue Tracking (Prompt 82)
+- No schema change in Prompt 82.
+- Reviewed necessity of an `Issue` or `Feedback` data model. Decided to exclude it to strictly respect the Feature Freeze. Issue tracking will rely entirely on external templates (markdown/spreadsheet).
