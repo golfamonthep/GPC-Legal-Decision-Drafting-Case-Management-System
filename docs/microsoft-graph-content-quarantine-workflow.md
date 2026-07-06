@@ -37,3 +37,15 @@ A file is quarantined if it triggers any of the following reasons:
 - Uses `GraphContentIngestionQuarantineItem` schema.
 - Data is strictly additive and metadata-only (size, name, mimeType).
 - No raw IDs or raw URLs are exposed in the quarantine UI.
+
+## File-Type Expansion (Prompt 72 Updates)
+1. DOCX/PDF expansion is design-only.
+2. DOCX/PDF extraction not implemented.
+3. Parser selection pending.
+4. OCR not approved.
+5. Scanned PDFs blocked.
+6. Encrypted PDFs blocked.
+7. Macro-enabled files blocked.
+8. Official Document creation remains blocked.
+9. RAG indexing remains blocked.
+10. Production remains NO-GO.

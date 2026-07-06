@@ -366,3 +366,9 @@ enum KnowledgeReuseStatus {
 * no Microsoft 365 writeback.
 * evidence/trial did or did not mutate staging prototype tables: Did NOT mutate (execution blocked).
 
+## Prompt 72 Updates
+* DOCX/PDF schema impact review: Documented in `docs/microsoft-graph-docx-pdf-schema-impact-review.md`.
+* no schema change in Prompt 72.
+* future parser fields/models if needed: Documented but not implemented.
+* no content storage expansion.
+

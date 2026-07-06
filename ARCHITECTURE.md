@@ -301,3 +301,10 @@ GET /api/integrations/microsoft/status
 * defect classification flow.
 * production block verification flow.
 
+## DOCX/PDF File-Type Expansion Design Gate (Prompt 72)
+* DOCX/PDF file-type expansion design gate.
+* parser evaluation boundary.
+* extraction boundary.
+* quarantine expansion boundary.
+* future staging UAT boundary.
+

@@ -797,7 +797,11 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 | Read `.env*` without redacting logs | Terminal logs containing `.env` values must never be committed. |
 | Write audit logs during retention page render | Retention pages must not mutate or audit during server component render. |
 
-### Microsoft Graph Document Sync Rules (Prompt 63, 64 & 68)
+### Microsoft Graph Document Sync Rules (Prompt 63, 64 & 68 & 72)
+- File-type expansion requires a separate design gate before parser implementation.
+- DOCX/PDF expansion remains design-only until parser/security approvals and staging UAT plan are complete.
+- OCR/scanned PDFs/encrypted PDFs/macro files remain blocked.
+- Official Document creation and RAG indexing remain separate future gates.
 - Content ingestion prototype is staging-only and safe-test-files-only.
 - First prototype supports only `.txt` and `.md`.
 - PDF/DOCX/OCR/RAG require separate prompts.

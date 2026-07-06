@@ -562,3 +562,8 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 * evidence pack docs: docs/evidence/graph-content-operator-trial/
 * defect log: docs/evidence/graph-content-operator-trial/defect-log.md
 
+## Prompt 72 Updates
+* DOCX/PDF design docs: `docs/microsoft-graph-file-type-expansion-design-gate.md`, `docs/microsoft-graph-docx-pdf-expansion-policy.md`, etc.
+* optional UI placeholder if added: skipped.
+* no parser implementation: yes, skipped.
+

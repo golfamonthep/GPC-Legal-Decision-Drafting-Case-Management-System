@@ -316,3 +316,10 @@ Objectives:
 * defects summary: No defects found (execution blocked).
 * production block status: Pending verification.
 * next recommended prompt: Prompt 72 (or owner confirmation step).
+
+## DOCX/PDF File-Type Expansion Design Gate (Prompt 72)
+* Prompt 72 status: Design gate documentation created.
+* Prompt 71 operator trial dependency: Prompt 71 MUST pass before implementation.
+* DOCX/PDF expansion decision: NO-GO (pending Prompt 71 operator trial).
+* remaining blockers: Prompt 71 operator trial completion, parser/security approvals.
+* next recommended prompt: Prompt 73 (or manual owner tests for Prompt 71).
