@@ -589,3 +589,14 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 - official integration design docs: docs/microsoft-graph-official-document-integration-design-gate.md, docs/microsoft-graph-official-document-candidate-policy.md, etc.
 - optional UI placeholder added to src/app/document-sync/page.tsx
 - no implementation routes added.
+
+## Prompt 76 Updates
+* officialDocumentCandidateGate (Blocked)
+* officialDocumentCandidates service (Blocked)
+* candidate preview endpoint (Blocked)
+* candidate create/list endpoint (Blocked)
+* candidate detail/review endpoint (Blocked)
+* candidate audit endpoint (Blocked)
+* candidate UI page/panel (Blocked)
+* smoke script (Blocked)
+* runbook/UAT docs (Created as Blocked)

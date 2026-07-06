@@ -327,3 +327,10 @@ GET /api/integrations/microsoft/status
 - provenance/audit boundary.
 - case linkage boundary.
 - RAG boundary.
+
+## Official Document Candidate Workflow Architecture (Prompt 76)
+- official document candidate workflow architecture.
+- candidate gate.
+- candidate/review/audit service boundary.
+- no Document/no case/no RAG boundary.
+- staging-only UI and API boundary.

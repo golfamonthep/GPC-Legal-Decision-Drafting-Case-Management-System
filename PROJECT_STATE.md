@@ -351,3 +351,11 @@ Objectives:
 - Official integration gate decision: NO-GO.
 - Remaining blockers: Missing staging environment, owner approval, and DOCX/PDF parser spike.
 - Next recommended prompt: Prompt 76 (to address staging blockers or next design gate).
+
+## Official Document Candidate Workflow (Prompt 76)
+* Prompt 76 status: Blocked pending Prompt 75 approval.
+* candidate workflow gate result: BLOCKED.
+* implementation status: BLOCKED.
+* authenticated staging candidate UAT status: BLOCKED.
+* production block status: ACTIVE.
+* next recommended prompt: Pending owner approval for Prompts 72-75.

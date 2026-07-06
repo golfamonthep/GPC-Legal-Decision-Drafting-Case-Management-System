@@ -396,3 +396,12 @@ enum KnowledgeReuseStatus {
 - no case links.
 - no RAG records.
 - no token storage.
+
+## Official Document Candidate Schema Models (Prompt 76)
+- candidate models if added: BLOCKED.
+- migration status: BLOCKED.
+- no official Document records created.
+- no case links created.
+- no RAG records.
+- no token storage.
+- no Microsoft 365 writeback.

@@ -857,3 +857,10 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - Candidate creation, review, promotion, case linkage, and RAG indexing are separate gates.
 - No automatic case linkage.
 - No automatic RAG indexing.
+
+## Official Document Candidate Workflow (Prompt 76)
+- Official document candidate workflow is staging-only and does not create official Document records.
+- Candidate creation, review, staging promotion, production promotion, case linkage, and RAG indexing are separate gates.
+- Candidate routes must never call Microsoft Graph or download content.
+- Candidate review cannot approve production or RAG.
+- Official Document creation remains blocked until future prompt.
