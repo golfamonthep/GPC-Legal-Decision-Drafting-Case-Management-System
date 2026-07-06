@@ -334,3 +334,8 @@ GET /api/integrations/microsoft/status
 - candidate/review/audit service boundary.
 - no Document/no case/no RAG boundary.
 - staging-only UI and API boundary.
+
+## Full System Completion Audit (Prompt 77)
+- no architecture changes were made.
+- system verified to be structurally sound and deployed correctly.
+- warning on Next.js middleware deprecation noted (requires migrating to proxy in future).

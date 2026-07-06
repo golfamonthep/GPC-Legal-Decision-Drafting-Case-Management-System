@@ -864,3 +864,7 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - Candidate routes must never call Microsoft Graph or download content.
 - Candidate review cannot approve production or RAG.
 - Official Document creation remains blocked until future prompt.
+
+## Prompt 77 Rules & Lessons
+* Feature Freeze + Stabilization: During the pre-pilot phase, do not add new features, do not perform major refactors, and do not mutate the schema unless it is a critical blocker.
+* Focus purely on stability, testing, and UX/bug fixes that directly unblock pilot operations.

@@ -685,3 +685,26 @@ model DocumentSyncRunItem {
   @@index([runId])
   @@index([externalItemKeyHash])
 }
+
+model GraphContentIngestionQuarantineItem {
+  id                  String   @id @default(uuid())
+  prototypeRunId      String?
+  externalItemKeyHash String
+  safeDisplayName     String
+  extension           String?
+  mimeType            String?
+  sizeBytes           BigInt?
+  classification      String?
+  quarantineReason    String
+  quarantineStatus    String   @default("QUARANTINED")
+  reviewNotes         String?  @db.Text
+  reviewedById        String?
+  reviewedAt          DateTime?
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([prototypeRunId])
+  @@index([externalItemKeyHash])
+  @@index([quarantineStatus])
+}
