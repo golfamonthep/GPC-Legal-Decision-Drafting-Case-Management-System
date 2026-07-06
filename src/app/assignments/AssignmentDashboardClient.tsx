@@ -15,7 +15,6 @@ export default function AssignmentDashboardClient({ currentUser }: { currentUser
 
   const fetchData = async () => {
     try {
-      setLoading(true);
       const res = await fetch('/api/assignments');
       if (!res.ok) throw new Error('Failed to fetch');
       const json = await res.json();

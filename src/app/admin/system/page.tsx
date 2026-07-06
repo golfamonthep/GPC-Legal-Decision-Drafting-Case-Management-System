@@ -14,6 +14,9 @@ import { MaintenanceActionsPanel } from "@/components/admin/MaintenanceActionsPa
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const StatusIcon = ({ ok }: { ok: boolean }) => 
+  ok ? <CheckCircle className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />;
+
 export default async function SystemConsolePage() {
   const user = await requirePermission("VIEW_ADMIN_CONSOLE");
 
@@ -43,9 +46,6 @@ export default async function SystemConsolePage() {
       include: { user: { select: { name: true, email: true } } }
     })
   ]);
-
-  const StatusIcon = ({ ok }: { ok: boolean }) => 
-    ok ? <CheckCircle className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />;
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">

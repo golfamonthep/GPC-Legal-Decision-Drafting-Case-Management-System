@@ -19,10 +19,6 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   async function fetchUsers() {
     try {
       const res = await fetch("/api/admin/users");
@@ -35,6 +31,10 @@ export default function AdminUsersPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   async function updateUser(id: string, field: 'role' | 'status', value: string) {
     try {

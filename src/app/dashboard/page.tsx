@@ -3,7 +3,7 @@ export const revalidate = 0;
 
 import { DashboardCard } from "@/components/DashboardCard";
 import { CaseTable } from "@/components/CaseTable";
-import { mockCases, mockActivities } from "@/data/mock-data";
+
 import { FileText, AlertTriangle, Scale, Clock, Calendar, CheckSquare } from "lucide-react";
 import { 
   getDashboardStats, 
@@ -37,20 +37,20 @@ export default async function DashboardPage() {
   const canViewDataQuality = user && hasPermission(user.role, 'VIEW_DATA_QUALITY');
 
   let stats = {
-    totalCases: mockCases.length,
-    grievanceCases: mockCases.filter(c => c.type === "ร้องทุกข์").length,
-    appealCases: mockCases.filter(c => c.type === "อุทธรณ์").length,
+    totalCases: 0,
+    grievanceCases: 0,
+    appealCases: 0,
     draftCompletions: 0,
-    overdueCount: mockCases.filter(c => c.isOverdue && !isClosedOrRedCase(c)).length,
-    dueSoonCount: mockCases.filter(c => !c.isOverdue && (c.daysUntilDue || 0) <= 7 && !isClosedOrRedCase(c)).length,
+    overdueCount: 0,
+    dueSoonCount: 0,
     postMeetingCount: 0,
     dispatchPending: 0,
   };
 
   let dqStats = { total: 0, critical: 0, high: 0, medium: 0 };
 
-  let urgentCasesData: Case[] = mockCases.filter(c => (c.isOverdue || (c.daysUntilDue || 0) <= 7) && !isClosedOrRedCase(c));
-  let activitiesData = mockActivities.slice(0, 5);
+  let urgentCasesData: Case[] = [];
+  let activitiesData: any[] = [];
   let upcomingMeetings: any[] = [];
 
   const canViewMeetings = user && hasPermission(user.role, 'VIEW_MEETINGS');
@@ -149,19 +149,8 @@ export default async function DashboardPage() {
       timestamp: e.timestamp.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
     }));
   } catch (error) {
-    console.error("Failed to load dashboard data from database, falling back to mock data:", error);
-    if (process.env.NODE_ENV === 'production') {
-      return (
-        <div className="p-8">
-          <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-6 flex flex-col items-center justify-center text-center">
-             <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
-             <h2 className="text-lg font-bold mb-2">ข้อผิดพลาดฐานข้อมูล</h2>
-             <p>ไม่สามารถเชื่อมต่อฐานข้อมูล Production ได้ กรุณาตรวจสอบ DATABASE_URL ใน Vercel Environment Variables</p>
-          </div>
-        </div>
-      );
-    }
-    // Silent fallback to mock data defined above
+    // Do not use mock data in production or pilot
+    console.error("Failed to load dashboard data from database", error);
   }
 
   return (
@@ -271,32 +260,38 @@ export default async function DashboardPage() {
           ความเคลื่อนไหวล่าสุด
         </h2>
         <div className="bg-white shadow sm:rounded-lg border border-slate-200">
-          <ul role="list" className="divide-y divide-slate-200">
-            {activitiesData.map((activity) => (
-              <li key={activity.id} className="p-4 sm:px-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-blue-600 truncate">
-                    {activity.action}
-                  </p>
-                  <div className="ml-2 flex flex-shrink-0">
-                    <p className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
-                      คดี: {activity.caseId}
+          {activitiesData.length > 0 ? (
+            <ul role="list" className="divide-y divide-slate-200">
+              {activitiesData.map((activity) => (
+                <li key={activity.id} className="p-4 sm:px-6">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-blue-600 truncate">
+                      {activity.action}
                     </p>
+                    <div className="ml-2 flex flex-shrink-0">
+                      <p className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
+                        คดี: {activity.caseId}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="mt-2 sm:flex sm:justify-between">
-                  <div className="sm:flex">
-                    <p className="flex items-center text-sm text-slate-500">
-                      ผู้ดำเนินการ: {activity.actor}
-                    </p>
+                  <div className="mt-2 sm:flex sm:justify-between">
+                    <div className="sm:flex">
+                      <p className="flex items-center text-sm text-slate-500">
+                        ผู้ดำเนินการ: {activity.actor}
+                      </p>
+                    </div>
+                    <div className="mt-2 flex items-center text-sm text-slate-500 sm:mt-0">
+                      <p>{activity.timestamp}</p>
+                    </div>
                   </div>
-                  <div className="mt-2 flex items-center text-sm text-slate-500 sm:mt-0">
-                    <p>{activity.timestamp}</p>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="p-6 text-center text-sm text-slate-500">
+              ยังไม่มีข้อมูลเพียงพอ
+            </div>
+          )}
         </div>
       </div>
 

@@ -868,3 +868,9 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 ## Prompt 77 Rules & Lessons
 * Feature Freeze + Stabilization: During the pre-pilot phase, do not add new features, do not perform major refactors, and do not mutate the schema unless it is a critical blocker.
 * Focus purely on stability, testing, and UX/bug fixes that directly unblock pilot operations.
+
+## Prompt 78: Stabilization
+- Remove all mock data from dashboards to avoid misleading stats in Pilot.
+- Next.js 16 deprecated middleware file convention to proxy.
+- Avoid nested React component definitions (e.g., StatusIcon inside page render) which causes state wipe on every re-render.
+- Avoid sync setState inside useEffect loops to prevent cascading re-renders.
