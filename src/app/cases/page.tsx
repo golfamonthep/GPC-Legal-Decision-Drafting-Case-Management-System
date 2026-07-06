@@ -56,9 +56,9 @@ export default async function CasesPage({
   if (completionStatusFilter === "completed") {
     // We can't strictly filter in Prisma because it's a string match, 
     // but we know common completed statuses.
-    where.currentStatus = { in: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed'] };
+    where.currentStatus = { in: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] };
   } else if (completionStatusFilter === "open") {
-    where.currentStatus = { notIn: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed'] };
+    where.currentStatus = { notIn: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] };
   }
 
   if (redNumberStatusFilter === "hasRed") {

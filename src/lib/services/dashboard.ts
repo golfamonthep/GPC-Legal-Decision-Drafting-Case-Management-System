@@ -53,7 +53,7 @@ export async function getOverdueCases() {
         { dueDate120: { lt: now } },
         { dueDate240: { lt: now } },
       ],
-      currentStatus: { notIn: ["ปิดคดี", "วินิจฉัยแล้วเสร็จ", "เสร็จสิ้น", "ยุติเรื่อง", "จำหน่ายเรื่อง", "ปิดเรื่อง", "แล้วเสร็จ"] } // Exclude closed cases
+      currentStatus: { notIn: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] } // Exclude closed cases
     },
     include: {
       owner: true,
@@ -78,7 +78,7 @@ export async function getDueSoonCases(days: number) {
         { dueDate120: { gt: now, lte: futureDate } },
         { dueDate240: { gt: now, lte: futureDate } },
       ],
-      currentStatus: { notIn: ["ปิดคดี", "วินิจฉัยแล้วเสร็จ", "เสร็จสิ้น", "ยุติเรื่อง", "จำหน่ายเรื่อง", "ปิดเรื่อง", "แล้วเสร็จ"] }
+      currentStatus: { notIn: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] }
     },
     include: {
       owner: true,

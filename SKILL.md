@@ -900,3 +900,9 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - **Triage Discipline**: Strict categorization (Severity 1-5, Bug vs. Enhancement) is required to stop uncontrolled scope expansion.
 - **Accuracy over Convenience**: If a workaround is annoying but safe, it remains a workaround until scheduled for a fix. Legal and data safety always win over UX convenience during stabilization.
 - **Evidence-Based Prompts**: The next prompt (Prompt 83) should be entirely based on actual logged issues, not developer assumptions.
+
+
+## Prompt 83 Pre-Pilot Batch Fix Lessons
+- **Issue Fixing Rules**: Fix only issues directly scoped in the prompt (e.g., Red Number completion rule). Do not execute sweeping refactors (like fixing 1700 any-type warnings) during a Feature Freeze unless explicitly requested.
+- **Data Integrity Consistency**: If a strict business rule exists (e.g., cases with red numbers must be considered closed), enforce it eagerly at the source (Data Import) AND ensure filter logic (DB Queries) perfectly mirrors memory logic (isClosedOrRedCase) to prevent reporting inflation.
+- **Scope Control Reminder**: Defer large architectural asks (e.g. Graph Live Document Sync) that risk pilot stability.

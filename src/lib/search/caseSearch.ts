@@ -95,7 +95,7 @@ export async function searchCases(params: SearchCaseParams) {
     switch (preset) {
       case 'unfinished':
         AND.push({
-          currentStatus: { notIn: ['เสร็จสิ้น', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed'] }
+          currentStatus: { notIn: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] }
         });
         break;
       case 'no_officer':
@@ -109,12 +109,12 @@ export async function searchCases(params: SearchCaseParams) {
       case 'has_red_unfinished':
         AND.push({
           redNumber: { not: null, notIn: ['', '-'] },
-          currentStatus: { notIn: ['เสร็จสิ้น', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed'] }
+          currentStatus: { notIn: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] }
         });
         break;
       case 'completed_no_red':
         AND.push({
-          currentStatus: { in: ['เสร็จสิ้น', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed'] },
+          currentStatus: { in: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] },
           OR: [
             { redNumber: null },
             { redNumber: '' },

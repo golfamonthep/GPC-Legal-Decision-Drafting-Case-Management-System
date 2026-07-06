@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/lib/auth/requireApiPermission';
 import prisma from '@/lib/db';
 import { parseThaiDate } from '@/lib/dateUtils';
+import { hasRedCaseNumber, isClosedCaseStatus } from '@/lib/caseStatus';
 
 export async function POST(request: NextRequest) {
   try {
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
             dueDate90: parseThaiDate(data.deadline90) || null,
             dueDate120: parseThaiDate(data.deadline120) || null,
             dueDate240: parseThaiDate(data.deadline240) || null,
-            currentStatus: data.status || 'อยู่ระหว่างดำเนินการ',
+            currentStatus: hasRedCaseNumber(data.redCaseNo) && !isClosedCaseStatus(data.status) ? 'เสร็จสิ้น' : (data.status || 'อยู่ระหว่างดำเนินการ'),
             meetingDate: parseThaiDate(data.meetingDate) || null,
             decisionResult: data.decisionResult || null,
             oneDriveUrl: data.oneDriveUrl || null,
