@@ -58,6 +58,6 @@ export default function middleware(req: NextRequest, event: any) {
 
 export const config = {
   matcher: [
-    "/((?!login|api/auth|api/health|_next/static|_next/image|favicon.ico).*)"
+    "/((?!api/auth|api/health|_next/static|_next/image|favicon.ico).*)"
   ],
 };

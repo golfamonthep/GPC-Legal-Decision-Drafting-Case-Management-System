@@ -18,7 +18,12 @@ function LoginContent() {
     fetch("/api/auth/mode")
       .then(res => res.json())
       .then(data => {
-        if (data.mode) setAuthMode(data.mode);
+        if (data.mode) {
+          setAuthMode(data.mode);
+          if (data.mode === "none") {
+            window.location.href = "/dashboard";
+          }
+        }
       })
       .catch(() => {});
   }, []);
