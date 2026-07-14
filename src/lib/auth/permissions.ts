@@ -223,6 +223,9 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 };
 
 export function hasPermission(userRole: string | undefined, permission: Permission): boolean {
+  if (process.env.AUTH_MODE === "none" || process.env.NEXT_PUBLIC_AUTH_MODE === "none") {
+    return true; // MVP no-auth mode bypasses all permission checks
+  }
   if (!userRole) return false;
   const role = userRole as Role;
   const permissionsForRole = ROLE_PERMISSIONS[role];

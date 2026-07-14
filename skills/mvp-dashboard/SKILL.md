@@ -1,0 +1,3 @@
+- **Rule**: After disabling login, verify page content and APIs, not only route access.
+- **Rule**: MVP no-auth mode must use a role that passes dashboard/API permission checks, and permission checkers themselves must be MVP-aware to prevent redirect loops.
+- **Rule**: Dashboard must never spin forever; it must show data, empty state, or error.

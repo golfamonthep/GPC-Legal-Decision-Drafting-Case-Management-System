@@ -43,7 +43,7 @@ export async function getMvpUser() {
       id: "mvp-user",
       name: "MVP User",
       email: "mvp@local",
-      role: process.env.MVP_DEFAULT_ROLE || "ADMIN",
+      role: "ADMIN",
       status: "ACTIVE",
     };
   }
@@ -54,7 +54,7 @@ export async function getMvpUser() {
       id: "mvp-internal-user",
       name: "MVP Internal User",
       email: "mvp@internal.local",
-      role: process.env.MVP_DEFAULT_ROLE || "ADMIN",
+      role: "ADMIN",
       status: "ACTIVE",
     };
   }

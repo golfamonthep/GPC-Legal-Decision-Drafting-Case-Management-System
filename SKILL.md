@@ -973,3 +973,6 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - **Rule**: For immediate MVP testing, AUTH_MODE=none disables login.
 - **Rule**: Do not delete Microsoft Auth permanently unless explicitly requested.
 - **Rule**: Removing auth does not mean removing validation or business rules.
+- **Rule**: After disabling login, verify page content and APIs, not only route access.
+- **Rule**: MVP no-auth mode must use a role that passes dashboard/API permission checks.
+- **Rule**: Dashboard must never spin forever; it must show data, empty state, or error.

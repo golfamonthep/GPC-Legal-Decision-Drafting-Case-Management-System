@@ -1,6 +1,6 @@
 ## Prompt 92B Status Update
 
-**Status:** Prompt 92B Completed. Emergency Hard Bypass applied. `AUTH_MODE=none` is now hardcoded directly into `src/lib/auth/mvp-auth.ts`, rendering Vercel environment variable fallbacks obsolete. Next.js Middleware (`src/proxy.ts`) has been completely gutted to immediately allow all requests and force `/login` redirects to `/dashboard`. `src/app/login/page.tsx` now hard redirects. 
+**Status:** Prompt 93 Completed. MVP Dashboard infinite loading and AccessDenied resolved. `AUTH_MODE=none` now automatically maps to `ADMIN` role and explicitly bypasses all server-side and component-level permission checks.
 **Important Risk**: This leaves the application completely open to anyone with the URL. No authentication exists in the active path.
 
 # PROJECT_STATE.md — GPC Legal Decision Drafting & Case Management System
