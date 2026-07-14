@@ -1,16 +1,9 @@
 import type { Metadata } from "next";
-import { Sarabun } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "../components/Sidebar";
 import { TopHeader } from "../components/TopHeader";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
-
-const sarabun = Sarabun({
-  weight: ["300", "400", "500", "600", "700"],
-  subsets: ["thai", "latin"],
-  variable: "--font-sarabun",
-});
 
 export const metadata: Metadata = {
   title: "ระบบสนับสนุนการวินิจฉัย ก.พ.ค.ตร.",
@@ -25,7 +18,12 @@ export default async function RootLayout({
   const user = await getCurrentUser();
   
   return (
-    <html lang="th" className={`${sarabun.variable} h-full antialiased`}>
+    <html lang="th" className={`h-full antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+      </head>
       <body className="h-full flex bg-slate-50 text-slate-900 overflow-hidden">
         {/* Sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">

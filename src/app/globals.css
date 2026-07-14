@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-sarabun);
+  --font-sans: 'Sarabun', sans-serif;
+  --font-sarabun: 'Sarabun', sans-serif;
   
   --color-gpc-blue-50: #eff6ff;
   --color-gpc-blue-100: #dbeafe;

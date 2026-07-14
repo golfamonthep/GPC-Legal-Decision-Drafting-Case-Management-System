@@ -7,6 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "db:seed": "prisma db seed",
     "db:migrate:deploy": "prisma migrate deploy",
     "seed:archive-pilot:dry-run": "tsx scripts/seed-archive-pilot-records.ts --dry-run",
