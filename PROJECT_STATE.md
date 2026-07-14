@@ -1,8 +1,7 @@
-## Prompt 92 Status Update
+## Prompt 92B Status Update
 
-**Status:** Prompt 92 Completed. Added `AUTH_MODE=none` capability to remove login completely for immediate MVP testing. 
-The Microsoft Auth implementation remains preserved for future use. When `AUTH_MODE=none` is set, the system dynamically provisions a default MVP user role and bypasses all login screens and NextAuth middleware validations, allowing immediate access to `/dashboard`, `/cases`, and other core features. 
-**Important Risk**: This leaves the application completely open. It should only be deployed in a tightly controlled network or temporarily.
+**Status:** Prompt 92B Completed. Emergency Hard Bypass applied. `AUTH_MODE=none` is now hardcoded directly into `src/lib/auth/mvp-auth.ts`, rendering Vercel environment variable fallbacks obsolete. Next.js Middleware (`src/proxy.ts`) has been completely gutted to immediately allow all requests and force `/login` redirects to `/dashboard`. `src/app/login/page.tsx` now hard redirects. 
+**Important Risk**: This leaves the application completely open to anyone with the URL. No authentication exists in the active path.
 
 # PROJECT_STATE.md — GPC Legal Decision Drafting & Case Management System
 
@@ -464,10 +463,10 @@ Objectives:
 - **Remaining P2 Issues**: 1 (PRE-6).
 - **Recommended Next Step**: Prompt 91: Refined Training Delivery and User Re-Test
 
-## 22. Prompt 92 Remove Login Completely for Immediate MVP Access
+## 22. Prompt 92B Emergency Hard Bypass All Login Redirects for MVP
 - **Status**: Completed.
-- **Outcome**: Added `AUTH_MODE=none` to completely disable all login blocks and screens for immediate testing.
-- **Critical Changes**: Added none mode bypass in `src/proxy.ts` and `src/lib/auth/mvp-auth.ts`, added MVP warning banner to `src/app/layout.tsx`.
-- **Remaining P2 Issues**: Microsoft Auth Setup (PRE-6) is effectively bypassed by `none` mode, enabling immediate frictionless use.
-- **Documentation Created**: `docs/PROMPT_92_REMOVE_LOGIN_FOR_MVP_REPORT.md`
+- **Outcome**: Hard-disabled all login redirects. `src/proxy.ts` allows all requests. `/login` immediately redirects to `/dashboard`. `getCurrentUser` is forced to return MVP mock user globally.
+- **Critical Changes**: Replaced `src/proxy.ts` logic, replaced `src/app/login/page.tsx`, hardcoded `getAuthMode()` to `"none"` in `src/lib/auth/mvp-auth.ts`.
+- **Remaining P2 Issues**: Microsoft Auth Setup (PRE-6) is entirely bypassed and disabled in code.
+- **Documentation Created**: `docs/PROMPT_92B_EMERGENCY_REMOVE_LOGIN_REPORT.md`
 - **Recommended Next Step**: Prompt 93: MVP First Real-Use Monitoring and Issue Fix.

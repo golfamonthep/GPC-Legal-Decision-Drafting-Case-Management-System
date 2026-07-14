@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 
 export function getAuthMode() {
-  return process.env.AUTH_MODE || "microsoft";
+  // EMERGENCY HARD BYPASS FOR MVP
+  return "none";
 }
 
 export function isSimpleAuthEnabled() {
