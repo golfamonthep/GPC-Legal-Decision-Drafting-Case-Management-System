@@ -614,3 +614,5 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 - **src/lib/auth/mvp-auth.ts**: Provides simple access mode functionality.
 - **src/app/api/auth/mode/route.ts**: Fetches current AUTH_MODE.
 - **src/app/api/auth/logout/route.ts**: Clears simple mode session.
+
+- **AUTH_MODE=none**: Completely bypasses all authentication, generating a mock 'MVP User' on the fly in src/lib/auth/currentUser.ts and permitting all protected API routes in proxy.ts.

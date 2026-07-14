@@ -27,6 +27,22 @@ export function UserMenu({ user }: { user: SessionUser | null }) {
     );
   }
 
+  if (user.email === "mvp@local") {
+    return (
+      <div className="flex items-center gap-x-4 p-2 rounded-md">
+        <UserCircle className="h-8 w-8 text-amber-500" />
+        <span className="hidden lg:flex lg:flex-col lg:items-start text-left">
+          <span className="text-sm font-bold leading-6 text-amber-600">
+            MVP Mode
+          </span>
+          <span className="text-xs text-slate-500 font-medium">
+            Role: {user.role}
+          </span>
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="relative" ref={menuRef}>
       <button 

@@ -14,7 +14,7 @@ export type SessionUser = {
 export async function getCurrentUser(): Promise<SessionUser | null> {
   const authMode = getAuthMode();
 
-  if (authMode === "simple") {
+  if (authMode === "none" || authMode === "simple") {
     const mvpUser = await getMvpUser();
     if (mvpUser) return mvpUser;
     return null;

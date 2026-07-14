@@ -968,3 +968,8 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 ### MVP Simple Access Mode
 - **Rule**: Do not remove Microsoft Auth; use AUTH_MODE to switch.
 - **Rule**: Simple access is for controlled MVP only, not full production.
+
+### MVP Authentication Overrides
+- **Rule**: For immediate MVP testing, AUTH_MODE=none disables login.
+- **Rule**: Do not delete Microsoft Auth permanently unless explicitly requested.
+- **Rule**: Removing auth does not mean removing validation or business rules.

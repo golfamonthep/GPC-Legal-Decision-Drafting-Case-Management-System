@@ -3,7 +3,7 @@ import "./globals.css";
 import { Sidebar } from "../components/Sidebar";
 import { TopHeader } from "../components/TopHeader";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { hasPermission } from "@/lib/auth/permissions";
+import { getAuthMode } from "@/lib/auth/mvp-auth";
 
 export const metadata: Metadata = {
   title: "ระบบสนับสนุนการวินิจฉัย ก.พ.ค.ตร.",
@@ -16,6 +16,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getCurrentUser();
+  const authMode = getAuthMode();
   
   return (
     <html lang="th" className={`h-full antialiased`}>
@@ -31,6 +32,11 @@ export default async function RootLayout({
         </div>
 
         <div className="flex flex-1 flex-col lg:pl-72 h-full overflow-hidden">
+          {authMode === "none" && (
+            <div className="bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-800">
+              โหมดทดสอบ MVP: ปิดการเข้าสู่ระบบชั่วคราว
+            </div>
+          )}
           <TopHeader />
           <main className="flex-1 overflow-y-auto pb-10">
             {children}

@@ -1,6 +1,8 @@
 ## Prompt 92 Status Update
 
-**Status:** Prompt 92 Completed. Added MVP Simple Internal Access Mode to allow testing without Microsoft Entra ID. Added `AUTH_MODE=simple` bypass while retaining `AUTH_MODE=microsoft`. Simple mode provides secure internal MVP testing using `MVP_ACCESS_CODE`. All pages and APIs are appropriately protected. Next recommended step is to verify MVP operations and configure the required environment variables in the deployment platform.
+**Status:** Prompt 92 Completed. Added `AUTH_MODE=none` capability to remove login completely for immediate MVP testing. 
+The Microsoft Auth implementation remains preserved for future use. When `AUTH_MODE=none` is set, the system dynamically provisions a default MVP user role and bypasses all login screens and NextAuth middleware validations, allowing immediate access to `/dashboard`, `/cases`, and other core features. 
+**Important Risk**: This leaves the application completely open. It should only be deployed in a tightly controlled network or temporarily.
 
 # PROJECT_STATE.md — GPC Legal Decision Drafting & Case Management System
 
@@ -462,10 +464,10 @@ Objectives:
 - **Remaining P2 Issues**: 1 (PRE-6).
 - **Recommended Next Step**: Prompt 91: Refined Training Delivery and User Re-Test
 
-## 22. Prompt 92 Simple Internal Access Mode for MVP
+## 22. Prompt 92 Remove Login Completely for Immediate MVP Access
 - **Status**: Completed.
-- **Outcome**: Added `AUTH_MODE=simple` and `MVP_ACCESS_CODE` capability. Bypasses Microsoft login only in simple mode.
-- **Critical Changes**: Added `src/lib/auth/mvp-auth.ts`, modified `src/proxy.ts` (middleware), `src/app/login/page.tsx`, and `src/components/UserMenu.tsx`.
-- **Remaining P2 Issues**: The PRE-6 Azure AD Setup blocker is effectively bypassed for MVP using `AUTH_MODE=simple`, enabling immediate real use.
-- **Documentation Created**: `docs/MVP_SIMPLE_ACCESS_MODE.md`
+- **Outcome**: Added `AUTH_MODE=none` to completely disable all login blocks and screens for immediate testing.
+- **Critical Changes**: Added none mode bypass in `src/proxy.ts` and `src/lib/auth/mvp-auth.ts`, added MVP warning banner to `src/app/layout.tsx`.
+- **Remaining P2 Issues**: Microsoft Auth Setup (PRE-6) is effectively bypassed by `none` mode, enabling immediate frictionless use.
+- **Documentation Created**: `docs/PROMPT_92_REMOVE_LOGIN_FOR_MVP_REPORT.md`
 - **Recommended Next Step**: Prompt 93: MVP First Real-Use Monitoring and Issue Fix.

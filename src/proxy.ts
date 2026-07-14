@@ -14,7 +14,10 @@ export default function middleware(req: NextRequest, event: any) {
     return new NextResponse("Disabled auth mode is not allowed in production.", { status: 403 });
   }
 
-  if (authMode === "disabled") {
+  if (authMode === "disabled" || authMode === "none") {
+    if (req.nextUrl.pathname === "/login") {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
     return NextResponse.next();
   }
 

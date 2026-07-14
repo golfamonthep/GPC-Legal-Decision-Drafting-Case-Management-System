@@ -8,6 +8,10 @@ export function isSimpleAuthEnabled() {
   return getAuthMode() === "simple";
 }
 
+export function isNoneAuthEnabled() {
+  return getAuthMode() === "none";
+}
+
 export function validateMvpAccessCode(code: string) {
   const expectedCode = process.env.MVP_ACCESS_CODE;
   if (!expectedCode) return false;
@@ -31,6 +35,18 @@ export async function clearMvpSession() {
 }
 
 export async function getMvpUser() {
+  const authMode = getAuthMode();
+  
+  if (authMode === "none") {
+    return {
+      id: "mvp-user",
+      name: "MVP User",
+      email: "mvp@local",
+      role: process.env.MVP_DEFAULT_ROLE || "ADMIN",
+      status: "ACTIVE",
+    };
+  }
+
   const cookieStore = await cookies();
   if (cookieStore.get("mvp_session")?.value === "true") {
     return {
