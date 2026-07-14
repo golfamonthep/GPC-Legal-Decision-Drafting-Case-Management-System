@@ -936,3 +936,8 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - **Pilot Scope**: This is a controlled internal pilot, not full production.
 - **Launch Checklist**: Must verify Legal Q&A warning, DOCX restrictions, security, business logic, and actual code build success.
 
+
+## Prompt 88: Day 2 Monitoring Rules & Lessons
+- **Pilot Launch Gate Re-evaluation**: If a pilot is suspended due to a blocker, it must pass all pre-flight checks (build, typecheck, prisma validate) before resuming. Day 2 monitoring only proceeds when the codebase is 100% verified again.
+- **Stop Criteria Enforcement**: Any build/typecheck failure acts as an immediate stop criteria for a pilot.
+- **Scope Discipline**: During pilot stabilization, never add new features. Focus exclusively on the minimum viable changes needed to unblock operations and protect data integrity.
