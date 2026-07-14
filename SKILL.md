@@ -1,9 +1,14 @@
+## Prompt 87 Lessons Learned
+
+1. **Typecheck vs ESLint in Next.js config**: `next.config.ts` type annotations (`NextConfig`) in Next 15+ may reject valid properties like `eslint: { ignoreDuringBuilds: true }`. Using JSDoc instead of strict TS types avoids breaking `npm run typecheck` while preserving Next.js build behaviors.
+2. **Strict Pilot Gate Enforcement**: A pre-flight pilot gate must fail closed on any codebase validation error. If fixing one blocker (like `next/font/google` Turbopack issue) introduces a typecheck blocker, the launch must remain paused (Path A) until all checks pass cleanly.
+3. **No Feature Creep During Blockers**: The strict Path A rules successfully prevented unauthorized scope expansion during critical blocker resolution.
+
 ## Prompt 86 Lessons Learned
 
 1. **Controlled Pilot Strictness**: Prompt 85 correctly blocked the launch due to a build failure. Prompt 86 focused solely on safe, minimal fixes to unblock the build without feature creep.
-2. **Next.js Font Fix**: Replacing 
-ext/font/google with a <link> in layout.tsx is a fast, safe way to unblock Turbopack build errors.
-3. **Strict Linting vs. Launch**: Downgrading legacy TypeScript ny errors to warnings in ESLint allows the pilot to proceed to real-world testing without rewriting legacy code.
+2. **Next.js Font Fix**: Replacing `next/font/google` with a `<link>` in `layout.tsx` is a fast, safe way to unblock Turbopack build errors.
+3. **Strict Linting vs. Launch**: Downgrading legacy TypeScript any errors to warnings in ESLint allows the pilot to proceed to real-world testing without rewriting legacy code.
 
 # SKILL.md — GPC Legal Decision Drafting & Case Management System
 
