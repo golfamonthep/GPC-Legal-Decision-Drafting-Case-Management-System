@@ -1,3 +1,13 @@
+## Prompt 91 MVP Operational Cutover Rules & Lessons
+
+1. **MVP Cutover Rule**: When cutting a system to a controlled MVP, classify every feature as MVP Included, MVP Included with Limitation, Manual Review Required, Disable/Hide, Not Ready, or Post-MVP. Verify classification from actual code, not assumptions.
+2. **No-Feature-Expansion Rule**: The project is in MVP real-use mode. Do NOT add new features, redesign the UI, perform large refactors, expand scope, or build V2 features. Fix only blockers that prevent controlled MVP use.
+3. **Safe Real-Use Rules**: All AI output requires manual legal review. DOCX output is draft-only. Legal Q&A must display verification warnings. Import must be supervised. Dashboard must use real DB data only.
+4. **Excluded-Feature Handling Rule**: Features classified as Not Ready, Disabled, or Post-MVP must be either hidden from navigation, clearly labeled, action-disabled, restricted to admin, or documented as excluded. Do not leave unfinished features exposed as if ready.
+5. **Stop-Use Criteria Rule**: If any stop-use criteria is triggered (data corruption, security breach, AI hallucination, import failure, misleading dashboard, DOCX error, system instability, workflow blocked, or critical vulnerability), immediately stop use and notify all users.
+6. **Completed/Overdue Consistency Rule**: The canonical `isClosedCaseStatus()` in `src/lib/caseStatus.ts` is the single source of truth for closed statuses. Any inline status lists must match this helper. Missing statuses cause incorrect overdue calculations.
+7. **MVP Real-Use Documentation**: Always maintain MVP_REAL_USE_SOP.md, MVP_GO_LIVE_CHECKLIST.md, and MVP_ISSUE_REPORT_TEMPLATE.md as living documents during real use.
+
 ## Prompt 90 Lessons Learned
 
 1. **Outcome-Based Scaling Rule**: Do not advance a Pilot to a broader audience (Wider Internal Pilot) solely because technical blockers are resolved. If end-user evidence is missing due to a suspension, prioritize training refinement and a controlled re-test over expanding the scope.
@@ -954,3 +964,7 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 2. **Relaunch Gate Necessity**: When critical blockers force a Pilot suspension, resuming requires a formal relaunch gate (Path D) to ensure technical stability is re-verified.
 3. **Business Logic Verification**: Core business rules (like mapping red case numbers to Completed/เสร็จสิ้น) must be verified through code evidence, not just assumptions.
 4. **Controlled Pilot Discipline**: Never expand Pilot scope without evidence. If a week passes without usage due to blockers, do not invent new features; resolve the blockers and restart the observation period safely.
+
+### MVP Simple Access Mode
+- **Rule**: Do not remove Microsoft Auth; use AUTH_MODE to switch.
+- **Rule**: Simple access is for controlled MVP only, not full production.

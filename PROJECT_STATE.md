@@ -1,6 +1,6 @@
-## Prompt 90 Status Update
+## Prompt 92 Status Update
 
-**Status:** Prompt 90 Completed. Pilot Week 1 Outcome-Based Stabilization evaluated. Path C (Pilot SOP and Training Refinement) was selected due to lack of end-user pilot evidence caused by the previous suspension. All required training and SOP updates were made. Current Pilot Status: Conditional Go (Ready for Refined Training Delivery and User Re-Test). 100% Codebase Ready.
+**Status:** Prompt 92 Completed. Added MVP Simple Internal Access Mode to allow testing without Microsoft Entra ID. Added `AUTH_MODE=simple` bypass while retaining `AUTH_MODE=microsoft`. Simple mode provides secure internal MVP testing using `MVP_ACCESS_CODE`. All pages and APIs are appropriately protected. Next recommended step is to verify MVP operations and configure the required environment variables in the deployment platform.
 
 # PROJECT_STATE.md — GPC Legal Decision Drafting & Case Management System
 
@@ -461,3 +461,11 @@ Objectives:
 - **Remaining P0/P1 Issues**: None.
 - **Remaining P2 Issues**: 1 (PRE-6).
 - **Recommended Next Step**: Prompt 91: Refined Training Delivery and User Re-Test
+
+## 22. Prompt 92 Simple Internal Access Mode for MVP
+- **Status**: Completed.
+- **Outcome**: Added `AUTH_MODE=simple` and `MVP_ACCESS_CODE` capability. Bypasses Microsoft login only in simple mode.
+- **Critical Changes**: Added `src/lib/auth/mvp-auth.ts`, modified `src/proxy.ts` (middleware), `src/app/login/page.tsx`, and `src/components/UserMenu.tsx`.
+- **Remaining P2 Issues**: The PRE-6 Azure AD Setup blocker is effectively bypassed for MVP using `AUTH_MODE=simple`, enabling immediate real use.
+- **Documentation Created**: `docs/MVP_SIMPLE_ACCESS_MODE.md`
+- **Recommended Next Step**: Prompt 93: MVP First Real-Use Monitoring and Issue Fix.

@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./authOptions";
 import prisma from "@/lib/db";
+import { getAuthMode, getMvpUser } from "./mvp-auth";
 
 export type SessionUser = {
   id: string;
@@ -11,10 +12,17 @@ export type SessionUser = {
 };
 
 export async function getCurrentUser(): Promise<SessionUser | null> {
+  const authMode = getAuthMode();
+
+  if (authMode === "simple") {
+    const mvpUser = await getMvpUser();
+    if (mvpUser) return mvpUser;
+    return null;
+  }
+
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.email) {
-    // Local dev mock fallback (if explicitly enabled)
     if (process.env.NODE_ENV === "development" && process.env.AUTH_DEV_MOCK_USER === "true") {
       return {
         id: "mock-admin-id",

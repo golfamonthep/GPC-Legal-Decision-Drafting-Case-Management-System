@@ -609,3 +609,8 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 - Added markdown documentation for Issue Tracking, Triage, and Feedback collection.
 - Templates added: `docs/PILOT_FEEDBACK_FORM.md`, `docs/PILOT_TRIAGE_BOARD_TEMPLATE.md`, `docs/PROMPT_83_INPUT_TEMPLATE.md`.
 - No new UI components or routes were created for issue tracking to adhere to Feature Freeze.
+
+## MVP Auth Override
+- **src/lib/auth/mvp-auth.ts**: Provides simple access mode functionality.
+- **src/app/api/auth/mode/route.ts**: Fetches current AUTH_MODE.
+- **src/app/api/auth/logout/route.ts**: Clears simple mode session.

@@ -27,17 +27,17 @@ const navigation = [
   { name: "หน้าหลัก (Dashboard)", href: "/dashboard", icon: LayoutDashboard },
   { name: "รายงานผู้บริหาร", href: "/executive", icon: PieChart, permission: "VIEW_EXECUTIVE_DASHBOARD" as any },
   { name: "รายการคดี", href: "/cases", icon: Files },
-  { name: "งานหลังประชุม/ปิดสำนวน", href: "/finalization", icon: CheckSquare, permission: "VIEW_POST_MEETING_FOLLOWUP" as any },
-  { name: "แจ้งผล/ติดตามศาล", href: "/dispatch", icon: Send, permission: "VIEW_DISPATCH_WORKFLOW" as any },
+  // { name: "งานหลังประชุม/ปิดสำนวน", href: "/finalization", icon: CheckSquare, permission: "VIEW_POST_MEETING_FOLLOWUP" as any }, // Post-MVP
+  // { name: "แจ้งผล/ติดตามศาล", href: "/dispatch", icon: Send, permission: "VIEW_DISPATCH_WORKFLOW" as any }, // Post-MVP
   { name: "ค้นหาขั้นสูง", href: "/search", icon: Search, permission: "ADVANCED_CASE_SEARCH" as any },
   { name: "สารบบ", href: "/registry", icon: BookOpen },
   { name: "ตรวจคุณภาพข้อมูล", href: "/data-quality", icon: AlertTriangle, permission: "VIEW_DATA_QUALITY" as any },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },
   { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
-  { name: "อัปโหลดเอกสาร", href: "/upload", icon: Upload },
+  { name: "อัปโหลดเอกสาร", href: "/upload", icon: Upload, permission: "UPLOAD_DOCUMENTS" as any }, // Added permission
   { name: "ผู้ดูแลระบบ", href: "/admin/system", icon: Settings, permission: "VIEW_ADMIN_CONSOLE" as any },
-  { name: "การเก็บรักษาและคลังสำนวน", href: "/records-retention", icon: Archive, permission: "VIEW_RECORDS_ARCHIVE" as any },
-  { name: "การเชื่อมต่อเอกสาร Microsoft 365", href: "/document-sync", icon: Cloud, permission: "VIEW_DOCUMENT_SYNC" as any },
+  // { name: "การเก็บรักษาและคลังสำนวน", href: "/records-retention", icon: Archive, permission: "VIEW_RECORDS_ARCHIVE" as any }, // Disabled for MVP
+  // { name: "การเชื่อมต่อเอกสาร Microsoft 365", href: "/document-sync", icon: Cloud, permission: "VIEW_DOCUMENT_SYNC" as any }, // Disabled for MVP
 ];
 
 export function Sidebar({ user }: { user: SessionUser | null }) {

@@ -10,7 +10,9 @@ export function isClosedCaseStatus(status: string | null | undefined): boolean {
     'จำหน่ายเรื่อง',
     'ปิดเรื่อง',
     'closed',
-    'completed'
+    'completed',
+    'ปิดคดี',
+    'วินิจฉัยแล้วเสร็จ'
   ];
   return closedStatuses.includes(normalized);
 }
