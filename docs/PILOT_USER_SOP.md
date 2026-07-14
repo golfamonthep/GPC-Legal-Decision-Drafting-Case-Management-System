@@ -26,12 +26,13 @@ The purpose of this document is to guide internal users during the controlled Pi
 ## 5. Dashboard Usage
 - Review assigned case loads and overdue metrics.
 - Note: Metrics reflect staging data and should not be used for official organizational reporting.
+- **Note:** "Completed" metrics aggregate multiple sub-statuses including 'เสร็จสิ้น' and 'เสร็จสิ้น (ศาลปกครอง)'.
 
 ## 6. Registry Import Procedure
 1. Navigate to the Import section.
 2. Upload the standard Excel registry format.
 3. Review the preview for red/black number distinction and duplicates.
-4. Confirm import.
+4. Confirm import. **Note:** Any case containing a Red Case Number (`redCaseNo`) will be automatically set to the status 'เสร็จสิ้น'.
 
 ## 7. Case List Usage
 - Use filters (status, officer, date) to locate cases.
@@ -52,9 +53,12 @@ A case must be treated as completed and must not be counted as overdue if:
 - case has "เลขแดง" (Red Number)
 - case contains text indicating "แดงแล้ว"
 
+**IMPORTANT (Week 1 Update)**: The system *automatically* marks cases with a Red Case Number (`redCaseNo`) as 'เสร็จสิ้น' upon registry import. Operators should not attempt to manually revert this status unless the red case number was a data entry error in the source registry.
+
 ## 11. Overdue Case Interpretation
 - Overdue cases are those past their SLA that do not meet the "Completed Case Rules" above.
 - If an overdue case is actually closed, update the status immediately.
+- **Note:** Cases automatically marked as 'เสร็จสิ้น' are excluded from active overdue queues.
 
 ## 12. Legal Q&A Usage
 - Use Legal Q&A to search for precedents and legal reasoning.

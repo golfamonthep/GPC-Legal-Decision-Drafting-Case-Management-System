@@ -1,3 +1,9 @@
+## Prompt 90 Lessons Learned
+
+1. **Outcome-Based Scaling Rule**: Do not advance a Pilot to a broader audience (Wider Internal Pilot) solely because technical blockers are resolved. If end-user evidence is missing due to a suspension, prioritize training refinement and a controlled re-test over expanding the scope.
+2. **Feature Creep Discipline**: Feature requests must be deferred if they do not resolve P0/P1 stability or security blockers. Strict enforcement of Pilot boundaries is essential to isolate technical performance from feature satisfaction.
+3. **Continuous SOP Refinement**: Minor user confusion, even if the system code handles it correctly (e.g., auto-completion logic for red case numbers), must be aggressively documented in the SOP and Safety Guides to prevent incorrect manual data entry and mitigate legal/hallucination risks.
+
 ## Prompt 87 Lessons Learned
 
 1. **Typecheck vs ESLint in Next.js config**: `next.config.ts` type annotations (`NextConfig`) in Next 15+ may reject valid properties like `eslint: { ignoreDuringBuilds: true }`. Using JSDoc instead of strict TS types avoids breaking `npm run typecheck` while preserving Next.js build behaviors.

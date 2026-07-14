@@ -26,6 +26,8 @@ To assist Legal Officers in finding relevant jurisprudence, regulations, and leg
 
 ## 7. How to Detect Unsupported Answers
 - If an answer sounds plausible but lacks a specific citation, treat it as hallucinated. Do not use it.
+- **Example of Hallucination**: "Under Section 42 of the State Liability Act, you must..." with no source link, or a source link that leads to a document that does not contain "Section 42".
+- **Action**: Always click the source link. If the retrieved text does not support the AI's claim, disregard the answer.
 
 ## 8. What to Do When Sources Conflict
 - Escalate to manual legal review and consult senior officers. The AI cannot resolve complex legal conflicts.
@@ -36,6 +38,7 @@ To assist Legal Officers in finding relevant jurisprudence, regulations, and leg
 ## 10. Forbidden Usage During Pilot
 - Do not use the Legal Q&A to draft final official rulings without modification and verification.
 - Do not copy-paste answers directly into communications with external parties.
+- "No Source Found" means the query requires manual legal research outside the RAG system.
 
 ## 11. Manual Legal Review Requirement
 - All outputs require manual review by a qualified Legal Officer.
