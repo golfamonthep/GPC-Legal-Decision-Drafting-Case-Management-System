@@ -1,6 +1,6 @@
 ## Prompt 92B Status Update
 
-**Status:** Prompt 93 Completed. MVP Dashboard infinite loading and AccessDenied resolved. `AUTH_MODE=none` now automatically maps to `ADMIN` role and explicitly bypasses all server-side and component-level permission checks.
+**Status:** Prompt 93 Completed. MVP Dashboard infinite loading and AccessDenied resolved. `AUTH_MODE=none` now automatically maps to `ADMIN` role and explicitly bypasses all server-side and component-level permission checks. Also fixed SSG build failures on Vercel for `/meetings` and `/finalization` by marking them `force-dynamic`.
 **Important Risk**: This leaves the application completely open to anyone with the URL. No authentication exists in the active path.
 
 # PROJECT_STATE.md — GPC Legal Decision Drafting & Case Management System
