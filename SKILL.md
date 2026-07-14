@@ -941,3 +941,10 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - **Pilot Launch Gate Re-evaluation**: If a pilot is suspended due to a blocker, it must pass all pre-flight checks (build, typecheck, prisma validate) before resuming. Day 2 monitoring only proceeds when the codebase is 100% verified again.
 - **Stop Criteria Enforcement**: Any build/typecheck failure acts as an immediate stop criteria for a pilot.
 - **Scope Discipline**: During pilot stabilization, never add new features. Focus exclusively on the minimum viable changes needed to unblock operations and protect data integrity.
+
+## Prompt 89: Week 1 Review Rules & Lessons
+
+1. **Evidence over Momentum**: If the Pilot was blocked and no operational evidence exists, do not fabricate a positive review. Truth is more important than momentum.
+2. **Relaunch Gate Necessity**: When critical blockers force a Pilot suspension, resuming requires a formal relaunch gate (Path D) to ensure technical stability is re-verified.
+3. **Business Logic Verification**: Core business rules (like mapping red case numbers to Completed/เสร็จสิ้น) must be verified through code evidence, not just assumptions.
+4. **Controlled Pilot Discipline**: Never expand Pilot scope without evidence. If a week passes without usage due to blockers, do not invent new features; resolve the blockers and restart the observation period safely.
