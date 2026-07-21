@@ -2,12 +2,18 @@ export type CaseType = "ร้องทุกข์" | "อุทธรณ์";
 
 export type CaseStatus = 
   | "รับเรื่อง"
+  | "ตรวจสอบคำร้อง"
   | "รอคำแก้"
   | "แสวงหาข้อเท็จจริง"
+  | "รอเอกสาร/คำชี้แจง"
   | "รอตรวจร่าง"
   | "รอเข้าประชุม"
   | "มีมติแล้ว"
-  | "แจ้งผลแล้ว";
+  | "แจ้งผลแล้ว"
+  | "เสร็จสิ้น"
+  | "เสร็จสิ้น (ศาลปกครอง)"
+  | "ยุติเรื่อง"
+  | "ปิดเรื่อง";
 
 export interface Case {
   id: string;
@@ -28,7 +34,9 @@ export interface Case {
     days120: string;
     days240: string;
   };
-  currentStatus: CaseStatus;
+  currentStatus: CaseStatus | string;
+  proceedingNote?: string;
+  updatedAt?: string;
   meetingDate?: string;
   decisionResult?: string;
   oneDriveUrl?: string;
