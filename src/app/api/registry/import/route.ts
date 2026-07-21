@@ -9,7 +9,16 @@ const THAI_DIGITS: Record<string, string> = {
   '๕': '5', '๖': '6', '๗': '7', '๘': '8', '๙': '9',
 };
 
-function normalizeCaseType(value: unknown): 'ร้องทุกข์' | 'อุทธรณ์' | 'ไม่ระบุ' {
+type NormalizedCaseType = 'ร้องทุกข์' | 'อุทธรณ์' | 'ไม่ระบุ';
+
+type ExistingCaseRef = {
+  id: string;
+  type: string;
+  blackNumber: string;
+  redNumber: string | null;
+};
+
+function normalizeCaseType(value: unknown): NormalizedCaseType {
   const normalized = String(value ?? '').replace(/\s+/g, '').trim();
   if (normalized.includes('อุทธรณ์')) return 'อุทธรณ์';
   if (normalized.includes('ร้องทุกข์')) return 'ร้องทุกข์';
@@ -28,7 +37,6 @@ function extractStoredRedNumber(value: unknown): string | null {
   if (!normalized) return null;
 
   // “แดงแล้ว” is a completion marker, not a unique red-case number.
-  // Store only an actual number such as 74/69 or 2/2568.
   const match = normalized.match(/\d+\/\d+/);
   return match?.[0] ?? null;
 }
@@ -37,129 +45,153 @@ function compositeKey(caseType: string, caseNumber: string): string {
   return `${caseType}::${caseNumber}`;
 }
 
+function safeText(value: unknown): string {
+  return String(value ?? '').trim();
+}
+
 export async function POST(request: NextRequest) {
   try {
     const user = await requireApiPermission('IMPORT_REGISTRY');
     const auditUserId = user.id.startsWith('mvp-') ? null : user.id;
     const { validRows } = await request.json();
 
-    if (!validRows || !Array.isArray(validRows)) {
+    if (!Array.isArray(validRows)) {
       return NextResponse.json(
         { success: false, code: 'VALIDATION_ERROR', message: 'รูปแบบข้อมูลไม่ถูกต้อง' },
         { status: 400 },
       );
     }
 
-    let importedCount = 0;
+    let insertedCount = 0;
+    let updatedCount = 0;
     let skippedErrorCount = 0;
     let skippedDuplicateCount = 0;
+    let skippedConflictCount = 0;
     let warningImportedCount = 0;
     const failedRows: any[] = [];
     const messages: string[] = [];
 
-    const blackNumbersToCheck = new Set<string>();
-    const redNumbersToCheck = new Set<string>();
-
-    validRows.forEach((row: any) => {
-      const blackNumber = normalizeCaseNumber(row?.data?.blackCaseNo);
-      const redNumber = extractStoredRedNumber(row?.data?.redCaseNo);
-      if (blackNumber) blackNumbersToCheck.add(blackNumber);
-      if (redNumber) redNumbersToCheck.add(redNumber);
+    const normalizedInput = validRows.map((row: any) => {
+      const data = row?.data ?? {};
+      return {
+        row,
+        caseType: normalizeCaseType(data.caseType),
+        blackNumber: normalizeCaseNumber(data.blackCaseNo),
+        redNumber: extractStoredRedNumber(data.redCaseNo),
+      };
     });
 
-    const existingCases = blackNumbersToCheck.size > 0 || redNumbersToCheck.size > 0
+    const blackNumbersToCheck = Array.from(new Set(normalizedInput.map((item) => item.blackNumber).filter(Boolean)));
+    const redNumbersToCheck = Array.from(new Set(normalizedInput.map((item) => item.redNumber).filter((value): value is string => Boolean(value))));
+
+    const existingCases: ExistingCaseRef[] = blackNumbersToCheck.length > 0 || redNumbersToCheck.length > 0
       ? await prisma.case.findMany({
           where: {
             OR: [
-              ...(blackNumbersToCheck.size > 0
-                ? [{ blackNumber: { in: Array.from(blackNumbersToCheck) } }]
-                : []),
-              ...(redNumbersToCheck.size > 0
-                ? [{ redNumber: { in: Array.from(redNumbersToCheck) } }]
-                : []),
+              ...(blackNumbersToCheck.length > 0 ? [{ blackNumber: { in: blackNumbersToCheck } }] : []),
+              ...(redNumbersToCheck.length > 0 ? [{ redNumber: { in: redNumbersToCheck } }] : []),
             ],
           },
-          select: { type: true, blackNumber: true, redNumber: true },
+          select: { id: true, type: true, blackNumber: true, redNumber: true },
         })
       : [];
 
-    const existingBlackKeys = new Set(
-      existingCases.map((item) => compositeKey(item.type, normalizeCaseNumber(item.blackNumber))),
-    );
-    const existingRedKeys = new Set(
-      existingCases
-        .filter((item) => Boolean(item.redNumber))
-        .map((item) => compositeKey(item.type, normalizeCaseNumber(item.redNumber))),
-    );
+    const existingByBlack = new Map<string, ExistingCaseRef>();
+    const existingByRed = new Map<string, ExistingCaseRef>();
+
+    existingCases.forEach((item) => {
+      existingByBlack.set(compositeKey(item.type, normalizeCaseNumber(item.blackNumber)), item);
+      if (item.redNumber) {
+        existingByRed.set(compositeKey(item.type, normalizeCaseNumber(item.redNumber)), item);
+      }
+    });
+
+    const seenPayloadBlack = new Set<string>();
+    const seenPayloadRed = new Set<string>();
 
     const CHUNK_SIZE = 25;
-    const chunks: any[][] = [];
-    for (let index = 0; index < validRows.length; index += CHUNK_SIZE) {
-      chunks.push(validRows.slice(index, index + CHUNK_SIZE));
+    const chunks: typeof normalizedInput[] = [];
+    for (let index = 0; index < normalizedInput.length; index += CHUNK_SIZE) {
+      chunks.push(normalizedInput.slice(index, index + CHUNK_SIZE));
     }
 
     let chunkIndex = 0;
     for (const chunk of chunks) {
       chunkIndex += 1;
-      const rowsToInsert: any[] = [];
+      const rowsToSynchronize: Array<{
+        rowInfo: any;
+        existing: ExistingCaseRef | null;
+        caseData: Record<string, any>;
+        blackKey: string;
+        redKey: string;
+      }> = [];
 
-      for (const row of chunk) {
-        if (row.status === 'error') {
+      for (const item of chunk) {
+        const { row, caseType, blackNumber, redNumber } = item;
+        const data = row?.data ?? {};
+
+        if (row?.status === 'error') {
           skippedErrorCount += 1;
-          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากข้อมูลไม่ผ่านการตรวจสอบ`);
+          messages.push(`แถวที่ ${row?.index ?? '-'}: ข้ามเนื่องจากข้อมูลไม่ผ่านการตรวจสอบ`);
           continue;
         }
 
-        const data = row.data ?? {};
         const meaningfulFields = ['blackCaseNo', 'redCaseNo', 'complainantName', 'subject', 'accusedName', 'proceedingNote'];
-        const hasMeaningful = meaningfulFields.some((key) => data[key] && String(data[key]).trim() !== '');
-        if (!hasMeaningful) {
+        const hasMeaningful = meaningfulFields.some((key) => data[key] && safeText(data[key]) !== '');
+        if (!hasMeaningful || !blackNumber || caseType === 'ไม่ระบุ') {
           skippedErrorCount += 1;
-          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากไม่มีข้อมูลสำคัญ`);
+          messages.push(`แถวที่ ${row?.index ?? '-'}: ข้ามเนื่องจากไม่มีประเภทเรื่องหรือหมายเลขดำที่ใช้ระบุตัวรายการ`);
           continue;
         }
 
-        const caseType = normalizeCaseType(data.caseType);
-        const blackCaseNo = normalizeCaseNumber(data.blackCaseNo);
+        const blackKey = compositeKey(caseType, blackNumber);
+        const redKey = redNumber ? compositeKey(caseType, redNumber) : '';
+
+        if (seenPayloadBlack.has(blackKey)) {
+          skippedDuplicateCount += 1;
+          messages.push(`แถวที่ ${row?.index ?? '-'}: หมายเลขดำซ้ำภายในไฟล์ (${blackNumber})`);
+          continue;
+        }
+        if (redKey && seenPayloadRed.has(redKey)) {
+          skippedDuplicateCount += 1;
+          messages.push(`แถวที่ ${row?.index ?? '-'}: หมายเลขแดงซ้ำภายในไฟล์ (${redNumber})`);
+          continue;
+        }
+
+        const existing = existingByBlack.get(blackKey) ?? null;
+        const redOwner = redKey ? existingByRed.get(redKey) : null;
+        if (redOwner && redOwner.id !== existing?.id) {
+          skippedConflictCount += 1;
+          messages.push(`แถวที่ ${row?.index ?? '-'}: หมายเลขแดง ${redNumber} ถูกใช้โดยเรื่องอื่นในทะเบียน${caseType}`);
+          continue;
+        }
+
+        seenPayloadBlack.add(blackKey);
+        if (redKey) seenPayloadRed.add(redKey);
+
         const rawRedCaseNo = normalizeCaseNumber(data.redCaseNo);
-        const storedRedCaseNo = extractStoredRedNumber(data.redCaseNo);
-        const blackKey = blackCaseNo ? compositeKey(caseType, blackCaseNo) : '';
-        const redKey = storedRedCaseNo ? compositeKey(caseType, storedRedCaseNo) : '';
-
-        if (blackKey && existingBlackKeys.has(blackKey)) {
-          skippedDuplicateCount += 1;
-          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากมีหมายเลขดำซ้ำในทะเบียน${caseType} (${blackCaseNo})`);
-          continue;
-        }
-        if (redKey && existingRedKeys.has(redKey)) {
-          skippedDuplicateCount += 1;
-          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากมีหมายเลขแดงซ้ำในทะเบียน${caseType} (${storedRedCaseNo})`);
-          continue;
-        }
-
-        if (blackKey) existingBlackKeys.add(blackKey);
-        if (redKey) existingRedKeys.add(redKey);
-
-        const blackNumber = blackCaseNo || `ไม่มีหมายเลขดำ-${caseType}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-        const importedStatus = String(data.status ?? '').trim();
+        const importedStatus = safeText(data.status).replace(/\s+/g, ' ');
         const completedByRedNumber = hasRedCaseNumber(rawRedCaseNo);
         const currentStatus = completedByRedNumber && !isClosedCaseStatus(importedStatus)
           ? 'เสร็จสิ้น'
           : importedStatus || 'อยู่ระหว่างดำเนินการ';
 
-        rowsToInsert.push({
+        rowsToSynchronize.push({
           rowInfo: row,
+          existing,
+          blackKey,
+          redKey,
           caseData: {
             type: caseType,
             blackNumber,
-            redNumber: storedRedCaseNo,
-            petitionerName: String(data.complainantName ?? '').trim() || 'ไม่ระบุ',
-            respondentName: String(data.accusedName ?? '').trim() || 'ไม่ระบุ',
-            subject: String(data.subject ?? '').trim() || 'ไม่ระบุ',
+            redNumber,
+            petitionerName: safeText(data.complainantName) || 'ไม่ระบุ',
+            respondentName: safeText(data.accusedName) || 'ไม่ระบุ',
+            subject: safeText(data.subject) || 'ไม่ระบุ',
             legalCategory: caseType === 'อุทธรณ์' ? 'อุทธรณ์คำสั่ง' : 'ร้องทุกข์',
-            legalOfficerName: String(data.legalOfficer ?? '').trim() || null,
-            committeeOwnerName: String(data.commissioner ?? '').trim() || null,
-            proceedingNote: String(data.proceedingNote ?? '').trim() || null,
+            legalOfficerName: safeText(data.legalOfficer) || null,
+            committeeOwnerName: safeText(data.commissioner) || null,
+            proceedingNote: safeText(data.proceedingNote) || null,
             receivedDate: parseThaiDate(data.receivedDate),
             dueDate30: parseThaiDate(data.deadline30),
             dueDate60: parseThaiDate(data.deadline60),
@@ -168,23 +200,27 @@ export async function POST(request: NextRequest) {
             dueDate240: parseThaiDate(data.deadline240),
             currentStatus,
             meetingDate: parseThaiDate(data.meetingDate),
-            decisionResult: String(data.decisionResult ?? '').trim() || null,
-            oneDriveUrl: String(data.oneDriveUrl ?? '').trim() || null,
+            decisionResult: safeText(data.decisionResult) || null,
+            oneDriveUrl: safeText(data.oneDriveUrl) || null,
           },
         });
       }
 
-      if (rowsToInsert.length === 0) continue;
+      if (rowsToSynchronize.length === 0) continue;
 
       try {
-        await prisma.$transaction(async (transaction) => {
-          for (const item of rowsToInsert) {
-            const newCase = await transaction.case.create({ data: item.caseData });
+        const synchronized = await prisma.$transaction(async (transaction) => {
+          const results: Array<{ id: string; inserted: boolean; item: typeof rowsToSynchronize[number] }> = [];
+
+          for (const item of rowsToSynchronize) {
+            const caseRecord = item.existing
+              ? await transaction.case.update({ where: { id: item.existing.id }, data: item.caseData })
+              : await transaction.case.create({ data: item.caseData as any });
 
             await transaction.caseEvent.create({
               data: {
-                caseId: newCase.id,
-                action: 'import_case',
+                caseId: caseRecord.id,
+                action: item.existing ? 'sync_latest_registry_update' : 'import_case',
                 actorName: user.name || 'System Import',
               },
             });
@@ -192,41 +228,63 @@ export async function POST(request: NextRequest) {
             await transaction.auditLog.create({
               data: {
                 userId: auditUserId,
-                action: 'import_registry',
+                action: item.existing ? 'sync_registry_update' : 'import_registry',
                 entityType: 'Case',
-                entityId: newCase.id,
+                entityId: caseRecord.id,
                 afterValue: JSON.stringify(item.rowInfo.data),
               },
             });
+
+            results.push({ id: caseRecord.id, inserted: !item.existing, item });
           }
+
+          return results;
         }, { timeout: 30000, maxWait: 10000 });
 
-        for (const item of rowsToInsert) {
-          importedCount += 1;
-          if (item.rowInfo.status === 'warning') warningImportedCount += 1;
-        }
-      } catch (transactionError: any) {
-        console.error(`Transaction error in chunk ${chunkIndex}:`, transactionError);
-        for (const item of rowsToInsert) {
+        synchronized.forEach((result) => {
+          if (result.inserted) {
+            insertedCount += 1;
+          } else {
+            updatedCount += 1;
+          }
+          if (result.item.rowInfo.status === 'warning') warningImportedCount += 1;
+
+          const reference: ExistingCaseRef = {
+            id: result.id,
+            type: result.item.caseData.type,
+            blackNumber: result.item.caseData.blackNumber,
+            redNumber: result.item.caseData.redNumber,
+          };
+          existingByBlack.set(result.item.blackKey, reference);
+          if (result.item.redKey) existingByRed.set(result.item.redKey, reference);
+        });
+      } catch (transactionError) {
+        console.error(`Transaction error in registry synchronization chunk ${chunkIndex}:`, transactionError);
+        rowsToSynchronize.forEach((item) => {
           failedRows.push(item.rowInfo);
-          messages.push(`แถวที่ ${item.rowInfo.index}: นำเข้าไม่สำเร็จเนื่องจากข้อผิดพลาดในระบบ`);
-        }
+          messages.push(`แถวที่ ${item.rowInfo?.index ?? '-'}: ซิงก์ข้อมูลไม่สำเร็จเนื่องจากข้อผิดพลาดในระบบ`);
+        });
       }
     }
+
+    const synchronizedCount = insertedCount + updatedCount;
 
     return NextResponse.json({
       success: true,
       totalRows: validRows.length,
       importableRows: validRows.length - skippedErrorCount,
-      importedRows: importedCount,
+      importedRows: synchronizedCount,
+      insertedRows: insertedCount,
+      updatedRows: updatedCount,
       importedWarningRows: warningImportedCount,
       skippedErrorRows: skippedErrorCount,
       skippedDuplicateRows: skippedDuplicateCount,
+      skippedConflictRows: skippedConflictCount,
       failedRows: failedRows.length,
       messages,
       batchCount: chunks.length,
-      count: importedCount,
-      importedCount,
+      count: synchronizedCount,
+      importedCount: synchronizedCount,
       warningImportedCount,
     });
   } catch (error: any) {
