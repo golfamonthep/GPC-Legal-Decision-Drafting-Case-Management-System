@@ -4,12 +4,24 @@ import prisma from '@/lib/db';
 import { parseThaiDate } from '@/lib/dateUtils';
 import { hasRedCaseNumber, isClosedCaseStatus } from '@/lib/caseStatus';
 
+function normalizeCaseType(value: unknown): 'ร้องทุกข์' | 'อุทธรณ์' | 'ไม่ระบุ' {
+  const normalized = String(value ?? '').replace(/\s+/g, '').trim();
+  if (normalized.includes('อุทธรณ์')) return 'อุทธรณ์';
+  if (normalized.includes('ร้องทุกข์')) return 'ร้องทุกข์';
+  return 'ไม่ระบุ';
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireApiPermission("IMPORT_REGISTRY");
+    const user = await requireApiPermission('IMPORT_REGISTRY');
+    const auditUserId = user.id.startsWith('mvp-') ? null : user.id;
     const { validRows } = await request.json();
+
     if (!validRows || !Array.isArray(validRows)) {
-      return NextResponse.json({ error: 'รูปแบบข้อมูลไม่ถูกต้อง' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, code: 'VALIDATION_ERROR', message: 'รูปแบบข้อมูลไม่ถูกต้อง' },
+        { status: 400 },
+      );
     }
 
     let importedCount = 0;
@@ -19,141 +31,145 @@ export async function POST(request: NextRequest) {
     const failedRows: any[] = [];
     const messages: string[] = [];
 
-    // 1. Pre-processing and Duplicate Check
     const blackNumbersToCheck = new Set<string>();
     const redNumbersToCheck = new Set<string>();
 
     validRows.forEach((row: any) => {
-      if (row.data.blackCaseNo) blackNumbersToCheck.add(row.data.blackCaseNo);
-      if (row.data.redCaseNo) redNumbersToCheck.add(row.data.redCaseNo);
+      const blackNumber = String(row?.data?.blackCaseNo ?? '').trim();
+      const redNumber = String(row?.data?.redCaseNo ?? '').trim();
+      if (blackNumber) blackNumbersToCheck.add(blackNumber);
+      if (redNumber) redNumbersToCheck.add(redNumber);
     });
 
-    const existingBlackCases = await prisma.case.findMany({
-      where: {
-        blackNumber: { in: Array.from(blackNumbersToCheck) }
-      },
-      select: { blackNumber: true }
-    });
+    const existingBlackCases = blackNumbersToCheck.size > 0
+      ? await prisma.case.findMany({
+          where: { blackNumber: { in: Array.from(blackNumbersToCheck) } },
+          select: { blackNumber: true },
+        })
+      : [];
 
-    const existingRedCases = await prisma.case.findMany({
-      where: {
-        redNumber: { in: Array.from(redNumbersToCheck) }
-      },
-      select: { redNumber: true }
-    });
+    const existingRedCases = redNumbersToCheck.size > 0
+      ? await prisma.case.findMany({
+          where: { redNumber: { in: Array.from(redNumbersToCheck) } },
+          select: { redNumber: true },
+        })
+      : [];
 
-    const existingBlackNumbers = new Set(existingBlackCases.map(c => c.blackNumber));
-    const existingRedNumbers = new Set(existingRedCases.map(c => c.redNumber).filter(Boolean));
+    const existingBlackNumbers = new Set(existingBlackCases.map((item) => item.blackNumber));
+    const existingRedNumbers = new Set(existingRedCases.map((item) => item.redNumber).filter(Boolean));
 
-    // 2. Chunking rows for transactions
     const CHUNK_SIZE = 25;
-    const chunks = [];
-    for (let i = 0; i < validRows.length; i += CHUNK_SIZE) {
-      chunks.push(validRows.slice(i, i + CHUNK_SIZE));
+    const chunks: any[][] = [];
+    for (let index = 0; index < validRows.length; index += CHUNK_SIZE) {
+      chunks.push(validRows.slice(index, index + CHUNK_SIZE));
     }
 
     let chunkIndex = 0;
     for (const chunk of chunks) {
-      chunkIndex++;
+      chunkIndex += 1;
       const rowsToInsert: any[] = [];
 
       for (const row of chunk) {
-        const data = row.data;
+        if (row.status === 'error') {
+          skippedErrorCount += 1;
+          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากข้อมูลไม่ผ่านการตรวจสอบ`);
+          continue;
+        }
 
-        // Minimum import rule (hard error)
+        const data = row.data ?? {};
         const meaningfulFields = ['blackCaseNo', 'redCaseNo', 'complainantName', 'subject', 'accusedName', 'proceedingNote'];
-        const hasMeaningful = meaningfulFields.some(k => data[k] && String(data[k]).trim() !== '');
+        const hasMeaningful = meaningfulFields.some((key) => data[key] && String(data[key]).trim() !== '');
         if (!hasMeaningful) {
-          skippedErrorCount++;
+          skippedErrorCount += 1;
           messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากไม่มีข้อมูลสำคัญ`);
           continue;
         }
 
-        // Duplicate Check
-        if (data.blackCaseNo && existingBlackNumbers.has(data.blackCaseNo)) {
-          skippedDuplicateCount++;
-          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากมีหมายเลขดำซ้ำ (${data.blackCaseNo})`);
+        const blackCaseNo = String(data.blackCaseNo ?? '').trim();
+        const redCaseNo = String(data.redCaseNo ?? '').trim();
+
+        if (blackCaseNo && existingBlackNumbers.has(blackCaseNo)) {
+          skippedDuplicateCount += 1;
+          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากมีหมายเลขดำซ้ำ (${blackCaseNo})`);
           continue;
         }
-        if (data.redCaseNo && existingRedNumbers.has(data.redCaseNo)) {
-          skippedDuplicateCount++;
-          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากมีหมายเลขแดงซ้ำ (${data.redCaseNo})`);
+        if (redCaseNo && existingRedNumbers.has(redCaseNo)) {
+          skippedDuplicateCount += 1;
+          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากมีหมายเลขแดงซ้ำ (${redCaseNo})`);
           continue;
         }
 
-        // Add to existing numbers in memory to prevent duplicates within the same import payload
-        if (data.blackCaseNo) existingBlackNumbers.add(data.blackCaseNo);
-        if (data.redCaseNo) existingRedNumbers.add(data.redCaseNo);
+        if (blackCaseNo) existingBlackNumbers.add(blackCaseNo);
+        if (redCaseNo) existingRedNumbers.add(redCaseNo);
 
-        const blackNumber = data.blackCaseNo || `ไม่มีหมายเลขดำ-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-        const receivedDate = parseThaiDate(data.receivedDate) || null;
+        const blackNumber = blackCaseNo || `ไม่มีหมายเลขดำ-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+        const caseType = normalizeCaseType(data.caseType);
+        const importedStatus = String(data.status ?? '').trim();
+        const completedByRedNumber = hasRedCaseNumber(redCaseNo);
+        const currentStatus = completedByRedNumber && !isClosedCaseStatus(importedStatus)
+          ? 'เสร็จสิ้น'
+          : importedStatus || 'อยู่ระหว่างดำเนินการ';
 
         rowsToInsert.push({
           rowInfo: row,
           caseData: {
-            type: data.caseType || 'ไม่ระบุ',
-            blackNumber: blackNumber,
-            redNumber: data.redCaseNo || null,
-            petitionerName: data.complainantName || 'ไม่ระบุ',
-            respondentName: data.accusedName || 'ไม่ระบุ',
-            subject: data.subject || 'ไม่ระบุ',
-            legalCategory: 'ทั่วไป', // Default for imported cases
-            legalOfficerName: data.legalOfficer || null,
-            proceedingNote: data.proceedingNote || null,
-            receivedDate: receivedDate,
-            dueDate30: parseThaiDate(data.deadline30) || null,
-            dueDate60: parseThaiDate(data.deadline60) || null,
-            dueDate90: parseThaiDate(data.deadline90) || null,
-            dueDate120: parseThaiDate(data.deadline120) || null,
-            dueDate240: parseThaiDate(data.deadline240) || null,
-            currentStatus: hasRedCaseNumber(data.redCaseNo) && !isClosedCaseStatus(data.status) ? 'เสร็จสิ้น' : (data.status || 'อยู่ระหว่างดำเนินการ'),
-            meetingDate: parseThaiDate(data.meetingDate) || null,
-            decisionResult: data.decisionResult || null,
-            oneDriveUrl: data.oneDriveUrl || null,
-          }
+            type: caseType,
+            blackNumber,
+            redNumber: redCaseNo || null,
+            petitionerName: String(data.complainantName ?? '').trim() || 'ไม่ระบุ',
+            respondentName: String(data.accusedName ?? '').trim() || 'ไม่ระบุ',
+            subject: String(data.subject ?? '').trim() || 'ไม่ระบุ',
+            legalCategory: caseType === 'อุทธรณ์' ? 'อุทธรณ์คำสั่ง' : 'ร้องทุกข์',
+            legalOfficerName: String(data.legalOfficer ?? '').trim() || null,
+            committeeOwnerName: String(data.commissioner ?? '').trim() || null,
+            proceedingNote: String(data.proceedingNote ?? '').trim() || null,
+            receivedDate: parseThaiDate(data.receivedDate),
+            dueDate30: parseThaiDate(data.deadline30),
+            dueDate60: parseThaiDate(data.deadline60),
+            dueDate90: parseThaiDate(data.deadline90),
+            dueDate120: parseThaiDate(data.deadline120),
+            dueDate240: parseThaiDate(data.deadline240),
+            currentStatus,
+            meetingDate: parseThaiDate(data.meetingDate),
+            decisionResult: String(data.decisionResult ?? '').trim() || null,
+            oneDriveUrl: String(data.oneDriveUrl ?? '').trim() || null,
+          },
         });
       }
 
       if (rowsToInsert.length === 0) continue;
 
-      // 3. Transaction per chunk
       try {
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (transaction) => {
           for (const item of rowsToInsert) {
-            const newCase = await tx.case.create({
-              data: item.caseData
-            });
+            const newCase = await transaction.case.create({ data: item.caseData });
 
-            await tx.caseEvent.create({
+            await transaction.caseEvent.create({
               data: {
                 caseId: newCase.id,
                 action: 'import_case',
                 actorName: user.name || 'System Import',
-              }
+              },
             });
 
-            await tx.auditLog.create({
+            await transaction.auditLog.create({
               data: {
-                userId: user.id,
+                userId: auditUserId,
                 action: 'import_registry',
                 entityType: 'Case',
                 entityId: newCase.id,
                 afterValue: JSON.stringify(item.rowInfo.data),
-              }
+              },
             });
           }
         }, { timeout: 30000, maxWait: 10000 });
 
-        // Update counts on successful transaction
         for (const item of rowsToInsert) {
-          importedCount++;
-          if (item.rowInfo.status === 'warning') {
-            warningImportedCount++;
-          }
+          importedCount += 1;
+          if (item.rowInfo.status === 'warning') warningImportedCount += 1;
         }
-      } catch (txError: any) {
-        console.error(`Transaction error in chunk ${chunkIndex}:`, txError);
-        // If a transaction fails, we record those rows as failed and continue with the next chunk
+      } catch (transactionError: any) {
+        console.error(`Transaction error in chunk ${chunkIndex}:`, transactionError);
         for (const item of rowsToInsert) {
           failedRows.push(item.rowInfo);
           messages.push(`แถวที่ ${item.rowInfo.index}: นำเข้าไม่สำเร็จเนื่องจากข้อผิดพลาดในระบบ`);
@@ -161,30 +177,40 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       totalRows: validRows.length,
-      importableRows: validRows.length,
+      importableRows: validRows.length - skippedErrorCount,
       importedRows: importedCount,
       importedWarningRows: warningImportedCount,
       skippedErrorRows: skippedErrorCount,
       skippedDuplicateRows: skippedDuplicateCount,
       failedRows: failedRows.length,
-      messages: messages,
+      messages,
       batchCount: chunks.length,
-      // Keep these for backward compatibility if needed elsewhere
       count: importedCount,
-      importedCount: importedCount,
-      warningImportedCount: warningImportedCount,
+      importedCount,
+      warningImportedCount,
     });
   } catch (error: any) {
     console.error('Registry import error:', error);
-    if (error?.message === "FORBIDDEN") {
-      return NextResponse.json({ error: 'คุณไม่มีสิทธิ์ดำเนินการนี้' }, { status: 403 });
+
+    if (error?.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { success: false, code: 'PERMISSION_ERROR', message: 'คุณไม่มีสิทธิ์ดำเนินการนี้' },
+        { status: 403 },
+      );
     }
-    if (error?.message === "UNAUTHORIZED") {
-      return NextResponse.json({ error: 'กรุณาเข้าสู่ระบบ' }, { status: 401 });
+    if (error?.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { success: false, code: 'PERMISSION_ERROR', message: 'กรุณาเข้าสู่ระบบ' },
+        { status: 401 },
+      );
     }
-    return NextResponse.json({ error: 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล กรุณาลองใหม่อีกครั้ง' }, { status: 500 });
+
+    return NextResponse.json(
+      { success: false, code: 'DATABASE_ERROR', message: 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล กรุณาลองใหม่อีกครั้ง' },
+      { status: 500 },
+    );
   }
 }
