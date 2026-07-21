@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   return NextResponse.json({
-    url: process.env.DATABASE_URL
+    url: process.env.DATABASE_URL,
+    direct: process.env.DIRECT_URL
   });
 }
