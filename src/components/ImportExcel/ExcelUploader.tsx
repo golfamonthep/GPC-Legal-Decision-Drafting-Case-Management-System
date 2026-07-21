@@ -39,7 +39,15 @@ function makeUniqueHeaders(rawHeaders: unknown[]): string[] {
 
 function isValidSequence(value: unknown): boolean {
   if (typeof value === 'number') return Number.isFinite(value);
-  const normalized = normalizeThaiDigits(String(value ?? '')).trim();
+
+  // Some supplied .xlsm files format numeric sequence cells with the custom
+  // locale pattern [$-D00041E]0. SheetJS therefore renders values such as 75
+  // as "$75" when raw:false. Strip display-only currency/grouping symbols
+  // before deciding whether the row is an actual registry record.
+  const normalized = normalizeThaiDigits(String(value ?? ''))
+    .replace(/[$฿,\s]/g, '')
+    .trim();
+
   return /^\d+$/.test(normalized);
 }
 
