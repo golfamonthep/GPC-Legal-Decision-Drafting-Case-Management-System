@@ -8,6 +8,41 @@ interface ExcelUploaderProps {
   onDataLoaded: (headers: string[], rowData: any[]) => void;
 }
 
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+const MAX_IMPORT_ROWS = 2000;
+
+const THAI_DIGITS: Record<string, string> = {
+  '๐': '0', '๑': '1', '๒': '2', '๓': '3', '๔': '4',
+  '๕': '5', '๖': '6', '๗': '7', '๘': '8', '๙': '9',
+};
+
+function normalizeThaiDigits(value: string): string {
+  return value.replace(/[๐-๙]/g, (digit) => THAI_DIGITS[digit] ?? digit);
+}
+
+function normalizeHeader(value: unknown): string {
+  return String(value ?? '').replace(/\s+/g, ' ').trim();
+}
+
+function makeUniqueHeaders(rawHeaders: unknown[]): string[] {
+  const seen = new Map<string, number>();
+
+  return rawHeaders.map((value) => {
+    const header = normalizeHeader(value);
+    if (!header) return '';
+
+    const count = (seen.get(header) ?? 0) + 1;
+    seen.set(header, count);
+    return count === 1 ? header : `${header} (${count})`;
+  });
+}
+
+function isValidSequence(value: unknown): boolean {
+  if (typeof value === 'number') return Number.isFinite(value);
+  const normalized = normalizeThaiDigits(String(value ?? '')).trim();
+  return /^\d+$/.test(normalized);
+}
+
 export default function ExcelUploader({ onDataLoaded }: ExcelUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,73 +59,110 @@ export default function ExcelUploader({ onDataLoaded }: ExcelUploaderProps) {
 
   const processFile = (file: File) => {
     setError(null);
-    
-    // Check file type
-    const validTypes = [
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel.sheet.macroEnabled.12'
-    ];
-    
-    if (!validTypes.includes(file.type) && !file.name.endsWith('.xlsx') && !file.name.endsWith('.xlsm')) {
+
+    const lowerName = file.name.toLowerCase();
+    if (!lowerName.endsWith('.xlsx') && !lowerName.endsWith('.xlsm')) {
       setError('รองรับเฉพาะไฟล์ .xlsx และ .xlsm เท่านั้น');
       return;
     }
 
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setError('ไฟล์มีขนาดเกิน 10 MB กรุณาลดขนาดไฟล์แล้วลองใหม่');
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = (event) => {
       try {
-        const data = e.target?.result;
-        if (!data) return;
+        const data = event.target?.result;
+        if (!(data instanceof ArrayBuffer)) {
+          setError('ไม่สามารถอ่านข้อมูลจากไฟล์ Excel ได้');
+          return;
+        }
 
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const firstSheetName = workbook.SheetNames[0];
+        const workbook = XLSX.read(data, {
+          type: 'array',
+          cellDates: false,
+        });
+
+        const firstSheetName = workbook.SheetNames.find((sheetName) => {
+          const sheet = workbook.Sheets[sheetName];
+          return Boolean(sheet && sheet['!ref']);
+        });
+
+        if (!firstSheetName) {
+          setError('ไม่พบแผ่นงานที่มีข้อมูลในไฟล์ Excel');
+          return;
+        }
+
         const worksheet = workbook.Sheets[firstSheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+          defval: '',
+          raw: false,
+          dateNF: 'dd/mm/yyyy',
+        }) as unknown[][];
 
-        // Convert to array of arrays to extract headers safely
-        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' }) as any[][];
-        
-        if (json.length === 0) {
+        if (rows.length === 0) {
           setError('ไม่พบข้อมูลในไฟล์ Excel');
           return;
         }
 
-        // Assuming first row is headers
-        let headers = json[0].map(h => String(h).trim());
-        
-        // Remove empty rows at the top if necessary (some excels have title rows)
-        // For simplicity, let's assume row 1 is headers. If headers are completely empty, find the first non-empty row.
-        let dataStartIndex = 1;
-        while (headers.every(h => h === '') && dataStartIndex < json.length) {
-           headers = json[dataStartIndex].map(h => String(h).trim());
-           dataStartIndex++;
+        let headerRowIndex = rows.findIndex((row) => {
+          const normalized = row.map(normalizeHeader);
+          return normalized.includes('เรื่องดำที่') || normalized.includes('เรื่องแดงที่');
+        });
+
+        if (headerRowIndex === -1) {
+          headerRowIndex = rows.findIndex((row) => row.some((cell) => normalizeHeader(cell) !== ''));
         }
 
-        // Filter out empty headers but keep indices aligned
-        const validHeaders = headers.filter(h => h !== '');
+        if (headerRowIndex === -1) {
+          setError('ไม่พบแถวหัวตารางในไฟล์ Excel');
+          return;
+        }
 
-        // Now process data rows, convert to objects based on valid headers
-        const rowData = [];
-        for (let i = dataStartIndex; i < json.length; i++) {
-          const row = json[i];
-          // Skip completely empty rows
-          if (row.every(cell => cell === '')) continue;
+        const headers = makeUniqueHeaders(rows[headerRowIndex]);
+        const validHeaders = headers.filter(Boolean);
 
-          const rowObj: Record<string, any> = {};
-          headers.forEach((header, index) => {
-            if (header !== '') {
-              rowObj[header] = row[index];
-            }
+        if (validHeaders.length === 0) {
+          setError('ไม่พบชื่อคอลัมน์ที่สามารถใช้งานได้');
+          return;
+        }
+
+        const sequenceHeader = headers.find((header) => header === 'ลำดับ');
+        const rowData: Record<string, unknown>[] = [];
+
+        for (let rowIndex = headerRowIndex + 1; rowIndex < rows.length; rowIndex += 1) {
+          const row = rows[rowIndex];
+          if (row.every((cell) => normalizeHeader(cell) === '')) continue;
+
+          const rowObject: Record<string, unknown> = {};
+          headers.forEach((header, columnIndex) => {
+            if (header) rowObject[header] = row[columnIndex];
           });
-          rowData.push(rowObj);
+
+          // The supplied registers contain summary/formula rows below the real records.
+          // When a sequence column exists, only rows with an actual numeric sequence are records.
+          if (sequenceHeader && !isValidSequence(rowObject[sequenceHeader])) continue;
+
+          const blackNumber = normalizeHeader(rowObject['เรื่องดำที่']);
+          if (blackNumber === 'เรื่องดำ' || blackNumber === 'เรื่องแดง' || blackNumber === 'ทั้งหมด') continue;
+
+          rowData.push(rowObject);
         }
 
         if (rowData.length === 0) {
-          setError('ไม่พบข้อมูลแถวในไฟล์ Excel');
+          setError('ไม่พบแถวข้อมูลคดีในไฟล์ Excel');
+          return;
+        }
+
+        if (rowData.length > MAX_IMPORT_ROWS) {
+          setError(`ไฟล์มีข้อมูล ${rowData.length.toLocaleString('th-TH')} แถว เกินกำหนด ${MAX_IMPORT_ROWS.toLocaleString('th-TH')} แถวต่อครั้ง`);
           return;
         }
 
         onDataLoaded(validHeaders, rowData);
-
       } catch (err) {
         console.error(err);
         setError('เกิดข้อผิดพลาดในการอ่านไฟล์ Excel โปรดตรวจสอบรูปแบบไฟล์');
@@ -101,7 +173,7 @@ export default function ExcelUploader({ onDataLoaded }: ExcelUploaderProps) {
       setError('เกิดข้อผิดพลาดในการอ่านไฟล์');
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -120,7 +192,7 @@ export default function ExcelUploader({ onDataLoaded }: ExcelUploaderProps) {
 
   return (
     <div className="w-full">
-      <div 
+      <div
         className={`border-2 border-dashed rounded-xl p-10 flex flex-col items-center justify-center transition-colors cursor-pointer
           ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-300 bg-slate-50 hover:bg-slate-100'}
         `}
@@ -134,19 +206,19 @@ export default function ExcelUploader({ onDataLoaded }: ExcelUploaderProps) {
         </div>
         <h3 className="text-lg font-medium text-slate-800 mb-2 font-thai">อัปโหลดไฟล์ Excel ทะเบียนคุมเรื่อง</h3>
         <p className="text-slate-500 text-sm mb-6 text-center max-w-md">
-          ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์<br/>
-          รองรับเฉพาะไฟล์ .xlsx และ .xlsm
+          ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์<br />
+          รองรับ .xlsx และ .xlsm ขนาดไม่เกิน 10 MB
         </p>
-        
-        <input 
+
+        <input
           id="excel-upload"
-          type="file" 
-          className="hidden" 
-          accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12" 
+          type="file"
+          className="hidden"
+          accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.macroEnabled.12"
           onChange={handleFileInput}
         />
-        
-        <button className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors flex items-center">
+
+        <button type="button" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors flex items-center">
           <FileSpreadsheet className="h-5 w-5 mr-2" />
           เลือกไฟล์ Excel
         </button>
