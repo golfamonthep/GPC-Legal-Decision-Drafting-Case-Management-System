@@ -34,7 +34,7 @@ const navigation = [
   { name: "ตรวจคุณภาพข้อมูล", href: "/data-quality", icon: AlertTriangle, permission: "VIEW_DATA_QUALITY" as any },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },
   { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
-  { name: "อัปโหลดเอกสาร", href: "/upload", icon: Upload, permission: "UPLOAD_DOCUMENTS" as any }, // Added permission
+  { name: "นำเข้าทะเบียนคดี", href: "/upload", icon: Upload, permission: "IMPORT_REGISTRY" as any },
   { name: "ผู้ดูแลระบบ", href: "/admin/system", icon: Settings, permission: "VIEW_ADMIN_CONSOLE" as any },
   // { name: "การเก็บรักษาและคลังสำนวน", href: "/records-retention", icon: Archive, permission: "VIEW_RECORDS_ARCHIVE" as any }, // Disabled for MVP
   // { name: "การเชื่อมต่อเอกสาร Microsoft 365", href: "/document-sync", icon: Cloud, permission: "VIEW_DOCUMENT_SYNC" as any }, // Disabled for MVP
