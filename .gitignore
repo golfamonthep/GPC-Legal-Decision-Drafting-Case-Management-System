@@ -50,3 +50,4 @@ curl_all.ps1
 curl_test.ps1
 test_routes.ps1
 push.bat
+.env*
