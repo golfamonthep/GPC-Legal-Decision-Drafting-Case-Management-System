@@ -470,3 +470,13 @@ Objectives:
 - **Remaining P2 Issues**: Microsoft Auth Setup (PRE-6) is entirely bypassed and disabled in code.
 - **Documentation Created**: `docs/PROMPT_92B_EMERGENCY_REMOVE_LOGIN_REPORT.md`
 - **Recommended Next Step**: Prompt 93: MVP First Real-Use Monitoring and Issue Fix.
+
+## 23. Prompt 95 Apply Prisma Migrations to Supabase Production Database
+- **Status**: Completed (Migration Failed due to missing DIRECT_URL locally).
+- **Outcome**: Attempted to run `npm run db:migrate:deploy` but failed because local environment lacks production Supabase `DIRECT_URL`.
+- **Supabase connection**: Works conceptually (from Vercel build output) but tables are missing (MIGRATION_OR_TABLE_MISSING).
+- **Migrations applied**: No. The local environment attempted to connect to `localhost:51214`.
+- **`/api/health/db` result**: Pending migration.
+- **`/cases` result**: Pending migration.
+- **Next Step**: Project owner must run `npm run db:migrate:deploy` locally with correct `DIRECT_URL` and `DATABASE_URL` environment variables, or run it in an environment that has them.
+

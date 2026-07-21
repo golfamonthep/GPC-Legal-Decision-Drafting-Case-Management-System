@@ -616,3 +616,7 @@ Not executed — staging DB not confirmed. When confirmed, verify:
 - **src/app/api/auth/logout/route.ts**: Clears simple mode session.
 
 - **AUTH_MODE=none**: Completely bypasses all authentication, generating a mock 'MVP User' on the fly in src/lib/auth/currentUser.ts and permitting all protected API routes in proxy.ts.
+
+## Prompt 95 Apply Prisma Migrations to Supabase Production Database
+- **Status**: Migration failed locally due to missing `DIRECT_URL`.
+- **Data Flow Impact**: The health endpoint (`/api/health/db`), dashboard, cases, and registry import modules rely on Prisma tables being migrated. They will continue to return `MIGRATION_OR_TABLE_MISSING` until the owner applies migrations to the production Supabase project.

@@ -9,6 +9,9 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "db:seed": "prisma db seed",
+    "db:validate": "prisma validate",
+    "db:generate": "prisma generate",
+    "db:migrate:status": "prisma migrate status",
     "db:migrate:deploy": "prisma migrate deploy",
     "seed:archive-pilot:dry-run": "tsx scripts/seed-archive-pilot-records.ts --dry-run",
     "seed:archive-pilot:execute": "tsx scripts/seed-archive-pilot-records.ts --execute"

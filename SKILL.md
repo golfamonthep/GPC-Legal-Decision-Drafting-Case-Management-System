@@ -1,3 +1,9 @@
+## Prompt 95 Lessons Learned
+
+1. **Migration Verification Rule**: After DATABASE_URL connects, run `prisma migrate deploy` before testing case pages.
+2. **Production DB Safety**: Never use `prisma migrate reset` on a production/Supabase MVP database.
+3. **Connection != Tables**: Database connection success does not mean tables exist. The `MIGRATION_OR_TABLE_MISSING` error can occur even if `/api/health/db` shows connectivity if migrations aren't applied.
+
 ## Prompt 91 MVP Operational Cutover Rules & Lessons
 
 1. **MVP Cutover Rule**: When cutting a system to a controlled MVP, classify every feature as MVP Included, MVP Included with Limitation, Manual Review Required, Disable/Hide, Not Ready, or Post-MVP. Verify classification from actual code, not assumptions.
