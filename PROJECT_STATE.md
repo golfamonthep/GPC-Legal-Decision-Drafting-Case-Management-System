@@ -480,3 +480,13 @@ Objectives:
 - **`/cases` result**: Pending migration.
 - **Next Step**: Project owner must run `npm run db:migrate:deploy` locally with correct `DIRECT_URL` and `DATABASE_URL` environment variables, or run it in an environment that has them.
 
+## 24. Prompt 95B Initialize Supabase Database Tables for MVP
+- **Status**: Blocked (Vercel CLI not authenticated).
+- **Outcome**: Attempted to run `npx vercel env run -e production -- npx prisma db push --schema=prisma/schema.prisma` but failed because Vercel CLI requested device login.
+- **Supabase connection**: Works (vector extension enabled).
+- **Prisma schema synchronized**: No (Blocked).
+- **Health endpoint result**: MIGRATION_OR_TABLE_MISSING.
+- **Cases/Dashboard status**: Blocked.
+- **Initialization method**: Database currently initialized through db push for MVP (Blocked).
+- **Proper migration baseline**: Remains a future production task.
+

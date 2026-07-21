@@ -1,5 +1,12 @@
-## Prompt 95 Lessons Learned
+## Prompt 95B Lessons Learned
 
+1. **Schema vs Table Creation**: A successful Prisma generate does not create database tables.
+2. **Empty DB Migration limitation**: prisma migrate deploy cannot initialize a database when no migration.sql files exist.
+3. **Empty DB Initialization**: For an empty MVP database, prisma db push may be used once without destructive flags.
+4. **Destructive Flags Forbidden**: Never use force-reset, migrate reset, or accept-data-loss on production.
+5. **Verification Requirement**: Verify database initialization through both table existence and /api/health/db.
+
+## Prompt 95 Lessons Learned
 1. **Migration Verification Rule**: After DATABASE_URL connects, run `prisma migrate deploy` before testing case pages.
 2. **Production DB Safety**: Never use `prisma migrate reset` on a production/Supabase MVP database.
 3. **Connection != Tables**: Database connection success does not mean tables exist. The `MIGRATION_OR_TABLE_MISSING` error can occur even if `/api/health/db` shows connectivity if migrations aren't applied.
