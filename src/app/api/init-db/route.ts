@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import prisma from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 
@@ -19,7 +19,7 @@ export async function GET() {
     let executed = 0;
     for (const statement of statements) {
       if (statement) {
-        await db.$executeRawUnsafe(statement + ';');
+        await prisma.$executeRawUnsafe(statement + ';');
         executed++;
       }
     }
