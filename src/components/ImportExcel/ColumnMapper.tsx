@@ -86,22 +86,30 @@ function normalize(value: string): string {
 }
 
 function findHeader(excelHeaders: string[], fieldKey: string, label: string): string | undefined {
-  const normalizedLabel = normalize(label);
+  // Prefer known aliases over the generic UI label. This is essential for
+  // fields such as subject: the generic label "เรื่อง" must not bind to
+  // "เรื่องดำที่" when the file contains the exact header
+  // "เรื่องที่ร้องทุกข์" or "คำสั่งที่อุทธรณ์".
+  const candidates = [...(HEADER_ALIASES[fieldKey] ?? []), label]
+    .map(normalize)
+    .filter(Boolean);
 
-  const direct = excelHeaders.find((header) => {
-    const normalizedHeader = normalize(header);
-    return normalizedHeader === normalizedLabel || normalizedHeader.includes(normalizedLabel) || normalizedLabel.includes(normalizedHeader);
-  });
-  if (direct) return direct;
+  for (const candidate of candidates) {
+    const exact = excelHeaders.find((header) => normalize(header) === candidate);
+    if (exact) return exact;
+  }
 
-  const aliases = HEADER_ALIASES[fieldKey] ?? [];
-  return excelHeaders.find((header) => {
-    const normalizedHeader = normalize(header);
-    return aliases.some((alias) => {
-      const normalizedAlias = normalize(alias);
-      return normalizedHeader === normalizedAlias || normalizedHeader.includes(normalizedAlias) || normalizedAlias.includes(normalizedHeader);
-    });
-  });
+  // Partial matching is a last resort and only checks whether the actual
+  // Excel header contains a sufficiently descriptive alias. Do not perform
+  // the reverse check (alias.includes(header)); that previously caused a
+  // short header such as "อุทธรณ์" to be selected for "ผลอุทธรณ์".
+  for (const candidate of candidates) {
+    if (candidate.length < 4) continue;
+    const contained = excelHeaders.find((header) => normalize(header).includes(candidate));
+    if (contained) return contained;
+  }
+
+  return undefined;
 }
 
 export default function ColumnMapper({ excelHeaders, onMappingComplete, onCancel }: ColumnMapperProps) {
