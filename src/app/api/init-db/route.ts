@@ -22,8 +22,12 @@ export async function GET() {
     let executed = 0;
     for (const statement of statements) {
       if (statement) {
-        await prisma.$executeRawUnsafe(statement + ';');
-        executed++;
+        try {
+          await prisma.$executeRawUnsafe(statement + ';');
+          executed++;
+        } catch (stmtError: any) {
+          console.warn('Statement failed, continuing:', stmtError.message);
+        }
       }
     }
 
