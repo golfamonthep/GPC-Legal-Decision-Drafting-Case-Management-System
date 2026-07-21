@@ -14,8 +14,23 @@ function normalizeYear(year: number): number {
   }
   if (year > 2400) {
     year -= 543;
+  } else if (year >= 1957 && year <= 1999) {
+    // Excel interprets Thai two-digit years such as 68/69 as 1968/1969.
+    // In these operational registers they mean B.E. 2568/2569 = 2025/2026.
+    year += 57;
   }
   return year;
+}
+
+function normalizeParsedDate(date: Date): Date | null {
+  if (Number.isNaN(date.getTime())) return null;
+
+  const normalizedYear = normalizeYear(date.getFullYear());
+  if (normalizedYear !== date.getFullYear()) {
+    date.setFullYear(normalizedYear);
+  }
+
+  return date;
 }
 
 function buildValidDate(year: number, month: number, day: number): Date | null {
@@ -38,25 +53,16 @@ export function parseThaiDate(dateValue: any): Date | null {
   if (dateValue === null || dateValue === undefined || dateValue === '') return null;
 
   if (dateValue instanceof Date) {
-    if (Number.isNaN(dateValue.getTime())) return null;
-    const date = new Date(dateValue);
-    if (date.getFullYear() > 2400) {
-      date.setFullYear(date.getFullYear() - 543);
-    }
-    return date;
+    return normalizeParsedDate(new Date(dateValue));
   }
 
   if (typeof dateValue === 'number') {
-    // Excel epoch is Dec 30, 1899. Some Thai workbooks store Buddhist-era
+    // Excel epoch is Dec 30, 1899. Some Thai workbooks store full Buddhist-era
     // calendar years, producing serials around 240,000 rather than 45,000.
+    // Other rows contain two-digit Thai years that Excel interpreted as 19xx.
     const excelEpoch = new Date(1899, 11, 30);
     const parsed = new Date(excelEpoch.getTime() + dateValue * 86400000);
-    if (Number.isNaN(parsed.getTime())) return null;
-
-    if (parsed.getFullYear() > 2400) {
-      parsed.setFullYear(parsed.getFullYear() - 543);
-    }
-    return parsed;
+    return normalizeParsedDate(parsed);
   }
 
   const str = normalizeThaiDigits(String(dateValue))
@@ -105,10 +111,5 @@ export function parseThaiDate(dateValue: any): Date | null {
   }
 
   // Conservative fallback for unambiguous browser-supported date strings.
-  const fallback = new Date(str);
-  if (Number.isNaN(fallback.getTime())) return null;
-  if (fallback.getFullYear() > 2400) {
-    fallback.setFullYear(fallback.getFullYear() - 543);
-  }
-  return fallback;
+  return normalizeParsedDate(new Date(str));
 }
