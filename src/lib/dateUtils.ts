@@ -1,57 +1,114 @@
-export function parseThaiDate(dateStr: any): Date | null {
-  if (dateStr === null || dateStr === undefined || dateStr === '') return null;
-  
-  if (typeof dateStr === 'number') {
-    // Excel serial date. Excel epoch is Dec 30, 1899.
+const THAI_DIGITS: Record<string, string> = {
+  '๐': '0', '๑': '1', '๒': '2', '๓': '3', '๔': '4',
+  '๕': '5', '๖': '6', '๗': '7', '๘': '8', '๙': '9',
+};
+
+function normalizeThaiDigits(value: string): string {
+  return value.replace(/[๐-๙]/g, (digit) => THAI_DIGITS[digit] ?? digit);
+}
+
+function normalizeYear(year: number): number {
+  if (year < 100) {
+    // Two-digit Thai Buddhist year: 67 = 2567 = 2024.
+    year += 2500;
+  }
+  if (year > 2400) {
+    year -= 543;
+  }
+  return year;
+}
+
+function buildValidDate(year: number, month: number, day: number): Date | null {
+  const normalizedYear = normalizeYear(year);
+  const date = new Date(normalizedYear, month - 1, day);
+
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getFullYear() !== normalizedYear ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+export function parseThaiDate(dateValue: any): Date | null {
+  if (dateValue === null || dateValue === undefined || dateValue === '') return null;
+
+  if (dateValue instanceof Date) {
+    if (Number.isNaN(dateValue.getTime())) return null;
+    const date = new Date(dateValue);
+    if (date.getFullYear() > 2400) {
+      date.setFullYear(date.getFullYear() - 543);
+    }
+    return date;
+  }
+
+  if (typeof dateValue === 'number') {
+    // Excel epoch is Dec 30, 1899. Some Thai workbooks store Buddhist-era
+    // calendar years, producing serials around 240,000 rather than 45,000.
     const excelEpoch = new Date(1899, 11, 30);
-    const parsed = new Date(excelEpoch.getTime() + dateStr * 86400000);
-    return isNaN(parsed.getTime()) ? null : parsed;
+    const parsed = new Date(excelEpoch.getTime() + dateValue * 86400000);
+    if (Number.isNaN(parsed.getTime())) return null;
+
+    if (parsed.getFullYear() > 2400) {
+      parsed.setFullYear(parsed.getFullYear() - 543);
+    }
+    return parsed;
   }
 
-  const str = String(dateStr).trim();
-  if (!str) return null;
+  const str = normalizeThaiDigits(String(dateValue))
+    .replace(/\s+/g, ' ')
+    .trim();
 
-  // yyyy-mm-dd (ISO)
-  const ymdMatch = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (!str || str.includes('#VALUE!') || str.includes('#NAME?')) return null;
+
+  // yyyy-mm-dd (ISO, Gregorian or Buddhist year)
+  const ymdMatch = str.match(/^(\d{2,4})-(\d{1,2})-(\d{1,2})$/);
   if (ymdMatch) {
-    let year = parseInt(ymdMatch[1]);
-    if (year > 2400) year -= 543;
-    const d = new Date(year, parseInt(ymdMatch[2]) - 1, parseInt(ymdMatch[3]));
-    if (!isNaN(d.getTime())) return d;
+    return buildValidDate(
+      Number.parseInt(ymdMatch[1], 10),
+      Number.parseInt(ymdMatch[2], 10),
+      Number.parseInt(ymdMatch[3], 10),
+    );
   }
 
-  // dd/mm/yyyy or dd-mm-yyyy
-  const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  // dd/mm/yyyy, dd-mm-yyyy, dd.mm.yy, including two-digit Buddhist years.
+  const dmyMatch = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
   if (dmyMatch) {
-    let year = parseInt(dmyMatch[3]);
-    if (year > 2400) year -= 543; // Buddhist year
-    const d = new Date(year, parseInt(dmyMatch[2]) - 1, parseInt(dmyMatch[1]));
-    if (!isNaN(d.getTime())) return d;
+    return buildValidDate(
+      Number.parseInt(dmyMatch[3], 10),
+      Number.parseInt(dmyMatch[2], 10),
+      Number.parseInt(dmyMatch[1], 10),
+    );
   }
 
-  // Thai text date like "1 ม.ค. 2568" or "1 มกราคม 2568"
   const thaiMonthsShort = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
   const thaiMonthsFull = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
 
-  const thaiDateMatch = str.match(/^(\d{1,2})\s+([^\s]+)\s+(\d{4})$/);
+  // Thai text date, for example 1 ม.ค. 2568 or 1 มกราคม 68.
+  const thaiDateMatch = str.match(/^(\d{1,2})\s+([^\s]+)\s+(\d{2,4})$/);
   if (thaiDateMatch) {
-    const day = parseInt(thaiDateMatch[1]);
-    const monthStr = thaiDateMatch[2];
-    let year = parseInt(thaiDateMatch[3]);
-    if (year > 2400) year -= 543;
-
-    let monthIndex = thaiMonthsShort.indexOf(monthStr);
-    if (monthIndex === -1) {
-      monthIndex = thaiMonthsFull.indexOf(monthStr);
-    }
+    const monthText = thaiDateMatch[2];
+    let monthIndex = thaiMonthsShort.indexOf(monthText);
+    if (monthIndex === -1) monthIndex = thaiMonthsFull.indexOf(monthText);
 
     if (monthIndex !== -1) {
-      const d = new Date(year, monthIndex, day);
-      if (!isNaN(d.getTime())) return d;
+      return buildValidDate(
+        Number.parseInt(thaiDateMatch[3], 10),
+        monthIndex + 1,
+        Number.parseInt(thaiDateMatch[1], 10),
+      );
     }
   }
 
-  // Fallback to JS Date parse
-  const d = new Date(str);
-  return isNaN(d.getTime()) ? null : d;
+  // Conservative fallback for unambiguous browser-supported date strings.
+  const fallback = new Date(str);
+  if (Number.isNaN(fallback.getTime())) return null;
+  if (fallback.getFullYear() > 2400) {
+    fallback.setFullYear(fallback.getFullYear() - 543);
+  }
+  return fallback;
 }
