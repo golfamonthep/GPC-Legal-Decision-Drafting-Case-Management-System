@@ -22,8 +22,11 @@ export function ImportRegistryClient({ fixedCaseType }: ImportRegistryClientProp
   const [importResult, setImportResult] = useState<{
     success: boolean;
     importedRows?: number;
+    insertedRows?: number;
+    updatedRows?: number;
     skippedErrorRows?: number;
     skippedDuplicateRows?: number;
+    skippedConflictRows?: number;
     failedRows?: number;
     messages?: string[];
     errorMsg?: string;
@@ -82,8 +85,11 @@ export function ImportRegistryClient({ fixedCaseType }: ImportRegistryClientProp
         setImportResult({
           success: true,
           importedRows: data.importedRows,
+          insertedRows: data.insertedRows,
+          updatedRows: data.updatedRows,
           skippedErrorRows: data.skippedErrorRows,
           skippedDuplicateRows: data.skippedDuplicateRows,
+          skippedConflictRows: data.skippedConflictRows,
           failedRows: data.failedRows,
           messages: data.messages,
         });
@@ -124,9 +130,9 @@ export function ImportRegistryClient({ fixedCaseType }: ImportRegistryClientProp
               ระบบจะกำหนดทุกแถวเป็น “{fixedCaseType}” โดยอัตโนมัติ
             </div>
           )}
-          <div className="mt-2 text-sm text-amber-700 bg-amber-50 p-2 rounded border border-amber-200 inline-block font-thai">
-            กรุณาตรวจสอบข้อมูลตัวอย่างก่อนยืนยันการนำเข้า ระบบจะไม่ลบหรือเขียนทับข้อมูลเดิม<br />
-            แถวที่มีคำเตือนยังนำเข้าได้ ส่วนข้อมูลซ้ำหรือแถวสรุปท้ายตารางจะถูกข้าม
+          <div className="mt-2 text-sm text-amber-800 bg-amber-50 p-3 rounded border border-amber-200 inline-block font-thai">
+            <strong>ไฟล์ที่อัปโหลดถือเป็นทะเบียนล่าสุด:</strong> รายการหมายเลขดำเดิมจะได้รับการอัปเดตตามไฟล์ และรายการที่ยังไม่มีจะถูกเพิ่มใหม่<br />
+            ระบบจะไม่ลบรายการอัตโนมัติ แถวที่มีคำเตือนยังนำเข้าได้ ส่วนแถวที่ไม่ผ่านหรือหมายเลขซ้ำภายในไฟล์จะถูกข้าม
           </div>
         </div>
       </div>
@@ -187,17 +193,18 @@ export function ImportRegistryClient({ fixedCaseType }: ImportRegistryClientProp
               )}
 
               <h2 className="text-2xl font-bold font-thai text-slate-800 mb-2">
-                {importResult.success ? 'นำเข้าข้อมูลเสร็จสิ้น' : 'เกิดข้อผิดพลาด'}
+                {importResult.success ? 'ซิงก์ข้อมูลทะเบียนเสร็จสิ้น' : 'เกิดข้อผิดพลาด'}
               </h2>
 
               {importResult.success ? (
-                <div className="text-slate-600 mb-6 font-thai">
-                  <p className="text-lg">นำเข้าสำเร็จ <span className="font-bold text-green-600">{importResult.importedRows ?? 0}</span> แถว</p>
+                <div className="text-slate-600 mb-6 font-thai space-y-1">
+                  <p className="text-lg">ประมวลผลสำเร็จ <span className="font-bold text-green-600">{importResult.importedRows ?? 0}</span> แถว</p>
+                  <p>เพิ่มรายการใหม่ <span className="font-bold text-blue-600">{importResult.insertedRows ?? 0}</span> แถว</p>
+                  <p>อัปเดตรายการเดิม <span className="font-bold text-violet-600">{importResult.updatedRows ?? 0}</span> แถว</p>
                   <p>ข้ามแถวที่ไม่ผ่าน <span className="font-bold text-slate-800">{importResult.skippedErrorRows ?? 0}</span> แถว</p>
-                  <p>ข้ามข้อมูลซ้ำ <span className="font-bold text-amber-600">{importResult.skippedDuplicateRows ?? 0}</span> แถว</p>
-                  {(importResult.failedRows ?? 0) > 0 && (
-                    <p className="text-red-600">นำเข้าล้มเหลว <span className="font-bold">{importResult.failedRows}</span> แถว</p>
-                  )}
+                  <p>ข้ามข้อมูลซ้ำในไฟล์ <span className="font-bold text-amber-600">{importResult.skippedDuplicateRows ?? 0}</span> แถว</p>
+                  {(importResult.skippedConflictRows ?? 0) > 0 && <p className="text-red-600">ข้ามรายการที่ขัดแย้งกับเลขแดง <span className="font-bold">{importResult.skippedConflictRows}</span> แถว</p>}
+                  {(importResult.failedRows ?? 0) > 0 && <p className="text-red-600">ซิงก์ล้มเหลว <span className="font-bold">{importResult.failedRows}</span> แถว</p>}
                 </div>
               ) : (
                 <div className="text-slate-600 mb-6 font-thai text-lg">
@@ -222,7 +229,7 @@ export function ImportRegistryClient({ fixedCaseType }: ImportRegistryClientProp
                   onClick={resetToUpload}
                   className="px-6 py-2 bg-white text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors shadow-sm border border-slate-300 font-thai"
                 >
-                  {importResult.success ? 'นำเข้าไฟล์ใหม่' : 'ลองใหม่อีกครั้ง'}
+                  {importResult.success ? 'ซิงก์ไฟล์ใหม่' : 'ลองใหม่อีกครั้ง'}
                 </button>
                 {importResult.success && fixedCaseType && (
                   <Link
@@ -249,7 +256,7 @@ export function ImportRegistryClient({ fixedCaseType }: ImportRegistryClientProp
               <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50">
                 <div className="bg-white p-4 rounded-lg shadow-lg text-center border border-slate-200">
                   <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-2" />
-                  <p className="text-sm font-medium text-slate-700 font-thai">กำลังนำเข้าข้อมูล...</p>
+                  <p className="text-sm font-medium text-slate-700 font-thai">กำลังซิงก์ข้อมูลจากทะเบียนล่าสุด...</p>
                 </div>
               </div>
             )}
