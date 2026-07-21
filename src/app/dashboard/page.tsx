@@ -20,6 +20,7 @@ import { isClosedOrRedCase } from '@/lib/caseStatus';
 import { Case } from '@/types';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const MAX_TRACKING_CASES = 20;
 
 type CaseType = 'ร้องทุกข์' | 'อุทธรณ์';
 
@@ -33,7 +34,7 @@ type SectionStats = {
 
 type SectionData = {
   stats: SectionStats;
-  urgentCases: Case[];
+  trackingCases: Case[];
 };
 
 function getActiveDueDate(caseData: any): Date | null {
@@ -47,9 +48,8 @@ function getActiveDueDate(caseData: any): Date | null {
 
   if (dates.length === 0) return null;
 
-  // The registers contain milestone dates. For an operational overview, use
-  // the latest available deadline so an earlier milestone does not make every
-  // extended case look overdue.
+  // The registers contain milestone dates. Use the latest available deadline so
+  // an earlier milestone does not make every extended case appear overdue.
   return new Date(Math.max(...dates.map((date) => date.getTime())));
 }
 
@@ -89,25 +89,38 @@ function mapCaseToTable(caseData: any, now: Date): Case {
     decisionResult: caseData.decisionResult || undefined,
     oneDriveUrl: caseData.oneDriveUrl || undefined,
     proceedingNote: caseData.proceedingNote || undefined,
+    updatedAt: caseData.updatedAt?.toISOString(),
     isOverdue: !closed && daysUntilDue !== undefined && daysUntilDue < 0,
     daysUntilDue,
-  } as Case;
+  };
 }
 
 function buildSectionData(cases: any[], now: Date): SectionData {
   const activeCases = cases.filter((caseData) => !isClosedOrRedCase(caseData));
   const completedCases = cases.length - activeCases.length;
 
-  const urgentRecords = activeCases
-    .map((caseData) => ({
-      caseData,
-      daysUntilDue: getDaysUntilDue(caseData, now),
-    }))
-    .filter(({ daysUntilDue }) => daysUntilDue !== undefined && daysUntilDue <= 7)
-    .sort((left, right) => (left.daysUntilDue ?? 999999) - (right.daysUntilDue ?? 999999));
+  const activeWithDueDates = activeCases.map((caseData) => ({
+    caseData,
+    daysUntilDue: getDaysUntilDue(caseData, now),
+  }));
 
-  const overdue = urgentRecords.filter(({ daysUntilDue }) => (daysUntilDue ?? 0) < 0).length;
-  const dueSoon = urgentRecords.filter(({ daysUntilDue }) => (daysUntilDue ?? -1) >= 0).length;
+  const overdue = activeWithDueDates.filter(({ daysUntilDue }) => daysUntilDue !== undefined && daysUntilDue < 0).length;
+  const dueSoon = activeWithDueDates.filter(({ daysUntilDue }) => daysUntilDue !== undefined && daysUntilDue >= 0 && daysUntilDue <= 7).length;
+
+  const trackingCases = [...activeWithDueDates]
+    .sort((left, right) => {
+      const leftUrgent = left.daysUntilDue !== undefined && left.daysUntilDue <= 7;
+      const rightUrgent = right.daysUntilDue !== undefined && right.daysUntilDue <= 7;
+
+      if (leftUrgent !== rightUrgent) return leftUrgent ? -1 : 1;
+      if (leftUrgent && rightUrgent) {
+        return (left.daysUntilDue ?? Number.MAX_SAFE_INTEGER) - (right.daysUntilDue ?? Number.MAX_SAFE_INTEGER);
+      }
+
+      return right.caseData.updatedAt.getTime() - left.caseData.updatedAt.getTime();
+    })
+    .slice(0, MAX_TRACKING_CASES)
+    .map(({ caseData }) => mapCaseToTable(caseData, now));
 
   return {
     stats: {
@@ -117,7 +130,7 @@ function buildSectionData(cases: any[], now: Date): SectionData {
       overdue,
       dueSoon,
     },
-    urgentCases: urgentRecords.map(({ caseData }) => mapCaseToTable(caseData, now)),
+    trackingCases,
   };
 }
 
@@ -150,7 +163,7 @@ function CaseTypeSection({
           <div>
             <h2 className={`text-xl font-bold ${headingClass}`}>เรื่อง{type}</h2>
             <p className="mt-1 text-sm text-slate-500">
-              สถิติ รายการใกล้ครบกำหนด และงานที่ต้องเร่งดำเนินการเฉพาะประเภทนี้
+              สถิติ สถานะ และการดำเนินการล่าสุดของทะเบียนประเภทนี้
             </p>
           </div>
         </div>
@@ -175,7 +188,7 @@ function CaseTypeSection({
       <div className="p-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <DashboardCard
-            title={`ทั้งหมด`}
+            title="ทั้งหมด"
             value={data.stats.total}
             icon={isGrievance ? <FileText className="h-5 w-5" /> : <Scale className="h-5 w-5" />}
             description={`เรื่อง${type}`}
@@ -209,17 +222,24 @@ function CaseTypeSection({
         </div>
 
         <div className="mt-7">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-slate-900">
-              เรื่อง{type}ที่ต้องเร่งดำเนินการ
-            </h3>
-            <span className="text-xs text-slate-500">เกินกำหนดหรือครบกำหนดภายใน 7 วัน</span>
+          <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">
+                สถานะและการดำเนินการล่าสุด
+              </h3>
+              <p className="mt-1 text-xs text-slate-500">
+                เรื่องเร่งด่วนจะแสดงก่อน ตามด้วยเรื่องที่เพิ่งมีการอัปเดตล่าสุด
+              </p>
+            </div>
+            <span className="text-xs text-slate-500">
+              แสดงสูงสุด {MAX_TRACKING_CASES} เรื่อง · กด “อัปเดต” เพื่อบันทึกความคืบหน้า
+            </span>
           </div>
-          {data.urgentCases.length > 0 ? (
-            <CaseTable cases={data.urgentCases} />
+          {data.trackingCases.length > 0 ? (
+            <CaseTable cases={data.trackingCases} />
           ) : (
             <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center text-sm text-slate-500">
-              ยังไม่มีเรื่อง{type}ที่เกินกำหนดหรือใกล้ครบกำหนด
+              ยังไม่มีเรื่อง{type}ที่อยู่ระหว่างดำเนินการ
             </div>
           )}
         </div>
@@ -234,11 +254,11 @@ export default async function DashboardPage() {
   const now = new Date();
   let grievanceData: SectionData = {
     stats: { total: 0, active: 0, completed: 0, overdue: 0, dueSoon: 0 },
-    urgentCases: [],
+    trackingCases: [],
   };
   let appealData: SectionData = {
     stats: { total: 0, active: 0, completed: 0, overdue: 0, dueSoon: 0 },
-    urgentCases: [],
+    trackingCases: [],
   };
   let unknownTypeCount = 0;
   let activitiesData: Array<{
@@ -289,14 +309,14 @@ export default async function DashboardPage() {
   const totalCases = grievanceData.stats.total + appealData.stats.total + unknownTypeCount;
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold leading-7 text-slate-900">
             ภาพรวมเรื่องร้องทุกข์และอุทธรณ์
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            แยกการนำเสนอและการติดตามงานตามทะเบียนทั้งสองประเภทอย่างชัดเจน
+            แยกการนำเสนอและติดตามการดำเนินงานของทั้งสองทะเบียนอย่างชัดเจน
           </p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white px-5 py-3 shadow-sm">
