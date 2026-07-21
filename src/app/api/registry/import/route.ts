@@ -4,11 +4,37 @@ import prisma from '@/lib/db';
 import { parseThaiDate } from '@/lib/dateUtils';
 import { hasRedCaseNumber, isClosedCaseStatus } from '@/lib/caseStatus';
 
+const THAI_DIGITS: Record<string, string> = {
+  '๐': '0', '๑': '1', '๒': '2', '๓': '3', '๔': '4',
+  '๕': '5', '๖': '6', '๗': '7', '๘': '8', '๙': '9',
+};
+
 function normalizeCaseType(value: unknown): 'ร้องทุกข์' | 'อุทธรณ์' | 'ไม่ระบุ' {
   const normalized = String(value ?? '').replace(/\s+/g, '').trim();
   if (normalized.includes('อุทธรณ์')) return 'อุทธรณ์';
   if (normalized.includes('ร้องทุกข์')) return 'ร้องทุกข์';
   return 'ไม่ระบุ';
+}
+
+function normalizeCaseNumber(value: unknown): string {
+  return String(value ?? '')
+    .replace(/[๐-๙]/g, (digit) => THAI_DIGITS[digit] ?? digit)
+    .replace(/\s+/g, '')
+    .trim();
+}
+
+function extractStoredRedNumber(value: unknown): string | null {
+  const normalized = normalizeCaseNumber(value);
+  if (!normalized) return null;
+
+  // “แดงแล้ว” is a completion marker, not a unique red-case number.
+  // Store only an actual number such as 74/69 or 2/2568.
+  const match = normalized.match(/\d+\/\d+/);
+  return match?.[0] ?? null;
+}
+
+function compositeKey(caseType: string, caseNumber: string): string {
+  return `${caseType}::${caseNumber}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -35,28 +61,36 @@ export async function POST(request: NextRequest) {
     const redNumbersToCheck = new Set<string>();
 
     validRows.forEach((row: any) => {
-      const blackNumber = String(row?.data?.blackCaseNo ?? '').trim();
-      const redNumber = String(row?.data?.redCaseNo ?? '').trim();
+      const blackNumber = normalizeCaseNumber(row?.data?.blackCaseNo);
+      const redNumber = extractStoredRedNumber(row?.data?.redCaseNo);
       if (blackNumber) blackNumbersToCheck.add(blackNumber);
       if (redNumber) redNumbersToCheck.add(redNumber);
     });
 
-    const existingBlackCases = blackNumbersToCheck.size > 0
+    const existingCases = blackNumbersToCheck.size > 0 || redNumbersToCheck.size > 0
       ? await prisma.case.findMany({
-          where: { blackNumber: { in: Array.from(blackNumbersToCheck) } },
-          select: { blackNumber: true },
+          where: {
+            OR: [
+              ...(blackNumbersToCheck.size > 0
+                ? [{ blackNumber: { in: Array.from(blackNumbersToCheck) } }]
+                : []),
+              ...(redNumbersToCheck.size > 0
+                ? [{ redNumber: { in: Array.from(redNumbersToCheck) } }]
+                : []),
+            ],
+          },
+          select: { type: true, blackNumber: true, redNumber: true },
         })
       : [];
 
-    const existingRedCases = redNumbersToCheck.size > 0
-      ? await prisma.case.findMany({
-          where: { redNumber: { in: Array.from(redNumbersToCheck) } },
-          select: { redNumber: true },
-        })
-      : [];
-
-    const existingBlackNumbers = new Set(existingBlackCases.map((item) => item.blackNumber));
-    const existingRedNumbers = new Set(existingRedCases.map((item) => item.redNumber).filter(Boolean));
+    const existingBlackKeys = new Set(
+      existingCases.map((item) => compositeKey(item.type, normalizeCaseNumber(item.blackNumber))),
+    );
+    const existingRedKeys = new Set(
+      existingCases
+        .filter((item) => Boolean(item.redNumber))
+        .map((item) => compositeKey(item.type, normalizeCaseNumber(item.redNumber))),
+    );
 
     const CHUNK_SIZE = 25;
     const chunks: any[][] = [];
@@ -85,27 +119,30 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        const blackCaseNo = String(data.blackCaseNo ?? '').trim();
-        const redCaseNo = String(data.redCaseNo ?? '').trim();
-
-        if (blackCaseNo && existingBlackNumbers.has(blackCaseNo)) {
-          skippedDuplicateCount += 1;
-          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากมีหมายเลขดำซ้ำ (${blackCaseNo})`);
-          continue;
-        }
-        if (redCaseNo && existingRedNumbers.has(redCaseNo)) {
-          skippedDuplicateCount += 1;
-          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากมีหมายเลขแดงซ้ำ (${redCaseNo})`);
-          continue;
-        }
-
-        if (blackCaseNo) existingBlackNumbers.add(blackCaseNo);
-        if (redCaseNo) existingRedNumbers.add(redCaseNo);
-
-        const blackNumber = blackCaseNo || `ไม่มีหมายเลขดำ-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         const caseType = normalizeCaseType(data.caseType);
+        const blackCaseNo = normalizeCaseNumber(data.blackCaseNo);
+        const rawRedCaseNo = normalizeCaseNumber(data.redCaseNo);
+        const storedRedCaseNo = extractStoredRedNumber(data.redCaseNo);
+        const blackKey = blackCaseNo ? compositeKey(caseType, blackCaseNo) : '';
+        const redKey = storedRedCaseNo ? compositeKey(caseType, storedRedCaseNo) : '';
+
+        if (blackKey && existingBlackKeys.has(blackKey)) {
+          skippedDuplicateCount += 1;
+          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากมีหมายเลขดำซ้ำในทะเบียน${caseType} (${blackCaseNo})`);
+          continue;
+        }
+        if (redKey && existingRedKeys.has(redKey)) {
+          skippedDuplicateCount += 1;
+          messages.push(`แถวที่ ${row.index}: ข้ามเนื่องจากมีหมายเลขแดงซ้ำในทะเบียน${caseType} (${storedRedCaseNo})`);
+          continue;
+        }
+
+        if (blackKey) existingBlackKeys.add(blackKey);
+        if (redKey) existingRedKeys.add(redKey);
+
+        const blackNumber = blackCaseNo || `ไม่มีหมายเลขดำ-${caseType}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         const importedStatus = String(data.status ?? '').trim();
-        const completedByRedNumber = hasRedCaseNumber(redCaseNo);
+        const completedByRedNumber = hasRedCaseNumber(rawRedCaseNo);
         const currentStatus = completedByRedNumber && !isClosedCaseStatus(importedStatus)
           ? 'เสร็จสิ้น'
           : importedStatus || 'อยู่ระหว่างดำเนินการ';
@@ -115,7 +152,7 @@ export async function POST(request: NextRequest) {
           caseData: {
             type: caseType,
             blackNumber,
-            redNumber: redCaseNo || null,
+            redNumber: storedRedCaseNo,
             petitionerName: String(data.complainantName ?? '').trim() || 'ไม่ระบุ',
             respondentName: String(data.accusedName ?? '').trim() || 'ไม่ระบุ',
             subject: String(data.subject ?? '').trim() || 'ไม่ระบุ',
