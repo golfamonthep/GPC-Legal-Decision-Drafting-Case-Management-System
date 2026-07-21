@@ -1,7 +1,7 @@
 import { Case } from "../types";
 import { StatusBadge } from "./StatusBadge";
 import Link from "next/link";
-import { AlertCircle, Clock, PencilLine } from "lucide-react";
+import { AlertCircle, Clock, Eye, PencilLine } from "lucide-react";
 import { cn } from "../lib/utils";
 import { isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
 
@@ -26,7 +26,7 @@ function formatUpdatedAt(value?: string): string | null {
 export function CaseTable({ cases }: CaseTableProps) {
   return (
     <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-      <table className="min-w-[1250px] w-full divide-y divide-slate-300">
+      <table className="min-w-[1320px] w-full divide-y divide-slate-300">
         <thead className="bg-slate-50">
           <tr>
             <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-slate-900 sm:pl-6">
@@ -134,10 +134,16 @@ export function CaseTable({ cases }: CaseTableProps) {
                   <div className="text-xs text-slate-400 mt-1">รับเรื่อง: {c.receivedDate}</div>
                 </td>
                 <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 align-top">
-                  <Link href={`/cases/${c.id}`} className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-900">
-                    <PencilLine className="h-4 w-4" />
-                    ดู/อัปเดต
-                  </Link>
+                  <div className="flex flex-col items-end gap-2">
+                    <Link href={`/cases/${c.id}/update`} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-500">
+                      <PencilLine className="h-4 w-4" />
+                      อัปเดต
+                    </Link>
+                    <Link href={`/cases/${c.id}`} className="inline-flex items-center gap-1 text-slate-600 hover:text-blue-900">
+                      <Eye className="h-4 w-4" />
+                      รายละเอียด
+                    </Link>
+                  </div>
                 </td>
               </tr>
             );
