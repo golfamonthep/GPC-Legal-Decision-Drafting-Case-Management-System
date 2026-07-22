@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "../lib/utils";
-import { 
-  LayoutDashboard, 
-  Files, 
-  Library, 
-  Upload, 
+import {
+  LayoutDashboard,
+  Files,
+  Library,
+  Upload,
   Settings,
   Scale,
   BookOpen,
@@ -15,20 +15,14 @@ import {
   PieChart,
   Search,
   AlertTriangle,
-  CheckSquare,
-  Send,
-  Archive,
-  Cloud
 } from "lucide-react";
-import { SessionUser } from "@/lib/auth/currentUser";
+import type { SessionUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
 
 const navigation = [
   { name: "หน้าหลัก (Dashboard)", href: "/dashboard", icon: LayoutDashboard },
   { name: "รายงานผู้บริหาร", href: "/executive", icon: PieChart, permission: "VIEW_EXECUTIVE_DASHBOARD" as any },
   { name: "รายการคดี", href: "/cases", icon: Files },
-  // { name: "งานหลังประชุม/ปิดสำนวน", href: "/finalization", icon: CheckSquare, permission: "VIEW_POST_MEETING_FOLLOWUP" as any }, // Post-MVP
-  // { name: "แจ้งผล/ติดตามศาล", href: "/dispatch", icon: Send, permission: "VIEW_DISPATCH_WORKFLOW" as any }, // Post-MVP
   { name: "ค้นหาขั้นสูง", href: "/search", icon: Search, permission: "ADVANCED_CASE_SEARCH" as any },
   { name: "สารบบ", href: "/registry", icon: BookOpen },
   { name: "ตรวจคุณภาพข้อมูล", href: "/data-quality", icon: AlertTriangle, permission: "VIEW_DATA_QUALITY" as any },
@@ -36,8 +30,6 @@ const navigation = [
   { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
   { name: "นำเข้าทะเบียนคดี", href: "/upload", icon: Upload, permission: "IMPORT_REGISTRY" as any },
   { name: "ผู้ดูแลระบบ", href: "/admin/system", icon: Settings, permission: "VIEW_ADMIN_CONSOLE" as any },
-  // { name: "การเก็บรักษาและคลังสำนวน", href: "/records-retention", icon: Archive, permission: "VIEW_RECORDS_ARCHIVE" as any }, // Disabled for MVP
-  // { name: "การเชื่อมต่อเอกสาร Microsoft 365", href: "/document-sync", icon: Cloud, permission: "VIEW_DOCUMENT_SYNC" as any }, // Disabled for MVP
 ];
 
 export function Sidebar({ user }: { user: SessionUser | null }) {
@@ -66,13 +58,13 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
                         isActive
                           ? "bg-slate-800 text-white"
                           : "text-slate-300 hover:bg-slate-800 hover:text-white",
-                        "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-medium transition-colors"
+                        "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-medium transition-colors",
                       )}
                     >
                       <item.icon
                         className={cn(
                           isActive ? "text-white" : "text-slate-400 group-hover:text-white",
-                          "h-5 w-5 shrink-0"
+                          "h-5 w-5 shrink-0",
                         )}
                         aria-hidden="true"
                       />
