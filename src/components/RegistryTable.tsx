@@ -19,6 +19,33 @@ interface RegistryTableProps {
   };
 }
 
+function renderSortIcon(column: string, currentSortBy: string, currentSortOrder: string) {
+  if (currentSortBy !== column) return null;
+  return currentSortOrder === 'asc'
+    ? <ChevronUp className="inline h-4 w-4" />
+    : <ChevronDown className="inline h-4 w-4" />;
+}
+
+function getDeadlineStyle(date: Date | null) {
+  if (!date) return '';
+  const today = new Date();
+  const diffTime = date.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return 'text-red-600 font-semibold bg-red-50';
+  if (diffDays <= 7) return 'text-amber-600 font-semibold bg-amber-50';
+  return 'text-slate-700';
+}
+
+function formatDate(date: Date | null) {
+  if (!date) return '-';
+  return new Date(date).toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
 export default function RegistryTable({ data, metadata }: RegistryTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -44,32 +71,6 @@ export default function RegistryTable({ data, metadata }: RegistryTableProps) {
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  // Helper to determine deadline color
-  const getDeadlineStyle = (date: Date | null) => {
-    if (!date) return '';
-    const today = new Date();
-    const diffTime = date.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return 'text-red-600 font-semibold bg-red-50'; // Overdue
-    if (diffDays <= 7) return 'text-amber-600 font-semibold bg-amber-50'; // Near deadline
-    return 'text-slate-700'; // Normal
-  };
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return '-';
-    return new Date(date).toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const SortIcon = ({ column }: { column: string }) => {
-    if (currentSortBy !== column) return null;
-    return currentSortOrder === 'asc' ? <ChevronUp className="inline h-4 w-4" /> : <ChevronDown className="inline h-4 w-4" />;
-  };
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
       <div className="overflow-x-auto">
@@ -79,24 +80,24 @@ export default function RegistryTable({ data, metadata }: RegistryTableProps) {
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">ลำดับ</th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">ประเภทเรื่อง</th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap cursor-pointer hover:bg-slate-100" onClick={() => handleSort('blackNumber')}>
-                เรื่องดำ <SortIcon column="blackNumber" />
+                เรื่องดำ {renderSortIcon('blackNumber', currentSortBy, currentSortOrder)}
               </th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">เรื่องแดง</th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">ชื่อผู้ร้องทุกข์/ผู้อุทธรณ์</th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 min-w-[200px]">คู่กรณี</th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 min-w-[250px]">เรื่อง</th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap cursor-pointer hover:bg-slate-100" onClick={() => handleSort('receivedDate')}>
-                วันที่รับเรื่อง <SortIcon column="receivedDate" />
+                วันที่รับเรื่อง {renderSortIcon('receivedDate', currentSortBy, currentSortOrder)}
               </th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap cursor-pointer hover:bg-slate-100" onClick={() => handleSort('commissioner')}>
-                กรรมการเจ้าของสำนวน <SortIcon column="commissioner" />
+                กรรมการเจ้าของสำนวน {renderSortIcon('commissioner', currentSortBy, currentSortOrder)}
               </th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">นิติกร</th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap cursor-pointer hover:bg-slate-100" onClick={() => handleSort('status')}>
-                สถานะ <SortIcon column="status" />
+                สถานะ {renderSortIcon('status', currentSortBy, currentSortOrder)}
               </th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap cursor-pointer hover:bg-slate-100" onClick={() => handleSort('dueDate30')}>
-                ครบ 30 วัน <SortIcon column="dueDate30" />
+                ครบ 30 วัน {renderSortIcon('dueDate30', currentSortBy, currentSortOrder)}
               </th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">ครบ 60 วัน</th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">ครบ 90 วัน</th>
@@ -160,7 +161,6 @@ export default function RegistryTable({ data, metadata }: RegistryTableProps) {
         </table>
       </div>
 
-      {/* Pagination Controls */}
       <div className="bg-slate-50 px-4 py-3 border-t border-slate-200 flex items-center justify-between sm:px-6 mt-auto">
         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div>
@@ -178,7 +178,7 @@ export default function RegistryTable({ data, metadata }: RegistryTableProps) {
                 <span className="sr-only">Previous</span>
                 <ChevronLeft className="h-5 w-5" aria-hidden="true" />
               </button>
-              
+
               <span className="relative inline-flex items-center px-4 py-2 border border-slate-300 bg-white text-sm font-medium text-slate-700">
                 หน้า {metadata.page} / {metadata.totalPages || 1}
               </span>
