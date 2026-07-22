@@ -86,11 +86,18 @@ Dependabot is now configured for npm and GitHub Actions updates.
 
 The current short-term design supports one shared internal account. Real credentials must never be committed to this public repository.
 
-Required Vercel variables:
+Requested pilot identity:
+
+```env
+MVP_USERNAME=Wpp
+MVP_ACCESS_CODE=<stored only in Vercel>
+```
+
+Complete required Vercel configuration:
 
 ```env
 AUTH_MODE=simple
-MVP_USERNAME=<single-account-username>
+MVP_USERNAME=Wpp
 MVP_ACCESS_CODE=<single-account-password>
 MVP_SESSION_SECRET=<at-least-32-random-bytes>
 MVP_DEFAULT_ROLE=ADMIN
@@ -98,7 +105,7 @@ ALLOW_INSECURE_AUTH_MODE=false
 ENABLE_DATABASE_INIT_ENDPOINT=false
 ```
 
-This mode is suitable only for owner testing or a tightly controlled pilot. It does not provide individual accountability because every user shares the same identity and role.
+This mode is suitable only for owner testing or a tightly controlled pilot. It does not provide individual accountability because every user shares the same identity and role. The requested short password is materially weak and must be replaced before external or multi-user access.
 
 ## P1 findings requiring the next change set
 
