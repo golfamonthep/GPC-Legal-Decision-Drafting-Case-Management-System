@@ -15,9 +15,9 @@ concurrency:
 
 jobs:
   quality:
-    name: Lint, typecheck, and Prisma validation
+    name: Prisma, lint, and typecheck
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       DATABASE_URL: postgresql://ci:ci@database.invalid:5432/gpc_ci?schema=public
       DIRECT_URL: postgresql://ci:ci@database.invalid:5432/gpc_ci?schema=public
@@ -44,8 +44,64 @@ jobs:
       - name: Validate Prisma schema
         run: npm run db:validate
 
-      - name: Lint
-        run: npm run lint -- --quiet
+      - name: Lint repository
+        id: lint
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          npx eslint . --quiet --format json > eslint-report.json
+          status=$?
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+
+      - name: Summarize lint errors
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          if (!fs.existsSync('eslint-report.json')) {
+            console.log('No ESLint report was produced.');
+            process.exit(0);
+          }
+
+          const report = JSON.parse(fs.readFileSync('eslint-report.json', 'utf8') || '[]');
+          const errors = report.flatMap((entry) =>
+            entry.messages
+              .filter((message) => message.severity === 2)
+              .map((message) => ({
+                filePath: entry.filePath.replace(`${process.cwd()}/`, ''),
+                line: message.line || 0,
+                column: message.column || 0,
+                ruleId: message.ruleId || 'unknown',
+                message: message.message.replace(/\s+/g, ' '),
+              })),
+          );
+
+          console.log(`ESLint errors: ${errors.length}`);
+          for (const error of errors.slice(0, 80)) {
+            console.log(`${error.filePath}:${error.line}:${error.column} ${error.ruleId} ${error.message}`);
+          }
+          if (errors.length > 80) {
+            console.log(`... ${errors.length - 80} additional errors are available in the artifact.`);
+          }
+          NODE
+
+      - name: Upload ESLint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: eslint-report.json
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Enforce lint result
+        if: steps.lint.outcome == 'failure'
+        run: |
+          echo "Repository lint failed. Review the ESLint report artifact."
+          exit 1
