@@ -35,7 +35,7 @@ export function AppShell({ children, user, showInsecureModeBanner }: AppShellPro
             โหมดพัฒนา: ระบบยืนยันตัวตนถูกปิดใช้งาน
           </div>
         )}
-        <TopHeader />
+        <TopHeader user={user} />
         <main className="flex-1 overflow-y-auto pb-10">
           {children}
         </main>
