@@ -26,7 +26,7 @@ Changes in this branch:
 - `AUTH_MODE=none` blocked in production unless an explicit dangerous override is set;
 - controlled `simple` and `microsoft` modes restored;
 - missing or invalid auth configuration returns HTTP 503 instead of granting access;
-- login page restored.
+- login page restored and separated from the authenticated application shell.
 
 ### 2. Simple-auth cookies were forgeable
 
@@ -51,7 +51,20 @@ Changes in this branch:
 - HTTP 503 for unhealthy state;
 - explicit no-store caching headers.
 
-### 4. No repository CI gate
+### 4. Database initialization was exposed as a GET side effect
+
+`/api/init-db` read a bundled SQL file and executed every statement through `$executeRawUnsafe` from a GET request. Global login alone was not an adequate control because every authenticated role could reach the route.
+
+Changes in this branch:
+
+- GET now returns HTTP 405 and never mutates the database;
+- initialization requires POST;
+- ADMIN-level `MANAGE_SYSTEM_SETTINGS` permission is required;
+- the endpoint is disabled unless `ENABLE_DATABASE_INIT_ENDPOINT=true`;
+- an explicit confirmation phrase is required;
+- production-safe default remains disabled.
+
+### 5. No repository CI gate
 
 There was no GitHub Actions workflow protecting pull requests from lint, TypeScript, or Prisma-schema failures.
 
@@ -61,11 +74,23 @@ Changes in this branch:
 - dependency installation with `npm ci`;
 - Prisma client generation and schema validation;
 - ESLint and TypeScript checks;
-- concurrent stale runs cancelled.
+- lint diagnostics retained as a workflow artifact;
+- concurrent stale runs cancelled;
+- generated Prisma client excluded from source linting;
+- unsupported Next.js `eslint` configuration removed.
 
-### 5. No automated dependency monitoring
+### 6. No automated dependency monitoring
 
 Dependabot is now configured for npm and GitHub Actions updates.
+
+## Validation completed
+
+- GitHub Actions: Prisma generation passed.
+- GitHub Actions: Prisma schema validation passed.
+- GitHub Actions: blocking ESLint checks passed after configuration defects and source defects were corrected.
+- GitHub Actions: TypeScript typecheck passed before the final documentation-only update; the final branch run remains the merge gate.
+- Vercel Preview: Next.js build completed and a preview deployment reached `READY` for the security/CI changes.
+- Preview auth probe: `/api/auth/mode` returned `misconfigured`, confirming the application fails closed until Vercel auth variables are supplied.
 
 ## P1 findings requiring the next change set
 
@@ -147,7 +172,7 @@ These files must be treated as operational controls, not historical notes. Keep 
 
 ## Recommended delivery order
 
-1. Merge this authentication/CI hardening branch after CI passes and Vercel environment variables are configured.
+1. Configure Vercel authentication variables and merge this hardening branch only after the final CI and Preview checks pass.
 2. Correct Prisma composite uniqueness in `schema.prisma`; validate migration diff against production.
 3. Add tests for auth, case status, dates, and registry synchronization.
 4. Add import limits and background-job architecture.
@@ -166,6 +191,7 @@ MVP_ACCESS_CODE=<strong-random-code>
 MVP_SESSION_SECRET=<at-least-32-random-bytes>
 MVP_DEFAULT_ROLE=REGISTRY_OFFICER
 ALLOW_INSECURE_AUTH_MODE=false
+ENABLE_DATABASE_INIT_ENDPOINT=false
 ```
 
 ### Production Microsoft login
@@ -178,6 +204,7 @@ MICROSOFT_ENTRA_ID_TENANT_ID=<tenant-id>
 MICROSOFT_ENTRA_ID_CLIENT_ID=<client-id>
 MICROSOFT_ENTRA_ID_CLIENT_SECRET=<client-secret>
 ALLOW_INSECURE_AUTH_MODE=false
+ENABLE_DATABASE_INIT_ENDPOINT=false
 ```
 
 Do not merge while production still relies on unauthenticated access unless downtime/lockout has been planned and the replacement credentials are already set.
