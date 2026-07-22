@@ -3,19 +3,11 @@
 import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { TopHeader } from './TopHeader';
-import type { Role } from '@/lib/auth/permissions';
-
-type ShellUser = {
-  id: string;
-  name?: string | null;
-  email?: string | null;
-  role: Role;
-  status?: string | null;
-} | null;
+import type { SessionUser } from '@/lib/auth/currentUser';
 
 interface AppShellProps {
   children: React.ReactNode;
-  user: ShellUser;
+  user: SessionUser | null;
   showInsecureModeBanner: boolean;
 }
 
