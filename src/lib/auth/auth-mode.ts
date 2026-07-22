@@ -36,7 +36,10 @@ export function getAuthMode(): AuthMode {
     return "misconfigured";
   }
 
-  if (configuredMode === "simple" && !process.env.MVP_ACCESS_CODE) {
+  if (
+    configuredMode === "simple" &&
+    (!process.env.MVP_USERNAME || !process.env.MVP_ACCESS_CODE)
+  ) {
     return "misconfigured";
   }
 
@@ -71,8 +74,11 @@ export function getAuthConfigurationMessage(): string | null {
     return "AUTH_MODE=none is blocked in production. Configure simple or microsoft authentication.";
   }
 
-  if (configuredMode === "simple" && !process.env.MVP_ACCESS_CODE) {
-    return "MVP_ACCESS_CODE is required when AUTH_MODE=simple.";
+  if (
+    configuredMode === "simple" &&
+    (!process.env.MVP_USERNAME || !process.env.MVP_ACCESS_CODE)
+  ) {
+    return "MVP_USERNAME and MVP_ACCESS_CODE are required when AUTH_MODE=simple.";
   }
 
   if (configuredMode === "simple") {
