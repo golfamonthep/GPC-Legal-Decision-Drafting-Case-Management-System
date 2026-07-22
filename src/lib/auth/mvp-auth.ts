@@ -41,12 +41,16 @@ export function isNoneAuthEnabled() {
   return getAuthMode() === "none";
 }
 
-export function validateMvpAccessCode(code: string) {
+export function validateMvpCredentials(username: string, password: string) {
   if (getAuthMode() !== "simple") return false;
 
-  const expectedCode = process.env.MVP_ACCESS_CODE;
-  if (!expectedCode || !code) return false;
-  return constantTimeEqual(code, expectedCode);
+  const expectedUsername = process.env.MVP_USERNAME;
+  const expectedPassword = process.env.MVP_ACCESS_CODE;
+  if (!expectedUsername || !expectedPassword || !username || !password) return false;
+
+  const usernameMatches = constantTimeEqual(username, expectedUsername);
+  const passwordMatches = constantTimeEqual(password, expectedPassword);
+  return usernameMatches && passwordMatches;
 }
 
 export async function createMvpSession() {
@@ -90,9 +94,10 @@ export async function getMvpUser() {
   const isValidSession = await verifySignedMvpSessionToken(token);
   if (!isValidSession) return null;
 
+  const username = process.env.MVP_USERNAME || "MVP Internal User";
   return {
     id: "mvp-internal-user",
-    name: "MVP Internal User",
+    name: username,
     email: "mvp@internal.local",
     role: getMvpRole(),
     status: "ACTIVE",
