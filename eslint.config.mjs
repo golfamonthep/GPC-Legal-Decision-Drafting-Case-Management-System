@@ -12,13 +12,13 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-require-imports": "warn"
     }
   },
-  // Override default ignores of eslint-config-next.
+  // Generated artifacts are validated by Prisma/TypeScript, not linted as source.
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "src/generated/prisma/**",
   ]),
 ]);
 
