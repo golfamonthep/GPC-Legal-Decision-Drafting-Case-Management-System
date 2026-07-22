@@ -2,7 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import { UserCircle, LogOut } from "lucide-react";
-import { SessionUser } from "@/lib/auth/currentUser";
+import type { SessionUser } from "@/lib/auth/currentUser";
 import { useState, useRef, useEffect } from "react";
 
 export function UserMenu({ user }: { user: SessionUser | null }) {
@@ -45,7 +45,7 @@ export function UserMenu({ user }: { user: SessionUser | null }) {
 
   return (
     <div className="relative" ref={menuRef}>
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-x-4 cursor-pointer hover:bg-slate-50 p-2 rounded-md transition-colors"
       >
@@ -67,7 +67,11 @@ export function UserMenu({ user }: { user: SessionUser | null }) {
           </div>
           <button
             onClick={async () => {
-              try { await fetch("/api/auth/logout", { method: "POST" }); } catch (e) {}
+              try {
+                await fetch("/api/auth/logout", { method: "POST" });
+              } catch {
+                // Continue with NextAuth sign-out even if local session cleanup fails.
+              }
               signOut({ callbackUrl: "/login" });
             }}
             className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
