@@ -1,14 +1,16 @@
 "use server";
 
-import { createMvpSession, validateMvpAccessCode } from "@/lib/auth/mvp-auth";
+import { createMvpSession, validateMvpCredentials } from "@/lib/auth/mvp-auth";
 import { redirect } from "next/navigation";
 
-export async function loginWithMvpCode(formData: FormData) {
-  const code = formData.get("code") as string;
-  if (!code || !validateMvpAccessCode(code)) {
-    return { error: "รหัสเข้าใช้งานไม่ถูกต้อง" };
+export async function loginWithMvpCredentials(formData: FormData) {
+  const username = String(formData.get("username") || "");
+  const password = String(formData.get("password") || "");
+
+  if (!validateMvpCredentials(username, password)) {
+    return { error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" };
   }
-  
+
   await createMvpSession();
   redirect("/dashboard");
 }
