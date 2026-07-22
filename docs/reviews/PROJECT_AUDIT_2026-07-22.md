@@ -26,7 +26,8 @@ Changes in this branch:
 - `AUTH_MODE=none` blocked in production unless an explicit dangerous override is set;
 - controlled `simple` and `microsoft` modes restored;
 - missing or invalid auth configuration returns HTTP 503 instead of granting access;
-- login page restored and separated from the authenticated application shell.
+- login page restored and isolated from the authenticated application shell;
+- the controlled pilot mode now requires both a username and password from Vercel environment variables.
 
 ### 2. Simple-auth cookies were forgeable
 
@@ -51,18 +52,17 @@ Changes in this branch:
 - HTTP 503 for unhealthy state;
 - explicit no-store caching headers.
 
-### 4. Database initialization was exposed as a GET side effect
+### 4. Database initialization endpoint allowed unsafe side effects
 
-`/api/init-db` read a bundled SQL file and executed every statement through `$executeRawUnsafe` from a GET request. Global login alone was not an adequate control because every authenticated role could reach the route.
+`/api/init-db` previously accepted a GET request and executed SQL statements with `$executeRawUnsafe`.
 
 Changes in this branch:
 
-- GET now returns HTTP 405 and never mutates the database;
-- initialization requires POST;
-- ADMIN-level `MANAGE_SYSTEM_SETTINGS` permission is required;
+- GET is rejected;
+- POST is restricted to users with system-management permission;
 - the endpoint is disabled unless `ENABLE_DATABASE_INIT_ENDPOINT=true`;
 - an explicit confirmation phrase is required;
-- production-safe default remains disabled.
+- detailed database errors are not returned to the client.
 
 ### 5. No repository CI gate
 
@@ -74,23 +74,31 @@ Changes in this branch:
 - dependency installation with `npm ci`;
 - Prisma client generation and schema validation;
 - ESLint and TypeScript checks;
-- lint diagnostics retained as a workflow artifact;
+- machine-readable ESLint artifact;
 - concurrent stale runs cancelled;
-- generated Prisma client excluded from source linting;
-- unsupported Next.js `eslint` configuration removed.
+- CI Node.js version aligned with Vercel Node.js 24.
 
 ### 6. No automated dependency monitoring
 
 Dependabot is now configured for npm and GitHub Actions updates.
 
-## Validation completed
+## Controlled pilot authentication
 
-- GitHub Actions: Prisma generation passed.
-- GitHub Actions: Prisma schema validation passed.
-- GitHub Actions: blocking ESLint checks passed after configuration defects and source defects were corrected.
-- GitHub Actions: TypeScript typecheck passed before the final documentation-only update; the final branch run remains the merge gate.
-- Vercel Preview: Next.js build completed and a preview deployment reached `READY` for the security/CI changes.
-- Preview auth probe: `/api/auth/mode` returned `misconfigured`, confirming the application fails closed until Vercel auth variables are supplied.
+The current short-term design supports one shared internal account. Real credentials must never be committed to this public repository.
+
+Required Vercel variables:
+
+```env
+AUTH_MODE=simple
+MVP_USERNAME=<single-account-username>
+MVP_ACCESS_CODE=<single-account-password>
+MVP_SESSION_SECRET=<at-least-32-random-bytes>
+MVP_DEFAULT_ROLE=ADMIN
+ALLOW_INSECURE_AUTH_MODE=false
+ENABLE_DATABASE_INIT_ENDPOINT=false
+```
+
+This mode is suitable only for owner testing or a tightly controlled pilot. It does not provide individual accountability because every user shares the same identity and role.
 
 ## P1 findings requiring the next change set
 
@@ -172,39 +180,11 @@ These files must be treated as operational controls, not historical notes. Keep 
 
 ## Recommended delivery order
 
-1. Configure Vercel authentication variables and merge this hardening branch only after the final CI and Preview checks pass.
+1. Configure the controlled pilot account in Vercel, validate login on Preview, then merge this authentication/CI hardening branch.
 2. Correct Prisma composite uniqueness in `schema.prisma`; validate migration diff against production.
 3. Add tests for auth, case status, dates, and registry synchronization.
 4. Add import limits and background-job architecture.
 5. Normalize workflow fields into enums.
 6. Rewrite the README and consolidate project-state documentation.
 
-## Required production environment before merging
-
-Choose one mode.
-
-### Controlled pilot
-
-```env
-AUTH_MODE=simple
-MVP_ACCESS_CODE=<strong-random-code>
-MVP_SESSION_SECRET=<at-least-32-random-bytes>
-MVP_DEFAULT_ROLE=REGISTRY_OFFICER
-ALLOW_INSECURE_AUTH_MODE=false
-ENABLE_DATABASE_INIT_ENDPOINT=false
-```
-
-### Production Microsoft login
-
-```env
-AUTH_MODE=microsoft
-NEXTAUTH_SECRET=<at-least-32-random-bytes>
-NEXTAUTH_URL=https://<production-domain>
-MICROSOFT_ENTRA_ID_TENANT_ID=<tenant-id>
-MICROSOFT_ENTRA_ID_CLIENT_ID=<client-id>
-MICROSOFT_ENTRA_ID_CLIENT_SECRET=<client-secret>
-ALLOW_INSECURE_AUTH_MODE=false
-ENABLE_DATABASE_INIT_ENDPOINT=false
-```
-
-Do not merge while production still relies on unauthenticated access unless downtime/lockout has been planned and the replacement credentials are already set.
+Do not merge while production still lacks the required authentication variables. Missing configuration intentionally causes the application to fail closed.
