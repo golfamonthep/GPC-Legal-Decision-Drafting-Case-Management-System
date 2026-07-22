@@ -4,14 +4,15 @@ import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Scale } from "lucide-react";
-import { loginWithMvpCode } from "./actions";
+import { loginWithMvpCredentials } from "./actions";
 
 function LoginContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [authMode, setAuthMode] = useState("loading");
-  const [mvpCode, setMvpCode] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [mvpError, setMvpError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,10 +42,11 @@ function LoginContent() {
     setMvpError("");
 
     const formData = new FormData();
-    formData.append("code", mvpCode);
+    formData.append("username", username);
+    formData.append("password", password);
 
     try {
-      const result = await loginWithMvpCode(formData);
+      const result = await loginWithMvpCredentials(formData);
       if (result?.error) {
         setMvpError(result.error);
         setIsLoading(false);
@@ -69,7 +71,7 @@ function LoginContent() {
         </h1>
         <p className="mt-2 text-center text-sm text-slate-600">
           {isSimpleMode
-            ? "กรอกรหัสเข้าใช้งานภายใน"
+            ? "เข้าสู่ระบบด้วยบัญชีภายใน"
             : isMicrosoftMode
               ? "เข้าสู่ระบบด้วยบัญชี Microsoft ของหน่วยงาน"
               : isMisconfigured
@@ -96,18 +98,37 @@ function LoginContent() {
           {isSimpleMode && (
             <form onSubmit={handleSimpleLogin} className="space-y-6">
               <div>
-                <label htmlFor="code" className="block text-sm font-medium leading-6 text-slate-900">
-                  รหัสเข้าใช้งานภายใน
+                <label htmlFor="username" className="block text-sm font-medium leading-6 text-slate-900">
+                  ชื่อผู้ใช้
                 </label>
                 <div className="mt-2">
                   <input
-                    id="code"
-                    name="code"
+                    id="username"
+                    name="username"
+                    type="text"
+                    autoComplete="username"
+                    required
+                    autoFocus
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    className="block w-full rounded-md border-0 px-3 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium leading-6 text-slate-900">
+                  รหัสผ่าน
+                </label>
+                <div className="mt-2">
+                  <input
+                    id="password"
+                    name="password"
                     type="password"
                     autoComplete="current-password"
                     required
-                    value={mvpCode}
-                    onChange={(event) => setMvpCode(event.target.value)}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                     className="block w-full rounded-md border-0 px-3 py-1.5 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
                   />
                 </div>
