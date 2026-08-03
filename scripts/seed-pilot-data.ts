@@ -76,7 +76,7 @@ async function main() {
 
     for (const c of pilotCases) {
       const createdCase = await prisma.case.upsert({
-        where: { blackNumber: c.blackNumber },
+        where: { type_blackNumber: { type: c.type, blackNumber: c.blackNumber } },
         update: {},
         create: {
           ...c,

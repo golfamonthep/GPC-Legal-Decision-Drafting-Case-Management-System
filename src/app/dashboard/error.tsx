@@ -16,7 +16,7 @@ export default function DashboardError({
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 text-center mt-12">
       <h2 className="text-xl font-semibold text-slate-900 mb-4">เกิดข้อผิดพลาดในการโหลดข้อมูลหน้าแดชบอร์ด</h2>
-      <p className="text-slate-500 mb-6">{error.message}</p>
+      <p className="text-slate-500 mb-6">ระบบไม่สามารถเตรียมหน้า Dashboard ได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง</p>
       <button
         onClick={() => reset()}
         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
