@@ -1,12 +1,11 @@
 export default function DashboardLoading() {
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1600px] px-3 py-5 sm:px-6 sm:py-7 xl:px-10">
       <div className="animate-pulse">
-        <div className="h-8 bg-slate-200 rounded w-1/4 mb-2"></div>
-        <div className="h-4 bg-slate-200 rounded w-1/3 mb-8"></div>
+        <div className="h-56 rounded-3xl bg-slate-800"></div>
         
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="mt-6 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-5">
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6 h-32">
               <div className="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
               <div className="h-8 bg-slate-200 rounded w-1/3"></div>
@@ -14,9 +13,9 @@ export default function DashboardLoading() {
           ))}
         </div>
 
-        <div className="mt-12">
-          <div className="h-6 bg-slate-200 rounded w-1/3 mb-4"></div>
-          <div className="bg-white shadow sm:rounded-lg h-64"></div>
+        <div className="mt-6 grid gap-6 xl:grid-cols-[1.55fr_1fr]">
+          <div className="h-80 rounded-2xl bg-white shadow-sm"></div>
+          <div className="h-80 rounded-2xl bg-white shadow-sm"></div>
         </div>
       </div>
     </div>

@@ -46,7 +46,7 @@ async function main() {
 
   // 2. Create Cases
   const case1 = await prisma.case.upsert({
-    where: { blackNumber: 'ร.1/2567' },
+    where: { type_blackNumber: { type: 'ร้องทุกข์', blackNumber: 'ร.1/2567' } },
     update: {},
     create: {
       type: 'ร้องทุกข์',
@@ -123,7 +123,7 @@ async function main() {
   })
 
   const case2 = await prisma.case.upsert({
-    where: { blackNumber: 'อ.1/2567' },
+    where: { type_blackNumber: { type: 'อุทธรณ์', blackNumber: 'อ.1/2567' } },
     update: {},
     create: {
       type: 'อุทธรณ์',

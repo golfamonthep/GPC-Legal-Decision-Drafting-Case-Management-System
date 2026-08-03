@@ -37,8 +37,8 @@ model User {
 model Case {
   id             String  @id @default(uuid())
   type           String // "ร้องทุกข์" | "อุทธรณ์"
-  blackNumber    String  @unique
-  redNumber      String? @unique
+  blackNumber    String
+  redNumber      String?
   petitionerName String
   respondentName String
   subject        String
@@ -79,6 +79,14 @@ model Case {
   archiveRecords       CaseArchiveRecord[]
   knowledgeReuseReviews KnowledgeReuseReview[]
   archiveBatchItems    ArchiveBatchItem[]
+
+  @@unique([type, blackNumber])
+  @@unique([type, redNumber])
+  @@index([receivedDate])
+  @@index([type, receivedDate])
+  @@index([legalOfficerId])
+  @@index([ownerId])
+  @@index([updatedAt])
 }
 
 model CaseDocument {
@@ -106,6 +114,8 @@ model CaseDocument {
   syncError        String?
 
   documentChunks DocumentChunk[]
+
+  @@index([caseId])
 }
 
 model CaseEvent {
@@ -115,6 +125,8 @@ model CaseEvent {
   action    String
   actorName String
   timestamp DateTime @default(now())
+
+  @@index([caseId])
 }
 
 model DecisionDraft {
@@ -127,6 +139,8 @@ model DecisionDraft {
   updatedAt DateTime @updatedAt
 
   sections DecisionDraftSection[]
+
+  @@index([caseId])
 }
 
 model DecisionDraftSection {
@@ -138,6 +152,8 @@ model DecisionDraftSection {
   order       Int
   status      String // "pending", "in_progress", "completed"
   updatedAt   DateTime      @updatedAt
+
+  @@index([draftId])
 }
 
 model LegalSource {
@@ -172,6 +188,8 @@ model LegalClause {
   source       LegalSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   clauseNumber String
   content      String      @db.Text
+
+  @@index([sourceId])
 }
 
 model AiQueryLog {
@@ -183,6 +201,8 @@ model AiQueryLog {
   tokensUsed Int?
   modelUsed  String?
   timestamp  DateTime @default(now())
+
+  @@index([userId])
 }
 
 model AuditLog {
@@ -195,6 +215,8 @@ model AuditLog {
   beforeValue String?  @db.Text
   afterValue  String?  @db.Text
   timestamp   DateTime @default(now())
+
+  @@index([userId])
 }
 
 model DocumentIngestionJob {
@@ -205,6 +227,8 @@ model DocumentIngestionJob {
   errorMessage  String?      @db.Text
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+
+  @@index([legalSourceId])
 }
 
 model DocumentChunk {
@@ -253,6 +277,7 @@ model DocumentChunk {
   legalAnswerCitations LegalAnswerCitation[]
 
   @@index([legalSourceId])
+  @@index([caseDocumentId])
   @@index([sourceStatus])
   @@index([reliabilityLevel])
   @@index([legalCategory])
@@ -265,6 +290,8 @@ model DocumentChunkCitation {
   chunkId   String
   chunk     DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
   createdAt DateTime      @default(now())
+
+  @@index([chunkId])
 }
 
 model RetrievalQuery {
@@ -276,6 +303,8 @@ model RetrievalQuery {
 
   results RetrievalResult[]
   answers LegalAnswer[]
+
+  @@index([userId])
 }
 
 model RetrievalResult {
@@ -287,6 +316,9 @@ model RetrievalResult {
   score     Float?
   rank      Int?
   createdAt DateTime       @default(now())
+
+  @@index([queryId])
+  @@index([chunkId])
 }
 
 model LegalAnswer {
@@ -298,6 +330,8 @@ model LegalAnswer {
   createdAt  DateTime       @default(now())
 
   citations LegalAnswerCitation[]
+
+  @@index([queryId])
 }
 
 model LegalAnswerCitation {
@@ -307,6 +341,9 @@ model LegalAnswerCitation {
   chunkId   String
   chunk     DocumentChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
   createdAt DateTime      @default(now())
+
+  @@index([answerId])
+  @@index([chunkId])
 }
 
 model DraftSectionAiLog {
@@ -324,6 +361,8 @@ model DraftSectionAiLog {
   timestamp       DateTime @default(now())
 
   chunkIds String[] // Array of retrieved DocumentChunk IDs used
+
+  @@index([userId])
 }
 
 model Meeting {
@@ -346,6 +385,8 @@ model Meeting {
 
   agendaItems MeetingAgendaItem[]
   attendees   MeetingAttendee[]
+
+  @@index([createdByUserId])
 }
 
 model MeetingAgendaItem {
@@ -368,6 +409,10 @@ model MeetingAgendaItem {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([meetingId])
+  @@index([caseId])
+  @@index([assignedFollowUpUserId])
 }
 
 model MeetingAttendee {
@@ -380,6 +425,8 @@ model MeetingAttendee {
   attendanceStatus String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  @@index([meetingId])
 }
 
 // Records Retention, Archiving, and Knowledge Reuse models
@@ -467,6 +514,8 @@ model KnowledgeReuseReview {
   ingestionJobId             String?
   createdAt                  DateTime @default(now())
   updatedAt                  DateTime @updatedAt
+
+  @@index([caseId])
 }
 
 enum RecordLifecycleStatus {
@@ -512,6 +561,8 @@ model ArchiveBatch {
 
   items              ArchiveBatchItem[]
   archiveRecords     CaseArchiveRecord[]
+
+  @@index([createdByUserId])
 }
 
 model ArchiveBatchItem {
@@ -530,6 +581,7 @@ model ArchiveBatchItem {
   resultMessage         String?      @db.Text
 
   @@index([archiveBatchId])
+  @@index([caseId])
 }
  
 
@@ -657,6 +709,7 @@ model DocumentSyncRun {
 
   @@index([provider])
   @@index([status])
+  @@index([sourceId])
 }
 
 model DocumentSyncRunItem {

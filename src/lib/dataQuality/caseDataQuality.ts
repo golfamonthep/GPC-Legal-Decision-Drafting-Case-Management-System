@@ -1,6 +1,5 @@
-import type { Case, CaseEvent } from '@/generated/prisma';
 import { DataQualityIssue, DataQualitySeverity, DataQualityCategory } from './types';
-import { isClosedOrRedCase, hasRedCaseNumber } from '../caseStatus';
+import { isClosedOrRedCase, isClosedCaseStatus, hasRedCaseNumber } from '../caseStatus';
 
 export function detectCaseDataQualityIssues(
   caseData: any
@@ -58,7 +57,7 @@ export function detectCaseDataQualityIssues(
   }
 
   // Only complain about receivedDate if not closed
-  if (!caseData.receivedDate && !isClosedOrRedCase(caseData.currentStatus)) {
+  if (!caseData.receivedDate && !isClosedOrRedCase(caseData)) {
     addIssue('MISSING_FIELDS', 'HIGH', 'ไม่มีวันที่รับเรื่อง', 'สำนวนที่ยังไม่เสร็จสิ้นควรมีวันที่รับเรื่อง', 'receivedDate', null, 'ระบุวันที่รับเรื่อง');
   }
 
@@ -75,7 +74,7 @@ export function detectCaseDataQualityIssues(
   }
 
   // B. Status consistency
-  const isCompleted = isClosedOrRedCase(caseData.currentStatus);
+  const isCompleted = isClosedCaseStatus(caseData.currentStatus);
   const hasRedNo = hasRedCaseNumber(caseData.redNumber);
 
   if (hasRedNo && !isCompleted) {
