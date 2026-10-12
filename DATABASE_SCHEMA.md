@@ -1,3 +1,7 @@
+## Overview reorder — 2026-10-12
+
+Presentation only; no schema, migration or data mutation. Existing permission-masked snapshot and canonical completion/black-number year/proceeding definitions unchanged. Folding a section is not access control; permission masking remains server-side. Latest XLSM import remains unexecuted.
+
 ## Case list presentation — 2026-10-12
 
 No schema/migration/data changes. Partition the existing filtered Case query by exact registry type; unknown types retained separately. Counts are filtered-result counts, not whole-database totals. No additional DB queries or real data mutations during QA.

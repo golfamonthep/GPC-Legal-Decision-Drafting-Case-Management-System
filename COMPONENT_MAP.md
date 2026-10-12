@@ -1,3 +1,7 @@
+## Registry overview-first composition — 2026-10-12
+
+RegistryOverview.tsx: visible KPIs/ring/year/pending-officer/proceeding figures, closed pending details followed by closed officer-performance disclosure. dashboard/page.tsx: stacked registry sections and shared chart scales, no expanded top officer scorecards. charts.test.ts: adds ordering/default-closed/empty/permission checks for both registries.
+
 ## Separate case list blocks — 2026-10-12
 
 - CaseRegistryBlocks.tsx: complaint/appeal sections, colored counts/anchors, explicit empty and unknown group; existing CaseTable reused.

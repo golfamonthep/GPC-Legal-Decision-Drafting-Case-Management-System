@@ -1,3 +1,7 @@
+## Overview-first dashboard Preview — 2026-10-12
+
+Publish existing PR22 branch only; no Production promotion while integration release gates remain unresolved. Verify dashboard tests (16), case-list tests (3), typecheck, targeted ESLint and unreachable-test-DB production build. Local synthetic browser verifies desktop/mobile, type filter and independent keyboard disclosure; not live database accuracy/Storage readiness/import UAT. No environment or schema change required.
+
 ## Case-list split Preview — 2026-10-12
 
 PR22 branch only, no Production promotion. Validate test:case-list (3), test:dashboard (14), typecheck and production build. Isolated synthetic component QA verifies anchor navigation, named separate tables and 320px nested overflow; not live /cases database/filter UAT. Existing query/filter semantics and release gates remain unchanged; no env or schema change needed.

@@ -1,3 +1,9 @@
+## Overview-first dashboard — 2026-10-12 (candidate, not Production)
+
+Final validation: production build passed with an unreachable test database, no attempted DB writes. Dashboard 16/16 and case-list 3/3 tests, typecheck and targeted lint passed.
+
+Reordered to match supplied reference: visible registry overview first, officer responsibility/completion ranking folded at each registry footer. Dashboard tests 16/16, case-list regression 3/3, typecheck and targeted ESLint pass. Synthetic localhost Browser QA: 1366x900 and 320x720 have no body overflow; default disclosures closed, keyboard opening independently for both registries and appeal filter passed; screenshot captured and inspected, sampled console clean after filter navigation. Production build required before publish. Not real-data/Storage/import UAT; existing release gates remain unchanged.
+
 ## Case list split — 2026-10-12 (candidate, not Production)
 
 /cases now has distinct teal complaint / blue appeal blocks, per-filter counts, jump anchors, explicit empty blocks and optional unknown-type block. Existing DB query/filter/detail/update paths unchanged. New case-list tests 3/3, dashboard regression 14/14, typecheck and production build pass. Targeted ESLint: 0 errors, 3 pre-existing any warnings in cases/page.tsx. Isolated synthetic component Browser QA on localhost: two named tables, anchor navigation, 320px no body overflow (wide tables scroll inside their blocks), screenshot and clean console. This is not authenticated live /cases filter/data UAT; production data and release blockers unchanged.

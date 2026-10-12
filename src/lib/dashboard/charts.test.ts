@@ -4,7 +4,34 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CompletionRing, RankedBars, YearColumns } from "../../components/dashboard/BacklogCharts";
 import { OfficerPerformance } from "../../components/dashboard/OfficerPerformance";
+import { RegistryOverview } from "../../components/dashboard/RegistryOverview";
 import { deriveDashboardSnapshot } from "./metrics";
+
+test("registry overview is visible first and officer performance is the final closed disclosure", () => {
+  const snapshot = deriveDashboardSnapshot({ cases: [], activities: [], meetings: [] }, { period: "all", type: "all" }, { canViewCaseDetails: true, canViewDataQuality: true });
+  for (const accent of ["teal", "blue"] as const) {
+    const title = accent === "teal" ? "เรื่องร้องทุกข์" : "เรื่องอุทธรณ์";
+    const html = renderToStaticMarkup(createElement(RegistryOverview, { title, snapshot, accent, canViewDetails: true, yearMax: 2, officerMax: 1, proceedingMax: 1, responsibilityMax: 1 }));
+    assert.match(html, /^<section /);
+    assert.equal((html.match(/<details[ >]/g) ?? []).length, 2);
+    assert.doesNotMatch(html, /<details[^>]*\sopen(?:=|\s|>)/);
+    const order = ["สัดส่วนของทะเบียนทั้งหมด", "เรื่องค้างแยกตามปี", "เรื่องค้างแยกตามนิติกร", "การดำเนินการของเรื่องค้าง", "รายละเอียดเรื่องค้าง", "ความรับผิดชอบและความสำเร็จรายนิติกร"];
+    order.forEach((label, index) => {
+      assert.ok(html.includes(label));
+      if (index) assert.ok(html.indexOf(order[index - 1]) < html.indexOf(label));
+    });
+    assert.ok(html.indexOf("การดำเนินการของเรื่องค้าง") < html.indexOf("<details"));
+    assert.match(html, /ยังไม่มีข้อมูลความรับผิดชอบ/);
+    assert.doesNotMatch(html, /NaN|Infinity/);
+  }
+});
+
+test("registry detail disclosure preserves access restriction", () => {
+  const snapshot = deriveDashboardSnapshot({ cases: [], activities: [], meetings: [] }, { period: "all", type: "all" }, { canViewCaseDetails: false, canViewDataQuality: false });
+  const html = renderToStaticMarkup(createElement(RegistryOverview, { title: "เรื่องร้องทุกข์", snapshot, accent: "teal", canViewDetails: false, yearMax: 2, officerMax: 1, proceedingMax: 1, responsibilityMax: 1 }));
+  assert.match(html, /บัญชีนี้ไม่มีสิทธิ์ดูรายละเอียดเรื่อง/);
+  assert.doesNotMatch(html, /href="\/cases\//);
+});
 
 test("officer chart exposes exact counts and absolute stacked widths without hover", () => {
   const snapshot = deriveDashboardSnapshot({ cases: [], activities: [], meetings: [] }, { period: "all", type: "all" }, { canViewCaseDetails: true, canViewDataQuality: true });

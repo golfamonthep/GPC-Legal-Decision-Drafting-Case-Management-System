@@ -1,3 +1,7 @@
+## Overview-first disclosure lessons — 2026-10-12
+
+Executive reading starts with workload overview, then literal breakdowns, then optional individual ranking. Native details provides keyboard activation without client JavaScript. Keep pending-by-officer counts separate from all-case responsibility/completion ranking. Test default closed state, independent expansion, source order and mobile geometry; do not treat visual hiding as security.
+
 ## Case-list separation lessons — 2026-10-12
 
 Separate after existing filtering, not via repeated queries. Preserve original order and IDs; black numbers may legitimately repeat across registry types. Keep empty counterpart explicit and unknown-type records visible. A synthetic component fixture proves grouping, anchors and layout, not database/filter/authentication UAT. Keep QA fixture outside Git and stop its local server after testing.

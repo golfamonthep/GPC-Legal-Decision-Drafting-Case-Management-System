@@ -1,3 +1,7 @@
+## Overview-first registry dashboard — 2026-10-12
+
+RegistryOverview is a server component: stacked full-width complaint/appeal sections with visible registry KPIs, completion ring, pending by year/officer and literal proceeding bars. Pending detail and officer-performance native details start closed; officer ranking is the final disclosure in each registry. Common zero-based scales retained. No new query, dependency, schema or metric change. Supersedes the compact officer-first layout below.
+
 ## Separate case registries — 2026-10-12
 
 /cases renders CaseRegistryBlocks from the same existing filtered query result. One stable partition into complaint/appeal, optional unknown group so no cases disappear. Two full-width blocks, per-filter counts, jump anchors and explicit empty counterpart. Existing CaseTable reused with named captions and keyboard-focusable horizontal overflow region. No DB/schema/permission/filter semantics changed.
