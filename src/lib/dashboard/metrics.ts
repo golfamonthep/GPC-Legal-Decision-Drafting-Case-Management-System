@@ -121,6 +121,29 @@ export function deriveDashboardSnapshot(
 ): DashboardSnapshot {
   const records = filterCases(payload.cases, filters, now);
   const active = records.filter((record) => !isCaseClosed(record));
+  // Snapshot of current registry responsibility, not historic assignment or productivity.
+  const performanceMap = new Map<string, { total: number; completed: number; pending: number; unassigned: boolean }>();
+  for (const record of records) {
+    const officer = record.legalOfficerName?.trim() || record.legalOfficer?.name?.trim();
+    const name = permissions.canViewCaseDetails ? officer || "ยังไม่ระบุนิติกร" : "จำกัดตามสิทธิ์";
+    const value = performanceMap.get(name) ?? { total: 0, completed: 0, pending: 0, unassigned: !officer };
+    value.total += 1;
+    if (isCaseClosed(record)) value.completed += 1;
+    else value.pending += 1;
+    // Restricted DTO is one aggregate, never exposes officer-level ranks/counts.
+    if (!permissions.canViewCaseDetails) value.unassigned = false;
+    performanceMap.set(name, value);
+  }
+  let previousTotal = -1;
+  let previousRank = 0;
+  const officerPerformance = [...performanceMap].map(([name, value]) => ({ name, ...value }))
+    .sort((a, b) => Number(a.unassigned) - Number(b.unassigned) || b.total - a.total || a.name.localeCompare(b.name, "th"))
+    .map((value, index) => {
+      const rank = value.unassigned || !permissions.canViewCaseDetails ? null
+        : value.total === previousTotal ? previousRank : index + 1;
+      if (rank !== null) { previousTotal = value.total; previousRank = rank; }
+      return { ...value, rank, completionPercent: value.completed / value.total * 100 };
+    });
   const backlogCases = active.map((record) => ({
     id: record.id,
     blackNumber: record.blackNumber,
@@ -181,6 +204,7 @@ export function deriveDashboardSnapshot(
     generatedAt: now.toISOString(),
     dataFreshness: dataFreshness?.toISOString() ?? null,
     totalCases: records.length,
+    officerPerformance,
     backlog: {
       byYear: countBacklogGroups(backlogCases.map((record) => record.year), true),
       byOfficer: countBacklogGroups(backlogCases.map((record) => record.officer)),

@@ -33,6 +33,33 @@ function record(overrides: Partial<DashboardCaseRecord> = {}): DashboardCaseReco
 
 const permissions = { canViewCaseDetails: true, canViewDataQuality: true };
 
+test("officer completion uses all assigned cases, shares workload ranks and keeps unassigned separate", () => {
+  const cases = [
+    ...Array.from({ length: 12 }, (_, index) => record({ id: `b-${index}`, legalOfficerName: "นิติกร ข", registryRedText: index < 3 ? "จำหน่าย" : null })),
+    ...Array.from({ length: 10 }, (_, index) => record({ id: `a-${index}`, legalOfficerName: " นิติกร ก ", legalOfficer: { name: "ชื่อเก่า" }, registryRedText: index < 7 ? "ถอน" : null })),
+    ...Array.from({ length: 10 }, (_, index) => record({ id: `c-${index}`, legalOfficerName: "นิติกร ค", currentStatus: "COMPLETED" })),
+    record({ id: "fallback", legalOfficerName: " ", legalOfficer: { name: "นิติกร ง" }, redNumber: "12/68" }),
+    record({ id: "blank", legalOfficerName: null, legalOfficer: null }),
+    record({ id: "appeal", type: "อุทธรณ์", legalOfficerName: "นิติกร ก", registryRedText: "ถอน" }),
+  ];
+  const snapshot = deriveDashboardSnapshot({ cases, activities: [], meetings: [] }, { period: "all", type: "complaint" }, permissions, now);
+  assert.deepEqual(snapshot.officerPerformance.map(item => item.rank), [1, 2, 2, 4, null]);
+  assert.deepEqual(snapshot.officerPerformance.find(item => item.name === "นิติกร ก"), {
+    name: "นิติกร ก", total: 10, completed: 7, pending: 3, completionPercent: 70, rank: 2, unassigned: false,
+  });
+  assert.equal(snapshot.officerPerformance.find(item => item.name === "นิติกร ค")?.completionPercent, 100);
+  assert.equal(snapshot.officerPerformance.find(item => item.name === "นิติกร ง")?.completed, 1);
+  assert.equal(snapshot.officerPerformance.some(item => item.name === "ชื่อเก่า"), false);
+  assert.equal(snapshot.officerPerformance.reduce((sum, item) => sum + item.total, 0), snapshot.totalCases);
+  assert.equal(snapshot.officerPerformance.reduce((sum, item) => sum + item.pending, 0), snapshot.kpis.active);
+  for (const item of snapshot.officerPerformance) assert.equal(item.completed + item.pending, item.total);
+  const restricted = deriveDashboardSnapshot({ cases, activities: [], meetings: [] }, { period: "all", type: "all" }, { canViewCaseDetails: false, canViewDataQuality: false }, now);
+  assert.equal(restricted.officerPerformance.length, 1);
+  assert.equal(restricted.officerPerformance[0].rank, null);
+  assert.doesNotMatch(JSON.stringify(restricted.officerPerformance), /นิติกร ก|นิติกร ข|ชื่อเก่า/);
+  assert.deepEqual(deriveDashboardSnapshot({ cases: [], activities: [], meetings: [] }, { period: "all", type: "all" }, permissions, now).officerPerformance, []);
+});
+
 test("registry year comes only from the black-number suffix", () => {
   assert.equal(getBlackNumberYear("123/68"), "พ.ศ. 2568");
   assert.equal(getBlackNumberYear("เรื่องดำที่ ๑๒๓ / ๒๕๖๗"), "พ.ศ. 2567");

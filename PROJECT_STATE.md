@@ -1,3 +1,7 @@
+## Officer chart candidate — 2026-10-12 (not Production)
+
+Adds all-officer total/completed/pending/% completion, ranked by total with shared ranks; unassigned separate, restricted DTO aggregate only. Snapshot based on currently recorded responsibility, not historical credit, case complexity or speed. Compact header/KPI strip + side-by-side complaint/appeal figures above folded year/proceeding/detail views. Synthetic local browser: all six rows per registry fit first 1366x900 viewport (bottom ~896), 320x720 no horizontal overflow, appeal filter and keyboard disclosure passed. Real data may have more officers/longer labels and require scrolling. Grammarly external hydration warning persists; screenshot captured after one timeout. Tests 14/14, typecheck/targeted ESLint passed. Existing private Storage/live import/integration release blockers remain; no Production mutation.
+
 ## Latest visual change — 2026-10-12 (candidate, not Production)
 
 Added four figures per registry: completion share with explicit total denominator, pending by black-number year, pending by all officers and literal proceeding text. Always-visible values/percentages, missing groups retained, no hover requirement. Local synthetic QA: 1366x900 and 320x720, no main overflow, appeal filter and keyboard disclosure passed. Grammarly injects body attributes causing an external hydration warning; not suppressed. Dashboard tests 12/12, typecheck and targeted ESLint pass. Production release and latest real registry import remain blocked/unexecuted as documented below.

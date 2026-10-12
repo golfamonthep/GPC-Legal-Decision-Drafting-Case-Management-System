@@ -1,3 +1,7 @@
+## Officer responsibility Preview — 2026-10-12
+
+Update only the existing PR22 non-production branch; release gates unchanged. Dashboard suite now 14 tests. Local synthetic QA verifies 1366x900 first-viewport figures and 320x720 filter/disclosure without horizontal overflow; real officer count/long labels may expand height. Final typecheck, targeted lint and unreachable-test-DB production build required. No database or environment change for this addition.
+
 ## Backlog chart candidate — 2026-10-12
 
 Publish only the existing PR22 branch Preview; do not follow the historical main-push instruction below while integration release gates remain blocked. Validate npm run test:dashboard (12), npm run typecheck, targeted ESLint and production build with unreachable test database. Local synthetic browser QA covers 1366x900 / 320x720, type filter and keyboard details. It does not prove production data accuracy, private Storage readiness or latest XLSM import. No new environment variable/migration is required for these figures.

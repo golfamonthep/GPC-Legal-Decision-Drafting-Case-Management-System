@@ -68,6 +68,15 @@ export interface DashboardSnapshot {
   generatedAt: string;
   dataFreshness: string | null;
   totalCases: number;
+  officerPerformance: Array<{
+    name: string;
+    total: number;
+    completed: number;
+    pending: number;
+    completionPercent: number;
+    rank: number | null;
+    unassigned: boolean;
+  }>;
   backlog: {
     byYear: Array<{ label: string; count: number }>;
     byOfficer: Array<{ label: string; count: number }>;

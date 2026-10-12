@@ -1,3 +1,10 @@
+## Compact officer scorecards — 2026-10-12
+
+- OfficerPerformance.tsx: server figure with absolute stacked completed/pending bars, direct total/completed/pending/% labels, shared rank and unassigned row.
+- dashboard/page.tsx: summary KPI strip, paired registry figures first, collapsed year/proceeding/pending details.
+- dashboard/metrics.ts + types.ts: officerPerformance DTO, all-case denominator, competition ranking, permission masking.
+- dashboard.test.ts + charts.test.ts: 10/7/70%, completion variants, ties, unassigned, reconciliation, filters, privacy, empty state and stacked widths (14 tests total).
+
 ## Backlog graphs — 2026-10-12
 
 - src/components/dashboard/BacklogCharts.tsx: CompletionRing, YearColumns, RankedBars, explicit empty state; server components.

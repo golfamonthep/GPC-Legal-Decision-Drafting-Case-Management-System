@@ -1,3 +1,7 @@
+## Officer ranking lessons — 2026-10-12
+
+Never divide completed cases by pending count. Rank total responsibility separately from completion share; ties get equal rank, unknown officers remain visible outside ranking. Current assignment snapshots are not historic attribution or productivity scores. Preserve full rows and direct measures; place both registries above disclosures for a compact executive read. Measure actual first-viewport geometry; don't promise all real officer rows fit solely because six synthetic rows do.
+
 ## Visualization lessons — 2026-10-12
 
 Use common zero scales for matching complaint/appeal plots, direct values and explicit denominators. Retain every officer and exact proceeding text rather than top-N or an inferred funnel. Plain server-rendered SVG/CSS is sufficient; add no query/library. Test empty rings for no fake zero percentage and preserve accessible HTML labels. Responsive QA uses actual DOM viewport dimensions because user browser zoom affects viewport overrides; reset overrides after testing.

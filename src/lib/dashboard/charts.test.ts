@@ -3,6 +3,30 @@ import test from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CompletionRing, RankedBars, YearColumns } from "../../components/dashboard/BacklogCharts";
+import { OfficerPerformance } from "../../components/dashboard/OfficerPerformance";
+import { deriveDashboardSnapshot } from "./metrics";
+
+test("officer chart exposes exact counts and absolute stacked widths without hover", () => {
+  const snapshot = deriveDashboardSnapshot({ cases: [], activities: [], meetings: [] }, { period: "all", type: "all" }, { canViewCaseDetails: true, canViewDataQuality: true });
+  snapshot.officerPerformance = [
+    { name: "นิติกร ก", total: 10, completed: 7, pending: 3, completionPercent: 70, rank: 1, unassigned: false },
+    { name: "ยังไม่ระบุนิติกร", total: 2, completed: 0, pending: 2, completionPercent: 0, rank: null, unassigned: true },
+  ];
+  snapshot.totalCases = 12;
+  snapshot.kpis.active = 5;
+  const html = renderToStaticMarkup(createElement(OfficerPerformance, { title: "ร้องทุกข์", snapshot, accent: "teal", scaleMax: 20 }));
+  assert.match(html, /70%/);
+  assert.match(html, /width:35%/);
+  assert.match(html, /width:15%/);
+  assert.match(html, /รับทั้งหมด/);
+  assert.match(html, /เสร็จแล้ว/);
+  assert.match(html, /#1/);
+  assert.equal((html.match(/<li /g) ?? []).length, 2);
+  assert.doesNotMatch(html, /#2|NaN|Infinity/);
+  snapshot.officerPerformance = [];
+  const empty = renderToStaticMarkup(createElement(OfficerPerformance, { title: "ร้องทุกข์", snapshot, accent: "blue", scaleMax: 0 }));
+  assert.match(empty, /ยังไม่มีข้อมูลความรับผิดชอบ/);
+});
 
 test("completion ring keeps its denominator explicit and has no fake empty percentage", () => {
   const html = renderToStaticMarkup(createElement(CompletionRing, { total: 20, pending: 5, accent: "teal" }));

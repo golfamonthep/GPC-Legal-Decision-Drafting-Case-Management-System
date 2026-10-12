@@ -1,3 +1,7 @@
+## Officer completion metric — 2026-10-12
+
+No schema/migration/data changes. Denominator includes all cases attributed to the registry officer (including closed), not pending-only. Numerator uses canonical completion (nonblank registry red text, valid red number or normalized closed status). Grouping uses current registry name, with linked User-name fallback; it does not reconstruct historical assignments. Latest XLSM import is still not executed.
+
 ## Visualization update — 2026-10-12
 
 Presentation-only: no schema changes or real-data reads/writes in this step. Graph counts reuse snapshot backlog and total. Completion ring denominator is all selected registry cases, not a monthly completion rate. Latest XLSM import is still not executed.
