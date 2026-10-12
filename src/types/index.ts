@@ -20,6 +20,7 @@ export interface Case {
   type: CaseType;
   blackNumber: string;
   redNumber?: string;
+  registryRedText?: string | null;
   petitionerName: string; // ผู้ร้องทุกข์ / ผู้อุทธรณ์
   respondentName: string; // ผู้ถูกร้องทุกข์ / คู่กรณี
   subject: string;

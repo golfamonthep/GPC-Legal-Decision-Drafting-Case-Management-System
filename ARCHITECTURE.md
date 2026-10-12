@@ -1,3 +1,7 @@
+## Authoritative registry completion — 2026-10-12
+
+caseStatus.ts centralizes getRegistryRedText/isClosedOrRedCase/getRegistryCaseStatus. Raw registryRedText, when present (including null/blank), takes precedence over extracted/legal redNumber and status metadata. Legacy DTOs without that property can supply the original red-cell aliases, never status-only completion. Case list applies the same exact trimmed-cell rule after its existing authorized query, not approximate Prisma status/number predicates. No new query or client state; literal cell strings remain React-escaped and permission-bound. Import/status normalization and workload/report consistency checks share the rule. Candidate only; no schema/authentication changes.
+
 ## Reference-inspired dashboard cards — 2026-10-12
 
 Presentation-only navy/cyan light-card design, compact 3-column ring/year/officer bento at desktop, responsive tablet/mobile, real registry anchor links. Removed proceeding breakdown figure and its page-scale calculation; original proceeding text/DTO retained for authorized collapsed case details. Officer completion remains the final closed native disclosure. No new client component, chart library, query, schema or dependency.

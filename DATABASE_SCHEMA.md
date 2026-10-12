@@ -1,3 +1,9 @@
+## Authoritative completion and latest live registry — 2026-10-12
+
+No schema, migration or data mutation for the strict completion clarification. Case.registryRedText stores the original first-sheet red cell: any trimmed nonblank value means complete; null/empty/whitespace means pending, even if currentStatus is closed or redNumber is stale. Numeric redNumber is optional and preserves composite uniqueness; never synthesize one for literal completion text. Supersedes historical status-or-number completion definitions below.
+
+Latest verified live refresh (separate operation): GPC tlqszhlggvoirhalsxge has 216 cases after 18 inserts and 198 updates, no deletions. Complaint 107/97 complete/10 pending; appeal 109/71 complete/38 pending. Of the complete records, 48 have literal red text but no numeric redNumber. Verified private backup, guarded transaction, 216 audit/event records and source-field/count reconciliation; no private source records committed. The prior import-unexecuted statements below are historical.
+
 ## Proceeding chart removal — 2026-10-12
 
 No schema/migration/data changes. This removes only the plotted proceeding breakdown; existing byProceeding DTO and original authorized case proceeding text remain unchanged. Completion and black-number year definitions, permission masking and all input records preserved. No real-data reads/writes for this presentation change.

@@ -60,15 +60,15 @@ export async function calculateWorkload(): Promise<{
       legalOfficerName: true,
       ownerId: true,
       committeeOwnerName: true,
-      status: true,
       currentStatus: true,
       redNumber: true,
+      registryRedText: true,
       dueDate30: true,
       dueDate60: true,
       dueDate90: true,
       dueDate120: true,
       dueDate240: true,
-    } as any // using any to bypass strict type check for now since schema might not be fully synced in types
+    }
   });
 
   const legalOfficersMap = new Map<string, WorkloadStats>();

@@ -13,7 +13,7 @@ import { th } from "date-fns/locale";
 import { auditLog } from "@/lib/audit";
 import { CaseStatus } from "@/types";
 import { CaseDetailActions } from "@/components/CaseDetailActions";
-import { isClosedCaseStatus, hasRedCaseNumber, isClosedOrRedCase } from "@/lib/caseStatus";
+import { getRegistryCaseStatus, getRegistryRedText, isClosedCaseStatus, isClosedOrRedCase } from "@/lib/caseStatus";
 import { differenceInYears, differenceInDays } from "date-fns";
 import { checkGraphIntegrationStatus } from "@/lib/microsoft/graphConfig";
 import { DocumentLinkModal } from "@/components/DocumentLinkModal";
@@ -138,13 +138,13 @@ export default async function CaseDetailPage({
   if (!caseData.receivedDate) {
     qaWarnings.push("ไม่มีข้อมูลวันที่รับเรื่อง");
   }
-  if (caseData.redNumber && hasRedCaseNumber(caseData.redNumber) && !isClosedCaseStatus(caseData.currentStatus)) {
-    qaWarnings.push("คดีมีเลขแดงแล้ว แต่สถานะยังไม่ระบุว่าเสร็จสิ้น");
+  if (isClosedOrRedCase(caseData) && !isClosedCaseStatus(caseData.currentStatus)) {
+    qaWarnings.push("ช่องเรื่องแดงมีข้อมูลแล้ว แต่สถานะยังไม่ระบุว่าเสร็จสิ้น");
   }
-  if (isClosedCaseStatus(caseData.currentStatus) && !hasRedCaseNumber(caseData.redNumber)) {
-    qaWarnings.push("สถานะคดีเสร็จสิ้น แต่ยังไม่ได้ระบุเลขเรื่องแดง");
+  if (isClosedCaseStatus(caseData.currentStatus) && !isClosedOrRedCase(caseData)) {
+    qaWarnings.push("สถานะคดีเสร็จสิ้น แต่ช่องเรื่องแดงว่าง จึงยังนับเป็นงานค้าง");
   }
-  if (!isClosedCaseStatus(caseData.currentStatus) && caseData.receivedDate) {
+  if (!isClosedOrRedCase(caseData) && caseData.receivedDate) {
     const yearsOpen = differenceInYears(new Date(), caseData.receivedDate);
     if (yearsOpen >= 3) {
       qaWarnings.push(`คดีล่าช้าเกิน 3 ปี (เปิดมาแล้ว ${yearsOpen} ปี)`);
@@ -157,15 +157,15 @@ export default async function CaseDetailPage({
         <div className="min-w-0 flex-1">
           <h2 className="text-2xl font-bold leading-7 text-slate-900 sm:truncate sm:text-3xl sm:tracking-tight flex items-center gap-4">
             เรื่อง: {caseData.subject}
-            <StatusBadge status={caseData.currentStatus as CaseStatus} className="text-sm px-3 py-1" />
+            <StatusBadge status={getRegistryCaseStatus(caseData) as CaseStatus} className="text-sm px-3 py-1" />
           </h2>
           <div className="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6 text-sm text-slate-500">
             <div className="mt-2 flex items-center">
               หมายเลขคดีดำ: <span className="font-semibold text-slate-900 ml-1">{caseData.blackNumber}</span>
             </div>
-            {caseData.redNumber && (
+            {getRegistryRedText(caseData) && (
               <div className="mt-2 flex items-center text-red-600">
-                หมายเลขคดีแดง: <span className="font-semibold ml-1">{caseData.redNumber}</span>
+                เรื่องแดง: <span className="font-semibold ml-1 whitespace-pre-wrap break-words">{getRegistryRedText(caseData)}</span>
               </div>
             )}
             <div className="mt-2 flex items-center">

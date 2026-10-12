@@ -7,6 +7,7 @@ import { CaseStatus } from "@/types";
 import { differenceInDays } from "date-fns";
 import { Prisma } from "@/generated/prisma";
 import { isClosedOrRedCase } from "@/lib/caseStatus";
+import { filterCasesByRegistryCompletion } from "@/lib/caseList";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -52,27 +53,7 @@ export default async function CasesPage({
     ];
   }
 
-  // Handle completion status using mapped logic
-  if (completionStatusFilter === "completed") {
-    // We can't strictly filter in Prisma because it's a string match, 
-    // but we know common completed statuses.
-    where.currentStatus = { in: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] };
-  } else if (completionStatusFilter === "open") {
-    where.currentStatus = { notIn: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] };
-  }
-
-  if (redNumberStatusFilter === "hasRed") {
-    where.redNumber = { not: null, gt: "" };
-    // This simple check might not perfectly match hasRedCaseNumber logic, but it's close enough for DB query. We can refine in memory if needed.
-  } else if (redNumberStatusFilter === "noRed") {
-    where.OR = [
-      { redNumber: null },
-      { redNumber: "" },
-      { redNumber: "-" },
-      { redNumber: "ยังไม่ออก" },
-      { redNumber: "ไม่มี" }
-    ];
-  }
+  // Completion filters are applied below with the same exact raw-cell rule as the dashboard.
 
   if (qaMissingFieldsFilter === "missing") {
     if (where.OR) {
@@ -98,7 +79,7 @@ export default async function CasesPage({
     include: { legalOfficer: true, owner: true }
   });
 
-  const formattedCases = dbCases.map((c) => {
+  const formattedCases = filterCasesByRegistryCompletion(dbCases, completionStatusFilter, redNumberStatusFilter).map((c) => {
     let daysUntilDue = undefined;
     let isOverdue = false;
     
@@ -112,6 +93,7 @@ export default async function CasesPage({
       type: c.type as any,
       blackNumber: c.blackNumber,
       redNumber: c.redNumber || undefined,
+      registryRedText: c.registryRedText,
       petitionerName: c.petitionerName,
       respondentName: c.respondentName,
       subject: c.subject,

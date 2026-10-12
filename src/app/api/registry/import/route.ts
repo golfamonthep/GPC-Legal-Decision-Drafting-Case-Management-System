@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/lib/auth/requireApiPermission';
 import prisma from '@/lib/db';
 import { parseThaiDate } from '@/lib/dateUtils';
-import { hasRegistryCompletionText, isClosedCaseStatus } from '@/lib/caseStatus';
+import { getRegistryCaseStatus } from '@/lib/caseStatus';
 
 const THAI_DIGITS: Record<string, string> = {
   '๐': '0', '๑': '1', '๒': '2', '๓': '3', '๔': '4',
@@ -176,12 +176,8 @@ export async function POST(request: NextRequest) {
         seenPayloadBlack.add(blackKey);
         if (redKey) seenPayloadRed.add(redKey);
 
-        const rawRedCaseNo = normalizeCaseNumber(data.redCaseNo);
         const importedStatus = safeText(data.status).replace(/\s+/g, ' ');
-        const completedByRedNumber = hasRegistryCompletionText(data.redCaseNo);
-        const currentStatus = completedByRedNumber && !isClosedCaseStatus(importedStatus)
-          ? 'เสร็จสิ้น'
-          : importedStatus || 'อยู่ระหว่างดำเนินการ';
+        const currentStatus = getRegistryCaseStatus({ registryRedText: data.redCaseNo, currentStatus: importedStatus });
 
         rowsToSynchronize.push({
           rowInfo: row,

@@ -6,7 +6,7 @@ import {
   getThisQuarterEnd,
   getThisQuarterStart,
 } from "@/lib/date/fiscalYear";
-import { hasRedCaseNumber, hasRegistryCompletionText, isClosedCaseStatus } from "@/lib/caseStatus";
+import { isClosedOrRedCase, isClosedCaseStatus } from "@/lib/caseStatus";
 import type {
   DashboardCaseRecord,
   DashboardFilters,
@@ -62,11 +62,11 @@ export function getDaysUntilDue(record: DashboardCaseRecord, now: Date): number 
 }
 
 export function isCaseClosed(record: Pick<DashboardCaseRecord, "currentStatus" | "redNumber" | "registryRedText">) {
-  return hasRegistryCompletionText(record.registryRedText) || isClosedCaseStatus(record.currentStatus) || hasRedCaseNumber(record.redNumber);
+  return isClosedOrRedCase(record);
 }
 
 function statusGroup(record: DashboardCaseRecord) {
-  if (isCaseClosed(record)) return "เสร็จสิ้น/มีเลขแดง";
+  if (isCaseClosed(record)) return "เสร็จสิ้น/ช่องเรื่องแดงมีข้อมูล";
   const status = record.currentStatus.trim().replace(/\s+/g, " ");
   if (!status) return "ยังไม่ระบุสถานะ";
   if (status.includes("ประชุม")) return "รอ/อยู่ระหว่างประชุม";
@@ -190,11 +190,10 @@ export function deriveDashboardSnapshot(
       ...value,
     }));
 
-  const closedWithoutRedNumber = records.filter((record) => isClosedCaseStatus(record.currentStatus) && !hasRedCaseNumber(record.redNumber) && !hasRegistryCompletionText(record.registryRedText)).length;
-  const redNumberWithOpenStatus = records.filter((record) => (hasRedCaseNumber(record.redNumber) || hasRegistryCompletionText(record.registryRedText)) && !isClosedCaseStatus(record.currentStatus)).length;
+  const closedWithoutRedNumber = records.filter((record) => isClosedCaseStatus(record.currentStatus) && !isCaseClosed(record)).length;
+  const redNumberWithOpenStatus = records.filter((record) => isCaseClosed(record) && !isClosedCaseStatus(record.currentStatus)).length;
   const criticalDataQuality = records.filter((record) =>
-    (isClosedCaseStatus(record.currentStatus) && !hasRedCaseNumber(record.redNumber) && !hasRegistryCompletionText(record.registryRedText)) ||
-    ((hasRedCaseNumber(record.redNumber) || hasRegistryCompletionText(record.registryRedText)) && !isClosedCaseStatus(record.currentStatus)),
+    isClosedCaseStatus(record.currentStatus) !== isCaseClosed(record),
   ).length;
 
   const dataFreshness = records.reduce<Date | null>((latest, record) =>

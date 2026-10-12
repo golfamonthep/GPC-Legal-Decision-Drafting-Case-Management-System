@@ -1,4 +1,4 @@
-import { isClosedOrRedCase, hasRedCaseNumber, hasRegistryCompletionText } from "@/lib/caseStatus";
+import { isClosedOrRedCase, isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
 
 export type DataQualityFlags = {
   isOverdue: boolean;
@@ -40,9 +40,9 @@ export function evaluateDataQuality(caseData: any): DataQualityFlags {
   // Evaluate dates
   const daysUntilDue = calculateDaysUntilDue(caseData);
   if (daysUntilDue !== undefined) {
-    if (daysUntilDue < 0 && !flags.isCompleted && !flags.hasRedCaseNumber) {
+    if (daysUntilDue < 0 && !flags.isCompleted) {
       flags.isOverdue = true;
-    } else if (daysUntilDue <= 7 && daysUntilDue >= 0 && !flags.isCompleted && !flags.hasRedCaseNumber) {
+    } else if (daysUntilDue <= 7 && daysUntilDue >= 0 && !flags.isCompleted) {
       flags.isNearDue = true;
     }
   }
@@ -56,10 +56,8 @@ export function evaluateDataQuality(caseData: any): DataQualityFlags {
   if (!caseData.receivedDate) flags.missingImportantFields.push("วันที่รับเรื่อง");
 
   // Inconsistent status
-  // e.g. completed but no red number, or red number but not completed (though sometimes acceptable, we flag it)
-  if (flags.isCompleted && !flags.hasRedCaseNumber && !hasRegistryCompletionText(caseData.registryRedText)) {
-    flags.hasInconsistentStatus = true;
-  }
+  // Numeric red numbers are optional; only flag disagreement with the raw registry cell.
+  flags.hasInconsistentStatus = isClosedCaseStatus(caseData.currentStatus) !== flags.isCompleted;
   
   // Very old active case (> 1 year without completion)
   if (!flags.isCompleted && caseData.receivedDate) {

@@ -1,3 +1,16 @@
+import { isClosedOrRedCase, type RegistryCompletionRecord } from './caseStatus';
+
+/** Apply exact trimmed-cell semantics, including arbitrary text and whitespace-only blanks. */
+export function filterCasesByRegistryCompletion<T extends RegistryCompletionRecord>(
+  cases: T[], completionStatus?: string, redNumberStatus?: string,
+): T[] {
+  return cases.filter(item => {
+    const completed = isClosedOrRedCase(item);
+    return !(completionStatus === 'completed' && !completed || completionStatus === 'open' && completed ||
+      redNumberStatus === 'hasRed' && !completed || redNumberStatus === 'noRed' && completed);
+  });
+}
+
 /** Partition the filtered result once; never silently drop unknown registry types. */
 export function groupCasesByRegistry<T extends { type: string }>(cases: T[]) {
   const complaint: T[] = [];

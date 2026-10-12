@@ -1,5 +1,5 @@
 import { DataQualityIssue, DataQualitySeverity, DataQualityCategory } from './types';
-import { isClosedOrRedCase, isClosedCaseStatus, hasRedCaseNumber, hasRegistryCompletionText } from '../caseStatus';
+import { isClosedOrRedCase, isClosedCaseStatus } from '../caseStatus';
 
 export function detectCaseDataQualityIssues(
   caseData: any
@@ -75,18 +75,18 @@ export function detectCaseDataQualityIssues(
 
   // B. Status consistency
   const isCompleted = isClosedCaseStatus(caseData.currentStatus);
-  const hasRedNo = hasRedCaseNumber(caseData.redNumber) || hasRegistryCompletionText(caseData.registryRedText);
+  const hasRedNo = isClosedOrRedCase(caseData);
 
   if (hasRedNo && !isCompleted) {
-    addIssue('STATUS_CONSISTENCY', 'CRITICAL', 'มีเลขเรื่องแดงแต่สถานะยังไม่เสร็จสิ้น', `สถานะปัจจุบันคือ "${caseData.currentStatus}" แต่มีเลขเรื่องแดงแล้ว`, 'currentStatus', caseData.currentStatus, 'อัปเดตสถานะเป็นเสร็จสิ้น');
+    addIssue('STATUS_CONSISTENCY', 'CRITICAL', 'ช่องเรื่องแดงมีข้อมูลแต่สถานะยังไม่เสร็จสิ้น', `สถานะปัจจุบันคือ "${caseData.currentStatus}" แต่ช่องเรื่องแดงมีข้อมูลแล้ว`, 'currentStatus', caseData.currentStatus, 'อัปเดตสถานะเป็นเสร็จสิ้น');
   }
 
   if (isCompleted && !hasRedNo) {
-    addIssue('STATUS_CONSISTENCY', 'CRITICAL', 'สถานะเสร็จสิ้นแต่ไม่มีเลขเรื่องแดง', `สถานะคือเสร็จสิ้นแต่ไม่มีเลขเรื่องแดง`, 'redNumber', caseData.redNumber, 'ระบุเลขเรื่องแดง');
+    addIssue('STATUS_CONSISTENCY', 'CRITICAL', 'สถานะเสร็จสิ้นแต่ช่องเรื่องแดงว่าง', 'ช่องเรื่องแดงว่าง จึงยังนับเป็นงานค้าง', 'registryRedText', caseData.registryRedText, 'ระบุข้อความในช่องเรื่องแดงหากเสร็จสิ้นแล้ว หรือแก้สถานะ');
   }
 
   if (caseData.currentStatus && caseData.currentStatus.includes('แดงแล้ว') && !hasRedNo) {
-    addIssue('STATUS_CONSISTENCY', 'CRITICAL', 'ระบุว่า "แดงแล้ว" แต่ไม่มีเลขแดงจริง', `สถานะระบุว่าแดงแล้ว แต่ช่องเลขเรื่องแดงว่างเปล่า`, 'redNumber', null, 'ระบุเลขเรื่องแดง');
+    addIssue('STATUS_CONSISTENCY', 'CRITICAL', 'สถานะระบุว่า "แดงแล้ว" แต่ช่องเรื่องแดงว่าง', 'ช่องเรื่องแดงว่าง จึงยังนับเป็นงานค้าง', 'registryRedText', null, 'ระบุข้อความในช่องเรื่องแดงหากเสร็จสิ้นแล้ว หรือแก้สถานะ');
   }
 
   // C. Date quality
@@ -101,7 +101,7 @@ export function detectCaseDataQualityIssues(
     addIssue('WORKFLOW_RISK', 'MEDIUM', 'ไม่มี CaseEvent หลังนำเข้า', 'สำนวนนี้ไม่มีประวัติการดำเนินการในระบบ', 'events', null, 'ตรวจสอบการดำเนินการล่าสุด');
   }
 
-  if (caseData.receivedDate && !isCompleted) {
+  if (caseData.receivedDate && !hasRedNo) {
     const ageInDays = (new Date().getTime() - caseData.receivedDate.getTime()) / (1000 * 60 * 60 * 24);
     if (ageInDays > 365) {
       addIssue('WORKFLOW_RISK', 'HIGH', 'สำนวนเก่ามากแต่ยังไม่เสร็จ', 'สำนวนมีอายุเกิน 1 ปี แต่ยังไม่เสร็จสิ้น', 'currentStatus', caseData.currentStatus, 'ตรวจสอบและอัปเดตความคืบหน้า');

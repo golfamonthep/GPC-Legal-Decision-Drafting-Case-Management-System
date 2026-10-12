@@ -55,15 +55,15 @@ export function CaseListFilters() {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-700">เลขเรื่องแดง</label>
+          <label className="block text-xs font-medium text-slate-700">ช่องเรื่องแดง</label>
           <select 
             className="mt-1 block w-full rounded-md border-slate-300 py-1.5 pl-3 pr-8 text-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 border"
             value={searchParams.get("redNumberStatus") || ""}
             onChange={(e) => handleFilterChange("redNumberStatus", e.target.value)}
           >
             <option value="">ทั้งหมด</option>
-            <option value="hasRed">มีเลขแดงแล้ว</option>
-            <option value="noRed">ยังไม่มีเลขแดง</option>
+            <option value="hasRed">มีข้อมูล (เสร็จสิ้น)</option>
+            <option value="noRed">ว่าง (ยังไม่เสร็จสิ้น)</option>
           </select>
         </div>
 

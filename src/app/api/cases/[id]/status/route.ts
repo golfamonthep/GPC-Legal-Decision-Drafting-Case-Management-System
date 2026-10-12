@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireApiPermission } from '@/lib/auth/requireApiPermission';
-import { hasRedCaseNumber, isClosedCaseStatus } from '@/lib/caseStatus';
+import { getRegistryCaseStatus } from '@/lib/caseStatus';
 
 const MAX_NOTE_LENGTH = 10000;
 
@@ -37,6 +37,7 @@ export async function PATCH(
         id: true,
         blackNumber: true,
         redNumber: true,
+        registryRedText: true,
         currentStatus: true,
         proceedingNote: true,
       },
@@ -49,9 +50,7 @@ export async function PATCH(
       );
     }
 
-    const normalizedStatus = hasRedCaseNumber(existingCase.redNumber) && !isClosedCaseStatus(requestedStatus)
-      ? 'เสร็จสิ้น'
-      : requestedStatus;
+    const normalizedStatus = getRegistryCaseStatus({ ...existingCase, currentStatus: requestedStatus });
 
     const actorName = user.name || user.email || 'MVP User';
     const auditUserId = user.id.startsWith('mvp-') ? null : user.id;

@@ -1,3 +1,7 @@
+## Shared raw-red-cell completion — 2026-10-12
+
+caseStatus.ts: authoritative raw-cell accessor/completion/status normalization; dashboard/metrics.ts and officer snapshots delegate to it. caseList.ts: exact completion/red-cell filters; cases/page.tsx serializes registryRedText, preserving auth and other DB filters. CaseTable.tsx + cases/[id]/page.tsx display literal red text and derived completion; CaseListFilters.tsx clarifies nonnumeric text counts. Import/status routes normalize metadata with the same rule; data-quality checks do not require a numeric red number for completed text. Workload query selects registryRedText. Dashboard tests 19 and case-list tests 5 cover arbitrary text, explicit blank overriding stale numeric/closed metadata, exact filter consistency and rendered literal rows. No new component or dependency.
+
 ## Navy/cyan dashboard components — 2026-10-12
 
 dashboard/page.tsx: compact navy header, real registry anchor links, highlighted pending KPI, removes proceedingMax. RegistryOverview.tsx: responsive 3-column ring/year/officer cards; no proceeding plot; closed disclosures at footer. BacklogCharts.tsx: dark/light completion tone and compact solid cyan/blue marks; shared zero scales/direct values retained. OfficerPerformance.tsx: matching surface/marks and h3 hierarchy. charts.test.ts: removal/detail-text regression, dark ring empty/zero/full tests; 18 dashboard tests total.

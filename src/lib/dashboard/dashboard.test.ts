@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { hasRedCaseNumber, hasRegistryCompletionText, isClosedCaseStatus } from "../caseStatus";
+import { getRegistryCaseStatus, getRegistryRedText, hasRedCaseNumber, hasRegistryCompletionText, isClosedCaseStatus, isClosedOrRedCase } from "../caseStatus";
 import { deriveDashboardSnapshot, getBlackNumberYear, getDashboardDateRange, getDaysUntilDue, getNearestDueDate, parseDashboardFilters } from "./metrics";
 import { loadDashboardFromSource } from "./loader";
 import { detectCaseDataQualityIssues } from "../dataQuality/caseDataQuality";
@@ -15,6 +15,7 @@ function record(overrides: Partial<DashboardCaseRecord> = {}): DashboardCaseReco
     type: "ร้องทุกข์",
     blackNumber: "1/69",
     redNumber: null,
+    registryRedText: null,
     subject: "เรื่องทดสอบ",
     currentStatus: "ตรวจสอบข้อเท็จจริง",
     receivedDate: new Date("2026-08-01T00:00:00.000Z"),
@@ -37,8 +38,8 @@ test("officer completion uses all assigned cases, shares workload ranks and keep
   const cases = [
     ...Array.from({ length: 12 }, (_, index) => record({ id: `b-${index}`, legalOfficerName: "นิติกร ข", registryRedText: index < 3 ? "จำหน่าย" : null })),
     ...Array.from({ length: 10 }, (_, index) => record({ id: `a-${index}`, legalOfficerName: " นิติกร ก ", legalOfficer: { name: "ชื่อเก่า" }, registryRedText: index < 7 ? "ถอน" : null })),
-    ...Array.from({ length: 10 }, (_, index) => record({ id: `c-${index}`, legalOfficerName: "นิติกร ค", currentStatus: "COMPLETED" })),
-    record({ id: "fallback", legalOfficerName: " ", legalOfficer: { name: "นิติกร ง" }, redNumber: "12/68" }),
+    ...Array.from({ length: 10 }, (_, index) => record({ id: `c-${index}`, legalOfficerName: "นิติกร ค", currentStatus: "COMPLETED", registryRedText: "แดงแล้ว" })),
+    record({ id: "fallback", legalOfficerName: " ", legalOfficer: { name: "นิติกร ง" }, redNumber: "12/68", registryRedText: "12/68" }),
     record({ id: "blank", legalOfficerName: null, legalOfficer: null }),
     record({ id: "appeal", type: "อุทธรณ์", legalOfficerName: "นิติกร ก", registryRedText: "ถอน" }),
   ];
@@ -98,7 +99,7 @@ test("restricted dashboard DTO does not expose proceedings, subjects or officer 
 });
 
 test("literal registry red text closes a case without inventing a unique red number", () => {
-  for (const value of ["ถอน", "จำหน่ายแล้ว", "แดงแล้ว\n(รอเลขแดง)", "๑/๒๕๖๙"]) {
+  for (const value of ["ถอน", "จำหน่ายแล้ว", "แดงแล้ว\n(รอเลขแดง)", "๑/๒๕๖๙", "ข้อความอื่น", "-", "ยังไม่ทราบเลข"]) {
     assert.equal(hasRegistryCompletionText(value), true);
     const snapshot = deriveDashboardSnapshot({ cases: [record({ registryRedText: value, currentStatus: "เสร็จสิ้น" })], activities: [], meetings: [] }, { period: "all", type: "all" }, permissions, now);
     assert.equal(snapshot.kpis.active, 0);
@@ -117,6 +118,27 @@ test("normalizes Thai and English closed statuses and red numbers", () => {
   assert.equal(isClosedCaseStatus("อยู่ระหว่างดำเนินการ"), false);
   assert.equal(hasRedCaseNumber("163/68"), true);
   assert.equal(hasRedCaseNumber("ยังไม่ได้เลขแดง"), false);
+});
+
+test("blank raw red cells stay pending regardless of closed status or a stale extracted number", () => {
+  const cases = [null, undefined, "", " \n\t "].map((registryRedText, index) => record({
+    id: `blank-${index}`, registryRedText, redNumber: "123/68", currentStatus: "COMPLETED",
+  }));
+  for (const item of cases) {
+    assert.equal(isClosedOrRedCase(item), false);
+    assert.equal(getRegistryRedText(item), "");
+    assert.equal(getRegistryCaseStatus(item), "อยู่ระหว่างดำเนินการ");
+    assert.equal(evaluateDataQuality(item).hasInconsistentStatus, true);
+    assert.equal(detectCaseDataQualityIssues(item).some(issue => issue.fieldName === "registryRedText"), true);
+  }
+  const snapshot = deriveDashboardSnapshot({ cases, activities: [], meetings: [] }, { period: "all", type: "all" }, permissions, now);
+  assert.equal(snapshot.kpis.active, 4);
+  assert.equal(snapshot.officerPerformance[0].completed, 0);
+  assert.equal(snapshot.officerPerformance[0].completionPercent, 0);
+  assert.equal(snapshot.backlog.cases.length, 4);
+  assert.equal(isClosedOrRedCase({ currentStatus: "เสร็จสิ้น" }), false);
+  assert.equal(isClosedOrRedCase({ redCaseNo: "แดงแล้ว" }), true);
+  assert.equal(getRegistryCaseStatus({ registryRedText: "ข้อความอื่น", currentStatus: "รับเรื่อง" }), "เสร็จสิ้น");
 });
 
 test("uses the nearest upcoming deadline, then the latest expired milestone", () => {
@@ -150,7 +172,7 @@ test("builds consistent KPI, filters, data-quality and DTO output", () => {
     cases: [
       record(),
       record({ id: "case-2", blackNumber: "2/69", currentStatus: "เสร็จสิ้น", redNumber: null, dueDate30: null }),
-      record({ id: "case-3", blackNumber: "3/69", currentStatus: "กำลังดำเนินการ", redNumber: "3/69", receivedDate: null, dueDate30: null, legalOfficerId: null, legalOfficerName: null }),
+      record({ id: "case-3", blackNumber: "3/69", currentStatus: "กำลังดำเนินการ", redNumber: "3/69", registryRedText: "3/69", receivedDate: null, dueDate30: null, legalOfficerId: null, legalOfficerName: null }),
       record({ id: "case-4", blackNumber: "4/69", type: "อุทธรณ์", dueDate30: new Date("2026-08-01T00:00:00.000Z") }),
     ],
     activities: [],
@@ -158,7 +180,7 @@ test("builds consistent KPI, filters, data-quality and DTO output", () => {
   }, { period: "all", type: "complaint" }, permissions, now);
 
   assert.equal(snapshot.totalCases, 3);
-  assert.equal(snapshot.kpis.active, 1);
+  assert.equal(snapshot.kpis.active, 2);
   assert.equal(snapshot.kpis.dueWithin7Days, 1);
   assert.equal(snapshot.kpis.criticalDataQuality, 2);
   assert.equal(snapshot.dataQuality.missingReceivedDate, 1);
