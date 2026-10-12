@@ -1,3 +1,7 @@
+## Latest visual change — 2026-10-12 (candidate, not Production)
+
+Added four figures per registry: completion share with explicit total denominator, pending by black-number year, pending by all officers and literal proceeding text. Always-visible values/percentages, missing groups retained, no hover requirement. Local synthetic QA: 1366x900 and 320x720, no main overflow, appeal filter and keyboard disclosure passed. Grammarly injects body attributes causing an external hydration warning; not suppressed. Dashboard tests 12/12, typecheck and targeted ESLint pass. Production release and latest real registry import remain blocked/unexecuted as documented below.
+
 ## Latest dashboard change — 2026-10-12 (candidate, not Production)
 
 Backlog-only dashboard: remaining count; year from black-number suffix (123/68 -> 2568); registry legal officer; exact proceedingNote from column K. Complaint/appeal sections contain no deadline KPI/risk/urgent table or header deadline alert. Old received-date filters no longer hide carry-over cases. Complete year/officer/proceeding groups and pending details, explicit missing values, permission masking.

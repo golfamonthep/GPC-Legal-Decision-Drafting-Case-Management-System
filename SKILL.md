@@ -1,3 +1,7 @@
+## Visualization lessons — 2026-10-12
+
+Use common zero scales for matching complaint/appeal plots, direct values and explicit denominators. Retain every officer and exact proceeding text rather than top-N or an inferred funnel. Plain server-rendered SVG/CSS is sufficient; add no query/library. Test empty rings for no fake zero percentage and preserve accessible HTML labels. Responsive QA uses actual DOM viewport dimensions because user browser zoom affects viewport overrides; reset overrides after testing.
+
 ## Backlog dashboard lessons — 2026-10-12
 
 Owner replaced deadline/risk requirements with backlog count, black-number suffix year, registry officer and literal proceedingNote. Retain carry-over cases across all received dates. Never infer proceedings from currentStatus or truncate officer groups; every dimension must sum to active count. Hide deadline alerts on /dashboard only. Browser Supabase access remains explicitly denied after owner reported reconnecting; no circumvention.

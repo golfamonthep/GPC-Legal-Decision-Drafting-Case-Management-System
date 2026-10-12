@@ -1,3 +1,9 @@
+## Backlog graphs — 2026-10-12
+
+- src/components/dashboard/BacklogCharts.tsx: CompletionRing, YearColumns, RankedBars, explicit empty state; server components.
+- src/app/dashboard/page.tsx: four figures per complaint/appeal registry, shared scales, responsive chart layout.
+- src/lib/dashboard/charts.test.ts: rendering, empty denominator, shared scale, all groups and escaped labels (3 tests; dashboard suite total 12).
+
 ## Backlog dashboard update — 2026-10-12
 
 - /dashboard: pending count, complaint/appeal sections, year/officer/proceeding breakdowns, expandable full pending details. No deadline visuals.

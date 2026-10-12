@@ -1,3 +1,7 @@
+## Registry visualizations — 2026-10-12
+
+BacklogCharts contains server-rendered SVG completion rings and responsive CSS year/ranked bars. Existing unified snapshot is the only input: no added queries, client chart library, polling or schema changes. Complaint teal and appeal blue; like-for-like charts share a zero-based scale across visible registries. Literal proceeding text is not a funnel.
+
 ## Backlog dashboard — 2026-10-12
 
 Snapshot backlog.byYear/byOfficer/byProceeding/cases derives from canonical active records. Year uses only Thai/Arabic two-digit or 25xx black-number suffix, never received/updated date. Exact proceedingNote is not inferred from currentStatus. Registry legalOfficerName has priority over linked User name. Page always loads period=all with type filter. Internal legacy deadline DTO remains compatible but is not rendered; other workflows unchanged.

@@ -1,3 +1,7 @@
+## Backlog chart candidate — 2026-10-12
+
+Publish only the existing PR22 branch Preview; do not follow the historical main-push instruction below while integration release gates remain blocked. Validate npm run test:dashboard (12), npm run typecheck, targeted ESLint and production build with unreachable test database. Local synthetic browser QA covers 1366x900 / 320x720, type filter and keyboard details. It does not prove production data accuracy, private Storage readiness or latest XLSM import. No new environment variable/migration is required for these figures.
+
 # Deployment Runbook
 
 This runbook outlines the steps for a successful production deployment, database migration, smoke testing, and rollback procedures.

@@ -7,26 +7,15 @@ import { hasPermission } from "@/lib/auth/permissions";
 import { getUnifiedDashboardData } from "@/lib/dashboard/data";
 import { parseDashboardFilters } from "@/lib/dashboard/metrics";
 import type { DashboardSnapshot } from "@/lib/dashboard/types";
+import { CompletionRing, RankedBars, YearColumns, type RegistryAccent } from "@/components/dashboard/BacklogCharts";
 
 const number = new Intl.NumberFormat("th-TH");
 const dateTime = new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Bangkok" });
 
-function Breakdown({ title, note, data }: { title: string; note: string; data: Array<{ label: string; count: number }> }) {
-  const max = Math.max(...data.map(item => item.count), 1);
-  return <section className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5">
-    <h3 className="text-base font-bold text-slate-950">{title}</h3>
-    <p className="mt-1 text-xs leading-5 text-slate-500">{note}</p>
-    {data.length ? <ul className="mt-5 space-y-4">{data.map(item => <li key={item.label}>
-      <div className="mb-2 flex items-start justify-between gap-3 text-sm">
-        <span className="min-w-0 whitespace-pre-wrap break-words text-slate-700 [overflow-wrap:anywhere]">{item.label}</span>
-        <strong className="shrink-0 tabular-nums text-slate-950">{number.format(item.count)} เรื่อง</strong>
-      </div>
-      <div aria-hidden="true" className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-teal-600" style={{ width: `${item.count / max * 100}%` }} /></div>
-    </li>)}</ul> : <p className="mt-5 text-sm text-slate-500">ไม่มีเรื่องค้าง</p>}
-  </section>;
-}
-
-function BacklogSection({ title, snapshot, canViewDetails }: { title: string; snapshot: DashboardSnapshot; canViewDetails: boolean }) {
+function BacklogSection({ title, snapshot, canViewDetails, accent, yearMax, officerMax, proceedingMax }: {
+  title: string; snapshot: DashboardSnapshot; canViewDetails: boolean; accent: RegistryAccent;
+  yearMax: number; officerMax: number; proceedingMax: number;
+}) {
   return <section aria-label={title} className="min-w-0 space-y-5 rounded-3xl border border-slate-200 bg-slate-50 p-4 sm:p-6">
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div><p className="text-xs font-semibold text-teal-700">ทะเบียนคุม</p><h2 className="mt-1 text-2xl font-bold text-slate-950">{title}</h2></div>
@@ -36,11 +25,14 @@ function BacklogSection({ title, snapshot, canViewDetails }: { title: string; sn
         <div><dt className="text-xs text-slate-500">ทะเบียนทั้งหมด</dt><dd className="mt-2 text-xl font-semibold text-slate-700">{number.format(snapshot.totalCases)}</dd></div>
       </dl>
     </div>
-    <div className="grid min-w-0 gap-4 lg:grid-cols-3">
-      <Breakdown title="เรื่องค้างแยกตามปี" note="อ่านปีท้ายเลขดำ เช่น 123/68 = พ.ศ. 2568" data={snapshot.backlog.byYear} />
-      <Breakdown title="เรื่องค้างแยกตามนิติกร" note="ใช้ชื่อนิติกรในทะเบียน หากไม่มีจะแสดงแยกไว้" data={snapshot.backlog.byOfficer} />
-      <Breakdown title="การดำเนินการของเรื่องค้าง" note='ข้อความจากคอลัมน์ “การดำเนินการ” โดยไม่คาดเดาขั้นตอน' data={snapshot.backlog.byProceeding} />
+    <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[1fr_1.4fr]">
+      <div className="min-w-0 space-y-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6"><CompletionRing total={snapshot.totalCases} pending={snapshot.kpis.active} accent={accent} /></div>
+        <YearColumns data={snapshot.backlog.byYear} scaleMax={yearMax} accent={accent} />
+      </div>
+      <RankedBars title="เรื่องค้างแยกตามนิติกร" note="หน่วย: เรื่อง · เรียงตามจำนวนค้าง · แสดงนิติกรทุกคน" data={snapshot.backlog.byOfficer} total={snapshot.kpis.active} scaleMax={officerMax} accent={accent} />
     </div>
+    <RankedBars title="การดำเนินการของเรื่องค้าง" note='ข้อความเต็มจากคอลัมน์ “การดำเนินการ” · ไม่คาดเดาหรือจัดเป็นลำดับขั้นตอน' data={snapshot.backlog.byProceeding} total={snapshot.kpis.active} scaleMax={proceedingMax} accent={accent} />
     <details className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5">
       <summary className="cursor-pointer rounded text-base font-bold text-slate-950 focus-visible:outline-2 focus-visible:outline-teal-600">รายละเอียดเรื่องค้าง · {number.format(snapshot.kpis.active)} เรื่อง</summary>
       {!canViewDetails ? <p className="mt-4 text-sm text-slate-500">บัญชีนี้ไม่มีสิทธิ์ดูรายละเอียดเรื่อง</p>
@@ -65,9 +57,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const snapshot = result.snapshot;
   const currentHref = `/dashboard?type=${filters.type}`;
   const sections = snapshot ? result.byType
-    ? [{ title: "เรื่องร้องทุกข์", snapshot: result.byType.complaint }, { title: "เรื่องอุทธรณ์", snapshot: result.byType.appeal }]
-    : [{ title: filters.type === "appeal" ? "เรื่องอุทธรณ์" : "เรื่องร้องทุกข์", snapshot }]
+    ? [{ title: "เรื่องร้องทุกข์", snapshot: result.byType.complaint, accent: "teal" as const }, { title: "เรื่องอุทธรณ์", snapshot: result.byType.appeal, accent: "blue" as const }]
+    : [{ title: filters.type === "appeal" ? "เรื่องอุทธรณ์" : "เรื่องร้องทุกข์", snapshot, accent: filters.type === "appeal" ? "blue" as const : "teal" as const }]
     : [];
+  // Shared zero-based scales let both registries be compared honestly.
+  const yearMax = Math.max(2, Math.ceil(Math.max(...sections.flatMap(section => section.snapshot.backlog.byYear.map(item => item.count)), 0) / 2) * 2);
+  const officerMax = Math.max(...sections.flatMap(section => section.snapshot.backlog.byOfficer.map(item => item.count)), 1);
+  const proceedingMax = Math.max(...sections.flatMap(section => section.snapshot.backlog.byProceeding.map(item => item.count)), 1);
   return <div className="min-h-full bg-[#f5f7fa] px-3 py-5 sm:px-6 sm:py-7 xl:px-10">
     <div className="mx-auto max-w-[1600px] space-y-6">
       <header className="rounded-3xl bg-[linear-gradient(125deg,#07162d_0%,#102b4e_65%,#0f766e_140%)] px-5 py-6 text-white sm:px-8 sm:py-8">
@@ -93,7 +89,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <div className="rounded-2xl border border-teal-200 bg-teal-50 p-5"><p className="text-sm font-medium text-teal-900">เรื่องค้างรวม{filters.type === "all" ? "ทั้งสองทะเบียน" : "ในทะเบียนที่เลือก"}</p>
           <p className="mt-2 text-4xl font-bold text-teal-950">{number.format(snapshot.kpis.active)} <span className="text-base font-medium">เรื่อง</span></p>
           <p className="mt-3 text-xs leading-5 text-teal-900">เรื่องที่มีข้อความในช่องเรื่องแดง หรือบันทึกสถานะปิดเรื่องแล้ว ไม่นับเป็นเรื่องค้าง</p></div>
-        {sections.map(section => <BacklogSection key={section.title} {...section} canViewDetails={canViewDetails} />)}
+        {sections.length === 2 && <p className="text-xs leading-5 text-slate-500">ร้องทุกข์ใช้สีเขียวอมฟ้า · อุทธรณ์ใช้สีน้ำเงิน · กราฟประเภทเดียวกันใช้มาตราส่วนร่วม เริ่มที่ศูนย์</p>}
+        {sections.map(section => <BacklogSection key={section.title} {...section} canViewDetails={canViewDetails} yearMax={yearMax} officerMax={officerMax} proceedingMax={proceedingMax} />)}
       </> : <section className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
         <h2 className="text-lg font-bold">ยังไม่สามารถแสดงยอดเรื่องค้างได้</h2><p className="mt-2 text-sm text-slate-600">กรุณาตรวจสอบการเชื่อมต่อและโครงสร้างฐานข้อมูล ระบบไม่แสดงศูนย์แทนข้อผิดพลาด</p>
         <Link href={currentHref} className="mt-5 inline-block rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white">ลองใหม่</Link>

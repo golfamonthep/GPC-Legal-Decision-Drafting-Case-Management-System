@@ -1,3 +1,7 @@
+## Visualization update — 2026-10-12
+
+Presentation-only: no schema changes or real-data reads/writes in this step. Graph counts reuse snapshot backlog and total. Completion ring denominator is all selected registry cases, not a monthly completion rate. Latest XLSM import is still not executed.
+
 ## Dashboard-only update — 2026-10-12
 
 No schema/migration/data mutation for backlog redesign. Reads existing Case.blackNumber, legalOfficerName, proceedingNote (registry column K) and canonical completion fields. Stored deadlines remain unchanged for other workflows. Latest registry import remains unexecuted.
