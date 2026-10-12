@@ -1,3 +1,7 @@
+export function hasRegistryCompletionText(value: unknown): boolean {
+  return value !== null && value !== undefined && String(value).trim().length > 0;
+}
+
 export function isClosedCaseStatus(status: string | null | undefined): boolean {
   if (!status) return false;
   const normalized = status.trim().replace(/\s+/g, ' ').toLowerCase();
@@ -49,6 +53,7 @@ export function hasRedCaseNumber(redCaseNumber: string | null | undefined): bool
 
 export function isClosedOrRedCase(caseObj: any): boolean {
   if (!caseObj) return false;
+  if (hasRegistryCompletionText(caseObj.registryRedText)) return true;
   
   const status = caseObj.status || caseObj.currentStatus;
   if (isClosedCaseStatus(status)) return true;

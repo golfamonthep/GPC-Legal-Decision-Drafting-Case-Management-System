@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { hasRedCaseNumber, isClosedCaseStatus } from "../caseStatus";
+import { hasRedCaseNumber, hasRegistryCompletionText, isClosedCaseStatus } from "../caseStatus";
 import { deriveDashboardSnapshot, getDashboardDateRange, getDaysUntilDue, getNearestDueDate, parseDashboardFilters } from "./metrics";
 import { loadDashboardFromSource } from "./loader";
 import type { DashboardCaseRecord, DashboardDataSource } from "./types";
@@ -30,6 +30,17 @@ function record(overrides: Partial<DashboardCaseRecord> = {}): DashboardCaseReco
 }
 
 const permissions = { canViewCaseDetails: true, canViewDataQuality: true };
+
+test("literal registry red text closes a case without inventing a unique red number", () => {
+  for (const value of ["ถอน", "จำหน่ายแล้ว", "แดงแล้ว\n(รอเลขแดง)", "๑/๒๕๖๙"]) {
+    assert.equal(hasRegistryCompletionText(value), true);
+    const snapshot = deriveDashboardSnapshot({ cases: [record({ registryRedText: value, currentStatus: "เสร็จสิ้น" })], activities: [], meetings: [] }, { period: "all", type: "all" }, permissions, now);
+    assert.equal(snapshot.kpis.active, 0);
+    assert.equal(snapshot.kpis.overdue, 0);
+    assert.equal(snapshot.kpis.criticalDataQuality, 0);
+  }
+  assert.equal(hasRegistryCompletionText(" \n "), false);
+});
 
 test("normalizes Thai and English closed statuses and red numbers", () => {
   assert.equal(isClosedCaseStatus("  เสร็จสิ้น (ศาลปกครอง) "), true);
@@ -88,6 +99,9 @@ test("builds consistent KPI, filters, data-quality and DTO output", () => {
 test("reports ready, empty, partial and unavailable without fake zero KPIs", async () => {
   const source = (kind: DashboardDataSource["kind"], load: DashboardDataSource["load"]): DashboardDataSource => ({ kind, load });
   const ready = await loadDashboardFromSource(source("database", async () => ({ cases: [record()], activities: [], meetings: [] })), { period: "all", type: "all" }, permissions, now);
+  assert.equal(ready.byType?.complaint.totalCases, 1);
+  assert.equal(ready.byType?.appeal.totalCases, 0);
+  assert.equal(ready.byType!.complaint.totalCases + ready.byType!.appeal.totalCases, ready.snapshot!.totalCases);
   assert.equal(ready.state, "ready");
 
   const empty = await loadDashboardFromSource(source("database", async () => ({ cases: [], activities: [], meetings: [] })), { period: "all", type: "all" }, permissions, now);

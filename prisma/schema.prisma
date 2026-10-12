@@ -39,6 +39,7 @@ model Case {
   type           String // "ร้องทุกข์" | "อุทธรณ์"
   blackNumber    String
   redNumber      String?
+  registryRedText String? @db.Text
   petitionerName String
   respondentName String
   subject        String

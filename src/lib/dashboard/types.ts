@@ -18,6 +18,7 @@ export interface DashboardCaseRecord {
   type: string;
   blackNumber: string;
   redNumber: string | null;
+  registryRedText?: string | null;
   subject: string;
   currentStatus: string;
   receivedDate: Date | null;
@@ -116,6 +117,7 @@ export interface DashboardResult {
   state: DashboardLoadState;
   source: "database" | "demo";
   snapshot: DashboardSnapshot | null;
+  byType?: Record<"complaint" | "appeal", DashboardSnapshot>;
   message?: string;
   partialReasons?: string[];
 }

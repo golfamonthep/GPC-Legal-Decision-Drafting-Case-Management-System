@@ -31,6 +31,7 @@ class DatabaseDashboardDataSource implements DashboardDataSource {
           type: true,
           blackNumber: true,
           redNumber: true,
+          registryRedText: true,
           subject: true,
           currentStatus: true,
           receivedDate: true,

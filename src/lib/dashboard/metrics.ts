@@ -6,7 +6,7 @@ import {
   getThisQuarterEnd,
   getThisQuarterStart,
 } from "@/lib/date/fiscalYear";
-import { hasRedCaseNumber, isClosedCaseStatus } from "@/lib/caseStatus";
+import { hasRedCaseNumber, hasRegistryCompletionText, isClosedCaseStatus } from "@/lib/caseStatus";
 import type {
   DashboardCaseRecord,
   DashboardFilters,
@@ -61,8 +61,8 @@ export function getDaysUntilDue(record: DashboardCaseRecord, now: Date): number 
   return dueDate ? Math.ceil((dueDate.getTime() - now.getTime()) / DAY_MS) : null;
 }
 
-export function isCaseClosed(record: Pick<DashboardCaseRecord, "currentStatus" | "redNumber">) {
-  return isClosedCaseStatus(record.currentStatus) || hasRedCaseNumber(record.redNumber);
+export function isCaseClosed(record: Pick<DashboardCaseRecord, "currentStatus" | "redNumber" | "registryRedText">) {
+  return hasRegistryCompletionText(record.registryRedText) || isClosedCaseStatus(record.currentStatus) || hasRedCaseNumber(record.redNumber);
 }
 
 function statusGroup(record: DashboardCaseRecord) {
@@ -137,10 +137,10 @@ export function deriveDashboardSnapshot(
       ...value,
     }));
 
-  const closedWithoutRedNumber = records.filter((record) => isClosedCaseStatus(record.currentStatus) && !hasRedCaseNumber(record.redNumber)).length;
+  const closedWithoutRedNumber = records.filter((record) => isClosedCaseStatus(record.currentStatus) && !hasRedCaseNumber(record.redNumber) && !hasRegistryCompletionText(record.registryRedText)).length;
   const redNumberWithOpenStatus = records.filter((record) => hasRedCaseNumber(record.redNumber) && !isClosedCaseStatus(record.currentStatus)).length;
   const criticalDataQuality = records.filter((record) =>
-    (isClosedCaseStatus(record.currentStatus) && !hasRedCaseNumber(record.redNumber)) ||
+    (isClosedCaseStatus(record.currentStatus) && !hasRedCaseNumber(record.redNumber) && !hasRegistryCompletionText(record.registryRedText)) ||
     (hasRedCaseNumber(record.redNumber) && !isClosedCaseStatus(record.currentStatus)),
   ).length;
 

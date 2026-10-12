@@ -1,5 +1,9 @@
 ## Analysis integration lessons — 2026-10-12
 
+Validated alternative backup: read-only Supabase SQL Editor snapshot + native Download CSV, followed by local JSON/table-row verification. The download event can time out even though Chrome saved the file; inspect the exact generated download and verify it before retrying. Vercel bulk .env paste can change selection from Production to Production+Preview; explicitly verify and narrow scope before Save. Service-role transmission requires explicit destination-specific approval; obtained for the same GPC Production only, never Preview.
+
+Latest infrastructure check: GPC is ACTIVE_HEALTHY. A successful snapshot query is not a completed backup: verify the saved file, row counts and schema before DDL. If automatic approval review fails (HTTP 429), do not bypass it through another execution path. Keep incomplete artifacts marked `.partial`, preserve real data and report the blocker.
+
 User clarified that the new analysis workbench belongs inside the existing GPC Vercel site. Do not build another dashboard or deploy the dirty old registry checkout. Reuse the latest secure main in an isolated branch; preserve the user's local work and private source bundle. Keep all analysis revisions separate from official case state.
 
 A localhost bridge is not an online integration. Port persistent state to Prisma/Storage; do not deploy local SQLite/Python filesystem assumptions to Vercel. Private source manifests and binaries must never be committed to this public repository. Verify bucket privacy, source hashes, ownership, exact case/revision and current assignment before exposing or attaching drafts.

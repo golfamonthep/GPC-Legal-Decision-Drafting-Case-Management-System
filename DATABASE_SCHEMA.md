@@ -1,10 +1,12 @@
 ## AnalysisWorkspace candidate — 2026-10-12 (NOT deployed)
 
+Latest execution: AnalysisWorkspace is now created and RLS-protected; nullable Case.registryRedText preserves literal completion text (no uniqueness) independently from redNumber. Migration source checksums were registered atomically in Prisma history via Supabase apply_migration; 10 completed entries, 198 cases preserved. Backup is a verified, ignored CSV JSON snapshot with schema and full public data, not the earlier `.partial` files. Registry updates are not executed yet.
+
 Additive migration `20261012090000_add_analysis_workspaces` introduces `AnalysisWorkspace`: `id`, `ownerKey` (session identity, no synthetic User FK), nullable restricted `caseId` FK, `title`, input `version`, concurrency `lockRevision`, JSONB `contents`, timestamps. Indexes cover `(ownerKey, updatedAt)` and `caseId`. `contents` contains job input, document metadata/reviewed text, immutable revisions/runs/proposals, export metadata and audit events. History caps reject new additions rather than deleting prior evidence.
 
 RLS is enabled with no Data API policies; public/anon/authenticated table privileges are revoked. All access is via server Prisma with app ownership/role checks. Storage blobs are private and client keys are never used. CaseDocument adds no schema fields; reviewed attachments use the existing fields with provider `supabase_analysis_storage` and status `analysis_draft_needs_review`.
 
-No DDL was run. Provider restore failed due to the Free active-project limit. Before deploy: restore ACTIVE, obtain a fresh logical backup including schema/migration history/row counts, compare actual schema and migration status, review the additive SQL, then run Prisma migrate deploy manually. Never reset, db push or migrate during build. Existing case data must be reconciled before/after.
+No DDL was run. Latest check confirms ACTIVE_HEALTHY, 198 cases, 32 public tables and 8 successful Prisma migrations. Fresh backup persistence failed on approval-review HTTP 429; the partial ignored artifact is NOT a usable backup. Before deploy: obtain and verify a complete logical schema/data backup including migration history/extensions/row counts, compare actual schema and migration status, review the additive SQL, then run Prisma migrate deploy manually. Never reset, db push or migrate during build.
 
 # DATABASE_SCHEMA.md — GPC Legal Decision Drafting & Case Management System
 

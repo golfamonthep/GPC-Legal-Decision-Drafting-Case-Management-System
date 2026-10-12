@@ -1,5 +1,9 @@
 ## Native analysis integration candidate — 2026-10-12
 
+Two dashboard type summaries derive from one bounded source payload, avoiding duplicate DB loads; trend caption IDs are distinct. Registry completion now accepts any nonblank literal source text and preserves it in Case.registryRedText; numeric redNumber remains separately unique per type. First-sheet imports do not fall through to another tab; invalid or missing source dates preserve existing dates.
+
+Infrastructure recheck: existing GPC Supabase is ACTIVE_HEALTHY; native analysis persistence is still unverified and its migration was not applied. Backup persistence was interrupted by approval-review HTTP 429 and Vercel project access remains unavailable. The partial backup must never be treated as a release gate pass.
+
 The existing Next.js/Vercel site owns `/analysis` and `/api/analysis/[...path]`. The shared AppShell, sidebar, authentication and unified `/dashboard` remain unchanged in role. Local React analysis components are reused within this shell; their CSS is scoped to `.analysis-workbench`.
 
 Analysis workspaces are owner-scoped Prisma records, not SQLite or local process state. Separate input version and optimistic `lockRevision` prevent collection updates from falsely invalidating source versions or losing concurrent writes. Revisions/runs keep immutable input and source snapshots. Reviewed drafts can be attached deliberately to an assigned case; attachment is deduplicated and assignment/case number is checked under a Case row lock. No official status transition is performed.

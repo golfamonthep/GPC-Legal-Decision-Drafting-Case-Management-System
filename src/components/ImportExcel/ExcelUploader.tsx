@@ -93,13 +93,11 @@ export default function ExcelUploader({ onDataLoaded }: ExcelUploaderProps) {
           cellDates: false,
         });
 
-        const firstSheetName = workbook.SheetNames.find((sheetName) => {
-          const sheet = workbook.Sheets[sheetName];
-          return Boolean(sheet && sheet['!ref']);
-        });
+        // Registry updates are strictly scoped to the first physical worksheet.
+        const firstSheetName = workbook.SheetNames[0];
 
-        if (!firstSheetName) {
-          setError('ไม่พบแผ่นงานที่มีข้อมูลในไฟล์ Excel');
+        if (!firstSheetName || !workbook.Sheets[firstSheetName]?.['!ref']) {
+          setError('ชีทแรกไม่มีข้อมูล ระบบจะไม่อ่านชีทอื่นแทน');
           return;
         }
 

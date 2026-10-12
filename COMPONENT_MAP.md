@@ -1,5 +1,9 @@
 ## Analysis workbench candidate — 2026-10-12
 
+Execution additions: DashboardResult.byType and two type-specific dashboard sections; ExcelUploader uses exactly SheetNames[0]; registry import persists registryRedText and preserves dates when parsing fails. Offline prepare-registry-sync.mjs verifies backup and creates ignored dry-run/candidate files. No private cases/reference blobs are tracked.
+
+Latest infrastructure check: GPC database is ACTIVE_HEALTHY; candidate routes are still not deployed. No component/API changes in this recheck. Backup persistence and Vercel access remain release blockers.
+
 - Page: `src/app/analysis/page.tsx` (`USE_ANALYSIS`, existing login/AppShell).
 - API: `src/app/api/analysis/[...path]/route.ts` (`USE_ANALYSIS`, same-origin JSON mutations, bounded body, owner/assignment checks; attach additionally requires `EDIT_DRAFT`, propose additionally requires `USE_AI_DRAFT` but is disabled).
 - Subresources: `jobs`, `jobs/:id`, documents/references/manual-seniority/facts/vacancies/analyze/drafts/export/attach; `knowledge`, `knowledge/search`, `knowledge/source`; `case/:id` metadata prefill; `case-documents/:caseId/:docId` protected attached-draft download.

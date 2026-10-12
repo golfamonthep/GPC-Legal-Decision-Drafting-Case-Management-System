@@ -2,6 +2,8 @@
 
 ## Scope and actual state (2026-10-12)
 
+Latest execution: complete private schema/data snapshot is saved and verified (32 tables/198 cases). Both additive migrations were applied through the Supabase connector with matching Prisma-history source checksums; 198 cases remain unchanged. Correct Vercel project confirmed through authenticated Chrome, and its branch Preview is Ready. New dashboard split/import rules pass Prisma validation, typecheck, 6 dashboard tests and 11 analysis safety tests; production compilation passes without a live DB connection. Production Storage configuration, uploads, latest registry import, live workflow QA and deployment are still being completed. Earlier infrastructure blocker notes below are historical.
+
 This is a candidate for the existing website at https://gpc-legal-decision-drafting-case-ma.vercel.app, not a replacement site or new dashboard. The existing login/authentication configuration is preserved. No credentials are recorded here.
 
 Use the existing sidebar entry **วิเคราะห์และร่างคำวินิจฉัย**, or enter from a selected case. Input, evidence review, source approval, deterministic checks, immutable manual drafts, Word export, and deliberately reviewed case attachment are ported. Official case status, owners and legal officer assignments are never updated by the analysis service.
@@ -10,7 +12,7 @@ Incomplete: AI proposals are deliberately disabled; PDF/DOCX/XLSX/image automati
 
 ## Infrastructure blockers
 
-1. Supabase project `tlqszhlggvoirhalsxge` is INACTIVE. The restore request failed because owner `golfamonthep` has already used both active Free-project slots. The owner must select another project to pause or upgrade through the provider; this task does not authorize an arbitrary choice.
+1. Supabase project `tlqszhlggvoirhalsxge` is now ACTIVE_HEALTHY. Exact SQL confirms 198 cases, 32 public tables and 8 successful Prisma migrations. No other project was changed by this task. Fresh logical data was retrieved, but saving it stopped on approval-review HTTP 429. The ignored `private-test-data/database-backup-20261012/public-data.json.partial` (99,886 bytes) is incomplete, not a usable backup. Complete and verify schema/data backup before any DDL.
 2. The Vercel connector can see the original team, but project discovery is empty and the saved project ID cannot be retrieved. Restore access/confirm the correct project before any environment change or deploy.
 3. No working private Storage configuration or live migration/persistence QA is verified here.
 

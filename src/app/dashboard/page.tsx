@@ -85,7 +85,7 @@ function Panel({ title, description, children, className = "" }: {
   );
 }
 
-function TrendChart({ data }: { data: DashboardSnapshot["trend"] }) {
+function TrendChart({ data, captionId = "trend-caption" }: { data: DashboardSnapshot["trend"]; captionId?: string }) {
   const max = Math.max(...data.map((item) => item.count), 1);
   const points = data.map((item, index) => ({
     ...item,
@@ -94,7 +94,7 @@ function TrendChart({ data }: { data: DashboardSnapshot["trend"] }) {
   }));
   const polyline = points.map(({ x, y }) => `${x},${y}`).join(" ");
   return (
-    <figure aria-labelledby="trend-caption">
+    <figure aria-labelledby={captionId}>
       <svg viewBox="0 0 660 210" role="img" aria-label="กราฟจำนวนคดีรับเข้า 12 เดือน" className="h-auto w-full overflow-visible">
         {[46, 90, 134, 178].map((y) => <line key={y} x1="26" y1={y} x2="634" y2={y} stroke="#e2e8f0" strokeWidth="1" />)}
         <path d={`M 26 178 L ${polyline} L 634 178 Z`} fill="#ccfbf1" opacity="0.7" />
@@ -106,7 +106,7 @@ function TrendChart({ data }: { data: DashboardSnapshot["trend"] }) {
           </g>
         ))}
       </svg>
-      <figcaption id="trend-caption" className="grid grid-cols-6 gap-y-2 text-center text-[10px] text-slate-500 sm:grid-cols-12 sm:text-xs">
+      <figcaption id={captionId} className="grid grid-cols-6 gap-y-2 text-center text-[10px] text-slate-500 sm:grid-cols-12 sm:text-xs">
         {data.map((item) => <span key={item.key}>{item.label}</span>)}
       </figcaption>
     </figure>
@@ -197,6 +197,24 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               <p>ข้อมูลล่าสุด {snapshot.dataFreshness ? dateTime.format(new Date(snapshot.dataFreshness)) : "ยังไม่มีเวลาอัปเดต"} · สร้างภาพรวม {dateTime.format(new Date(snapshot.generatedAt))}</p>
               <Link href={currentHref} className="inline-flex w-fit items-center gap-2 rounded-lg px-2 py-1.5 font-semibold text-teal-700 hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-600"><RefreshCw className="h-3.5 w-3.5" /> รีเฟรชข้อมูล</Link>
             </div>
+
+            {result.byType && <section aria-label="แดชบอร์ดแยกประเภททะเบียน" className="grid min-w-0 gap-6 xl:grid-cols-2">
+              {(["complaint", "appeal"] as const).map((type) => {
+                const item = result.byType![type];
+                const label = type === "complaint" ? "ร้องทุกข์" : "อุทธรณ์";
+                const completed = item.totalCases - item.kpis.active;
+                return <section key={type} aria-labelledby={`type-heading-${type}`} className={`min-w-0 rounded-3xl border bg-white p-5 shadow-sm sm:p-6 ${type === "complaint" ? "border-teal-200" : "border-blue-200"}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-3"><h2 id={`type-heading-${type}`} className="text-2xl font-bold text-slate-950">เรื่อง{label}</h2><Link href={`/dashboard?period=${filters.period}&type=${type}`} className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:ring-2 focus:ring-teal-600">ดูรายละเอียด{label}</Link></div>
+                  <dl className="mt-5 grid grid-cols-3 gap-2 rounded-2xl bg-slate-50 p-4">
+                    {[["ทั้งหมด", item.totalCases], ["เสร็จสิ้น", completed], ["คงเหลือ", item.kpis.active]].map(([name, value]) => <div key={name}><dt className="text-xs text-slate-600">{name}</dt><dd className="mt-2 text-3xl font-bold tabular-nums text-slate-950">{number.format(Number(value))}</dd></div>)}
+                  </dl>
+                  <p className="mt-3 text-xs leading-5 text-slate-500">เสร็จสิ้น: มีข้อความในเรื่องแดง หรือมีสถานะปิดเรื่องที่บันทึกไว้</p>
+                  <div className="mt-4 flex flex-wrap gap-3 text-sm"><span className="rounded-lg bg-red-50 px-3 py-2 text-red-800">เกินกำหนด <strong>{item.kpis.overdue}</strong></span><span className="rounded-lg bg-amber-50 px-3 py-2 text-amber-900">ครบกำหนดใน 7 วัน <strong>{item.kpis.dueWithin7Days}</strong></span></div>
+                  <h3 className="mb-3 mt-6 text-sm font-semibold text-slate-700">รับเข้าใน 12 เดือน</h3><TrendChart data={item.trend} captionId={`trend-caption-${type}`} />
+                  <h3 className="mb-3 mt-6 text-sm font-semibold text-slate-700">สถานะงาน</h3><BarList data={item.statusDistribution} />
+                </section>;
+              })}
+            </section>}
 
             <section aria-label="ตัวชี้วัดสำคัญ" className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-5">
               <KpiCard label="คดีที่ยังดำเนินการ" value={snapshot.kpis.active} hint={`จากทั้งหมด ${number.format(snapshot.totalCases)} คดี`} icon={<BriefcaseBusiness className="h-5 w-5" />} />
