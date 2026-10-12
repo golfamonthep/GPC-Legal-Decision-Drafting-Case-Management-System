@@ -1,3 +1,7 @@
+## Case-list split Preview — 2026-10-12
+
+PR22 branch only, no Production promotion. Validate test:case-list (3), test:dashboard (14), typecheck and production build. Isolated synthetic component QA verifies anchor navigation, named separate tables and 320px nested overflow; not live /cases database/filter UAT. Existing query/filter semantics and release gates remain unchanged; no env or schema change needed.
+
 ## Officer responsibility Preview — 2026-10-12
 
 Update only the existing PR22 non-production branch; release gates unchanged. Dashboard suite now 14 tests. Local synthetic QA verifies 1366x900 first-viewport figures and 320x720 filter/disclosure without horizontal overflow; real officer count/long labels may expand height. Final typecheck, targeted lint and unreachable-test-DB production build required. No database or environment change for this addition.

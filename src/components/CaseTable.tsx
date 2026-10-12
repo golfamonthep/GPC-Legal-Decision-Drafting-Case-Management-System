@@ -7,6 +7,7 @@ import { isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
 
 interface CaseTableProps {
   cases: Case[];
+  caption?: string;
 }
 
 function formatUpdatedAt(value?: string): string | null {
@@ -23,10 +24,11 @@ function formatUpdatedAt(value?: string): string | null {
   });
 }
 
-export function CaseTable({ cases }: CaseTableProps) {
+export function CaseTable({ cases, caption }: CaseTableProps) {
   return (
-    <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+    <div className="min-w-0 overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg" tabIndex={0} role="region" aria-label={caption || "ตารางรายการคดี"}>
       <table className="min-w-[1320px] w-full divide-y divide-slate-300">
+        {caption && <caption className="sr-only">{caption}</caption>}
         <thead className="bg-slate-50">
           <tr>
             <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-slate-900 sm:pl-6">

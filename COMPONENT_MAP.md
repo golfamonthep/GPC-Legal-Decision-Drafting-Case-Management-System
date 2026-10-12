@@ -1,3 +1,11 @@
+## Separate case list blocks — 2026-10-12
+
+- CaseRegistryBlocks.tsx: complaint/appeal sections, colored counts/anchors, explicit empty and unknown group; existing CaseTable reused.
+- caseList.ts: stable generic one-pass partition by registry type.
+- cases/page.tsx: replaces mixed table with registry blocks after the original query/format/filter flow.
+- CaseTable.tsx: optional named table caption and keyboard-focusable scroll region (other consumers unchanged).
+- caseList.test.ts + npm run test:case-list: 3 tests for partition/order, cross-type duplicate black numbers, named tables, detail links and empty/filtered counterpart.
+
 ## Compact officer scorecards — 2026-10-12
 
 - OfficerPerformance.tsx: server figure with absolute stacked completed/pending bars, direct total/completed/pending/% labels, shared rank and unassigned row.

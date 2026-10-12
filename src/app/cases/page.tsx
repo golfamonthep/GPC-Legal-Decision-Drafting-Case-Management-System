@@ -1,4 +1,4 @@
-import { CaseTable } from "@/components/CaseTable";
+import { CaseRegistryBlocks } from "@/components/CaseRegistryBlocks";
 import { CaseListFilters } from "@/components/CaseListFilters";
 import Link from "next/link";
 import prisma from "@/lib/db";
@@ -6,7 +6,7 @@ import { requirePermission } from "@/lib/auth/requirePermission";
 import { CaseStatus } from "@/types";
 import { differenceInDays } from "date-fns";
 import { Prisma } from "@/generated/prisma";
-import { isClosedCaseStatus, hasRedCaseNumber, isClosedOrRedCase } from "@/lib/caseStatus";
+import { isClosedOrRedCase } from "@/lib/caseStatus";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -137,14 +137,14 @@ export default async function CasesPage({
   });
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="min-w-0 py-6 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold leading-6 text-slate-900 font-thai">
             รายการคดีทั้งหมด
           </h1>
           <p className="mt-2 text-sm text-slate-500 font-thai">
-            รายการคดีร้องทุกข์และอุทธรณ์ที่อยู่ระหว่างดำเนินการ
+            แยกทะเบียนร้องทุกข์และอุทธรณ์ พร้อมรายการตามตัวกรองที่เลือก
           </p>
         </div>
         <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex space-x-3">
@@ -168,7 +168,7 @@ export default async function CasesPage({
       </div>
 
       <div className="mt-4">
-        <CaseTable cases={formattedCases as any} />
+        <CaseRegistryBlocks cases={formattedCases} />
       </div>
     </div>
   );

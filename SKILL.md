@@ -1,3 +1,7 @@
+## Case-list separation lessons — 2026-10-12
+
+Separate after existing filtering, not via repeated queries. Preserve original order and IDs; black numbers may legitimately repeat across registry types. Keep empty counterpart explicit and unknown-type records visible. A synthetic component fixture proves grouping, anchors and layout, not database/filter/authentication UAT. Keep QA fixture outside Git and stop its local server after testing.
+
 ## Officer ranking lessons — 2026-10-12
 
 Never divide completed cases by pending count. Rank total responsibility separately from completion share; ties get equal rank, unknown officers remain visible outside ranking. Current assignment snapshots are not historic attribution or productivity scores. Preserve full rows and direct measures; place both registries above disclosures for a compact executive read. Measure actual first-viewport geometry; don't promise all real officer rows fit solely because six synthetic rows do.

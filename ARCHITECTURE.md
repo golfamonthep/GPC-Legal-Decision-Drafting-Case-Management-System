@@ -1,3 +1,7 @@
+## Separate case registries — 2026-10-12
+
+/cases renders CaseRegistryBlocks from the same existing filtered query result. One stable partition into complaint/appeal, optional unknown group so no cases disappear. Two full-width blocks, per-filter counts, jump anchors and explicit empty counterpart. Existing CaseTable reused with named captions and keyboard-focusable horizontal overflow region. No DB/schema/permission/filter semantics changed.
+
 ## Officer responsibility snapshot — 2026-10-12
 
 DashboardSnapshot.officerPerformance aggregates every selected case (open and closed), by trimmed registry legalOfficerName with linked-name fallback. Total = completed + pending; completionPercent = completed / total * 100 via canonical isCaseClosed. Competition ranks by total (1,2,2,4); unassigned excluded from ranking. Restricted roles receive one unranked aggregate. No new query/schema/dependency. Two compact stacked-bar scorecards use common absolute zero scale; year/proceeding/details are progressive disclosures.

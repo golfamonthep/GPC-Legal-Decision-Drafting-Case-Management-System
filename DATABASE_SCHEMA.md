@@ -1,3 +1,7 @@
+## Case list presentation — 2026-10-12
+
+No schema/migration/data changes. Partition the existing filtered Case query by exact registry type; unknown types retained separately. Counts are filtered-result counts, not whole-database totals. No additional DB queries or real data mutations during QA.
+
 ## Officer completion metric — 2026-10-12
 
 No schema/migration/data changes. Denominator includes all cases attributed to the registry officer (including closed), not pending-only. Numerator uses canonical completion (nonblank registry red text, valid red number or normalized closed status). Grouping uses current registry name, with linked User-name fallback; it does not reconstruct historical assignments. Latest XLSM import is still not executed.
