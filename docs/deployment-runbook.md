@@ -1,3 +1,25 @@
+## Reference-styled dashboard Preview — 2026-10-12
+
+Final local validation passed: tests 18+3, typecheck, targeted lint and production build. Commit only presentation/test/intelligence files; do not stage the local design-qa.md or synthetic QA assets.
+
+Only update PR22 branch Preview in the existing GPC Vercel project/team. No Production merge/promotion while release gates remain. No environment/schema/data changes. Validate dashboard 18 tests, case-list 3, typecheck, targeted lint and build with unreachable test DB. In-app browser QA on synthetic demo: 1366/768/320px, type filter, registry anchors, keyboard disclosures, no overflow; private Storage/latest XLSM/live integration UAT remains out of this presentation step. Local design-qa.md is an uncommitted QA note.
+
+## Overview-first dashboard Preview — 2026-10-12
+
+Publish existing PR22 branch only; no Production promotion while integration release gates remain unresolved. Verify dashboard tests (16), case-list tests (3), typecheck, targeted ESLint and unreachable-test-DB production build. Local synthetic browser verifies desktop/mobile, type filter and independent keyboard disclosure; not live database accuracy/Storage readiness/import UAT. No environment or schema change required.
+
+## Case-list split Preview — 2026-10-12
+
+PR22 branch only, no Production promotion. Validate test:case-list (3), test:dashboard (14), typecheck and production build. Isolated synthetic component QA verifies anchor navigation, named separate tables and 320px nested overflow; not live /cases database/filter UAT. Existing query/filter semantics and release gates remain unchanged; no env or schema change needed.
+
+## Officer responsibility Preview — 2026-10-12
+
+Update only the existing PR22 non-production branch; release gates unchanged. Dashboard suite now 14 tests. Local synthetic QA verifies 1366x900 first-viewport figures and 320x720 filter/disclosure without horizontal overflow; real officer count/long labels may expand height. Final typecheck, targeted lint and unreachable-test-DB production build required. No database or environment change for this addition.
+
+## Backlog chart candidate — 2026-10-12
+
+Publish only the existing PR22 branch Preview; do not follow the historical main-push instruction below while integration release gates remain blocked. Validate npm run test:dashboard (12), npm run typecheck, targeted ESLint and production build with unreachable test database. Local synthetic browser QA covers 1366x900 / 320x720, type filter and keyboard details. It does not prove production data accuracy, private Storage readiness or latest XLSM import. No new environment variable/migration is required for these figures.
+
 # Deployment Runbook
 
 This runbook outlines the steps for a successful production deployment, database migration, smoke testing, and rollback procedures.

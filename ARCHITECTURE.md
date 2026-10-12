@@ -1,3 +1,45 @@
+## Authoritative registry completion — 2026-10-12
+
+caseStatus.ts centralizes getRegistryRedText/isClosedOrRedCase/getRegistryCaseStatus. Raw registryRedText, when present (including null/blank), takes precedence over extracted/legal redNumber and status metadata. Legacy DTOs without that property can supply the original red-cell aliases, never status-only completion. Case list applies the same exact trimmed-cell rule after its existing authorized query, not approximate Prisma status/number predicates. No new query or client state; literal cell strings remain React-escaped and permission-bound. Import/status normalization and workload/report consistency checks share the rule. Candidate only; no schema/authentication changes.
+
+## Reference-inspired dashboard cards — 2026-10-12
+
+Presentation-only navy/cyan light-card design, compact 3-column ring/year/officer bento at desktop, responsive tablet/mobile, real registry anchor links. Removed proceeding breakdown figure and its page-scale calculation; original proceeding text/DTO retained for authorized collapsed case details. Officer completion remains the final closed native disclosure. No new client component, chart library, query, schema or dependency.
+
+## Overview-first registry dashboard — 2026-10-12
+
+RegistryOverview is a server component: stacked full-width complaint/appeal sections with visible registry KPIs, completion ring, pending by year/officer and literal proceeding bars. Pending detail and officer-performance native details start closed; officer ranking is the final disclosure in each registry. Common zero-based scales retained. No new query, dependency, schema or metric change. Supersedes the compact officer-first layout below.
+
+## Separate case registries — 2026-10-12
+
+/cases renders CaseRegistryBlocks from the same existing filtered query result. One stable partition into complaint/appeal, optional unknown group so no cases disappear. Two full-width blocks, per-filter counts, jump anchors and explicit empty counterpart. Existing CaseTable reused with named captions and keyboard-focusable horizontal overflow region. No DB/schema/permission/filter semantics changed.
+
+## Officer responsibility snapshot — 2026-10-12
+
+DashboardSnapshot.officerPerformance aggregates every selected case (open and closed), by trimmed registry legalOfficerName with linked-name fallback. Total = completed + pending; completionPercent = completed / total * 100 via canonical isCaseClosed. Competition ranks by total (1,2,2,4); unassigned excluded from ranking. Restricted roles receive one unranked aggregate. No new query/schema/dependency. Two compact stacked-bar scorecards use common absolute zero scale; year/proceeding/details are progressive disclosures.
+
+## Registry visualizations — 2026-10-12
+
+BacklogCharts contains server-rendered SVG completion rings and responsive CSS year/ranked bars. Existing unified snapshot is the only input: no added queries, client chart library, polling or schema changes. Complaint teal and appeal blue; like-for-like charts share a zero-based scale across visible registries. Literal proceeding text is not a funnel.
+
+## Backlog dashboard — 2026-10-12
+
+Snapshot backlog.byYear/byOfficer/byProceeding/cases derives from canonical active records. Year uses only Thai/Arabic two-digit or 25xx black-number suffix, never received/updated date. Exact proceedingNote is not inferred from currentStatus. Registry legalOfficerName has priority over linked User name. Page always loads period=all with type filter. Internal legacy deadline DTO remains compatible but is not rendered; other workflows unchanged.
+
+## Native analysis integration candidate — 2026-10-12
+
+Two dashboard type summaries derive from one bounded source payload, avoiding duplicate DB loads; trend caption IDs are distinct. Registry completion now accepts any nonblank literal source text and preserves it in Case.registryRedText; numeric redNumber remains separately unique per type. First-sheet imports do not fall through to another tab; invalid or missing source dates preserve existing dates.
+
+Infrastructure recheck: existing GPC Supabase is ACTIVE_HEALTHY; native analysis persistence is still unverified and its migration was not applied. Backup persistence was interrupted by approval-review HTTP 429 and Vercel project access remains unavailable. The partial backup must never be treated as a release gate pass.
+
+The existing Next.js/Vercel site owns `/analysis` and `/api/analysis/[...path]`. The shared AppShell, sidebar, authentication and unified `/dashboard` remain unchanged in role. Local React analysis components are reused within this shell; their CSS is scoped to `.analysis-workbench`.
+
+Analysis workspaces are owner-scoped Prisma records, not SQLite or local process state. Separate input version and optimistic `lockRevision` prevent collection updates from falsely invalidating source versions or losing concurrent writes. Revisions/runs keep immutable input and source snapshots. Reviewed drafts can be attached deliberately to an assigned case; attachment is deduplicated and assignment/case number is checked under a Case row lock. No official status transition is performed.
+
+Reference knowledge is exported from the verified local bundle into private content-addressed Storage objects. The runtime loads a JSON snapshot server-side with expected SHA-256; PDFs are hash checked and exposed through short-lived signed URLs only after authorization. Storage operations check that the bucket is actually private, failing closed for public buckets. Files and generated exports are persisted in Storage, not Vercel temporary disk. Runtime does not import SQLite, Vite or Python.
+
+This candidate does not yet port AI proposals, automatic binary document extraction, large file uploads or local job migration. It must not be merged/deployed as complete until the documented live acceptance gates pass.
+
 # ARCHITECTURE.md — GPC Legal Decision Drafting & Case Management System
 
 > **Mandatory Read-First Rule**: All future prompts must begin by reading

@@ -25,6 +25,10 @@ export async function loadDashboardFromSource(
       state: isPartial ? "partial" : snapshot.totalCases === 0 ? "empty" : "ready",
       source: source.kind,
       snapshot,
+      byType: filters.type === "all" ? {
+        complaint: deriveDashboardSnapshot(payload, { ...filters, type: "complaint" }, permissions, now),
+        appeal: deriveDashboardSnapshot(payload, { ...filters, type: "appeal" }, permissions, now),
+      } : undefined,
       partialReasons: payload.partialReasons,
       message: isPartial ? "ข้อมูลบางส่วนยังไม่พร้อมใช้งาน" : undefined,
     };

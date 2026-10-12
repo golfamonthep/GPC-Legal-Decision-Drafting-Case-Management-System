@@ -1,3 +1,58 @@
+## Shared raw-red-cell completion — 2026-10-12
+
+caseStatus.ts: authoritative raw-cell accessor/completion/status normalization; dashboard/metrics.ts and officer snapshots delegate to it. caseList.ts: exact completion/red-cell filters; cases/page.tsx serializes registryRedText, preserving auth and other DB filters. CaseTable.tsx + cases/[id]/page.tsx display literal red text and derived completion; CaseListFilters.tsx clarifies nonnumeric text counts. Import/status routes normalize metadata with the same rule; data-quality checks do not require a numeric red number for completed text. Workload query selects registryRedText. Dashboard tests 19 and case-list tests 5 cover arbitrary text, explicit blank overriding stale numeric/closed metadata, exact filter consistency and rendered literal rows. No new component or dependency.
+
+## Navy/cyan dashboard components — 2026-10-12
+
+dashboard/page.tsx: compact navy header, real registry anchor links, highlighted pending KPI, removes proceedingMax. RegistryOverview.tsx: responsive 3-column ring/year/officer cards; no proceeding plot; closed disclosures at footer. BacklogCharts.tsx: dark/light completion tone and compact solid cyan/blue marks; shared zero scales/direct values retained. OfficerPerformance.tsx: matching surface/marks and h3 hierarchy. charts.test.ts: removal/detail-text regression, dark ring empty/zero/full tests; 18 dashboard tests total.
+
+## Registry overview-first composition — 2026-10-12
+
+RegistryOverview.tsx: visible KPIs/ring/year/pending-officer/proceeding figures, closed pending details followed by closed officer-performance disclosure. dashboard/page.tsx: stacked registry sections and shared chart scales, no expanded top officer scorecards. charts.test.ts: adds ordering/default-closed/empty/permission checks for both registries.
+
+## Separate case list blocks — 2026-10-12
+
+- CaseRegistryBlocks.tsx: complaint/appeal sections, colored counts/anchors, explicit empty and unknown group; existing CaseTable reused.
+- caseList.ts: stable generic one-pass partition by registry type.
+- cases/page.tsx: replaces mixed table with registry blocks after the original query/format/filter flow.
+- CaseTable.tsx: optional named table caption and keyboard-focusable scroll region (other consumers unchanged).
+- caseList.test.ts + npm run test:case-list: 3 tests for partition/order, cross-type duplicate black numbers, named tables, detail links and empty/filtered counterpart.
+
+## Compact officer scorecards — 2026-10-12
+
+- OfficerPerformance.tsx: server figure with absolute stacked completed/pending bars, direct total/completed/pending/% labels, shared rank and unassigned row.
+- dashboard/page.tsx: summary KPI strip, paired registry figures first, collapsed year/proceeding/pending details.
+- dashboard/metrics.ts + types.ts: officerPerformance DTO, all-case denominator, competition ranking, permission masking.
+- dashboard.test.ts + charts.test.ts: 10/7/70%, completion variants, ties, unassigned, reconciliation, filters, privacy, empty state and stacked widths (14 tests total).
+
+## Backlog graphs — 2026-10-12
+
+- src/components/dashboard/BacklogCharts.tsx: CompletionRing, YearColumns, RankedBars, explicit empty state; server components.
+- src/app/dashboard/page.tsx: four figures per complaint/appeal registry, shared scales, responsive chart layout.
+- src/lib/dashboard/charts.test.ts: rendering, empty denominator, shared scale, all groups and escaped labels (3 tests; dashboard suite total 12).
+
+## Backlog dashboard update — 2026-10-12
+
+- /dashboard: pending count, complaint/appeal sections, year/officer/proceeding breakdowns, expandable full pending details. No deadline visuals.
+- data.ts selects Case.proceedingNote; metrics.ts adds getBlackNumberYear and backlog aggregation; types.ts adds backlog DTO; demo.ts uses synthetic proceedings/multiple registry years.
+- AppShell disables TopHeader deadline alert only on /dashboard.
+- dashboard.test.ts covers year parsing, full-group reconciliation (>10 officers), literal proceedings and restricted DTO masking.
+
+## Analysis workbench candidate — 2026-10-12
+
+Execution additions: DashboardResult.byType and two type-specific dashboard sections; ExcelUploader uses exactly SheetNames[0]; registry import persists registryRedText and preserves dates when parsing fails. Offline prepare-registry-sync.mjs verifies backup and creates ignored dry-run/candidate files. No private cases/reference blobs are tracked.
+
+Latest infrastructure check: GPC database is ACTIVE_HEALTHY; candidate routes are still not deployed. No component/API changes in this recheck. Backup persistence and Vercel access remain release blockers.
+
+- Page: `src/app/analysis/page.tsx` (`USE_ANALYSIS`, existing login/AppShell).
+- API: `src/app/api/analysis/[...path]/route.ts` (`USE_ANALYSIS`, same-origin JSON mutations, bounded body, owner/assignment checks; attach additionally requires `EDIT_DRAFT`, propose additionally requires `USE_AI_DRAFT` but is disabled).
+- Subresources: `jobs`, `jobs/:id`, documents/references/manual-seniority/facts/vacancies/analyze/drafts/export/attach; `knowledge`, `knowledge/search`, `knowledge/source`; `case/:id` metadata prefill; `case-documents/:caseId/:docId` protected attached-draft download.
+- UI: `src/components/analysis/Workbench.jsx`, reused InputForm/Documents/Analysis/Drafts/Knowledge/components/api, isolated CSS. No new independent dashboard.
+- Service: `src/lib/analysis/service.mjs`, `engine.mjs`, `safety.mjs`, `knowledge.mjs`, `storage.mjs`; safety tests in `safety.test.ts`.
+- Navigation: existing Sidebar `/analysis`; case detail selected-case entry; DocumentList protected analysis download.
+- Export utility: `scripts/analysis/export-knowledge.mjs`, `local-knowledge.mjs` (offline-only SQLite; never runtime/client).
+- Runbook and incomplete/live acceptance gates: `docs/ANALYSIS-WEB-INTEGRATION.md`.
+
 # COMPONENT_MAP.md — GPC Legal Decision Drafting & Case Management System
 
 > **Mandatory Read-First Rule**: All future prompts must read this file when adding or modifying

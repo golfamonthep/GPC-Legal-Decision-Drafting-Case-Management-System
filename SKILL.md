@@ -1,3 +1,41 @@
+## Reference styling lessons — 2026-10-12
+
+Use the supplied design as aesthetic inspiration for the actual product rather than copying unrelated finance measures. Keep quantitative plots native, solid-fill and source-backed; never invent radar/trends for visual density. Removing a chart need not erase original case text. Mobile select/button should share a minmax(0,1fr)/auto row to avoid unnecessarily tall headers; test all four KPI cards and long disclosures. Compare reference plus actual rendered cards in the same review input.
+
+## Overview-first disclosure lessons — 2026-10-12
+
+Executive reading starts with workload overview, then literal breakdowns, then optional individual ranking. Native details provides keyboard activation without client JavaScript. Keep pending-by-officer counts separate from all-case responsibility/completion ranking. Test default closed state, independent expansion, source order and mobile geometry; do not treat visual hiding as security.
+
+## Case-list separation lessons — 2026-10-12
+
+Separate after existing filtering, not via repeated queries. Preserve original order and IDs; black numbers may legitimately repeat across registry types. Keep empty counterpart explicit and unknown-type records visible. A synthetic component fixture proves grouping, anchors and layout, not database/filter/authentication UAT. Keep QA fixture outside Git and stop its local server after testing.
+
+## Officer ranking lessons — 2026-10-12
+
+Never divide completed cases by pending count. Rank total responsibility separately from completion share; ties get equal rank, unknown officers remain visible outside ranking. Current assignment snapshots are not historic attribution or productivity scores. Preserve full rows and direct measures; place both registries above disclosures for a compact executive read. Measure actual first-viewport geometry; don't promise all real officer rows fit solely because six synthetic rows do.
+
+## Visualization lessons — 2026-10-12
+
+Use common zero scales for matching complaint/appeal plots, direct values and explicit denominators. Retain every officer and exact proceeding text rather than top-N or an inferred funnel. Plain server-rendered SVG/CSS is sufficient; add no query/library. Test empty rings for no fake zero percentage and preserve accessible HTML labels. Responsive QA uses actual DOM viewport dimensions because user browser zoom affects viewport overrides; reset overrides after testing.
+
+## Backlog dashboard lessons — 2026-10-12
+
+Owner replaced deadline/risk requirements with backlog count, black-number suffix year, registry officer and literal proceedingNote. Retain carry-over cases across all received dates. Never infer proceedings from currentStatus or truncate officer groups; every dimension must sum to active count. Hide deadline alerts on /dashboard only. Browser Supabase access remains explicitly denied after owner reported reconnecting; no circumvention.
+
+## Analysis integration lessons — 2026-10-12
+
+Validated alternative backup: read-only Supabase SQL Editor snapshot + native Download CSV, followed by local JSON/table-row verification. The download event can time out even though Chrome saved the file; inspect the exact generated download and verify it before retrying. Vercel bulk .env paste can change selection from Production to Production+Preview; explicitly verify and narrow scope before Save. Service-role transmission requires explicit destination-specific approval; obtained for the same GPC Production only, never Preview.
+
+Latest infrastructure check: GPC is ACTIVE_HEALTHY. A successful snapshot query is not a completed backup: verify the saved file, row counts and schema before DDL. If automatic approval review fails (HTTP 429), do not bypass it through another execution path. Keep incomplete artifacts marked `.partial`, preserve real data and report the blocker.
+
+User clarified that the new analysis workbench belongs inside the existing GPC Vercel site. Do not build another dashboard or deploy the dirty old registry checkout. Reuse the latest secure main in an isolated branch; preserve the user's local work and private source bundle. Keep all analysis revisions separate from official case state.
+
+A localhost bridge is not an online integration. Port persistent state to Prisma/Storage; do not deploy local SQLite/Python filesystem assumptions to Vercel. Private source manifests and binaries must never be committed to this public repository. Verify bucket privacy, source hashes, ownership, exact case/revision and current assignment before exposing or attaching drafts.
+
+Next.js may normalize `req.url` to an internal localhost hostname in development. Validate CSRF Origin against the actual Host header and require HTTPS in production; do not remove origin checks to get around the mismatch. Browser QA must distinguish fixture/development tests from production role UAT. Build success with an unreachable test DB URL proves compilation, not persistence.
+
+Provider restore can fail because the owner already has 2 active Free projects. Do not pause/delete unrelated projects or purchase upgrades automatically. A Vercel connector returning no projects/not-found is an access/discovery blocker, not proof that the user's website no longer exists. Stop production mutations when restore, backup or intended project verification is unavailable.
+
 ## Prompt 95B Lessons Learned
 
 1. **Schema vs Table Creation**: A successful Prisma generate does not create database tables.

@@ -1,4 +1,4 @@
-import { CaseTable } from "@/components/CaseTable";
+import { CaseRegistryBlocks } from "@/components/CaseRegistryBlocks";
 import { CaseListFilters } from "@/components/CaseListFilters";
 import Link from "next/link";
 import prisma from "@/lib/db";
@@ -6,7 +6,8 @@ import { requirePermission } from "@/lib/auth/requirePermission";
 import { CaseStatus } from "@/types";
 import { differenceInDays } from "date-fns";
 import { Prisma } from "@/generated/prisma";
-import { isClosedCaseStatus, hasRedCaseNumber, isClosedOrRedCase } from "@/lib/caseStatus";
+import { isClosedOrRedCase } from "@/lib/caseStatus";
+import { filterCasesByRegistryCompletion } from "@/lib/caseList";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -52,27 +53,7 @@ export default async function CasesPage({
     ];
   }
 
-  // Handle completion status using mapped logic
-  if (completionStatusFilter === "completed") {
-    // We can't strictly filter in Prisma because it's a string match, 
-    // but we know common completed statuses.
-    where.currentStatus = { in: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] };
-  } else if (completionStatusFilter === "open") {
-    where.currentStatus = { notIn: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] };
-  }
-
-  if (redNumberStatusFilter === "hasRed") {
-    where.redNumber = { not: null, gt: "" };
-    // This simple check might not perfectly match hasRedCaseNumber logic, but it's close enough for DB query. We can refine in memory if needed.
-  } else if (redNumberStatusFilter === "noRed") {
-    where.OR = [
-      { redNumber: null },
-      { redNumber: "" },
-      { redNumber: "-" },
-      { redNumber: "ยังไม่ออก" },
-      { redNumber: "ไม่มี" }
-    ];
-  }
+  // Completion filters are applied below with the same exact raw-cell rule as the dashboard.
 
   if (qaMissingFieldsFilter === "missing") {
     if (where.OR) {
@@ -98,7 +79,7 @@ export default async function CasesPage({
     include: { legalOfficer: true, owner: true }
   });
 
-  const formattedCases = dbCases.map((c) => {
+  const formattedCases = filterCasesByRegistryCompletion(dbCases, completionStatusFilter, redNumberStatusFilter).map((c) => {
     let daysUntilDue = undefined;
     let isOverdue = false;
     
@@ -112,6 +93,7 @@ export default async function CasesPage({
       type: c.type as any,
       blackNumber: c.blackNumber,
       redNumber: c.redNumber || undefined,
+      registryRedText: c.registryRedText,
       petitionerName: c.petitionerName,
       respondentName: c.respondentName,
       subject: c.subject,
@@ -137,14 +119,14 @@ export default async function CasesPage({
   });
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="min-w-0 py-6 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="sm:flex sm:items-center">
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold leading-6 text-slate-900 font-thai">
             รายการคดีทั้งหมด
           </h1>
           <p className="mt-2 text-sm text-slate-500 font-thai">
-            รายการคดีร้องทุกข์และอุทธรณ์ที่อยู่ระหว่างดำเนินการ
+            แยกทะเบียนร้องทุกข์และอุทธรณ์ พร้อมรายการตามตัวกรองที่เลือก
           </p>
         </div>
         <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex space-x-3">
@@ -168,7 +150,7 @@ export default async function CasesPage({
       </div>
 
       <div className="mt-4">
-        <CaseTable cases={formattedCases as any} />
+        <CaseRegistryBlocks cases={formattedCases} />
       </div>
     </div>
   );

@@ -1,3 +1,43 @@
+## Authoritative completion and latest live registry — 2026-10-12
+
+No schema, migration or data mutation for the strict completion clarification. Case.registryRedText stores the original first-sheet red cell: any trimmed nonblank value means complete; null/empty/whitespace means pending, even if currentStatus is closed or redNumber is stale. Numeric redNumber is optional and preserves composite uniqueness; never synthesize one for literal completion text. Supersedes historical status-or-number completion definitions below.
+
+Latest verified live refresh (separate operation): GPC tlqszhlggvoirhalsxge has 216 cases after 18 inserts and 198 updates, no deletions. Complaint 107/97 complete/10 pending; appeal 109/71 complete/38 pending. Of the complete records, 48 have literal red text but no numeric redNumber. Verified private backup, guarded transaction, 216 audit/event records and source-field/count reconciliation; no private source records committed. The prior import-unexecuted statements below are historical.
+
+## Proceeding chart removal — 2026-10-12
+
+No schema/migration/data changes. This removes only the plotted proceeding breakdown; existing byProceeding DTO and original authorized case proceeding text remain unchanged. Completion and black-number year definitions, permission masking and all input records preserved. No real-data reads/writes for this presentation change.
+
+## Overview reorder — 2026-10-12
+
+Presentation only; no schema, migration or data mutation. Existing permission-masked snapshot and canonical completion/black-number year/proceeding definitions unchanged. Folding a section is not access control; permission masking remains server-side. Latest XLSM import remains unexecuted.
+
+## Case list presentation — 2026-10-12
+
+No schema/migration/data changes. Partition the existing filtered Case query by exact registry type; unknown types retained separately. Counts are filtered-result counts, not whole-database totals. No additional DB queries or real data mutations during QA.
+
+## Officer completion metric — 2026-10-12
+
+No schema/migration/data changes. Denominator includes all cases attributed to the registry officer (including closed), not pending-only. Numerator uses canonical completion (nonblank registry red text, valid red number or normalized closed status). Grouping uses current registry name, with linked User-name fallback; it does not reconstruct historical assignments. Latest XLSM import is still not executed.
+
+## Visualization update — 2026-10-12
+
+Presentation-only: no schema changes or real-data reads/writes in this step. Graph counts reuse snapshot backlog and total. Completion ring denominator is all selected registry cases, not a monthly completion rate. Latest XLSM import is still not executed.
+
+## Dashboard-only update — 2026-10-12
+
+No schema/migration/data mutation for backlog redesign. Reads existing Case.blackNumber, legalOfficerName, proceedingNote (registry column K) and canonical completion fields. Stored deadlines remain unchanged for other workflows. Latest registry import remains unexecuted.
+
+## AnalysisWorkspace candidate — 2026-10-12 (NOT deployed)
+
+Latest execution: AnalysisWorkspace is now created and RLS-protected; nullable Case.registryRedText preserves literal completion text (no uniqueness) independently from redNumber. Migration source checksums were registered atomically in Prisma history via Supabase apply_migration; 10 completed entries, 198 cases preserved. Backup is a verified, ignored CSV JSON snapshot with schema and full public data, not the earlier `.partial` files. Registry updates are not executed yet.
+
+Additive migration `20261012090000_add_analysis_workspaces` introduces `AnalysisWorkspace`: `id`, `ownerKey` (session identity, no synthetic User FK), nullable restricted `caseId` FK, `title`, input `version`, concurrency `lockRevision`, JSONB `contents`, timestamps. Indexes cover `(ownerKey, updatedAt)` and `caseId`. `contents` contains job input, document metadata/reviewed text, immutable revisions/runs/proposals, export metadata and audit events. History caps reject new additions rather than deleting prior evidence.
+
+RLS is enabled with no Data API policies; public/anon/authenticated table privileges are revoked. All access is via server Prisma with app ownership/role checks. Storage blobs are private and client keys are never used. CaseDocument adds no schema fields; reviewed attachments use the existing fields with provider `supabase_analysis_storage` and status `analysis_draft_needs_review`.
+
+No DDL was run. Latest check confirms ACTIVE_HEALTHY, 198 cases, 32 public tables and 8 successful Prisma migrations. Fresh backup persistence failed on approval-review HTTP 429; the partial ignored artifact is NOT a usable backup. Before deploy: obtain and verify a complete logical schema/data backup including migration history/extensions/row counts, compare actual schema and migration status, review the additive SQL, then run Prisma migrate deploy manually. Never reset, db push or migrate during build.
+
 # DATABASE_SCHEMA.md — GPC Legal Decision Drafting & Case Management System
 
 > **Mandatory Read-First Rule**: All future prompts must read this file before touching the database or Prisma schema.

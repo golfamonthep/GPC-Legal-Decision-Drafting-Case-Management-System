@@ -1,5 +1,5 @@
 import prisma from "@/lib/db";
-import { isClosedOrRedCase } from "@/lib/caseStatus";
+import { getRegistryCaseStatus, isClosedOrRedCase, isClosedCaseStatus } from "@/lib/caseStatus";
 import {
   getFiscalYearStart,
   getFiscalYearEnd,
@@ -105,7 +105,7 @@ export async function getExecutiveReportData(filter: ReportFilter) {
     caseTypes[type]++;
 
     // Status Breakdown
-    const statusStr = c.currentStatus || "ไม่ระบุ";
+    const statusStr = getRegistryCaseStatus(c);
     statuses[statusStr] = (statuses[statusStr] || 0) + 1;
 
     // Deadline Risk
@@ -181,8 +181,8 @@ export async function getExecutiveReportData(filter: ReportFilter) {
     if (!c.respondentName || c.respondentName === "-") dataQuality.noRespondent++;
     if (!c.receivedDate) dataQuality.noReceivedDate++;
     
-    if (c.redNumber && c.redNumber !== "-" && !isClosed) dataQuality.redNumberButNotCompleted++;
-    if (isClosed && (!c.redNumber || c.redNumber === "-")) dataQuality.completedButNoRedNumber++;
+    if (isClosed && !isClosedCaseStatus(c.currentStatus)) dataQuality.redNumberButNotCompleted++;
+    if (isClosedCaseStatus(c.currentStatus) && !isClosed) dataQuality.completedButNoRedNumber++;
   });
 
   // AI Usage

@@ -1,4 +1,5 @@
 export const PERMISSIONS = {
+  USE_ANALYSIS: 'USE_ANALYSIS',
   VIEW_DASHBOARD: 'VIEW_DASHBOARD',
   VIEW_CASES: 'VIEW_CASES',
   VIEW_CASE_DETAIL: 'VIEW_CASE_DETAIL',
@@ -90,6 +91,7 @@ export type UserStatus = 'PENDING' | 'ACTIVE' | 'DISABLED';
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ADMIN: Object.values(PERMISSIONS),
   COMMISSIONER: [
+    'USE_ANALYSIS',
     'VIEW_DASHBOARD',
     'VIEW_CASES',
     'VIEW_CASE_DETAIL',
@@ -128,6 +130,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'VIEW_SYNC_AUDIT',
   ],
   LEGAL_OFFICER: [
+    'USE_ANALYSIS',
     'VIEW_DASHBOARD',
     'VIEW_CASES',
     'VIEW_CASE_DETAIL',
@@ -174,6 +177,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'VIEW_SYNC_AUDIT',
   ],
   REGISTRY_OFFICER: [
+    'USE_ANALYSIS',
     'VIEW_DASHBOARD',
     'VIEW_CASES',
     'VIEW_CASE_DETAIL',

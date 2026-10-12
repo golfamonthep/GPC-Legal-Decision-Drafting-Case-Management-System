@@ -1,3 +1,7 @@
+export function hasRegistryCompletionText(value: unknown): boolean {
+  return value !== null && value !== undefined && String(value).trim().length > 0;
+}
+
 export function isClosedCaseStatus(status: string | null | undefined): boolean {
   if (!status) return false;
   const normalized = status.trim().replace(/\s+/g, ' ').toLowerCase();
@@ -47,14 +51,31 @@ export function hasRedCaseNumber(redCaseNumber: string | null | undefined): bool
   return false;
 }
 
-export function isClosedOrRedCase(caseObj: any): boolean {
-  if (!caseObj) return false;
-  
-  const status = caseObj.status || caseObj.currentStatus;
-  if (isClosedCaseStatus(status)) return true;
+export interface RegistryCompletionRecord {
+  registryRedText?: unknown;
+  redCaseNumber?: unknown;
+  redCaseNo?: unknown;
+  redNumber?: unknown;
+  redNumberText?: unknown;
+  currentStatus?: string | null;
+  status?: string | null;
+}
 
-  const redCase = caseObj.redCaseNumber || caseObj.redCaseNo || caseObj.redNumber || caseObj.redNumberText;
-  if (hasRedCaseNumber(redCase)) return true;
+/** Raw registry red cell is authoritative; status and numeric extraction never override a blank. */
+export function getRegistryRedText(caseObj: RegistryCompletionRecord | null | undefined): string {
+  if (!caseObj) return '';
+  const value = 'registryRedText' in caseObj
+    ? caseObj.registryRedText
+    : caseObj.redCaseNumber ?? caseObj.redCaseNo ?? caseObj.redNumber ?? caseObj.redNumberText;
+  return String(value ?? '').trim();
+}
 
-  return false;
+export function isClosedOrRedCase(caseObj: RegistryCompletionRecord | null | undefined): boolean {
+  return hasRegistryCompletionText(getRegistryRedText(caseObj));
+}
+
+export function getRegistryCaseStatus(caseObj: RegistryCompletionRecord): string {
+  if (isClosedOrRedCase(caseObj)) return 'เสร็จสิ้น';
+  const status = (caseObj.currentStatus ?? caseObj.status ?? '').trim();
+  return !status || isClosedCaseStatus(status) ? 'อยู่ระหว่างดำเนินการ' : status;
 }

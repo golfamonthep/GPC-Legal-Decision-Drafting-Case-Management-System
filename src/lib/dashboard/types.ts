@@ -18,8 +18,10 @@ export interface DashboardCaseRecord {
   type: string;
   blackNumber: string;
   redNumber: string | null;
+  registryRedText?: string | null;
   subject: string;
   currentStatus: string;
+  proceedingNote?: string | null;
   receivedDate: Date | null;
   dueDate30: Date | null;
   dueDate60: Date | null;
@@ -66,6 +68,21 @@ export interface DashboardSnapshot {
   generatedAt: string;
   dataFreshness: string | null;
   totalCases: number;
+  officerPerformance: Array<{
+    name: string;
+    total: number;
+    completed: number;
+    pending: number;
+    completionPercent: number;
+    rank: number | null;
+    unassigned: boolean;
+  }>;
+  backlog: {
+    byYear: Array<{ label: string; count: number }>;
+    byOfficer: Array<{ label: string; count: number }>;
+    byProceeding: Array<{ label: string; count: number }>;
+    cases: Array<{ id: string; blackNumber: string; year: string; officer: string; proceeding: string; subject: string }>;
+  };
   kpis: {
     active: number;
     overdue: number;
@@ -116,6 +133,7 @@ export interface DashboardResult {
   state: DashboardLoadState;
   source: "database" | "demo";
   snapshot: DashboardSnapshot | null;
+  byType?: Record<"complaint" | "appeal", DashboardSnapshot>;
   message?: string;
   partialReasons?: string[];
 }

@@ -1,3 +1,71 @@
+## Strict registry completion rule — 2026-10-12 (code candidate, not Production)
+
+Owner confirmed: any nonblank original red-cell text is complete (including `แดงแล้ว`, arbitrary text and pending numeric allocation); whitespace/null/empty is pending. The presence of registryRedText is authoritative even when empty: neither a closed currentStatus nor a stale extracted redNumber overrides it. Shared helpers now govern dashboard/officer percentages, case-list filters/display, import/status normalization, workload and consistency checks. Literal text is displayed, not replaced with an invented unique number. Workload selection now includes raw red text and removes the nonexistent Case.status selection. Authentication/permissions/schema/private Storage remain unchanged.
+
+Validation: dashboard 19/19, case-list 5/5, Prisma validate, typecheck and production build pass using unreachable test-only DB (no DB-write attempt). Targeted ESLint has no errors, pre-existing any warnings remain. Independent real-data snapshot validation reconciles all 216 source rows and SQL/dashboard sums. Fresh read-only SQL: complaint 107 = 97 complete + 10 pending (29 complete without numeric red); appeal 109 = 71 complete + 38 pending (19 complete without numeric red). No database write was needed for this clarification. PR22 remains draft/Preview; existing private Storage/analysis integration Production release gates still apply. Historical definitions below are superseded by this rule.
+
+## Latest registry data synchronized — 2026-10-12 (live database operation)
+
+Completed user-authorized data refresh in Supabase GPC `tlqszhlggvoirhalsxge`, without schema changes or a frontend release. First sheets only; file hashes and every extracted source cell verified. Added 18 cases (11 complaint, 7 appeal), updated 198 existing cases, preserved original IDs/app-only fields and deleted nothing. Live totals: complaint 107 = 97 completed + 10 pending; appeal 109 = 71 completed + 38 pending. Total 216 = 168 completed + 48 pending. Nonblank registry red text is completion evidence, including nonnumeric text; stored numeric red numbers retain composite uniqueness.
+
+Rollback rehearsal passed before the single atomic commit. Case snapshots backed up outside Git; before/after audits and case events recorded for all 216 cases. Post-import equality against all payload fields, retained IDs/app-only fields, counts, unique keys, completion consistency, officer performance sums and normalized black-number years passed. Production `/api/health/db` returned `ok` with no host/credential disclosure. Dashboard/case data refresh at request time; Preview demo data intentionally remains synthetic. Source formula/date errors were preserved as old dates or null rather than guessed (54 cells), six missing required source values use the existing `ไม่ระบุ` convention, two invalid link cells retain a valid prior link or null, and five dual 60-day dates use the established earliest-date mapping. Original XLSM files were not edited. Private evidence: `private-test-data/registry-refresh-20261012-verified/verification.json` and snapshots.
+
+The latest-register import gate is now complete. Remaining private Storage/analysis integration UAT and Production UI release gates are separate and unchanged. Historical entries below describe their state before this database refresh.
+
+## Reference styling and removed proceeding chart — 2026-10-12 (candidate, not Production)
+
+Final automated validation: dashboard 18/18, case-list 3/3, typecheck, targeted ESLint and production build passed. Unreachable test DB confirms no DB-write attempt during build. Original C:/APP checkout left untouched.
+
+Implemented supplied aesthetic reference (middle light-card/navy variant) in existing GPC dashboard. Navy pending KPI and completion cards, elevated light year/officer plots, complaint/appeal anchor navigation, compact disclosures. Proceeding chart removed from both registries; original detail text intact. Dashboard 18/18 and case-list 3/3 tests pass; typecheck/lint/build final result appended after completion. In-app synthetic Browser QA: desktop 1366x900, tablet 768x1024, mobile 320x720 no horizontal body overflow; filter, anchors and independent keyboard officer expansion pass; screenshots compared together with source; console [] after filter. Local design-qa.md passed and is not committed. Existing private Storage/import/live integration release gates unchanged.
+
+## Overview-first dashboard — 2026-10-12 (candidate, not Production)
+
+Final validation: production build passed with an unreachable test database, no attempted DB writes. Dashboard 16/16 and case-list 3/3 tests, typecheck and targeted lint passed.
+
+Reordered to match supplied reference: visible registry overview first, officer responsibility/completion ranking folded at each registry footer. Dashboard tests 16/16, case-list regression 3/3, typecheck and targeted ESLint pass. Synthetic localhost Browser QA: 1366x900 and 320x720 have no body overflow; default disclosures closed, keyboard opening independently for both registries and appeal filter passed; screenshot captured and inspected, sampled console clean after filter navigation. Production build required before publish. Not real-data/Storage/import UAT; existing release gates remain unchanged.
+
+## Case list split — 2026-10-12 (candidate, not Production)
+
+/cases now has distinct teal complaint / blue appeal blocks, per-filter counts, jump anchors, explicit empty blocks and optional unknown-type block. Existing DB query/filter/detail/update paths unchanged. New case-list tests 3/3, dashboard regression 14/14, typecheck and production build pass. Targeted ESLint: 0 errors, 3 pre-existing any warnings in cases/page.tsx. Isolated synthetic component Browser QA on localhost: two named tables, anchor navigation, 320px no body overflow (wide tables scroll inside their blocks), screenshot and clean console. This is not authenticated live /cases filter/data UAT; production data and release blockers unchanged.
+
+## Officer chart candidate — 2026-10-12 (not Production)
+
+Adds all-officer total/completed/pending/% completion, ranked by total with shared ranks; unassigned separate, restricted DTO aggregate only. Snapshot based on currently recorded responsibility, not historical credit, case complexity or speed. Compact header/KPI strip + side-by-side complaint/appeal figures above folded year/proceeding/detail views. Synthetic local browser: all six rows per registry fit first 1366x900 viewport (bottom ~896), 320x720 no horizontal overflow, appeal filter and keyboard disclosure passed. Real data may have more officers/longer labels and require scrolling. Grammarly external hydration warning persists; screenshot captured after one timeout. Tests 14/14, typecheck/targeted ESLint passed. Existing private Storage/live import/integration release blockers remain; no Production mutation.
+
+## Latest visual change — 2026-10-12 (candidate, not Production)
+
+Added four figures per registry: completion share with explicit total denominator, pending by black-number year, pending by all officers and literal proceeding text. Always-visible values/percentages, missing groups retained, no hover requirement. Local synthetic QA: 1366x900 and 320x720, no main overflow, appeal filter and keyboard disclosure passed. Grammarly injects body attributes causing an external hydration warning; not suppressed. Dashboard tests 12/12, typecheck and targeted ESLint pass. Production release and latest real registry import remain blocked/unexecuted as documented below.
+
+## Latest dashboard change — 2026-10-12 (candidate, not Production)
+
+Backlog-only dashboard: remaining count; year from black-number suffix (123/68 -> 2568); registry legal officer; exact proceedingNote from column K. Complaint/appeal sections contain no deadline KPI/risk/urgent table or header deadline alert. Old received-date filters no longer hide carry-over cases. Complete year/officer/proceeding groups and pending details, explicit missing values, permission masking.
+
+9 dashboard tests, targeted ESLint and typecheck pass. Final production build passes with an unreachable test DB URL and no DB writes. Restricted-shell build initially hit Turbopack child-process startup failure; approved normal build execution succeeds without code/config bypass. Local authenticated synthetic QA passes type selection, both registries, keyboard details and CSS 320px no horizontal overflow. Grammarly causes a known body-attribute hydration warning; screenshots intermittently time out. No real case data changed.
+
+Owner reported reconnecting; Vercel connector still returns no GPC project, and Supabase Browser auto-review explicitly denied re-access. Do not circumvent. Production release, private Storage and latest registry import remain blocked; original site unchanged.
+
+## Current update — 2026-10-12: integrate analysis into existing GPC
+
+Latest release check: branch Preview for commit 4f53d3a passes GitHub Prisma/lint/typecheck and Vercel deployment checks. Production-only server configuration is saved; SUPABASE_SERVICE_ROLE_KEY was verified as Secret (bulk .env initially defaulted to Config, corrected explicitly without rotating/revealing it). Other four non-sensitive analysis settings are Production Config. The owner explicitly approved transferring the existing GPC key to the same GPC Production only. Sensitive clipboard copy was cleared.
+
+Remaining hard blocker: browser auto-review failed with HTTP 429 and denied Supabase browser access. Do not circumvent through another browser/session or indirect execution. No private Storage bucket or source upload has been created; real cases remain at 198, import remains dry-run. Do not merge/promote this incomplete analysis integration as finished. Retain the existing production deployment until Storage and live gates are verified. Latest normalized source counts are not yet production counts.
+
+Execution update: authenticated Chrome verifies the original Vercel project and Ready branch Preview; connector 404 is not missing infrastructure. Fresh private CSV snapshot verified: 32 tables, 198 cases, 402 columns, 66 constraints, 93 indexes; SHA256 `2ed58fb0a2d29944c6790e594f8a0083f3a04c572d660c252acb4616faadf0fc`. Additive AnalysisWorkspace and Case.registryRedText migrations applied via the authenticated Supabase migration connector, with exact source checksums registered in Prisma history (10 applied); post-DDL cases remain 198, workspace RLS true. No Prisma CLI migrate deploy was executed because its private connection credentials are not locally available.
+
+Latest registry dry-run: first worksheets only; complaint 107 (11 new, 96 existing, 97 nonblank red markers), appeal 109 (7 new, 102 existing, 71 nonblank red markers). No duplicate black/red conflicts or missing original cases. Invalid/empty dates preserve existing dates, never guess. Import NOT executed yet. Two type-specific dashboard summaries share one payload; literal red markers are stored separately from unique legal numbers. Storage/env/deploy/live QA remain in progress; do not read earlier blocker paragraphs as current status.
+
+User explicitly confirmed the analysis workbench must run inside the existing Vercel GPC website, not as a second dashboard or a localhost-only application. Candidate branch: `codex/integrate-analysis-workbench`, based on `origin/main` `5615e2e`. Existing dirty `C:\APP` work was preserved.
+
+Implemented candidate: `/analysis` under the existing authenticated AppShell, native Prisma workspace persistence, private Storage adapter, reusable analysis/source/document/draft components, reviewed DOCX export and explicit case attachment. No official case statuses, assignments, auth credentials or existing dashboard definitions changed. AI proposals are disabled pending infrastructure/credential and readiness validation. Automatic PDF/DOCX/XLSX extraction is not ported; manual transcription/review is supported. Uploads are limited to 3 MB in this candidate. Existing local analysis jobs were not imported.
+
+Validation: Prisma validate, typecheck, 11 analysis safety tests, 5 existing dashboard tests passed. Production build passed with a deliberately unreachable test-only database URL (not live DB proof). Browser local-development QA: desktop 1366x900 and mobile 320x720; no page errors, no mobile horizontal overflow, fields respond, unsaved input navigation guard works, real disconnected-database requests return 503 with a visible message. This is NOT authenticated production role UAT or DB-ready/empty/missing-table coverage.
+
+Latest live check: Supabase `tlqszhlggvoirhalsxge` is ACTIVE_HEALTHY after the owner's infrastructure action. Exact SQL count confirms 198 cases, 32 public tables and 8 successful Prisma migrations. All 32 public tables have RLS enabled. Security Advisors report INFO for deny-by-default/no policies and WARN for vector in public; no ERROR-level finding. No other projects were changed by this task.
+
+Live release remains BLOCKED: a consistent public-data snapshot was retrieved, but local persistence stopped on automatic approval-review HTTP 429; the incomplete 99,886-byte file is explicitly named `public-data.json.partial` and is NOT a valid backup. Do not use it for recovery or run DDL until a complete schema/data backup is saved and verified. Vercel access is still unresolved: the exact existing project name in the known team returned 404. No migration, Storage upload, production deployment, main merge or case mutation occurred.
+
+Private source export integrity verified: 7 PDFs, 870 indexed records, 2,723,939-byte JSON snapshot. Generated output is ignored under `private-test-data/analysis-cloud-export`; no real reference data is tracked. Release steps: `docs/ANALYSIS-WEB-INTEGRATION.md`. Older status statements below are historical and must not override this current check.
+
 ## Prompt 92B Status Update
 
 **Status:** Prompt 93 Completed. MVP Dashboard infinite loading and AccessDenied resolved. `AUTH_MODE=none` now automatically maps to `ADMIN` role and explicitly bypasses all server-side and component-level permission checks. Also fixed SSG build failures on Vercel for `/meetings` and `/finalization` by marking them `force-dynamic`.

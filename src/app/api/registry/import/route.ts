@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/lib/auth/requireApiPermission';
 import prisma from '@/lib/db';
 import { parseThaiDate } from '@/lib/dateUtils';
-import { hasRedCaseNumber, isClosedCaseStatus } from '@/lib/caseStatus';
+import { getRegistryCaseStatus } from '@/lib/caseStatus';
 
 const THAI_DIGITS: Record<string, string> = {
   '๐': '0', '๑': '1', '๒': '2', '๓': '3', '๔': '4',
@@ -16,6 +16,13 @@ type ExistingCaseRef = {
   type: string;
   blackNumber: string;
   redNumber: string | null;
+  receivedDate: Date | null;
+  dueDate30: Date | null;
+  dueDate60: Date | null;
+  dueDate90: Date | null;
+  dueDate120: Date | null;
+  dueDate240: Date | null;
+  meetingDate: Date | null;
 };
 
 function normalizeCaseType(value: unknown): NormalizedCaseType {
@@ -92,7 +99,7 @@ export async function POST(request: NextRequest) {
               ...(redNumbersToCheck.length > 0 ? [{ redNumber: { in: redNumbersToCheck } }] : []),
             ],
           },
-          select: { id: true, type: true, blackNumber: true, redNumber: true },
+          select: { id: true, type: true, blackNumber: true, redNumber: true, receivedDate: true, dueDate30: true, dueDate60: true, dueDate90: true, dueDate120: true, dueDate240: true, meetingDate: true },
         })
       : [];
 
@@ -169,12 +176,8 @@ export async function POST(request: NextRequest) {
         seenPayloadBlack.add(blackKey);
         if (redKey) seenPayloadRed.add(redKey);
 
-        const rawRedCaseNo = normalizeCaseNumber(data.redCaseNo);
         const importedStatus = safeText(data.status).replace(/\s+/g, ' ');
-        const completedByRedNumber = hasRedCaseNumber(rawRedCaseNo);
-        const currentStatus = completedByRedNumber && !isClosedCaseStatus(importedStatus)
-          ? 'เสร็จสิ้น'
-          : importedStatus || 'อยู่ระหว่างดำเนินการ';
+        const currentStatus = getRegistryCaseStatus({ registryRedText: data.redCaseNo, currentStatus: importedStatus });
 
         rowsToSynchronize.push({
           rowInfo: row,
@@ -185,6 +188,7 @@ export async function POST(request: NextRequest) {
             type: caseType,
             blackNumber,
             redNumber,
+            registryRedText: safeText(data.redCaseNo) || null,
             petitionerName: safeText(data.complainantName) || 'ไม่ระบุ',
             respondentName: safeText(data.accusedName) || 'ไม่ระบุ',
             subject: safeText(data.subject) || 'ไม่ระบุ',
@@ -192,14 +196,14 @@ export async function POST(request: NextRequest) {
             legalOfficerName: safeText(data.legalOfficer) || null,
             committeeOwnerName: safeText(data.commissioner) || null,
             proceedingNote: safeText(data.proceedingNote) || null,
-            receivedDate: parseThaiDate(data.receivedDate),
-            dueDate30: parseThaiDate(data.deadline30),
-            dueDate60: parseThaiDate(data.deadline60),
-            dueDate90: parseThaiDate(data.deadline90),
-            dueDate120: parseThaiDate(data.deadline120),
-            dueDate240: parseThaiDate(data.deadline240),
+            receivedDate: parseThaiDate(data.receivedDate) ?? existing?.receivedDate ?? null,
+            dueDate30: parseThaiDate(data.deadline30) ?? existing?.dueDate30 ?? null,
+            dueDate60: parseThaiDate(data.deadline60) ?? existing?.dueDate60 ?? null,
+            dueDate90: parseThaiDate(data.deadline90) ?? existing?.dueDate90 ?? null,
+            dueDate120: parseThaiDate(data.deadline120) ?? existing?.dueDate120 ?? null,
+            dueDate240: parseThaiDate(data.deadline240) ?? existing?.dueDate240 ?? null,
             currentStatus,
-            meetingDate: parseThaiDate(data.meetingDate),
+            meetingDate: parseThaiDate(data.meetingDate) ?? existing?.meetingDate ?? null,
             decisionResult: safeText(data.decisionResult) || null,
             oneDriveUrl: safeText(data.oneDriveUrl) || null,
           },
@@ -254,6 +258,13 @@ export async function POST(request: NextRequest) {
             type: result.item.caseData.type,
             blackNumber: result.item.caseData.blackNumber,
             redNumber: result.item.caseData.redNumber,
+            receivedDate: result.item.caseData.receivedDate,
+            dueDate30: result.item.caseData.dueDate30,
+            dueDate60: result.item.caseData.dueDate60,
+            dueDate90: result.item.caseData.dueDate90,
+            dueDate120: result.item.caseData.dueDate120,
+            dueDate240: result.item.caseData.dueDate240,
+            meetingDate: result.item.caseData.meetingDate,
           };
           existingByBlack.set(result.item.blackKey, reference);
           if (result.item.redKey) existingByRed.set(result.item.redKey, reference);

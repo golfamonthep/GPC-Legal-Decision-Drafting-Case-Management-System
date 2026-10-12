@@ -3,10 +3,11 @@ import { StatusBadge } from "./StatusBadge";
 import Link from "next/link";
 import { AlertCircle, Clock, Eye, PencilLine } from "lucide-react";
 import { cn } from "../lib/utils";
-import { isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
+import { getRegistryRedText, getRegistryCaseStatus, isClosedOrRedCase } from "@/lib/caseStatus";
 
 interface CaseTableProps {
   cases: Case[];
+  caption?: string;
 }
 
 function formatUpdatedAt(value?: string): string | null {
@@ -23,10 +24,11 @@ function formatUpdatedAt(value?: string): string | null {
   });
 }
 
-export function CaseTable({ cases }: CaseTableProps) {
+export function CaseTable({ cases, caption }: CaseTableProps) {
   return (
-    <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+    <div className="min-w-0 overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg" tabIndex={0} role="region" aria-label={caption || "ตารางรายการคดี"}>
       <table className="min-w-[1320px] w-full divide-y divide-slate-300">
+        {caption && <caption className="sr-only">{caption}</caption>}
         <thead className="bg-slate-50">
           <tr>
             <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-slate-900 sm:pl-6">
@@ -58,12 +60,13 @@ export function CaseTable({ cases }: CaseTableProps) {
         <tbody className="divide-y divide-slate-200 bg-white">
           {cases.map((c) => {
             const updatedAtLabel = formatUpdatedAt(c.updatedAt);
+            const redText = getRegistryRedText(c);
 
             return (
               <tr key={c.id} className={cn(c.isOverdue && "bg-red-50/50")}>
                 <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6 align-top">
                   <div>{c.blackNumber}</div>
-                  {c.redNumber && <div className="text-red-600 text-xs mt-1">{c.redNumber}</div>}
+                  {redText && <div className="text-red-600 text-xs mt-1 whitespace-pre-wrap break-words">{redText}</div>}
                 </td>
                 <td className="px-3 py-4 text-sm text-slate-500 max-w-xs align-top">
                   <div className="font-medium text-slate-900">{c.type}</div>
@@ -102,16 +105,12 @@ export function CaseTable({ cases }: CaseTableProps) {
                   )}
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500 align-top">
-                  <StatusBadge status={c.currentStatus} />
+                  <StatusBadge status={getRegistryCaseStatus(c)} />
                 </td>
                 <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500 align-top">
-                  {isClosedCaseStatus(c.currentStatus) ? (
+                  {isClosedOrRedCase(c) ? (
                     <div className="flex items-center text-green-600 font-medium">
                       เสร็จสิ้นแล้ว
-                    </div>
-                  ) : hasRedCaseNumber(c.redNumber) ? (
-                    <div className="flex items-center text-green-600 font-medium">
-                      เสร็จสิ้นตามเลขแดง
                     </div>
                   ) : c.isOverdue ? (
                     <div className="flex items-center text-red-600 font-medium">
