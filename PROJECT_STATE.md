@@ -1,3 +1,15 @@
+## Current update — 2026-10-12: integrate analysis into existing GPC
+
+User explicitly confirmed the analysis workbench must run inside the existing Vercel GPC website, not as a second dashboard or a localhost-only application. Candidate branch: `codex/integrate-analysis-workbench`, based on `origin/main` `5615e2e`. Existing dirty `C:\APP` work was preserved.
+
+Implemented candidate: `/analysis` under the existing authenticated AppShell, native Prisma workspace persistence, private Storage adapter, reusable analysis/source/document/draft components, reviewed DOCX export and explicit case attachment. No official case statuses, assignments, auth credentials or existing dashboard definitions changed. AI proposals are disabled pending infrastructure/credential and readiness validation. Automatic PDF/DOCX/XLSX extraction is not ported; manual transcription/review is supported. Uploads are limited to 3 MB in this candidate. Existing local analysis jobs were not imported.
+
+Validation: Prisma validate, typecheck, 11 analysis safety tests, 5 existing dashboard tests passed. Production build passed with a deliberately unreachable test-only database URL (not live DB proof). Browser local-development QA: desktop 1366x900 and mobile 320x720; no page errors, no mobile horizontal overflow, fields respond, unsaved input navigation guard works, real disconnected-database requests return 503 with a visible message. This is NOT authenticated production role UAT or DB-ready/empty/missing-table coverage.
+
+Live release BLOCKED: Supabase `tlqszhlggvoirhalsxge` is INACTIVE. Restore was requested and rejected by the provider because owner `golfamonthep` already has 2 active Free projects. No other projects were paused/deleted/upgraded. Vercel connector sees the original team but returns no projects; the saved project ID returns not-found. No migration, data upload, production deployment, main merge or real case mutation occurred.
+
+Private source export integrity verified: 7 PDFs, 870 indexed records, 2,723,939-byte JSON snapshot. Generated output is ignored under `private-test-data/analysis-cloud-export`; no real reference data is tracked. Release steps: `docs/ANALYSIS-WEB-INTEGRATION.md`. Older status statements below are historical and must not override this current check.
+
 ## Prompt 92B Status Update
 
 **Status:** Prompt 93 Completed. MVP Dashboard infinite loading and AccessDenied resolved. `AUTH_MODE=none` now automatically maps to `ADMIN` role and explicitly bypasses all server-side and component-level permission checks. Also fixed SSG build failures on Vercel for `/meetings` and `/finalization` by marking them `force-dynamic`.

@@ -175,6 +175,11 @@ export default async function CaseDetailPage({
         </div>
         <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
           <CaseDetailActions caseData={caseData} />
+          {hasPermission(user.role, 'USE_ANALYSIS') && (
+            <Link href={'/analysis?case=' + encodeURIComponent(caseId)} className="inline-flex items-center rounded-md border border-teal-700 bg-white px-3 py-2 text-sm font-semibold text-teal-800 hover:bg-teal-50">
+              ส่งเข้าวิเคราะห์และร่าง
+            </Link>
+          )}
           {caseData.oneDriveUrl && (
             <a
               href={caseData.oneDriveUrl}

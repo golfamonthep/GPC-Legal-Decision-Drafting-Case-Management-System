@@ -1,3 +1,13 @@
+## Native analysis integration candidate — 2026-10-12
+
+The existing Next.js/Vercel site owns `/analysis` and `/api/analysis/[...path]`. The shared AppShell, sidebar, authentication and unified `/dashboard` remain unchanged in role. Local React analysis components are reused within this shell; their CSS is scoped to `.analysis-workbench`.
+
+Analysis workspaces are owner-scoped Prisma records, not SQLite or local process state. Separate input version and optimistic `lockRevision` prevent collection updates from falsely invalidating source versions or losing concurrent writes. Revisions/runs keep immutable input and source snapshots. Reviewed drafts can be attached deliberately to an assigned case; attachment is deduplicated and assignment/case number is checked under a Case row lock. No official status transition is performed.
+
+Reference knowledge is exported from the verified local bundle into private content-addressed Storage objects. The runtime loads a JSON snapshot server-side with expected SHA-256; PDFs are hash checked and exposed through short-lived signed URLs only after authorization. Storage operations check that the bucket is actually private, failing closed for public buckets. Files and generated exports are persisted in Storage, not Vercel temporary disk. Runtime does not import SQLite, Vite or Python.
+
+This candidate does not yet port AI proposals, automatic binary document extraction, large file uploads or local job migration. It must not be merged/deployed as complete until the documented live acceptance gates pass.
+
 # ARCHITECTURE.md — GPC Legal Decision Drafting & Case Management System
 
 > **Mandatory Read-First Rule**: All future prompts must begin by reading

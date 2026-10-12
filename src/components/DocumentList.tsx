@@ -64,7 +64,11 @@ export function DocumentList({ caseId, documents, canLink = false }: DocumentLis
             </div>
             <div className="ml-4 flex-shrink-0 flex items-center gap-4">
               <span className="text-xs text-slate-400">{doc.date}</span>
-              {doc.webUrl ? (
+              {doc.provider === 'supabase_analysis_storage' ? (
+                <a href={'/api/analysis/case-documents/' + encodeURIComponent(caseId) + '/' + encodeURIComponent(doc.id)} className="font-medium text-blue-600 hover:text-blue-500">
+                  ดาวน์โหลดร่างวิเคราะห์
+                </a>
+              ) : doc.webUrl ? (
                 <a href={doc.webUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:text-blue-500 flex items-center gap-1">
                   เปิดเอกสาร
                 </a>

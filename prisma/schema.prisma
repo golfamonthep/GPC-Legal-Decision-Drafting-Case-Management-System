@@ -75,6 +75,7 @@ model Case {
   documents            CaseDocument[]
   events               CaseEvent[]
   drafts               DecisionDraft[]
+  analysisWorkspaces   AnalysisWorkspace[]
   agendaItems          MeetingAgendaItem[]
   archiveRecords       CaseArchiveRecord[]
   knowledgeReuseReviews KnowledgeReuseReview[]
@@ -87,6 +88,23 @@ model Case {
   @@index([legalOfficerId])
   @@index([ownerId])
   @@index([updatedAt])
+}
+
+// Separate, owner-scoped analysis snapshots; never alters official case status.
+model AnalysisWorkspace {
+  id           String   @id @default(uuid())
+  ownerKey     String
+  caseId       String?
+  case         Case?    @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  title        String
+  version      Int      @default(1)
+  lockRevision Int      @default(1)
+  contents     Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([ownerKey, updatedAt])
+  @@index([caseId])
 }
 
 model CaseDocument {

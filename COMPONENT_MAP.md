@@ -1,3 +1,14 @@
+## Analysis workbench candidate — 2026-10-12
+
+- Page: `src/app/analysis/page.tsx` (`USE_ANALYSIS`, existing login/AppShell).
+- API: `src/app/api/analysis/[...path]/route.ts` (`USE_ANALYSIS`, same-origin JSON mutations, bounded body, owner/assignment checks; attach additionally requires `EDIT_DRAFT`, propose additionally requires `USE_AI_DRAFT` but is disabled).
+- Subresources: `jobs`, `jobs/:id`, documents/references/manual-seniority/facts/vacancies/analyze/drafts/export/attach; `knowledge`, `knowledge/search`, `knowledge/source`; `case/:id` metadata prefill; `case-documents/:caseId/:docId` protected attached-draft download.
+- UI: `src/components/analysis/Workbench.jsx`, reused InputForm/Documents/Analysis/Drafts/Knowledge/components/api, isolated CSS. No new independent dashboard.
+- Service: `src/lib/analysis/service.mjs`, `engine.mjs`, `safety.mjs`, `knowledge.mjs`, `storage.mjs`; safety tests in `safety.test.ts`.
+- Navigation: existing Sidebar `/analysis`; case detail selected-case entry; DocumentList protected analysis download.
+- Export utility: `scripts/analysis/export-knowledge.mjs`, `local-knowledge.mjs` (offline-only SQLite; never runtime/client).
+- Runbook and incomplete/live acceptance gates: `docs/ANALYSIS-WEB-INTEGRATION.md`.
+
 # COMPONENT_MAP.md — GPC Legal Decision Drafting & Case Management System
 
 > **Mandatory Read-First Rule**: All future prompts must read this file when adding or modifying

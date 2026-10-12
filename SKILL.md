@@ -1,3 +1,13 @@
+## Analysis integration lessons — 2026-10-12
+
+User clarified that the new analysis workbench belongs inside the existing GPC Vercel site. Do not build another dashboard or deploy the dirty old registry checkout. Reuse the latest secure main in an isolated branch; preserve the user's local work and private source bundle. Keep all analysis revisions separate from official case state.
+
+A localhost bridge is not an online integration. Port persistent state to Prisma/Storage; do not deploy local SQLite/Python filesystem assumptions to Vercel. Private source manifests and binaries must never be committed to this public repository. Verify bucket privacy, source hashes, ownership, exact case/revision and current assignment before exposing or attaching drafts.
+
+Next.js may normalize `req.url` to an internal localhost hostname in development. Validate CSRF Origin against the actual Host header and require HTTPS in production; do not remove origin checks to get around the mismatch. Browser QA must distinguish fixture/development tests from production role UAT. Build success with an unreachable test DB URL proves compilation, not persistence.
+
+Provider restore can fail because the owner already has 2 active Free projects. Do not pause/delete unrelated projects or purchase upgrades automatically. A Vercel connector returning no projects/not-found is an access/discovery blocker, not proof that the user's website no longer exists. Stop production mutations when restore, backup or intended project verification is unavailable.
+
 ## Prompt 95B Lessons Learned
 
 1. **Schema vs Table Creation**: A successful Prisma generate does not create database tables.

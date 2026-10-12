@@ -21,6 +21,7 @@ import { hasPermission } from "@/lib/auth/permissions";
 const navigation = [
   { name: "หน้าหลัก (Dashboard)", href: "/dashboard", icon: LayoutDashboard },
   { name: "รายการคดี", href: "/cases", icon: Files },
+  { name: "วิเคราะห์และร่างคำวินิจฉัย", href: "/analysis", icon: Scale, permission: "USE_ANALYSIS" as const },
   { name: "ค้นหาขั้นสูง", href: "/search", icon: Search, permission: "ADVANCED_CASE_SEARCH" as any },
   { name: "สารบบ", href: "/registry", icon: BookOpen },
   { name: "ตรวจคุณภาพข้อมูล", href: "/data-quality", icon: AlertTriangle, permission: "VIEW_DATA_QUALITY" as any },
