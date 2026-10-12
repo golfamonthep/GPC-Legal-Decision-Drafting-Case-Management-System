@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { hasRedCaseNumber, hasRegistryCompletionText, isClosedCaseStatus } from "../caseStatus";
-import { deriveDashboardSnapshot, getDashboardDateRange, getDaysUntilDue, getNearestDueDate, parseDashboardFilters } from "./metrics";
+import { deriveDashboardSnapshot, getBlackNumberYear, getDashboardDateRange, getDaysUntilDue, getNearestDueDate, parseDashboardFilters } from "./metrics";
 import { loadDashboardFromSource } from "./loader";
 import { detectCaseDataQualityIssues } from "../dataQuality/caseDataQuality";
 import { evaluateDataQuality } from "../search/dataQuality";
@@ -32,6 +32,43 @@ function record(overrides: Partial<DashboardCaseRecord> = {}): DashboardCaseReco
 }
 
 const permissions = { canViewCaseDetails: true, canViewDataQuality: true };
+
+test("registry year comes only from the black-number suffix", () => {
+  assert.equal(getBlackNumberYear("123/68"), "พ.ศ. 2568");
+  assert.equal(getBlackNumberYear("เรื่องดำที่ ๑๒๓ / ๒๕๖๗"), "พ.ศ. 2567");
+  assert.equal(getBlackNumberYear("123/๖๙"), "พ.ศ. 2569");
+  for (const value of ["123", "123/2026", "123/68/extra", "123/8"]) {
+    assert.equal(getBlackNumberYear(value), "ไม่ระบุปีในเลขดำ");
+  }
+});
+
+test("backlog breakdowns reconcile, retain every officer and use proceedingNote rather than status", () => {
+  const cases = Array.from({ length: 12 }, (_, index) => record({
+    id: String(index), blackNumber: `${index + 1}/${index % 2 ? "68" : "67"}`,
+    legalOfficerName: `นิติกรทดสอบ ${index}`,
+    proceedingNote: index % 2 ? "รอคำชี้แจง" : "จัดทำร่าง",
+    receivedDate: null,
+  }));
+  cases.push(record({ id: "blank", blackNumber: "ไม่มีปี", legalOfficerName: " ", legalOfficer: null, proceedingNote: null }));
+  cases.push(record({ id: "closed", registryRedText: "ถอน", proceedingNote: "ห้ามนับ", currentStatus: "ยังดำเนินการ" }));
+  const snapshot = deriveDashboardSnapshot({ cases, activities: [], meetings: [] }, { period: "all", type: "all" }, permissions, now);
+  assert.equal(snapshot.kpis.active, 13);
+  for (const dimension of [snapshot.backlog.byYear, snapshot.backlog.byOfficer, snapshot.backlog.byProceeding]) {
+    assert.equal(dimension.reduce((sum, item) => sum + item.count, 0), 13);
+  }
+  assert.equal(snapshot.backlog.byOfficer.length, 13);
+  assert.equal(snapshot.backlog.byProceeding.find(item => item.label === "รอคำชี้แจง")?.count, 6);
+  assert.equal(snapshot.backlog.byProceeding.some(item => item.label === "ตรวจสอบข้อเท็จจริง" || item.label === "ห้ามนับ"), false);
+  assert.equal(snapshot.backlog.cases.length, 13);
+  assert.equal(snapshot.backlog.byYear.find(item => item.label === "ไม่ระบุปีในเลขดำ")?.count, 1);
+});
+
+test("restricted dashboard DTO does not expose proceedings, subjects or officer names", () => {
+  const snapshot = deriveDashboardSnapshot({ cases: [record({ proceedingNote: "ข้อความส่วนตัว", legalOfficerName: "ชื่อส่วนตัว", subject: "เรื่องส่วนตัว" })], activities: [], meetings: [] }, { period: "all", type: "all" }, { canViewCaseDetails: false, canViewDataQuality: false }, now);
+  const json = JSON.stringify(snapshot.backlog);
+  assert.equal(/ข้อความส่วนตัว|ชื่อส่วนตัว|เรื่องส่วนตัว/.test(json), false);
+  assert.equal(snapshot.backlog.byProceeding[0].count, 1);
+});
 
 test("literal registry red text closes a case without inventing a unique red number", () => {
   for (const value of ["ถอน", "จำหน่ายแล้ว", "แดงแล้ว\n(รอเลขแดง)", "๑/๒๕๖๙"]) {

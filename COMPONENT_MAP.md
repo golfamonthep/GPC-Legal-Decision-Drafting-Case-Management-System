@@ -1,3 +1,10 @@
+## Backlog dashboard update — 2026-10-12
+
+- /dashboard: pending count, complaint/appeal sections, year/officer/proceeding breakdowns, expandable full pending details. No deadline visuals.
+- data.ts selects Case.proceedingNote; metrics.ts adds getBlackNumberYear and backlog aggregation; types.ts adds backlog DTO; demo.ts uses synthetic proceedings/multiple registry years.
+- AppShell disables TopHeader deadline alert only on /dashboard.
+- dashboard.test.ts covers year parsing, full-group reconciliation (>10 officers), literal proceedings and restricted DTO masking.
+
 ## Analysis workbench candidate — 2026-10-12
 
 Execution additions: DashboardResult.byType and two type-specific dashboard sections; ExcelUploader uses exactly SheetNames[0]; registry import persists registryRedText and preserves dates when parsing fails. Offline prepare-registry-sync.mjs verifies backup and creates ignored dry-run/candidate files. No private cases/reference blobs are tracked.

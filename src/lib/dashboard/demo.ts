@@ -15,7 +15,7 @@ function createDemoCase(
   return {
     id: `demo-case-${index}`,
     type: index % 3 === 0 ? "อุทธรณ์" : "ร้องทุกข์",
-    blackNumber: `${120 + index}/${String(now.getFullYear() + 543).slice(-2)}`,
+    blackNumber: `${120 + index}/${String(now.getFullYear() + 543 - Math.floor(index / 3) % 3).slice(-2)}`,
     redNumber: null,
     subject: [
       "การพิจารณาคำร้องตามระเบียบราชการ",
@@ -24,6 +24,7 @@ function createDemoCase(
       "การดำเนินการทางวินัยและการเยียวยา",
     ][index % 4],
     currentStatus: ["ตรวจสอบข้อเท็จจริง", "จัดทำร่างคำวินิจฉัย", "รอเข้าที่ประชุม"][index % 3],
+    proceedingNote: ["รอคำชี้แจงจากคู่กรณี", "อยู่ระหว่างจัดทำร่างคำวินิจฉัย", "นำเสนอที่ประชุม"][index % 3],
     receivedDate: dateFrom(now, receivedOffset),
     dueDate30: dateFrom(now, index - 5),
     dueDate60: null,

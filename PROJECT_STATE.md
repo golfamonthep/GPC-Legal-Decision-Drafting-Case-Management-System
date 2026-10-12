@@ -1,3 +1,11 @@
+## Latest dashboard change — 2026-10-12 (candidate, not Production)
+
+Backlog-only dashboard: remaining count; year from black-number suffix (123/68 -> 2568); registry legal officer; exact proceedingNote from column K. Complaint/appeal sections contain no deadline KPI/risk/urgent table or header deadline alert. Old received-date filters no longer hide carry-over cases. Complete year/officer/proceeding groups and pending details, explicit missing values, permission masking.
+
+9 dashboard tests, targeted ESLint and typecheck pass. Final production build passes with an unreachable test DB URL and no DB writes. Restricted-shell build initially hit Turbopack child-process startup failure; approved normal build execution succeeds without code/config bypass. Local authenticated synthetic QA passes type selection, both registries, keyboard details and CSS 320px no horizontal overflow. Grammarly causes a known body-attribute hydration warning; screenshots intermittently time out. No real case data changed.
+
+Owner reported reconnecting; Vercel connector still returns no GPC project, and Supabase Browser auto-review explicitly denied re-access. Do not circumvent. Production release, private Storage and latest registry import remain blocked; original site unchanged.
+
 ## Current update — 2026-10-12: integrate analysis into existing GPC
 
 Latest release check: branch Preview for commit 4f53d3a passes GitHub Prisma/lint/typecheck and Vercel deployment checks. Production-only server configuration is saved; SUPABASE_SERVICE_ROLE_KEY was verified as Secret (bulk .env initially defaulted to Config, corrected explicitly without rotating/revealing it). Other four non-sensitive analysis settings are Production Config. The owner explicitly approved transferring the existing GPC key to the same GPC Production only. Sensitive clipboard copy was cleared.

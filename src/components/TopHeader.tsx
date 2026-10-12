@@ -2,7 +2,7 @@ import { Bell, Search, AlertTriangle } from "lucide-react";
 import { UserMenu } from "./UserMenu";
 import type { SessionUser } from "@/lib/auth/currentUser";
 
-export function TopHeader({ user }: { user: SessionUser | null }) {
+export function TopHeader({ user, showDeadlineAlerts = true }: { user: SessionUser | null; showDeadlineAlerts?: boolean }) {
   return (
     <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
       <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
@@ -23,11 +23,11 @@ export function TopHeader({ user }: { user: SessionUser | null }) {
           />
         </form>
         <div className="flex items-center gap-x-4 lg:gap-x-6">
-          <button type="button" className="-m-2.5 p-2.5 text-slate-400 hover:text-slate-500 relative">
+          {showDeadlineAlerts && <button type="button" className="-m-2.5 p-2.5 text-slate-400 hover:text-slate-500 relative">
             <span className="sr-only">แจ้งเตือนคดีใกล้ครบกำหนด</span>
             <AlertTriangle className="h-5 w-5 text-amber-500" aria-hidden="true" />
             <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
-          </button>
+          </button>}
           <button type="button" className="-m-2.5 p-2.5 text-slate-400 hover:text-slate-500">
             <span className="sr-only">แจ้งเตือนทั่วไป</span>
             <Bell className="h-5 w-5" aria-hidden="true" />

@@ -1,3 +1,7 @@
+## Backlog dashboard lessons — 2026-10-12
+
+Owner replaced deadline/risk requirements with backlog count, black-number suffix year, registry officer and literal proceedingNote. Retain carry-over cases across all received dates. Never infer proceedings from currentStatus or truncate officer groups; every dimension must sum to active count. Hide deadline alerts on /dashboard only. Browser Supabase access remains explicitly denied after owner reported reconnecting; no circumvention.
+
 ## Analysis integration lessons — 2026-10-12
 
 Validated alternative backup: read-only Supabase SQL Editor snapshot + native Download CSV, followed by local JSON/table-row verification. The download event can time out even though Chrome saved the file; inspect the exact generated download and verify it before retrying. Vercel bulk .env paste can change selection from Production to Production+Preview; explicitly verify and narrow scope before Save. Service-role transmission requires explicit destination-specific approval; obtained for the same GPC Production only, never Preview.

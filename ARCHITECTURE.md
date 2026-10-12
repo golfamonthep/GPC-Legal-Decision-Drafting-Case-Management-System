@@ -1,3 +1,7 @@
+## Backlog dashboard — 2026-10-12
+
+Snapshot backlog.byYear/byOfficer/byProceeding/cases derives from canonical active records. Year uses only Thai/Arabic two-digit or 25xx black-number suffix, never received/updated date. Exact proceedingNote is not inferred from currentStatus. Registry legalOfficerName has priority over linked User name. Page always loads period=all with type filter. Internal legacy deadline DTO remains compatible but is not rendered; other workflows unchanged.
+
 ## Native analysis integration candidate — 2026-10-12
 
 Two dashboard type summaries derive from one bounded source payload, avoiding duplicate DB loads; trend caption IDs are distinct. Registry completion now accepts any nonblank literal source text and preserves it in Case.registryRedText; numeric redNumber remains separately unique per type. First-sheet imports do not fall through to another tab; invalid or missing source dates preserve existing dates.

@@ -21,6 +21,7 @@ export interface DashboardCaseRecord {
   registryRedText?: string | null;
   subject: string;
   currentStatus: string;
+  proceedingNote?: string | null;
   receivedDate: Date | null;
   dueDate30: Date | null;
   dueDate60: Date | null;
@@ -67,6 +68,12 @@ export interface DashboardSnapshot {
   generatedAt: string;
   dataFreshness: string | null;
   totalCases: number;
+  backlog: {
+    byYear: Array<{ label: string; count: number }>;
+    byOfficer: Array<{ label: string; count: number }>;
+    byProceeding: Array<{ label: string; count: number }>;
+    cases: Array<{ id: string; blackNumber: string; year: string; officer: string; proceeding: string; subject: string }>;
+  };
   kpis: {
     active: number;
     overdue: number;

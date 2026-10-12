@@ -1,5 +1,9 @@
 # Integrating the existing analysis workbench into GPC
 
+## Latest dashboard brief (2026-10-12)
+
+Owner replaced deadline visuals with pending count, black-number year, responsible legal officer and literal proceedingNote. All received-date years included; complaint/appeal separate. Explicit missing values; no guessing or top-N truncation. Candidate only, not Production. 9 dashboard tests/authenticated synthetic browser checks pass. Supabase Browser still denied after reconnect, Vercel connector discovery still empty; no import or promotion.
+
 ## Scope and actual state (2026-10-12)
 
 Production configuration now exists; owner approved existing service-role transfer specifically to this GPC Production. Confirmed key type Secret and Production-only; non-sensitive source key/hash/bucket/URL are Config. No key value is committed or recorded here. Supabase browser access was subsequently denied after auto-review HTTP 429; do not bypass it. Storage bucket/source uploads, actual registry writes, full persistence/file workflow verification and main merge/promotion have NOT occurred. The original production site remains unchanged.

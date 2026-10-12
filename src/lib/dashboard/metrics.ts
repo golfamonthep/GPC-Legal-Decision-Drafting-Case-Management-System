@@ -95,6 +95,24 @@ function filterCases(records: DashboardCaseRecord[], filters: DashboardFilters, 
   });
 }
 
+/** Registry year, never inferred from received/updated dates. */
+export function getBlackNumberYear(blackNumber: string): string {
+  const normalized = blackNumber.replace(/[๐-๙]/g, (digit) => String(digit.charCodeAt(0) - 0x0e50)).trim();
+  const match = normalized.match(/\/\s*(\d{2}|25\d{2})\s*$/);
+  if (!match) return "ไม่ระบุปีในเลขดำ";
+  const year = match[1].length === 2 ? 2500 + Number(match[1]) : Number(match[1]);
+  return `พ.ศ. ${year}`;
+}
+
+function countBacklogGroups(values: string[], sortByYear = false) {
+  const groups = new Map<string, number>();
+  for (const value of values) groups.set(value, (groups.get(value) ?? 0) + 1);
+  return [...groups].map(([label, count]) => ({ label, count })).sort((a, b) =>
+    sortByYear
+      ? (a.label === "ไม่ระบุปีในเลขดำ" ? 1 : b.label === "ไม่ระบุปีในเลขดำ" ? -1 : a.label.localeCompare(b.label, "th"))
+      : b.count - a.count || a.label.localeCompare(b.label, "th"));
+}
+
 export function deriveDashboardSnapshot(
   payload: DashboardSourcePayload,
   filters: DashboardFilters,
@@ -103,6 +121,18 @@ export function deriveDashboardSnapshot(
 ): DashboardSnapshot {
   const records = filterCases(payload.cases, filters, now);
   const active = records.filter((record) => !isCaseClosed(record));
+  const backlogCases = active.map((record) => ({
+    id: record.id,
+    blackNumber: record.blackNumber,
+    year: getBlackNumberYear(record.blackNumber),
+    officer: permissions.canViewCaseDetails
+      ? record.legalOfficerName?.trim() || record.legalOfficer?.name?.trim() || "ยังไม่ระบุนิติกร"
+      : "จำกัดตามสิทธิ์",
+    proceeding: permissions.canViewCaseDetails
+      ? record.proceedingNote?.trim() || "ยังไม่บันทึกการดำเนินการ"
+      : "จำกัดตามสิทธิ์",
+    subject: permissions.canViewCaseDetails ? record.subject : "ข้อมูลจำกัดตามสิทธิ์",
+  })).sort((a, b) => a.year.localeCompare(b.year, "th") || a.blackNumber.localeCompare(b.blackNumber, "th", { numeric: true }));
   const enriched = active.map((record) => ({ record, days: getDaysUntilDue(record, now), due: getNearestDueDate(record, now) }));
   const trend = monthSeries(now);
   const trendMap = new Map(trend.map((item) => [item.key, item]));
@@ -151,6 +181,12 @@ export function deriveDashboardSnapshot(
     generatedAt: now.toISOString(),
     dataFreshness: dataFreshness?.toISOString() ?? null,
     totalCases: records.length,
+    backlog: {
+      byYear: countBacklogGroups(backlogCases.map((record) => record.year), true),
+      byOfficer: countBacklogGroups(backlogCases.map((record) => record.officer)),
+      byProceeding: countBacklogGroups(backlogCases.map((record) => record.proceeding)),
+      cases: backlogCases,
+    },
     kpis: {
       active: active.length,
       overdue: enriched.filter(({ days }) => days !== null && days < 0).length,

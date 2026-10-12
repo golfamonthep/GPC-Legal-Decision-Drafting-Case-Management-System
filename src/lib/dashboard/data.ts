@@ -34,6 +34,7 @@ class DatabaseDashboardDataSource implements DashboardDataSource {
           registryRedText: true,
           subject: true,
           currentStatus: true,
+          proceedingNote: true,
           receivedDate: true,
           dueDate30: true,
           dueDate60: true,

@@ -1,3 +1,7 @@
+## Dashboard-only update — 2026-10-12
+
+No schema/migration/data mutation for backlog redesign. Reads existing Case.blackNumber, legalOfficerName, proceedingNote (registry column K) and canonical completion fields. Stored deadlines remain unchanged for other workflows. Latest registry import remains unexecuted.
+
 ## AnalysisWorkspace candidate — 2026-10-12 (NOT deployed)
 
 Latest execution: AnalysisWorkspace is now created and RLS-protected; nullable Case.registryRedText preserves literal completion text (no uniqueness) independently from redNumber. Migration source checksums were registered atomically in Prisma history via Supabase apply_migration; 10 completed entries, 198 cases preserved. Backup is a verified, ignored CSV JSON snapshot with schema and full public data, not the earlier `.partial` files. Registry updates are not executed yet.
