@@ -3,16 +3,16 @@ import type { RegistryAccent } from "./BacklogCharts";
 
 const number = new Intl.NumberFormat("th-TH");
 const percent = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 1 });
-const fills = { teal: "bg-teal-700", blue: "bg-blue-700" };
+const fills = { teal: "bg-cyan-600", blue: "bg-blue-600" };
 
 /** Absolute stacked bars: completed + pending = total, with a common zero scale. */
 export function OfficerPerformance({ title, snapshot, accent, scaleMax }: {
   title: string; snapshot: DashboardSnapshot; accent: RegistryAccent; scaleMax: number;
 }) {
   const max = Math.max(scaleMax, 1);
-  return <figure className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4">
+  return <figure className="min-w-0 rounded-2xl border border-slate-200/80 bg-[#f2f6fa] p-4">
     <figcaption className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-      <h2 className="text-lg font-bold text-slate-950">{title}</h2>
+      <h3 className="text-lg font-bold text-[#102b46]">{title}</h3>
       <p className="text-xs text-slate-600">ทั้งหมด <strong>{number.format(snapshot.totalCases)}</strong> · ค้าง <strong>{number.format(snapshot.kpis.active)}</strong> เรื่อง</p>
     </figcaption>
     <p className="mb-2 text-xs leading-5 text-slate-600">อันดับตามจำนวนรับผิดชอบทั้งหมด · จำนวนเท่ากันได้อันดับร่วม</p>

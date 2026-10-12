@@ -1,3 +1,9 @@
+## Reference styling and removed proceeding chart — 2026-10-12 (candidate, not Production)
+
+Final automated validation: dashboard 18/18, case-list 3/3, typecheck, targeted ESLint and production build passed. Unreachable test DB confirms no DB-write attempt during build. Original C:/APP checkout left untouched.
+
+Implemented supplied aesthetic reference (middle light-card/navy variant) in existing GPC dashboard. Navy pending KPI and completion cards, elevated light year/officer plots, complaint/appeal anchor navigation, compact disclosures. Proceeding chart removed from both registries; original detail text intact. Dashboard 18/18 and case-list 3/3 tests pass; typecheck/lint/build final result appended after completion. In-app synthetic Browser QA: desktop 1366x900, tablet 768x1024, mobile 320x720 no horizontal body overflow; filter, anchors and independent keyboard officer expansion pass; screenshots compared together with source; console [] after filter. Local design-qa.md passed and is not committed. Existing private Storage/import/live integration release gates unchanged.
+
 ## Overview-first dashboard — 2026-10-12 (candidate, not Production)
 
 Final validation: production build passed with an unreachable test database, no attempted DB writes. Dashboard 16/16 and case-list 3/3 tests, typecheck and targeted lint passed.

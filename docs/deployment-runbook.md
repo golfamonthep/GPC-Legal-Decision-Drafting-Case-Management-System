@@ -1,3 +1,9 @@
+## Reference-styled dashboard Preview — 2026-10-12
+
+Final local validation passed: tests 18+3, typecheck, targeted lint and production build. Commit only presentation/test/intelligence files; do not stage the local design-qa.md or synthetic QA assets.
+
+Only update PR22 branch Preview in the existing GPC Vercel project/team. No Production merge/promotion while release gates remain. No environment/schema/data changes. Validate dashboard 18 tests, case-list 3, typecheck, targeted lint and build with unreachable test DB. In-app browser QA on synthetic demo: 1366/768/320px, type filter, registry anchors, keyboard disclosures, no overflow; private Storage/latest XLSM/live integration UAT remains out of this presentation step. Local design-qa.md is an uncommitted QA note.
+
 ## Overview-first dashboard Preview — 2026-10-12
 
 Publish existing PR22 branch only; no Production promotion while integration release gates remain unresolved. Verify dashboard tests (16), case-list tests (3), typecheck, targeted ESLint and unreachable-test-DB production build. Local synthetic browser verifies desktop/mobile, type filter and independent keyboard disclosure; not live database accuracy/Storage readiness/import UAT. No environment or schema change required.

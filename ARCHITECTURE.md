@@ -1,3 +1,7 @@
+## Reference-inspired dashboard cards — 2026-10-12
+
+Presentation-only navy/cyan light-card design, compact 3-column ring/year/officer bento at desktop, responsive tablet/mobile, real registry anchor links. Removed proceeding breakdown figure and its page-scale calculation; original proceeding text/DTO retained for authorized collapsed case details. Officer completion remains the final closed native disclosure. No new client component, chart library, query, schema or dependency.
+
 ## Overview-first registry dashboard — 2026-10-12
 
 RegistryOverview is a server component: stacked full-width complaint/appeal sections with visible registry KPIs, completion ring, pending by year/officer and literal proceeding bars. Pending detail and officer-performance native details start closed; officer ranking is the final disclosure in each registry. Common zero-based scales retained. No new query, dependency, schema or metric change. Supersedes the compact officer-first layout below.

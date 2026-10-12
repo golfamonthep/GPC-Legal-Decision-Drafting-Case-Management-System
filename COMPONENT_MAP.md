@@ -1,3 +1,7 @@
+## Navy/cyan dashboard components — 2026-10-12
+
+dashboard/page.tsx: compact navy header, real registry anchor links, highlighted pending KPI, removes proceedingMax. RegistryOverview.tsx: responsive 3-column ring/year/officer cards; no proceeding plot; closed disclosures at footer. BacklogCharts.tsx: dark/light completion tone and compact solid cyan/blue marks; shared zero scales/direct values retained. OfficerPerformance.tsx: matching surface/marks and h3 hierarchy. charts.test.ts: removal/detail-text regression, dark ring empty/zero/full tests; 18 dashboard tests total.
+
 ## Registry overview-first composition — 2026-10-12
 
 RegistryOverview.tsx: visible KPIs/ring/year/pending-officer/proceeding figures, closed pending details followed by closed officer-performance disclosure. dashboard/page.tsx: stacked registry sections and shared chart scales, no expanded top officer scorecards. charts.test.ts: adds ordering/default-closed/empty/permission checks for both registries.

@@ -1,3 +1,7 @@
+## Reference styling lessons — 2026-10-12
+
+Use the supplied design as aesthetic inspiration for the actual product rather than copying unrelated finance measures. Keep quantitative plots native, solid-fill and source-backed; never invent radar/trends for visual density. Removing a chart need not erase original case text. Mobile select/button should share a minmax(0,1fr)/auto row to avoid unnecessarily tall headers; test all four KPI cards and long disclosures. Compare reference plus actual rendered cards in the same review input.
+
 ## Overview-first disclosure lessons — 2026-10-12
 
 Executive reading starts with workload overview, then literal breakdowns, then optional individual ranking. Native details provides keyboard activation without client JavaScript. Keep pending-by-officer counts separate from all-case responsibility/completion ranking. Test default closed state, independent expansion, source order and mobile geometry; do not treat visual hiding as security.

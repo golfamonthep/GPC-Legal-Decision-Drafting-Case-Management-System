@@ -1,3 +1,7 @@
+## Proceeding chart removal — 2026-10-12
+
+No schema/migration/data changes. This removes only the plotted proceeding breakdown; existing byProceeding DTO and original authorized case proceeding text remain unchanged. Completion and black-number year definitions, permission masking and all input records preserved. No real-data reads/writes for this presentation change.
+
 ## Overview reorder — 2026-10-12
 
 Presentation only; no schema, migration or data mutation. Existing permission-masked snapshot and canonical completion/black-number year/proceeding definitions unchanged. Folding a section is not access control; permission masking remains server-side. Latest XLSM import remains unexecuted.
