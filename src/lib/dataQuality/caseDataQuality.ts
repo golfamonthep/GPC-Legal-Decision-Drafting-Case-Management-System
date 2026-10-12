@@ -1,5 +1,5 @@
 import { DataQualityIssue, DataQualitySeverity, DataQualityCategory } from './types';
-import { isClosedOrRedCase, isClosedCaseStatus, hasRedCaseNumber } from '../caseStatus';
+import { isClosedOrRedCase, isClosedCaseStatus, hasRedCaseNumber, hasRegistryCompletionText } from '../caseStatus';
 
 export function detectCaseDataQualityIssues(
   caseData: any
@@ -75,7 +75,7 @@ export function detectCaseDataQualityIssues(
 
   // B. Status consistency
   const isCompleted = isClosedCaseStatus(caseData.currentStatus);
-  const hasRedNo = hasRedCaseNumber(caseData.redNumber);
+  const hasRedNo = hasRedCaseNumber(caseData.redNumber) || hasRegistryCompletionText(caseData.registryRedText);
 
   if (hasRedNo && !isCompleted) {
     addIssue('STATUS_CONSISTENCY', 'CRITICAL', 'มีเลขเรื่องแดงแต่สถานะยังไม่เสร็จสิ้น', `สถานะปัจจุบันคือ "${caseData.currentStatus}" แต่มีเลขเรื่องแดงแล้ว`, 'currentStatus', caseData.currentStatus, 'อัปเดตสถานะเป็นเสร็จสิ้น');

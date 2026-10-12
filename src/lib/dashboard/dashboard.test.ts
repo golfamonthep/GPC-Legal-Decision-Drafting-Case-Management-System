@@ -3,6 +3,8 @@ import test from "node:test";
 import { hasRedCaseNumber, hasRegistryCompletionText, isClosedCaseStatus } from "../caseStatus";
 import { deriveDashboardSnapshot, getDashboardDateRange, getDaysUntilDue, getNearestDueDate, parseDashboardFilters } from "./metrics";
 import { loadDashboardFromSource } from "./loader";
+import { detectCaseDataQualityIssues } from "../dataQuality/caseDataQuality";
+import { evaluateDataQuality } from "../search/dataQuality";
 import type { DashboardCaseRecord, DashboardDataSource } from "./types";
 
 const now = new Date("2026-08-03T05:00:00.000Z");
@@ -38,6 +40,9 @@ test("literal registry red text closes a case without inventing a unique red num
     assert.equal(snapshot.kpis.active, 0);
     assert.equal(snapshot.kpis.overdue, 0);
     assert.equal(snapshot.kpis.criticalDataQuality, 0);
+    const sourceCase = record({ registryRedText: value, currentStatus: "เสร็จสิ้น" });
+    assert.equal(detectCaseDataQualityIssues(sourceCase).some(issue => issue.severity === "CRITICAL"), false);
+    assert.equal(evaluateDataQuality(sourceCase).hasInconsistentStatus, false);
   }
   assert.equal(hasRegistryCompletionText(" \n "), false);
 });

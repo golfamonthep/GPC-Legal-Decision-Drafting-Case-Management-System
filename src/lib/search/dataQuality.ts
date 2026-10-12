@@ -1,4 +1,4 @@
-import { isClosedCaseStatus, hasRedCaseNumber } from "@/lib/caseStatus";
+import { isClosedOrRedCase, hasRedCaseNumber, hasRegistryCompletionText } from "@/lib/caseStatus";
 
 export type DataQualityFlags = {
   isOverdue: boolean;
@@ -34,7 +34,7 @@ export function evaluateDataQuality(caseData: any): DataQualityFlags {
   if (!caseData) return flags;
 
   // Evaluate basic completion flags
-  flags.isCompleted = isClosedCaseStatus(caseData.currentStatus);
+  flags.isCompleted = isClosedOrRedCase(caseData);
   flags.hasRedCaseNumber = hasRedCaseNumber(caseData.redNumber);
 
   // Evaluate dates
@@ -57,7 +57,7 @@ export function evaluateDataQuality(caseData: any): DataQualityFlags {
 
   // Inconsistent status
   // e.g. completed but no red number, or red number but not completed (though sometimes acceptable, we flag it)
-  if (flags.isCompleted && !flags.hasRedCaseNumber) {
+  if (flags.isCompleted && !flags.hasRedCaseNumber && !hasRegistryCompletionText(caseData.registryRedText)) {
     flags.hasInconsistentStatus = true;
   }
   

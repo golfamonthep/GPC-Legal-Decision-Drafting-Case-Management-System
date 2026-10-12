@@ -2,6 +2,8 @@
 
 ## Scope and actual state (2026-10-12)
 
+Production configuration now exists; owner approved existing service-role transfer specifically to this GPC Production. Confirmed key type Secret and Production-only; non-sensitive source key/hash/bucket/URL are Config. No key value is committed or recorded here. Supabase browser access was subsequently denied after auto-review HTTP 429; do not bypass it. Storage bucket/source uploads, actual registry writes, full persistence/file workflow verification and main merge/promotion have NOT occurred. The original production site remains unchanged.
+
 Latest execution: complete private schema/data snapshot is saved and verified (32 tables/198 cases). Both additive migrations were applied through the Supabase connector with matching Prisma-history source checksums; 198 cases remain unchanged. Correct Vercel project confirmed through authenticated Chrome, and its branch Preview is Ready. New dashboard split/import rules pass Prisma validation, typecheck, 6 dashboard tests and 11 analysis safety tests; production compilation passes without a live DB connection. Production Storage configuration, uploads, latest registry import, live workflow QA and deployment are still being completed. Earlier infrastructure blocker notes below are historical.
 
 This is a candidate for the existing website at https://gpc-legal-decision-drafting-case-ma.vercel.app, not a replacement site or new dashboard. The existing login/authentication configuration is preserved. No credentials are recorded here.

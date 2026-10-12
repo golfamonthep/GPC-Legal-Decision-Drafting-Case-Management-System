@@ -138,10 +138,10 @@ export function deriveDashboardSnapshot(
     }));
 
   const closedWithoutRedNumber = records.filter((record) => isClosedCaseStatus(record.currentStatus) && !hasRedCaseNumber(record.redNumber) && !hasRegistryCompletionText(record.registryRedText)).length;
-  const redNumberWithOpenStatus = records.filter((record) => hasRedCaseNumber(record.redNumber) && !isClosedCaseStatus(record.currentStatus)).length;
+  const redNumberWithOpenStatus = records.filter((record) => (hasRedCaseNumber(record.redNumber) || hasRegistryCompletionText(record.registryRedText)) && !isClosedCaseStatus(record.currentStatus)).length;
   const criticalDataQuality = records.filter((record) =>
     (isClosedCaseStatus(record.currentStatus) && !hasRedCaseNumber(record.redNumber) && !hasRegistryCompletionText(record.registryRedText)) ||
-    (hasRedCaseNumber(record.redNumber) && !isClosedCaseStatus(record.currentStatus)),
+    ((hasRedCaseNumber(record.redNumber) || hasRegistryCompletionText(record.registryRedText)) && !isClosedCaseStatus(record.currentStatus)),
   ).length;
 
   const dataFreshness = records.reduce<Date | null>((latest, record) =>
