@@ -25,18 +25,19 @@ function parseCurrentNames(raw: string | null | undefined): string[] {
     for (const line of part.split(/\n+/)) {
       if (/ผู้ช่วย|ช่วยฯ|ช่วยงาน/.test(line)) continue;
       const old = /\(\s*เก่า\s*\)/.test(line);
-      const clean = line.replace(/\([^)]*\)/g, ' ').replace(/[\u200b]+/g, ' ').replace(/\s+/g, ' ').trim();
+      const clean = line.replace(/\([^)]*\)/g, ' ').replace(/[\u200b]+/g, ' ').replace(/\s+/g, ' ').trim()
+        .replace(/^(?:(?:นาย|นางสาว|นาง|น\.\s*ส\.|ดร\.)|(?:พัน|ร้อย|พล)ตำรวจ(?:เอก|โท|ตรี))\s+/u, '');
       const words = clean.split(' ').filter(Boolean);
       if (words.length === 1) {
         if (old) pending = '';
         else if (!found.length) pending = pending ? `${pending} ${clean}` : clean;
-      } else if (words.length === 2) {
+      } else if (words.length === 2 || words.length === 3) {
         if (pending && !found.length && pending.split(' ').length === 1) pending = '';
         if (!old) found.push(clean);
         pending = '';
       }
     }
-    if (!found.length && pending.split(' ').length === 2) found.push(pending);
+    if (!found.length && [2, 3].includes(pending.split(' ').length)) found.push(pending);
     return found;
   });
   return [...new Set(names)];
@@ -56,16 +57,17 @@ function oneEditApart(a: string, b: string): boolean {
 
 function likelySamePerson(a: string, b: string) {
   const left = a.split(' '), right = b.split(' ');
-  if (left.length !== 2 || right.length !== 2) return false;
-  if (left[0].length < 4 || right[0].length < 4 || left[1].length < 4 || right[1].length < 4) return false;
-  return left[1] === right[1] && oneEditApart(left[0], right[0]) ||
-    left[0] === right[0] && oneEditApart(left[1], right[1]);
+  if (left.length < 2 || left.length > 3 || right.length < 2 || right.length > 3) return false;
+  const leftSurname = left.at(-1)!, rightSurname = right.at(-1)!;
+  if (left[0].length < 4 || right[0].length < 4 || leftSurname.length < 4 || rightSurname.length < 4) return false;
+  return leftSurname === rightSurname && oneEditApart(left[0], right[0]) ||
+    left[0] === right[0] && oneEditApart(leftSurname, rightSurname);
 }
 
 export function buildOfficerDirectory(rawNames: Array<string | null | undefined>) {
   const counts = new Map<string, number>();
   for (const raw of rawNames) for (const name of parseCurrentNames(raw)) counts.set(name, (counts.get(name) ?? 0) + 1);
-  const ordered = [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'th')).map(([name]) => name);
+  const ordered = [...counts].sort((a, b) => b[1] - a[1] || a[0].split(' ').length - b[0].split(' ').length || a[0].localeCompare(b[0], 'th')).map(([name]) => name);
   const canonical = new Map<string, string>();
   const anchors: string[] = [];
   for (const name of ordered) {

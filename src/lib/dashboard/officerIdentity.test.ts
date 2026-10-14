@@ -11,6 +11,13 @@ test('groups rank, whitespace and one-character spelling changes by full name', 
   assert.deepEqual(directory.current('กิตติ ศรีธรรม'), ['กิตติ ศรีธรรม']);
 });
 
+test('retains titled and three-part names while matching by given name and surname', () => {
+  const directory = buildOfficerDirectory(['กิตติ ศรีวัฒน์', 'กิตติ ธนา ศรีวัฒน์']);
+  assert.deepEqual(directory.current('นาย กิตติ ศรีวัฒน์'), ['กิตติ ศรีวัฒน์']);
+  assert.deepEqual(directory.current('กิตติ ธนา ศรีวัฒน์'), ['กิตติ ศรีวัฒน์']);
+  assert.deepEqual(directory.current('กิตติ ศรีวัฒน์ นภา ธรรมดี'), []);
+});
+
 test('counts joint owners once each, excludes prior owners and helpers', () => {
   const directory = buildOfficerDirectory([]);
   assert.deepEqual(directory.current('พ.ต.ท.กิตติ\nศรีวัฒน์ + ร.ต.อ.นภา ธรรมดี'), ['กิตติ ศรีวัฒน์', 'นภา ธรรมดี']);

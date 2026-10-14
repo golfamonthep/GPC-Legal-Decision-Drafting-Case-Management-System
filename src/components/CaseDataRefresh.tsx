@@ -4,13 +4,14 @@ import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { shouldRefreshCaseView } from '@/lib/caseRefresh';
 
-export function CaseDataRefresh({ enabled }: { enabled: boolean }) {
+export function CaseDataRefresh({ enabled, initialRevision }: { enabled: boolean; initialRevision: string | null }) {
   const router = useRouter();
   const pathname = usePathname();
-  const previousRevision = useRef<string | null>(null);
+  const previousRevision = useRef<string | null>(initialRevision);
 
   useEffect(() => {
     if (!enabled) return;
+    if (previousRevision.current === null && initialRevision !== null) previousRevision.current = initialRevision;
     let active = true;
     let checking = false;
     const baselines = new WeakMap<HTMLFormElement, string>();
@@ -78,7 +79,7 @@ export function CaseDataRefresh({ enabled }: { enabled: boolean }) {
       window.removeEventListener('gpc:case-saved', onLocalSave);
       channel?.close();
     };
-  }, [enabled, pathname, router]);
+  }, [enabled, initialRevision, pathname, router]);
   return null;
 }
 

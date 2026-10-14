@@ -7,6 +7,12 @@ test('refreshes a clean view when a case revision changes', () => {
   assert.equal(shouldRefreshCaseView('216:2026-10-14T09:00:00.000Z', '216:2026-10-14T09:00:00.000Z', false), false);
 });
 
+test('detects a save between server render and the first browser check', () => {
+  const revisionRenderedByLayout = '216:2026-10-14T09:00:00.000Z';
+  const revisionAtFirstCheck = '216:2026-10-14T09:00:01.000Z';
+  assert.equal(shouldRefreshCaseView(revisionRenderedByLayout, revisionAtFirstCheck, false), true);
+});
+
 test('does not overwrite an edited form or refresh before a baseline exists', () => {
   assert.equal(shouldRefreshCaseView('216:a', '216:b', true), false);
   assert.equal(shouldRefreshCaseView(null, '216:a', false), false);
