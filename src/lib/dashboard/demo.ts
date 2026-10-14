@@ -18,6 +18,7 @@ function createDemoCase(
     blackNumber: `${120 + index}/${String(now.getFullYear() + 543 - Math.floor(index / 3) % 3).slice(-2)}`,
     redNumber: null,
     registryRedText: null,
+    petitionerName: `ผู้ร้องสาธิต ${index + 1}`,
     subject: [
       "การพิจารณาคำร้องตามระเบียบราชการ",
       "การอุทธรณ์คำสั่งทางปกครอง",

@@ -28,7 +28,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     : [{ title: filters.type === "appeal" ? "เรื่องอุทธรณ์" : "เรื่องร้องทุกข์", snapshot, accent: filters.type === "appeal" ? "blue" as const : "teal" as const }]
     : [];
   // Shared zero-based scales let both registries be compared honestly.
-  const yearMax = Math.max(2, Math.ceil(Math.max(...sections.flatMap(section => section.snapshot.backlog.byYear.map(item => item.count)), 0) / 2) * 2);
+  const yearMax = Math.max(2, Math.ceil(Math.max(...sections.flatMap(section => section.snapshot.backlog.byYearCompletion.map(item => item.completed + item.pending)), 0) / 2) * 2);
   const responsibilityMax = Math.max(...sections.flatMap(section => section.snapshot.officerPerformance.map(item => item.total)), 1);
   const officerMax = Math.max(...sections.flatMap(section => section.snapshot.backlog.byOfficer.map(item => item.count)), 1);
   return <div className="min-h-full bg-[#e8eff5] px-3 py-5 sm:px-6 sm:py-6 xl:px-8">

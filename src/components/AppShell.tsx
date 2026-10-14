@@ -6,6 +6,7 @@ import { TopHeader } from './TopHeader';
 import type { SessionUser } from '@/lib/auth/currentUser';
 import { useRef, useState } from 'react';
 import { X } from 'lucide-react';
+import { CaseDataRefresh } from './CaseDataRefresh';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -45,6 +46,7 @@ export function AppShell({ children, user, showInsecureModeBanner }: AppShellPro
           </div>
         )}
         <TopHeader user={user} menuOpen={menuOpen} onOpenMenu={() => { menuRef.current?.showModal(); setMenuOpen(true); }} />
+        <CaseDataRefresh enabled={Boolean(user)} />
         <main className="flex-1 overflow-y-auto pb-10">
           {children}
         </main>

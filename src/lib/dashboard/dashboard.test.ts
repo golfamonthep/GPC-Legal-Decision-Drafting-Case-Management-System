@@ -16,6 +16,7 @@ function record(overrides: Partial<DashboardCaseRecord> = {}): DashboardCaseReco
     blackNumber: "1/69",
     redNumber: null,
     registryRedText: null,
+    petitionerName: 'ผู้ร้องตัวอย่าง',
     subject: "เรื่องทดสอบ",
     currentStatus: "ตรวจสอบข้อเท็จจริง",
     receivedDate: new Date("2026-08-01T00:00:00.000Z"),
@@ -92,10 +93,47 @@ test("backlog breakdowns reconcile, retain every officer and use proceedingNote 
 });
 
 test("restricted dashboard DTO does not expose proceedings, subjects or officer names", () => {
-  const snapshot = deriveDashboardSnapshot({ cases: [record({ proceedingNote: "ข้อความส่วนตัว", legalOfficerName: "ชื่อส่วนตัว", subject: "เรื่องส่วนตัว" })], activities: [], meetings: [] }, { period: "all", type: "all" }, { canViewCaseDetails: false, canViewDataQuality: false }, now);
+  const snapshot = deriveDashboardSnapshot({ cases: [record({ proceedingNote: "ข้อความส่วนตัว", legalOfficerName: "ชื่อส่วนตัว", subject: "เรื่องส่วนตัว", petitionerName: 'ผู้ร้องส่วนตัว' })], activities: [], meetings: [] }, { period: "all", type: "all" }, { canViewCaseDetails: false, canViewDataQuality: false }, now);
   const json = JSON.stringify(snapshot.backlog);
-  assert.equal(/ข้อความส่วนตัว|ชื่อส่วนตัว|เรื่องส่วนตัว/.test(json), false);
+  assert.equal(/ข้อความส่วนตัว|ชื่อส่วนตัว|เรื่องส่วนตัว|ผู้ร้องส่วนตัว/.test(json), false);
   assert.equal(snapshot.backlog.byProceeding[0].count, 1);
+});
+
+test('backlog exposes the petitioner as the primary case identity', () => {
+  const snapshot = deriveDashboardSnapshot({ cases: [record({ petitionerName: 'ผู้ร้องตัวอย่าง', subject: 'เรื่องทดสอบ' })], activities: [], meetings: [] }, { period: 'all', type: 'all' }, permissions, now);
+  assert.equal(snapshot.backlog.cases[0].petitionerName, 'ผู้ร้องตัวอย่าง');
+});
+
+test('joint responsibility exceeds unique cases while backlog and completion remain case counts', () => {
+  const cases = [
+    record({ id: '1', legalOfficerName: 'พ.ต.ท.กิตติ ศรีวัฒน์ + ร.ต.อ.นภา ธรรมดี' }),
+    record({ id: '2', legalOfficerName: 'ร.ต.อ. กิตตื ศรีวัฒน์', registryRedText: 'แดงแล้ว' }),
+  ];
+  const snapshot = deriveDashboardSnapshot({ cases, activities: [], meetings: [] }, { period: 'all', type: 'all' }, permissions, now);
+  assert.equal(snapshot.totalCases, 2);
+  assert.equal(snapshot.kpis.active, 1);
+  assert.equal(snapshot.officerPerformance.find(item => item.name === 'กิตติ ศรีวัฒน์')?.total, 2);
+  assert.equal(snapshot.officerPerformance.find(item => item.name === 'นภา ธรรมดี')?.pending, 1);
+  assert.equal(snapshot.backlog.byOfficer.reduce((sum, item) => sum + item.count, 0), 2);
+});
+
+test('placeholder officer text falls back to a linked full name', () => {
+  const snapshot = deriveDashboardSnapshot({ cases: [record({ legalOfficerName: '-', legalOfficer: { name: 'กิตติ ศรีวัฒน์' } })], activities: [], meetings: [] }, { period: 'all', type: 'all' }, permissions, now);
+  assert.equal(snapshot.officerPerformance[0].name, 'กิตติ ศรีวัฒน์');
+  assert.equal(snapshot.kpis.unassigned, 0);
+});
+
+test('completion by black-number year uses current red-cell state, not a guessed finish date', () => {
+  const cases = [
+    record({ id: '1', blackNumber: '1/68' }),
+    record({ id: '2', blackNumber: '2/68', registryRedText: 'แดงแล้ว' }),
+    record({ id: '3', blackNumber: '3/69', registryRedText: '17/69' }),
+  ];
+  const snapshot = deriveDashboardSnapshot({ cases, activities: [], meetings: [] }, { period: 'all', type: 'all' }, permissions, now);
+  assert.deepEqual(snapshot.backlog.byYearCompletion, [
+    { label: 'พ.ศ. 2568', pending: 1, completed: 1 },
+    { label: 'พ.ศ. 2569', pending: 0, completed: 1 },
+  ]);
 });
 
 test("literal registry red text closes a case without inventing a unique red number", () => {

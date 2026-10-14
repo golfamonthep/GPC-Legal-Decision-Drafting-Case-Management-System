@@ -3,7 +3,7 @@ import type { RegistryAccent } from "./BacklogCharts";
 
 const number = new Intl.NumberFormat("th-TH");
 const percent = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 1 });
-const fills = { teal: "bg-cyan-600", blue: "bg-blue-600" };
+const fills = { teal: "bg-emerald-600", blue: "bg-emerald-600" };
 
 /** Absolute stacked bars: completed + pending = total, with a common zero scale. */
 export function OfficerPerformance({ title, snapshot, accent, scaleMax }: {
@@ -25,7 +25,7 @@ export function OfficerPerformance({ title, snapshot, accent, scaleMax }: {
           </p>
           <div aria-hidden="true" className="mt-1 flex h-2 overflow-hidden rounded bg-slate-50">
             <span className={fills[accent]} style={{ width: `${item.completed / max * 100}%` }} />
-            <span className="bg-slate-300" style={{ width: `${item.pending / max * 100}%` }} />
+            <span className="bg-amber-500" style={{ width: `${item.pending / max * 100}%` }} />
           </div>
         </div>
         <dl className="grid grid-cols-4 gap-1 text-center tabular-nums">
@@ -38,7 +38,7 @@ export function OfficerPerformance({ title, snapshot, accent, scaleMax }: {
     </ol> : <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">ยังไม่มีข้อมูลความรับผิดชอบในทะเบียนนี้</p>}
     <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-600">
       <span className="flex items-center gap-1.5"><span aria-hidden="true" className={`h-2 w-2 ${fills[accent]}`} />เสร็จแล้ว</span>
-      <span className="flex items-center gap-1.5"><span aria-hidden="true" className="h-2 w-2 bg-slate-300" />ค้าง</span>
+      <span className="flex items-center gap-1.5"><span aria-hidden="true" className="h-2 w-2 bg-amber-500" />ค้าง</span>
       <span>แท่งรวม = จำนวนรับทั้งหมด · เริ่มที่ 0</span>
     </div>
   </figure>;

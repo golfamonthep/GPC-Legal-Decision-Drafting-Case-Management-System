@@ -1,9 +1,11 @@
+import Link from 'next/link';
+
 type Bucket = { label: string; count: number };
 export type RegistryAccent = "teal" | "blue";
 
 const number = new Intl.NumberFormat("th-TH");
 const percent = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 1 });
-const colors = { teal: "#22d3ee", blue: "#93c5fd" };
+const colors = { teal: "#34d399", blue: "#34d399" };
 const barClasses = { teal: "bg-cyan-600", blue: "bg-blue-600" };
 const chartCard = "h-full min-w-0 rounded-[1.25rem] border border-white bg-white p-4 shadow-[0_6px_18px_-12px_rgba(15,42,70,0.35)] sm:p-5";
 
@@ -16,7 +18,7 @@ export function CompletionRing({ total, pending, accent, tone = "light" }: { tot
     <div className="relative h-36 w-36 shrink-0">
       <svg viewBox="0 0 144 144" className="h-full w-full" aria-hidden="true">
         <circle cx="72" cy="72" r="59" fill="none" stroke={dark ? "#496581" : "#e2e8f0"} strokeWidth="14" />
-        {total > 0 && <circle cx="72" cy="72" r="59" fill="none" stroke={dark ? colors[accent] : accent === "teal" ? "#0891b2" : "#2563eb"} strokeWidth="14" pathLength="100"
+        {total > 0 && <circle cx="72" cy="72" r="59" fill="none" stroke={dark ? colors[accent] : "#059669"} strokeWidth="14" pathLength="100"
           strokeDasharray={`${share * 100} 100`} transform="rotate(-90 72 72)" />}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -25,10 +27,27 @@ export function CompletionRing({ total, pending, accent, tone = "light" }: { tot
       </div>
     </div>
     <div className="w-full min-w-0 space-y-2 text-sm">
-      <p className="flex flex-wrap items-center gap-2"><span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${dark ? accent === "teal" ? "bg-cyan-300" : "bg-blue-300" : barClasses[accent]}`} />เสร็จสิ้น <strong className={dark ? "text-white" : "text-slate-950"}>{number.format(completed)} เรื่อง</strong></p>
-      <p className="flex flex-wrap items-center gap-2"><span aria-hidden="true" className={`h-2.5 w-2.5 shrink-0 rounded-full ${dark ? "bg-[#496581]" : "border border-slate-400 bg-slate-200"}`} />ค้าง <strong className={dark ? "text-white" : "text-slate-950"}>{number.format(pending)} เรื่อง</strong></p>
+      <p className="flex flex-wrap items-center gap-2"><span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-400" />เสร็จสิ้นแล้ว <strong className={dark ? "text-white" : "text-slate-950"}>{number.format(completed)} เรื่อง</strong></p>
+      <p className="flex flex-wrap items-center gap-2"><span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500" />ยังไม่เสร็จสิ้น <strong className={dark ? "text-white" : "text-slate-950"}>{number.format(pending)} เรื่อง</strong></p>
       <p className={`border-t pt-3 text-xs leading-5 ${dark ? "border-white/15 text-slate-200" : "border-slate-200"}`}>ฐาน: {number.format(total)} เรื่อง · ไม่ใช่อัตราการทำงานรายเดือน</p>
     </div>
+  </figure>;
+}
+
+export function YearOutcomeBars({ data, scaleMax, type }: { data: Array<{ label: string; pending: number; completed: number }>; scaleMax: number; type: string }) {
+  const max = Math.max(scaleMax, 1);
+  return <figure className={chartCard}>
+    <figcaption><h3 className="text-base font-bold text-[#102b46]">สถานะเรื่องตามปีเลขดำ</h3><p className="mt-1 text-xs leading-5 text-slate-600">ปีจากเลขดำ · สีเขียวเสร็จแล้ว สีส้มยังดำเนินการ</p></figcaption>
+    {data.length ? <div className="mt-4 space-y-3">{data.map(item => {
+      const year = item.label.replace('พ.ศ. ', '');
+      const href = (completionStatus: string) => `/cases?${new URLSearchParams({ type, year, completionStatus })}`;
+      return <div key={item.label} className="min-w-0">
+        <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-2 text-sm"><span className="font-semibold text-slate-800">{item.label}</span><strong className="tabular-nums text-slate-950">{number.format(item.pending + item.completed)} เรื่อง</strong></div>
+        <div aria-hidden="true" className="flex h-3 overflow-hidden rounded-full bg-slate-100" style={{ width: `${(item.pending + item.completed) / max * 100}%` }}><span className="bg-emerald-600" style={{ width: `${item.completed / (item.pending + item.completed) * 100}%` }} /><span className="bg-amber-500" style={{ width: `${item.pending / (item.pending + item.completed) * 100}%` }} /></div>
+        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs"><Link href={href('completed')} className="font-semibold text-emerald-800 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-emerald-700">เสร็จแล้ว {number.format(item.completed)}</Link><Link href={href('open')} className="font-semibold text-amber-900 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-amber-700">ค้าง {number.format(item.pending)}</Link></div>
+      </div>;
+    })}</div> : <EmptyChart />}
+    <p className="mt-3 text-xs leading-5 text-slate-600">สถานะปัจจุบันของเรื่องแต่ละปี ไม่ใช่ปีที่ดำเนินการเสร็จ</p>
   </figure>;
 }
 

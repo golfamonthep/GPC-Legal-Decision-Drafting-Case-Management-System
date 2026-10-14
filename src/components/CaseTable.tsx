@@ -1,7 +1,8 @@
 import type { Case } from "../types";
 import Link from "next/link";
 import { IconEye, IconEdit, IconNotes } from "@tabler/icons-react";
-import { getRegistryRedText, getRegistryCaseStatus, isClosedOrRedCase } from "@/lib/caseStatus";
+import { getRegistryRedText, getRegistryCaseStatus } from "@/lib/caseStatus";
+import { CaseCompletionBadge } from './CaseCompletionBadge';
 
 export function CaseTable({ cases, caption, canEdit = false }: { cases: Case[]; caption?: string; canEdit?: boolean }) {
   return <div className="gpc-tabler case-table-region" role="region" aria-label={caption || "ตารางรายการคดี"}>
@@ -16,7 +17,6 @@ export function CaseTable({ cases, caption, canEdit = false }: { cases: Case[]; 
       </tr></thead>
       <tbody>{cases.map(c => {
         const red = getRegistryRedText(c);
-        const closed = isClosedOrRedCase(c);
         const note = c.proceedingNote?.trim() ? c.proceedingNote : undefined;
         return <tr key={c.id}>
           <td data-label="เรื่องดำ / เรื่องแดง" className="case-number">
@@ -39,7 +39,7 @@ export function CaseTable({ cases, caption, canEdit = false }: { cases: Case[]; 
           </td>
           <td data-label="ผู้รับผิดชอบ / สถานะ" className="case-responsibility">
             <div className="case-officer">{c.legalOfficer && !["-", "ไม่ระบุ"].includes(c.legalOfficer) ? c.legalOfficer : "ยังไม่มอบหมายนิติกร"}</div>
-            <span className={`case-state ${closed ? "case-state-complete" : "case-state-pending"}`}>{getRegistryCaseStatus(c)}</span>
+            <CaseCompletionBadge record={c} /><div className="mt-1 text-xs text-slate-600">{getRegistryCaseStatus(c)}</div>
           </td>
           <td className="case-actions">
             <div className="btn-list">

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Database, CheckCircle, XCircle, Clock } from "lucide-react";
 import GenerateEmbeddingsButton from "./GenerateEmbeddingsButton";
 
-export default async function ViewChunksPage({ params }: { params: { id: string } }) {
+export default async function ViewChunksPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
   const source = await prisma.legalSource.findUnique({
