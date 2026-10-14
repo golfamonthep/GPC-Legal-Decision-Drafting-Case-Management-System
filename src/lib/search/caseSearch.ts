@@ -1,4 +1,5 @@
 import prisma from "@/lib/db";
+import { filterCaseWorkflowRecords } from "@/lib/caseList";
 import { Prisma } from "@/generated/prisma";
 import { evaluateDataQuality } from "./dataQuality";
 
@@ -59,7 +60,7 @@ export async function searchCases(params: SearchCaseParams) {
     AND.push({
       OR: [
         { blackNumber: { contains: k, mode: 'insensitive' } },
-        { redNumber: { contains: k, mode: 'insensitive' } },
+        { registryRedText: { contains: k, mode: 'insensitive' } },
         { petitionerName: { contains: k, mode: 'insensitive' } },
         { respondentName: { contains: k, mode: 'insensitive' } },
         { subject: { contains: k, mode: 'insensitive' } },
@@ -73,12 +74,12 @@ export async function searchCases(params: SearchCaseParams) {
 
   // 2. Exact or partial field matches
   if (blackNumber) AND.push({ blackNumber: { contains: blackNumber.trim(), mode: 'insensitive' } });
-  if (redNumber) AND.push({ redNumber: { contains: redNumber.trim(), mode: 'insensitive' } });
+  if (redNumber) AND.push({ registryRedText: { contains: redNumber.trim(), mode: 'insensitive' } });
   if (petitionerName) AND.push({ petitionerName: { contains: petitionerName.trim(), mode: 'insensitive' } });
   if (respondentName) AND.push({ respondentName: { contains: respondentName.trim(), mode: 'insensitive' } });
   if (subject) AND.push({ subject: { contains: subject.trim(), mode: 'insensitive' } });
   if (type) AND.push({ type });
-  if (status) AND.push({ currentStatus: status });
+
   if (legalOfficerName) AND.push({ legalOfficerName: { contains: legalOfficerName.trim(), mode: 'insensitive' } });
   
   // Owner (Commissioner)
@@ -93,32 +94,11 @@ export async function searchCases(params: SearchCaseParams) {
   // 3. Saved presets logic
   if (preset) {
     switch (preset) {
-      case 'unfinished':
-        AND.push({
-          currentStatus: { notIn: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] }
-        });
-        break;
       case 'no_officer':
         AND.push({
           OR: [
             { legalOfficerId: null },
             { legalOfficerName: null }
-          ]
-        });
-        break;
-      case 'has_red_unfinished':
-        AND.push({
-          redNumber: { not: null, notIn: ['', '-'] },
-          currentStatus: { notIn: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] }
-        });
-        break;
-      case 'completed_no_red':
-        AND.push({
-          currentStatus: { in: ['เสร็จสิ้น', 'เสร็จสิ้น (ศาลปกครอง)', 'เสร็จสิ้น(ศาลปกครอง)', 'แล้วเสร็จ', 'ยุติเรื่อง', 'จำหน่ายเรื่อง', 'ปิดเรื่อง', 'closed', 'completed', 'ปิดคดี', 'วินิจฉัยแล้วเสร็จ'] },
-          OR: [
-            { redNumber: null },
-            { redNumber: '' },
-            { redNumber: '-' }
           ]
         });
         break;
@@ -141,6 +121,23 @@ export async function searchCases(params: SearchCaseParams) {
     where.AND = AND;
   }
 
+  // Filter exact raw-cell completion using small scalar batches BEFORE count/pagination.
+  if (status || ['unfinished','has_red_unfinished','completed_no_red'].includes(preset || '')) {
+    const ids: string[] = [];
+    let cursor: string | undefined;
+    for (;;) {
+      const batch = await prisma.case.findMany({
+        where, orderBy: { id: 'asc' }, take: 500,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+        select: { id: true, currentStatus: true, registryRedText: true, redNumber: true },
+      });
+      ids.push(...filterCaseWorkflowRecords(batch, status, preset).map(row => row.id));
+      if (batch.length < 500) break;
+      cursor = batch[batch.length - 1].id;
+    }
+    where.id = { in: ids };
+  }
+
   // Determine sorting
   const orderBy: Prisma.CaseOrderByWithRelationInput = {};
   if (sortBy === 'receivedDate') orderBy.receivedDate = sortOrder;
@@ -149,7 +146,7 @@ export async function searchCases(params: SearchCaseParams) {
   else if (sortBy === 'currentStatus') orderBy.currentStatus = sortOrder;
   else orderBy.updatedAt = sortOrder;
 
-  const take = Math.min(Math.max(pageSize, 10), 100);
+  const take = Math.min(Math.max(pageSize, 10), 5000);
   const skip = (Math.max(page, 1) - 1) * take;
 
   const [total, cases] = await Promise.all([

@@ -9,6 +9,7 @@ interface CaseStatusUpdateFormProps {
   currentStatus: string;
   currentProceedingNote?: string | null;
   canEdit: boolean;
+  expectedUpdatedAt: string;
 }
 
 const STANDARD_STATUSES = [
@@ -32,6 +33,7 @@ export function CaseStatusUpdateForm({
   currentStatus,
   currentProceedingNote,
   canEdit,
+  expectedUpdatedAt,
 }: CaseStatusUpdateFormProps) {
   const router = useRouter();
   const statusOptions = useMemo(() => {
@@ -43,6 +45,7 @@ export function CaseStatusUpdateForm({
   const [status, setStatus] = useState(currentStatus);
   const [note, setNote] = useState(currentProceedingNote ?? '');
   const [isSaving, setIsSaving] = useState(false);
+  const [version, setVersion] = useState(expectedUpdatedAt);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -59,6 +62,7 @@ export function CaseStatusUpdateForm({
         body: JSON.stringify({
           currentStatus: status,
           proceedingNote: note,
+          expectedUpdatedAt: version,
         }),
       });
 
@@ -69,6 +73,7 @@ export function CaseStatusUpdateForm({
 
       setStatus(data.case.currentStatus);
       setNote(data.case.proceedingNote ?? '');
+      setVersion(data.case.updatedAt);
       setMessage({ type: 'success', text: data.message || 'บันทึกข้อมูลแล้ว' });
       router.refresh();
     } catch (error) {
@@ -87,6 +92,7 @@ export function CaseStatusUpdateForm({
         <h3 className="text-base font-semibold leading-6 text-slate-900">อัปเดตสถานะและการดำเนินการ</h3>
         <p className="mt-1 text-sm text-slate-500">
           ข้อความในช่อง “การดำเนินการล่าสุด” จะแสดงในตาราง Dashboard เพื่อให้เห็นว่าแต่ละเรื่องดำเนินการถึงขั้นใดแล้ว
+          การนับเสร็จสิ้นใช้ช่องเรื่องแดง หากต้องการบันทึก “แดงแล้ว” ให้ใช้เมนูแก้ไขข้อมูลคดี
         </p>
 
         <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
@@ -119,7 +125,7 @@ export function CaseStatusUpdateForm({
               maxLength={10000}
               disabled={!canEdit || isSaving}
               className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100"
-              placeholder="ตัวอย่าง: ส่งหนังสือขอคำชี้แจงแล้ว รอคำตอบภายในวันที่ ..."
+              placeholder="ตัวอย่าง: ส่งหนังสือขอคำชี้แจงแล้ว รอคำตอบจากคู่กรณี"
             />
             <div className="mt-1 flex justify-between text-xs text-slate-400">
               <span>ควรบันทึกผลล่าสุด งานที่รอ และขั้นตอนถัดไป</span>

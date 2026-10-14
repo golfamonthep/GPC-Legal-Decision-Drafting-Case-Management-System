@@ -1,13 +1,9 @@
+import { normalizeCaseNumber, extractStoredRedNumber } from '@/lib/registryNumbers';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/lib/auth/requireApiPermission';
 import prisma from '@/lib/db';
 import { parseThaiDate } from '@/lib/dateUtils';
 import { getRegistryCaseStatus } from '@/lib/caseStatus';
-
-const THAI_DIGITS: Record<string, string> = {
-  '๐': '0', '๑': '1', '๒': '2', '๓': '3', '๔': '4',
-  '๕': '5', '๖': '6', '๗': '7', '๘': '8', '๙': '9',
-};
 
 type NormalizedCaseType = 'ร้องทุกข์' | 'อุทธรณ์' | 'ไม่ระบุ';
 
@@ -30,22 +26,6 @@ function normalizeCaseType(value: unknown): NormalizedCaseType {
   if (normalized.includes('อุทธรณ์')) return 'อุทธรณ์';
   if (normalized.includes('ร้องทุกข์')) return 'ร้องทุกข์';
   return 'ไม่ระบุ';
-}
-
-function normalizeCaseNumber(value: unknown): string {
-  return String(value ?? '')
-    .replace(/[๐-๙]/g, (digit) => THAI_DIGITS[digit] ?? digit)
-    .replace(/\s+/g, '')
-    .trim();
-}
-
-function extractStoredRedNumber(value: unknown): string | null {
-  const normalized = normalizeCaseNumber(value);
-  if (!normalized) return null;
-
-  // “แดงแล้ว” is a completion marker, not a unique red-case number.
-  const match = normalized.match(/\d+\/\d+/);
-  return match?.[0] ?? null;
 }
 
 function compositeKey(caseType: string, caseNumber: string): string {

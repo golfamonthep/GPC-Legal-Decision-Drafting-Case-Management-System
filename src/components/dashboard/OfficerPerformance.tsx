@@ -19,7 +19,7 @@ export function OfficerPerformance({ title, snapshot, accent, scaleMax }: {
     {snapshot.officerPerformance.length ? <ol className="divide-y divide-slate-100">
       {snapshot.officerPerformance.map(item => <li key={item.name} className="grid min-w-0 gap-2 py-2 sm:grid-cols-[minmax(0,1fr)_14rem] sm:items-center sm:py-1.5">
         <div className="min-w-0">
-          <p className="flex items-start gap-2 text-sm font-semibold text-slate-800">
+          <p className="flex items-start gap-2 text-sm font-normal text-slate-800">
             <span className="shrink-0 tabular-nums text-slate-500">{item.rank === null ? "—" : `#${item.rank}`}</span>
             <span className="min-w-0 break-words [overflow-wrap:anywhere]">{item.name}</span>
           </p>

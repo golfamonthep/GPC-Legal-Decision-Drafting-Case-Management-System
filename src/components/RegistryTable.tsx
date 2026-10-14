@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getRegistryRedText, getRegistryCaseStatus } from "@/lib/caseStatus";
 import { Prisma } from '@/generated/prisma';
 
 type CaseWithRelations = Prisma.CaseGetPayload<{
@@ -24,17 +25,6 @@ function renderSortIcon(column: string, currentSortBy: string, currentSortOrder:
   return currentSortOrder === 'asc'
     ? <ChevronUp className="inline h-4 w-4" />
     : <ChevronDown className="inline h-4 w-4" />;
-}
-
-function getDeadlineStyle(date: Date | null) {
-  if (!date) return '';
-  const today = new Date();
-  const diffTime = date.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0) return 'text-red-600 font-semibold bg-red-50';
-  if (diffDays <= 7) return 'text-amber-600 font-semibold bg-amber-50';
-  return 'text-slate-700';
 }
 
 function formatDate(date: Date | null) {
@@ -96,13 +86,7 @@ export default function RegistryTable({ data, metadata }: RegistryTableProps) {
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap cursor-pointer hover:bg-slate-100" onClick={() => handleSort('status')}>
                 สถานะ {renderSortIcon('status', currentSortBy, currentSortOrder)}
               </th>
-              <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap cursor-pointer hover:bg-slate-100" onClick={() => handleSort('dueDate30')}>
-                ครบ 30 วัน {renderSortIcon('dueDate30', currentSortBy, currentSortOrder)}
-              </th>
-              <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">ครบ 60 วัน</th>
-              <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">ครบ 90 วัน</th>
-              <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">ครบ 120 วัน</th>
-              <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">ครบ 240 วัน</th>
+              <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500">การดำเนินการล่าสุด</th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">วันประชุม</th>
               <th scope="col" className="px-4 py-3 text-left font-medium text-slate-500 whitespace-nowrap">ผลคำวินิจฉัย</th>
             </tr>
@@ -110,7 +94,7 @@ export default function RegistryTable({ data, metadata }: RegistryTableProps) {
           <tbody className="bg-white divide-y divide-slate-200">
             {data.length === 0 ? (
               <tr>
-                <td colSpan={18} className="px-6 py-12 text-center text-slate-500">
+                <td colSpan={14} className="px-6 py-12 text-center text-slate-500">
                   ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา
                 </td>
               </tr>
@@ -128,8 +112,8 @@ export default function RegistryTable({ data, metadata }: RegistryTableProps) {
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap font-medium text-slate-900">{item.blackNumber}</td>
-                    <td className="px-4 py-3 whitespace-nowrap font-medium text-red-600">{item.redNumber || '-'}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-slate-700">{item.petitionerName}</td>
+                    <td className="px-4 py-3 whitespace-nowrap font-medium text-red-600">{getRegistryRedText(item) || '-'}</td>
+                    <td className="px-4 py-3 text-slate-900"><strong>{item.petitionerName}</strong></td>
                     <td className="px-4 py-3 text-slate-700 line-clamp-2">{item.respondentName}</td>
                     <td className="px-4 py-3 text-slate-700">{item.subject}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-slate-600">{formatDate(item.receivedDate)}</td>
@@ -143,15 +127,10 @@ export default function RegistryTable({ data, metadata }: RegistryTableProps) {
                         item.currentStatus === 'วินิจฉัยแล้ว' ? 'bg-emerald-100 text-emerald-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
-                        {item.currentStatus}
+                        {getRegistryCaseStatus(item)}
                       </span>
                     </td>
-                    <td className={`px-4 py-3 whitespace-nowrap ${getDeadlineStyle(item.dueDate30)}`}>{formatDate(item.dueDate30)}</td>
-                    <td className={`px-4 py-3 whitespace-nowrap ${getDeadlineStyle(item.dueDate60)}`}>{formatDate(item.dueDate60)}</td>
-                    <td className={`px-4 py-3 whitespace-nowrap ${getDeadlineStyle(item.dueDate90)}`}>{formatDate(item.dueDate90)}</td>
-                    <td className={`px-4 py-3 whitespace-nowrap ${getDeadlineStyle(item.dueDate120)}`}>{formatDate(item.dueDate120)}</td>
-                    <td className={`px-4 py-3 whitespace-nowrap ${getDeadlineStyle(item.dueDate240)}`}>{formatDate(item.dueDate240)}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-slate-600">{formatDate(item.meetingDate)}</td>
+                    <td className="px-4 py-3 text-slate-700 max-w-sm whitespace-pre-wrap">{item.proceedingNote || "ยังไม่มีการบันทึกการดำเนินการ"}</td><td className="px-4 py-3 whitespace-nowrap text-slate-600">{formatDate(item.meetingDate)}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-slate-700 font-medium">{item.decisionResult || '-'}</td>
                   </tr>
                 );

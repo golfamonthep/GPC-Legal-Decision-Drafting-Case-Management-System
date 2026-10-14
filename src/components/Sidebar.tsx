@@ -31,7 +31,7 @@ const navigation = [
   { name: "ผู้ดูแลระบบ", href: "/admin/system", icon: Settings, permission: "VIEW_ADMIN_CONSOLE" as any },
 ];
 
-export function Sidebar({ user }: { user: SessionUser | null }) {
+export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -40,7 +40,7 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
         <Scale className="h-8 w-8 text-yellow-500" />
         <span>ก.พ.ค.ตร.</span>
       </div>
-      <nav className="flex flex-1 flex-col mt-4">
+      <nav aria-label="เมนูหลัก" className="flex flex-1 flex-col mt-4">
         <ul role="list" className="flex flex-1 flex-col gap-y-7">
           <li>
             <ul role="list" className="-mx-2 space-y-1">
@@ -53,6 +53,8 @@ export function Sidebar({ user }: { user: SessionUser | null }) {
                   <li key={item.name}>
                     <Link
                       href={item.href}
+                      onClick={onNavigate}
+                      aria-current={isActive ? "page" : undefined}
                       className={cn(
                         isActive
                           ? "bg-slate-800 text-white"

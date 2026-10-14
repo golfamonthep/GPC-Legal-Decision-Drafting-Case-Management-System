@@ -24,8 +24,6 @@ export default function RegistryFilters({
   commissioner,
   legalOfficer,
   year,
-  nearDeadline,
-  overdue,
   commissionerOptions,
   legalOfficerOptions,
 }: RegistryFiltersProps) {
@@ -126,19 +124,7 @@ export default function RegistryFilters({
           {legalOfficerOptions.map((name) => <option key={name} value={name}>{name}</option>)}
         </select>
 
-        <div className="flex items-center space-x-4 ml-auto">
-          <label className="inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" checked={nearDeadline} onChange={(event) => updateFilter('nearDeadline', event.target.checked)} />
-            <div className="relative w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500" />
-            <span className="ms-2 text-sm font-medium text-slate-700">ใกล้ครบกำหนด</span>
-          </label>
 
-          <label className="inline-flex items-center cursor-pointer">
-            <input type="checkbox" className="sr-only peer" checked={overdue} onChange={(event) => updateFilter('overdue', event.target.checked)} />
-            <div className="relative w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600" />
-            <span className="ms-2 text-sm font-medium text-slate-700">เกินกำหนด</span>
-          </label>
-        </div>
       </div>
     </div>
   );

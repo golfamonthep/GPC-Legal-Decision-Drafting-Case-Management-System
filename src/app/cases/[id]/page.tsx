@@ -14,7 +14,7 @@ import { auditLog } from "@/lib/audit";
 import { CaseStatus } from "@/types";
 import { CaseDetailActions } from "@/components/CaseDetailActions";
 import { getRegistryCaseStatus, getRegistryRedText, isClosedCaseStatus, isClosedOrRedCase } from "@/lib/caseStatus";
-import { differenceInYears, differenceInDays } from "date-fns";
+
 import { checkGraphIntegrationStatus } from "@/lib/microsoft/graphConfig";
 import { DocumentLinkModal } from "@/components/DocumentLinkModal";
 import { CaseAssignmentPanel } from "@/components/CaseAssignmentPanel";
@@ -115,12 +115,6 @@ export default async function CaseDetailPage({
 
   const graphStatus = checkGraphIntegrationStatus();
 
-  let isOverdue = false;
-  if (caseData.dueDate90) {
-    const daysUntilDue = differenceInDays(caseData.dueDate90, new Date());
-    isOverdue = daysUntilDue < 0 && !isClosedOrRedCase(caseData);
-  }
-
   // Data QA Indicators Logic
   const qaWarnings: string[] = [];
   if (!caseData.petitionerName || caseData.petitionerName.trim() === '-' || caseData.petitionerName === '') {
@@ -143,12 +137,6 @@ export default async function CaseDetailPage({
   }
   if (isClosedCaseStatus(caseData.currentStatus) && !isClosedOrRedCase(caseData)) {
     qaWarnings.push("สถานะคดีเสร็จสิ้น แต่ช่องเรื่องแดงว่าง จึงยังนับเป็นงานค้าง");
-  }
-  if (!isClosedOrRedCase(caseData) && caseData.receivedDate) {
-    const yearsOpen = differenceInYears(new Date(), caseData.receivedDate);
-    if (yearsOpen >= 3) {
-      qaWarnings.push(`คดีล่าช้าเกิน 3 ปี (เปิดมาแล้ว ${yearsOpen} ปี)`);
-    }
   }
 
   return (
@@ -174,7 +162,7 @@ export default async function CaseDetailPage({
           </div>
         </div>
         <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
-          <CaseDetailActions caseData={caseData} />
+          {hasPermission(user.role, 'EDIT_CASE') && <CaseDetailActions caseData={caseData} />}
           {hasPermission(user.role, 'USE_ANALYSIS') && (
             <Link href={'/analysis?case=' + encodeURIComponent(caseId)} className="inline-flex items-center rounded-md border border-teal-700 bg-white px-3 py-2 text-sm font-semibold text-teal-800 hover:bg-teal-50">
               ส่งเข้าวิเคราะห์และร่าง
@@ -227,7 +215,7 @@ export default async function CaseDetailPage({
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
                 <div className="sm:col-span-1">
                   <dt className="text-sm font-medium text-slate-500">ผู้ร้อง / ผู้อุทธรณ์</dt>
-                  <dd className="mt-1 text-sm text-slate-900">{caseData.petitionerName}</dd>
+                  <dd className="mt-1 text-base font-bold text-slate-900">{caseData.petitionerName}</dd>
                 </div>
                 <div className="sm:col-span-1">
                   <dt className="text-sm font-medium text-slate-500">ผู้ถูกร้อง / คู่กรณี</dt>
@@ -362,57 +350,7 @@ export default async function CaseDetailPage({
             canAssign={hasPermission(user.role, 'ASSIGN_CASES') || hasPermission(user.role, 'REASSIGN_CASES') || user.role === 'ADMIN'}
           />
 
-          <div className="bg-white shadow sm:rounded-lg border border-slate-200">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-base font-semibold leading-6 text-slate-900 mb-4">กรอบระยะเวลา (Due Dates)</h3>
-              <ul className="space-y-3 text-sm">
-                <li className="flex justify-between">
-                  <span className="text-slate-500">ครบ 30 วัน:</span>
-                  <span className="font-medium text-slate-900">{formatDate(caseData.dueDate30)}</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-slate-500">ครบ 60 วัน:</span>
-                  <span className="font-medium text-slate-900">{formatDate(caseData.dueDate60)}</span>
-                </li>
-                <li className="flex justify-between items-center bg-slate-50 -mx-4 px-4 py-2 border-y border-slate-100">
-                  <span className="text-slate-900 font-semibold">ครบ 90 วัน (มาตรฐาน):</span>
-                  <span className={`font-bold ${isOverdue ? 'text-red-600' : 'text-slate-900'}`}>{formatDate(caseData.dueDate90)}</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-slate-500">ครบ 120 วัน (ขยาย):</span>
-                  <span className="font-medium text-slate-900">{formatDate(caseData.dueDate120)}</span>
-                </li>
-                <li className="flex justify-between">
-                  <span className="text-slate-500">ครบ 240 วัน (สูงสุด):</span>
-                  <span className="font-medium text-slate-900">{formatDate(caseData.dueDate240)}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Status Update UI Placeholder */}
-          <div className="bg-white shadow sm:rounded-lg border border-slate-200">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-base font-semibold leading-6 text-slate-900 mb-4">อัปเดตสถานะ (Update Status)</h3>
-              <form className="space-y-4">
-                <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-slate-700">สถานะใหม่</label>
-                  <select id="status" name="status" className="mt-1 block w-full rounded-md border-slate-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm">
-                    <option>รับเรื่อง</option>
-                    <option>แสวงหาข้อเท็จจริง</option>
-                    <option>รอเข้าประชุม</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="note" className="block text-sm font-medium text-slate-700">บันทึกเพิ่มเติม</label>
-                  <textarea id="note" name="note" rows={2} className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="รายละเอียด..."></textarea>
-                </div>
-                <button type="button" className="inline-flex justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                  บันทึกสถานะ
-                </button>
-              </form>
-            </div>
-          </div>
+          {hasPermission(user.role, 'EDIT_CASE') && <Link href={`/cases/${caseId}/update`} className="block rounded-xl border border-teal-200 bg-teal-50 p-4 text-teal-800">อัปเดตสถานะและการดำเนินการล่าสุด</Link>}
 
           <div className="bg-white shadow sm:rounded-lg border border-slate-200">
             <div className="px-4 py-5 sm:p-6">

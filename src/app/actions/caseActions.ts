@@ -2,8 +2,10 @@
 
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { requireApiPermission } from '@/lib/auth/requireApiPermission';
 
 export async function updateCase(caseId: string, data: any) {
+  await requireApiPermission('EDIT_CASE');
   // We'll perform everything inside a transaction
   return await prisma.$transaction(async (tx) => {
     const existingCase = await tx.case.findUnique({

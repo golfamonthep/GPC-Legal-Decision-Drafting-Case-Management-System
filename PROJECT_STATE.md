@@ -1,3 +1,13 @@
+## Tabler case workflow — 2026-10-14 (release candidate)
+
+Base main297962c/PR22 WAS merged and deployed to original GPC Production. Older candidate/blocked frontend statements below are historical. Last verified snapshot remains216=168complete+48pending (complaint107/97/10; appeal109/71/38). This UI task does NOT import new files, mutate live records, run DDL/reset/seed, change auth or complete the separate private Storage/AI workflow.
+
+Owner-approved changes: real Tabler stacked registry tables, bold petitioner/appellant not officers, compact full proceedings disclosures, GET name/number/proceeding/year/status/officer search, permission-bound create/edit/progress with atomic version409 and transactional history, native accessible mobile navigation. Deadline/risk/countdown displays removed across operational menus and affected reports; underlying dates plus factual receipt/meeting/audit dates preserved.
+
+Verification:50 tests, Prisma validate, TypeScript, error-only ESLint and production build pass with unreachable build-only.invalid DB (no render/build writes). Local synthetic Browser QA1366x900/768x1024/320x740: no horizontal overflow; name700/officer400; full note; modal focus/Escape return; type-prefill/required/disconnected503 retains input. Fixture removed, screenshots outside Git. NOT live CRUD persistence or comprehensive Production-role UAT. CI and deployment verification still required.
+
+Targeted security patches: Next/eslint-config-next16.4.0, sharp0.35.5, xmldom0.9.12. Latest npm audit:0critical/15high/1moderate; omit-dev:0critical/7high/1moderate (Prisma/tooling graph included). Broad automatic fix rejected; no bypass/force/Prisma downgrade. Residual advisories need separate scoped review. Original dirty C:/APP and untracked design-qa.md preserved.
+
 ## Strict registry completion rule — 2026-10-12 (code candidate, not Production)
 
 Owner confirmed: any nonblank original red-cell text is complete (including `แดงแล้ว`, arbitrary text and pending numeric allocation); whitespace/null/empty is pending. The presence of registryRedText is authoritative even when empty: neither a closed currentStatus nor a stale extracted redNumber overrides it. Shared helpers now govern dashboard/officer percentages, case-list filters/display, import/status normalization, workload and consistency checks. Literal text is displayed, not replaced with an invented unique number. Workload selection now includes raw red text and removes the nonexistent Case.status selection. Authentication/permissions/schema/private Storage remain unchanged.

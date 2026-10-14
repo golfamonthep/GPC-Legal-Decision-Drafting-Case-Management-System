@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { DispatchData } from "@/lib/dispatch/officialDispatchWorkflow";
 import { OfficialDispatchStatus, OFFICIAL_DISPATCH_LABELS, CourtFollowupStatus, COURT_FOLLOWUP_LABELS } from "@/lib/dispatch/officialDispatchStatus";
-import { CourtDeadlineInfo, getUrgencyLevelLabel } from "@/lib/dispatch/courtDeadline";
+import { CourtDeadlineInfo } from "@/lib/dispatch/courtDeadline";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
-import { Send, MapPin, Scale, Clock, AlertTriangle, FileText } from "lucide-react";
+import { Send, MapPin, Scale } from "lucide-react";
 
 interface DispatchPanelProps {
   caseId: string;
@@ -21,7 +21,7 @@ interface DispatchPanelProps {
   };
 }
 
-export function DispatchPanel({ caseId, dispatchData, deadlineInfo, permissions }: DispatchPanelProps) {
+export function DispatchPanel({ caseId, dispatchData, permissions }: DispatchPanelProps) {
   const [isInitializing, setIsInitializing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   
@@ -126,27 +126,6 @@ export function DispatchPanel({ caseId, dispatchData, deadlineInfo, permissions 
               <Scale className="h-4 w-4 text-slate-500" />
               การติดตามศาลปกครอง
             </h4>
-            <div className="bg-slate-50 p-4 rounded-md mb-4 border border-slate-200">
-              <div className="flex flex-col sm:flex-row justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium text-slate-500">วันครบกำหนดฟ้องคดี ({dispatchData.filingPeriodDays} วัน)</p>
-                  <p className={`text-lg font-bold ${deadlineInfo.isOverdue ? 'text-red-600' : 'text-slate-900'}`}>
-                    {deadlineInfo.filingDeadlineDate ? format(deadlineInfo.filingDeadlineDate, 'dd MMM yyyy', { locale: th }) : '-'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-500">ระดับความเสี่ยง</p>
-                  <p className={`text-sm font-semibold px-2 py-1 inline-flex rounded-full ${
-                    deadlineInfo.urgencyLevel === 'OVERDUE' ? 'bg-red-100 text-red-800' :
-                    deadlineInfo.urgencyLevel.includes('NEAR_DUE') ? 'bg-amber-100 text-amber-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {getUrgencyLevelLabel(deadlineInfo.urgencyLevel)}
-                  </p>
-                </div>
-              </div>
-            </div>
-
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
               <div className="sm:col-span-1">
                 <dt className="text-sm font-medium text-slate-500">ศาล</dt>

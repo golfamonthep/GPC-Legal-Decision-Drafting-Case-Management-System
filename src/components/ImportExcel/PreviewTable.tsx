@@ -74,8 +74,6 @@ export default function PreviewTable({ rowData, mapping, onCancel, onConfirmImpo
         { key: 'proceedingNote', label: 'การดำเนินการ' },
         { key: 'decisionResult', label: 'ผลคำวินิจฉัย' },
         { key: 'meetingDate', label: 'นัดประชุม' },
-        { key: 'deadline30', label: 'ครบ 30 วัน' },
-        { key: 'deadline60', label: 'ครบ 60 วัน' },
         { key: 'oneDriveUrl', label: 'OneDrive link' },
       ];
 

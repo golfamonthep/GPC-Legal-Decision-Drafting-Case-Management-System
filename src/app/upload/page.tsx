@@ -59,7 +59,7 @@ export default async function UploadPage() {
                 เรื่องอุทธรณ์
               </h2>
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                สำหรับไฟล์ทะเบียนคุมอุทธรณ์ ระบบจะกำหนดประเภททุกแถวเป็น “อุทธรณ์” และจับคู่หัวข้อ เช่น ผู้อุทธรณ์ คำสั่งที่อุทธรณ์ คู่กรณี นิติกร และกำหนดเวลา 240 วัน
+                สำหรับไฟล์ทะเบียนคุมอุทธรณ์ ระบบจะกำหนดประเภททุกแถวเป็น “อุทธรณ์” และจับคู่หัวข้อ เช่น ผู้อุทธรณ์ คำสั่งที่อุทธรณ์ คู่กรณี นิติกร และการดำเนินการ
               </p>
               <span className="mt-5 inline-flex items-center rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-sm">
                 อัปโหลดทะเบียนอุทธรณ์ →

@@ -1,3 +1,11 @@
+## Tabler case workflow lessons — 2026-10-14
+
+Use real Tabler within the existing GPC app, scoped AND layered below Tailwind utilities. Blind prefixing of body puts full-height layout onto every card; strip document resets, retain tokens and inspect actual render. Avoid mixing Tabler space-y utilities with Tailwind stacks; explicit grid gap is predictable. Check1366/768/320px, Sarabun, bold parties/normal officers, disclosures and keyboard modal focus/Escape return.
+
+Literal red-cell text must survive forms/search/CSV; stale extracted numbers/status never override an explicit blank. Preserve deadline data when removing its presentation. New manual and quick-update paths need existing permissions, allowlists, origin checks, atomic version guards and transactional history. Synthetic tests are not live persistence UAT; never insert fake legal cases in Production. Remove temporary fixture, store screenshots outside Git. GET render must not write audit; explicit mutations/exports do.
+
+Target reviewed security patches; do not bypass rejected broad dependency updates. Document residual advisories, not a clean-security claim. PR22 frontend was deployed before this task; old release-blocked notes are historical. Private Storage/AI completion remains separate.
+
 ## Reference styling lessons — 2026-10-12
 
 Use the supplied design as aesthetic inspiration for the actual product rather than copying unrelated finance measures. Keep quantitative plots native, solid-fill and source-backed; never invent radar/trends for visual density. Removing a chart need not erase original case text. Mobile select/button should share a minmax(0,1fr)/auto row to avoid unnecessarily tall headers; test all four KPI cards and long disclosures. Compare reference plus actual rendered cards in the same review input.

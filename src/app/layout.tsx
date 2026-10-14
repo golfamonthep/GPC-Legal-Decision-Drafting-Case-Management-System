@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./tabler-scoped.css";
+import "./case-workspace.css";
 import { AppShell } from "@/components/AppShell";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { getAuthMode } from "@/lib/auth/mvp-auth";

@@ -1,3 +1,11 @@
+## Manual registry mutation safeguards — 2026-10-14
+
+No schema/migration/DDL or live record mutation in this UI release. Composite uniqueness(type,blackNumber)/(type,redNumber), RLS, Prisma-only access and existing216 records preserved. No test cases inserted into Supabase.
+
+Manual mutations allow registry identity, parties/subject, category, registry officer name, raw red/status/proceeding and result only; linked assignments, receipt/deadline/meeting dates and app-only fields are untouched. Raw nonblank red text completes, explicit blank remains pending regardless metadata. Shared numeric extraction handles Thai digits/spacing without replacing literal text. Unrelated edits preserve existing numeric identifier when marker unchanged.
+
+Atomic updatedAt guard returns409/404 without writes/history. Successful mutation and before/after audit/event are one transaction; MVP audit FKnull. Fake transaction tests prove service contract, not real PostgreSQL concurrency/persistence UAT.
+
 ## Authoritative completion and latest live registry — 2026-10-12
 
 No schema, migration or data mutation for the strict completion clarification. Case.registryRedText stores the original first-sheet red cell: any trimmed nonblank value means complete; null/empty/whitespace means pending, even if currentStatus is closed or redNumber is stale. Numeric redNumber is optional and preserves composite uniqueness; never synthesize one for literal completion text. Supersedes historical status-or-number completion definitions below.
