@@ -101,6 +101,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Regression tests
+        run: npm test
+
       - name: Enforce lint result
         if: steps.lint.outcome == 'failure'
         run: |

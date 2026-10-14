@@ -5,7 +5,7 @@ import { Users, AlertTriangle, FileText, Download, UserPlus, CheckCircle2 } from
 import { DashboardCard } from '@/components/DashboardCard';
 // Use hardcoded thresholds instead of importing from server-side caseAssignment to avoid Prisma client in browser
 const HIGH_ACTIVE_WORKLOAD_THRESHOLD = 20;
-const HIGH_OVERDUE_THRESHOLD = 5;
+
 import Link from 'next/link';
 
 export default function AssignmentDashboardClient({ currentUser }: { currentUser: any }) {
@@ -41,16 +41,11 @@ export default function AssignmentDashboardClient({ currentUser }: { currentUser
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <DashboardCard
-          title="สำนวน Active ทั้งหมด"
+          title="สำนวนที่ยังดำเนินการ"
           value={workload.totalActiveCases}
           icon={<FileText className="h-5 w-5 text-blue-500" />}
         />
-        <DashboardCard
-          title="สำนวนเกินกำหนด (Active)"
-          value={workload.totalOverdueCases}
-          icon={<AlertTriangle className="h-5 w-5 text-red-500" />}
-          className={workload.totalOverdueCases > 0 ? "border-red-200 bg-red-50" : ""}
-        />
+
         <DashboardCard
           title="ยังไม่มีนิติกร (Active)"
           value={workload.unassignedLegalOfficerCases}
@@ -83,21 +78,21 @@ export default function AssignmentDashboardClient({ currentUser }: { currentUser
               <thead className="bg-slate-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">ชื่อ</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Active</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">เกินกำหนด</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">ไม่มีเลขแดง</th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">ค้าง</th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">เสร็จสิ้น</th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">รับทั้งหมด</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-200">
                 {workload.legalOfficers.map((lo: any) => (
                   <tr key={lo.userId} className={lo.activeCases >= HIGH_ACTIVE_WORKLOAD_THRESHOLD ? 'bg-red-50' : ''}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 flex items-center">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 flex items-center">
                       {lo.name}
                       {lo.activeCases >= HIGH_ACTIVE_WORKLOAD_THRESHOLD && <span title="ภาระงานสูง"><AlertTriangle className="h-4 w-4 text-red-500 ml-2" /></span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-500 font-bold">{lo.activeCases}</td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm text-right ${lo.overdueCases >= HIGH_OVERDUE_THRESHOLD ? 'text-red-600 font-bold' : 'text-slate-500'}`}>{lo.overdueCases}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-500">{lo.noRedNumber}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-500">{lo.completedCases}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-500">{lo.totalCases}</td>
                   </tr>
                 ))}
                 {workload.legalOfficers.length === 0 && (
@@ -120,8 +115,8 @@ export default function AssignmentDashboardClient({ currentUser }: { currentUser
               <thead className="bg-slate-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">ชื่อ</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Active</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">เกินกำหนด</th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">ค้าง</th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">รับทั้งหมด</th>
                   <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">เสร็จสิ้น</th>
                 </tr>
               </thead>
@@ -130,7 +125,7 @@ export default function AssignmentDashboardClient({ currentUser }: { currentUser
                   <tr key={co.userId}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">{co.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-500 font-bold">{co.activeCases}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-500">{co.overdueCases}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-500">{co.totalCases}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-slate-500">{co.completedCases}</td>
                   </tr>
                 ))}

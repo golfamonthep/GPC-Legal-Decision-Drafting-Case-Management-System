@@ -79,7 +79,7 @@ export default async function DispatchDashboardPage() {
             แจ้งผลและติดตามศาล (Dispatch & Court Follow-up)
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            ติดตามสถานะการจัดส่งหนังสือแจ้งผลคำวินิจฉัย และระยะเวลาการฟ้องคดีต่อศาลปกครอง
+            ติดตามสถานะการจัดส่งหนังสือแจ้งผลคำวินิจฉัย และการดำเนินคดีต่อศาลปกครอง
           </p>
         </div>
         <div className="mt-4 flex gap-4 sm:ml-4 sm:mt-0">
@@ -106,10 +106,7 @@ export default async function DispatchDashboardPage() {
         <DashboardCard title="รอจัดทำหนังสือ/รอส่ง" value={dispatchStats.preparingNotice} icon={<FileText className="h-5 w-5 text-blue-500" />} />
         <DashboardCard title="ส่งแล้ว (รอรับทราบ)" value={dispatchStats.dispatched} icon={<Send className="h-5 w-5 text-amber-500" />} />
         <DashboardCard title="ส่งไม่สำเร็จ/ตีกลับ" value={dispatchStats.returned} icon={<AlertTriangle className="h-5 w-5 text-red-500" />} className={dispatchStats.returned > 0 ? "border-red-200 bg-red-50" : ""} />
-        <DashboardCard title="รับทราบแล้ว (รอพ้นระยะเวลา)" value={dispatchStats.acknowledged + dispatchStats.filingPeriodActive} icon={<CheckCircle className="h-5 w-5 text-green-500" />} />
-        
-        <DashboardCard title="ใกล้ครบกำหนดฟ้องคดี" value={dispatchStats.nearDeadline} icon={<Clock className="h-5 w-5 text-orange-500" />} className={dispatchStats.nearDeadline > 0 ? "border-orange-200 bg-orange-50" : ""} />
-        <DashboardCard title="เลยระยะเวลาฟ้องคดี" value={dispatchStats.overdue} icon={<AlertTriangle className="h-5 w-5 text-red-600" />} className={dispatchStats.overdue > 0 ? "border-red-200 bg-red-50" : ""} />
+        <DashboardCard title="รับทราบผลแล้ว" value={dispatchStats.acknowledged + dispatchStats.filingPeriodActive} icon={<CheckCircle className="h-5 w-5 text-green-500" />} />
         <DashboardCard title="มีคดีศาลที่ต้องติดตาม" value={dispatchStats.courtCases} icon={<Scale className="h-5 w-5 text-purple-500" />} />
         <DashboardCard title="ติดตามเสร็จสิ้น" value={dispatchStats.completed} icon={<CheckCircle className="h-5 w-5 text-slate-500" />} />
       </div>
@@ -126,7 +123,6 @@ export default async function DispatchDashboardPage() {
                   <th className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">ผู้ร้อง/ผู้อุทธรณ์</th>
                   <th className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">สถานะแจ้งผล</th>
                   <th className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">สถานะติดตามศาล</th>
-                  <th className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">วันฟ้องคดี (แจ้งเตือน)</th>
                   <th className="px-3 py-3.5 text-left text-sm font-semibold text-slate-900">การจัดการ</th>
                 </tr>
               </thead>
@@ -135,7 +131,7 @@ export default async function DispatchDashboardPage() {
                   <tr key={c.id}>
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-0">{c.blackNumber}</td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">{c.redNumber || "-"}</td>
-                    <td className="px-3 py-4 text-sm text-slate-500 max-w-[200px] truncate">{c.petitionerName}</td>
+                    <td className="px-3 py-4 text-sm text-slate-500 max-w-[200px] truncate"><strong>{c.petitionerName}</strong></td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
                       <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
                         {c.dispatchStatusLabel}
@@ -147,11 +143,6 @@ export default async function DispatchDashboardPage() {
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                      <span className={`font-medium ${c.isOverdue ? 'text-red-600' : ''}`}>
-                        {c.deadlineUrgency}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
                       <a href={`/cases/${c.id}`} className="text-blue-600 hover:text-blue-900">
                         ดู/แก้ไข
                       </a>
@@ -160,7 +151,7 @@ export default async function DispatchDashboardPage() {
                 ))}
                 {enrichedCases.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-sm text-slate-500">
+                    <td colSpan={6} className="py-8 text-center text-sm text-slate-500">
                       ยังไม่มีสำนวนในกระบวนการแจ้งผลและติดตามศาล
                     </td>
                   </tr>

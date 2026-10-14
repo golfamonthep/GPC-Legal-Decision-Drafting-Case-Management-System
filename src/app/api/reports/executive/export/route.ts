@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import { getExecutiveReportData, ReportFilterType } from "@/lib/reports/executiveReport";
 import prisma from "@/lib/db";
+import { csvRow } from "@/lib/csv";
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
     // Log the export action
     await prisma.auditLog.create({
       data: {
-        userId: user.id,
+        userId: user.id.startsWith('mvp-') ? null : user.id,
         action: "EXECUTIVE_REPORT_EXPORTED",
         entityType: "REPORT",
         entityId: filterType,
@@ -29,37 +30,35 @@ export async function GET(req: NextRequest) {
     let csv = "\uFEFF"; // BOM for Excel Thai support
     csv += "รายงานผู้บริหาร (Executive Report)\n";
     csv += `พิมพ์วันที่, ${new Date().toLocaleString('th-TH')}\n`;
-    csv += `ตัวกรอง, ${filterType}\n\n`;
+    csv += csvRow(['ตัวกรอง', filterType]) + "\n\n";
 
     csv += "ภาพรวม\n";
     csv += `สำนวนทั้งหมด, ${data.overview.totalCases}\n`;
     csv += `อยู่ระหว่างดำเนินการ, ${data.overview.inProgress}\n`;
     csv += `เสร็จสิ้น, ${data.overview.completed}\n`;
-    csv += `เกินกำหนด, ${data.overview.overdue}\n`;
-    csv += `ครบกำหนดภายใน 30 วัน, ${data.overview.dueSoon}\n`;
     csv += `ออกเลขแดงแล้ว, ${data.overview.redNumbered}\n`;
     csv += `ยังไม่มีนิติกร, ${data.overview.unassignedLegalOfficer}\n`;
     csv += `ไม่มีสถานะ, ${data.overview.noStatus}\n\n`;
 
     csv += "แยกตามประเภท\n";
     for (const [type, count] of Object.entries(data.caseTypes)) {
-      csv += `${type}, ${count}\n`;
+      csv += csvRow([type, count]) + "\n";
     }
     csv += "\n";
 
     csv += "แยกตามสถานะ\n";
     for (const [status, count] of Object.entries(data.statuses)) {
-      csv += `${status}, ${count}\n`;
+      csv += csvRow([status, count]) + "\n";
     }
     csv += "\n";
 
     csv += "ภาระงานนิติกร (Top 10)\n";
-    csv += "นิติกร,รวม,ดำเนินการ,เกินกำหนด,เสร็จสิ้น\n";
+    csv += "นิติกร,รวม,ดำเนินการ,เสร็จสิ้น\n";
     const loSorted = Object.entries(data.workloadByLegalOfficer)
       .sort((a, b) => b[1].inProgress - a[1].inProgress)
       .slice(0, 10);
     for (const [name, wl] of loSorted) {
-      csv += `${name},${wl.total},${wl.inProgress},${wl.overdue},${wl.completed}\n`;
+      csv += csvRow([name, wl.total, wl.inProgress, wl.completed]) + "\n";
     }
     csv += "\n";
 

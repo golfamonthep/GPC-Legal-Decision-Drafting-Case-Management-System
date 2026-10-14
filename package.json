@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "styles:tabler": "node scripts/build-tabler-css.mjs",
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/lib/*.test.ts src/lib/dashboard/*.test.ts src/lib/analysis/*.test.ts",
     "db:seed": "prisma db seed",
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
@@ -21,13 +23,15 @@
   "dependencies": {
     "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
+    "@tabler/core": "1.6.1",
+    "@tabler/icons-react": "3.35.0",
     "@types/pg": "^8.20.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "docx": "^9.7.1",
     "docxtemplater": "^3.68.7",
     "lucide-react": "^1.17.0",
-    "next": "16.2.12",
+    "next": "16.4.0",
     "next-auth": "4.24.15",
     "openai": "^6.42.0",
     "pg": "^8.22.0",
@@ -43,7 +47,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "16.4.0",
+    "postcss-prefix-selector": "2.2.1",
     "prisma": "7.9.1",
     "tailwindcss": "^4",
     "tsx": "^4.7.1",
@@ -53,7 +58,8 @@
     "seed": "tsx prisma/seed.ts"
   },
   "overrides": {
+    "@xmldom/xmldom": "0.9.12",
     "postcss": "8.5.25",
-    "sharp": "0.35.3"
+    "sharp": "0.35.5"
   }
 }

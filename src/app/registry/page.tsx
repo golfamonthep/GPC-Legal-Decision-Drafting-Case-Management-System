@@ -21,8 +21,8 @@ export default async function RegistryPage({ searchParams }: PageProps) {
   const commissioner = typeof resolvedParams.commissioner === 'string' ? resolvedParams.commissioner : 'all';
   const legalOfficer = typeof resolvedParams.legalOfficer === 'string' ? resolvedParams.legalOfficer : 'all';
   const year = typeof resolvedParams.year === 'string' ? resolvedParams.year : 'all';
-  const nearDeadline = resolvedParams.nearDeadline === 'true';
-  const overdue = resolvedParams.overdue === 'true';
+  const nearDeadline = false;
+  const overdue = false;
   const sortBy = typeof resolvedParams.sortBy === 'string' ? resolvedParams.sortBy : 'receivedDate';
   const sortOrder = typeof resolvedParams.sortOrder === 'string' ? (resolvedParams.sortOrder as 'asc' | 'desc') : 'desc';
 
@@ -50,7 +50,7 @@ export default async function RegistryPage({ searchParams }: PageProps) {
       <div>
         <h1 className="text-2xl font-bold text-slate-800 tracking-tight font-thai">สารบบคดี (Case Registry)</h1>
         <p className="mt-1 text-sm text-slate-500">
-          ทะเบียนคุมเรื่องร้องทุกข์และอุทธรณ์ พร้อมระบบติดตามระยะเวลา
+          ทะเบียนคุมเรื่องร้องทุกข์และอุทธรณ์ พร้อมข้อมูลการดำเนินการล่าสุด
         </p>
       </div>
 

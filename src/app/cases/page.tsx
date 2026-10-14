@@ -4,10 +4,10 @@ import Link from "next/link";
 import prisma from "@/lib/db";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import { CaseStatus } from "@/types";
-import { differenceInDays } from "date-fns";
 import { Prisma } from "@/generated/prisma";
-import { isClosedOrRedCase } from "@/lib/caseStatus";
-import { filterCasesByRegistryCompletion } from "@/lib/caseList";
+import { filterCasesByRegistryCompletion, filterCasesByBlackYear, caseTextSearch } from "@/lib/caseList";
+import { hasPermission } from "@/lib/auth/permissions";
+import { getBlackNumberYear } from "@/lib/dashboard/metrics";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -17,7 +17,7 @@ export default async function CasesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  await requirePermission("VIEW_CASES");
+  const user = await requirePermission("VIEW_CASES");
 
   const params = await searchParams;
   const typeFilter = params.type as string;
@@ -26,6 +26,8 @@ export default async function CasesPage({
   const qaMissingFieldsFilter = params.qaMissingFields as string;
   const legalOfficerFilter = params.legalOfficer as string;
   const unassignedFilter = params.unassigned as string;
+  const query = typeof params.q === 'string' ? params.q.trim().slice(0, 200) : '';
+  const year = typeof params.year === 'string' ? params.year : '';
 
   const where: Prisma.CaseWhereInput = {};
 
@@ -73,20 +75,18 @@ export default async function CasesPage({
     ];
   }
 
+  if (query) {
+    const and = Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : [];
+    where.AND = [...and, caseTextSearch(query)];
+  }
   const dbCases = await prisma.case.findMany({
     where,
-    orderBy: { receivedDate: 'desc' },
+    orderBy: { updatedAt: 'desc' },
     include: { legalOfficer: true, owner: true }
   });
 
-  const formattedCases = filterCasesByRegistryCompletion(dbCases, completionStatusFilter, redNumberStatusFilter).map((c) => {
-    let daysUntilDue = undefined;
-    let isOverdue = false;
-    
-    if (c.dueDate90) {
-      daysUntilDue = differenceInDays(c.dueDate90, new Date());
-      isOverdue = daysUntilDue < 0 && !isClosedOrRedCase(c);
-    }
+  const years = [...new Set(dbCases.map(c => getBlackNumberYear(c.blackNumber).replace('พ.ศ. ', '')))].sort().reverse();
+  const formattedCases = filterCasesByBlackYear(filterCasesByRegistryCompletion(dbCases, completionStatusFilter, redNumberStatusFilter), year).map((c) => {
 
     return {
       id: c.id,
@@ -99,7 +99,7 @@ export default async function CasesPage({
       subject: c.subject,
       legalCategory: c.legalCategory,
       ownerCommissioner: c.owner?.name || (c as any).committeeOwnerName || "-",
-      legalOfficer: c.legalOfficer?.name || c.legalOfficerName || "-",
+      legalOfficer: c.legalOfficerName || c.legalOfficer?.name || "-",
       receivedDate: c.receivedDate ? c.receivedDate.toISOString().split("T")[0] : "-",
       dueDates: {
         days30: c.dueDate30 ? c.dueDate30.toISOString() : "-",
@@ -113,14 +113,12 @@ export default async function CasesPage({
       decisionResult: c.decisionResult || undefined,
       oneDriveUrl: c.oneDriveUrl || undefined,
       proceedingNote: c.proceedingNote || undefined,
-      isOverdue,
-      daysUntilDue,
     };
   });
 
   return (
-    <div className="min-w-0 py-6 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="sm:flex sm:items-center">
+    <div className="gpc-tabler min-w-0 py-6 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="case-workspace-header">
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold leading-6 text-slate-900 font-thai">
             รายการคดีทั้งหมด
@@ -136,21 +134,16 @@ export default async function CasesPage({
           >
             ระบบมอบหมาย/ภาระงาน
           </Link>
-          <button
-            type="button"
-            className="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 font-thai"
-          >
-            สร้างเรื่องใหม่
-          </button>
+          {hasPermission(user.role, 'IMPORT_REGISTRY') && <Link href="/cases/new" className="btn btn-primary">เพิ่มเรื่องใหม่</Link>}
         </div>
       </div>
 
       <div className="mt-6">
-        <CaseListFilters />
+        <CaseListFilters years={years} />
       </div>
 
       <div className="mt-4">
-        <CaseRegistryBlocks cases={formattedCases} />
+        <CaseRegistryBlocks cases={formattedCases} canEdit={hasPermission(user.role, 'EDIT_CASE')} canCreate={hasPermission(user.role, 'IMPORT_REGISTRY')} />
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { requirePermission } from '@/lib/auth/requirePermission';
 import { hasPermission } from '@/lib/auth/permissions';
 import { StatusBadge } from '@/components/StatusBadge';
 import { CaseStatusUpdateForm } from '@/components/CaseStatusUpdateForm';
+import { getRegistryCaseStatus, getRegistryRedText } from '@/lib/caseStatus';
 
 export default async function UpdateCasePage({
   params,
@@ -24,6 +25,7 @@ export default async function UpdateCasePage({
       type: true,
       blackNumber: true,
       redNumber: true,
+      registryRedText: true,
       subject: true,
       petitionerName: true,
       respondentName: true,
@@ -57,11 +59,11 @@ export default async function UpdateCasePage({
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold text-slate-900">อัปเดตการดำเนินการ</h1>
-                <StatusBadge status={caseData.currentStatus} />
+                <StatusBadge status={getRegistryCaseStatus(caseData)} />
               </div>
               <p className="mt-2 text-sm text-slate-500">
                 {caseData.type} · เรื่องดำ {caseData.blackNumber}
-                {caseData.redNumber ? ` · เรื่องแดง ${caseData.redNumber}` : ''}
+                {getRegistryRedText(caseData) ? ` · เรื่องแดง ${getRegistryRedText(caseData)}` : ''}
               </p>
             </div>
           </div>
@@ -83,7 +85,7 @@ export default async function UpdateCasePage({
           </div>
           <div>
             <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">ผู้ร้อง/ผู้อุทธรณ์</dt>
-            <dd className="mt-1 text-sm text-slate-800">{caseData.petitionerName}</dd>
+            <dd className="mt-1 text-base font-bold text-slate-900">{caseData.petitionerName}</dd>
           </div>
           <div>
             <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">คู่กรณี</dt>
@@ -112,9 +114,10 @@ export default async function UpdateCasePage({
 
       <CaseStatusUpdateForm
         caseId={caseData.id}
-        currentStatus={caseData.currentStatus}
+        currentStatus={getRegistryCaseStatus(caseData)}
         currentProceedingNote={caseData.proceedingNote}
         canEdit={canEdit}
+        expectedUpdatedAt={caseData.updatedAt.toISOString()}
       />
     </div>
   );

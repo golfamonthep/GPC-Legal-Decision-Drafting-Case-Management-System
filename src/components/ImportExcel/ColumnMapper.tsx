@@ -201,7 +201,7 @@ export default function ColumnMapper({ excelHeaders, onMappingComplete, onCancel
               ข้อมูลอื่น ๆ (ถ้ามี)
             </h4>
             <div className="space-y-4 h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-              {OPTIONAL_FIELDS.map((field) => (
+              {OPTIONAL_FIELDS.filter(field => !field.key.startsWith('deadline')).map((field) => (
                 <div key={field.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
                   <div className="text-sm font-medium text-slate-700 w-1/2">{field.label}</div>
                   <div className="w-full sm:w-1/2">

@@ -1,7 +1,7 @@
+import { RegistryRedBadge } from "@/components/RegistryRedBadge";
+import { getRegistryCaseStatus } from "@/lib/caseStatus";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import { searchCases } from "@/lib/search/caseSearch";
-import { getCurrentUser } from "@/lib/auth/currentUser";
-import prisma from "@/lib/db";
 import Link from "next/link";
 import { Search, Filter, AlertTriangle, FileText, CheckCircle, Download, ExternalLink, Lightbulb } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -12,16 +12,15 @@ export const revalidate = 0;
 export default async function AdvancedSearchPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
   await requirePermission("ADVANCED_CASE_SEARCH");
-  const user = await getCurrentUser();
-
-  const keyword = searchParams.keyword || "";
-  const type = searchParams.type || "";
-  const status = searchParams.status || "";
-  const preset = searchParams.preset || "";
-  const page = parseInt(searchParams.page || "1", 10);
+  const params = await searchParams;
+  const keyword = params.keyword || "";
+  const type = params.type || "";
+  const status = params.status || "";
+  const preset = params.preset || "";
+  const page = parseInt(params.page || "1", 10);
   const pageSize = 25;
 
   const result = await searchCases({
@@ -35,20 +34,6 @@ export default async function AdvancedSearchPage({
     sortOrder: "desc",
   });
 
-  // Log audit
-  if (user) {
-    await prisma.auditLog.create({
-      data: {
-        userId: user.id,
-        action: "ADVANCED_SEARCH_PERFORMED",
-        entityType: "Search",
-        entityId: "advanced-search",
-        beforeValue: null,
-        afterValue: JSON.stringify({ keyword, type, status, preset, page }),
-      },
-    });
-  }
-
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="sm:flex sm:items-center justify-between">
@@ -58,7 +43,7 @@ export default async function AdvancedSearchPage({
             ค้นหาขั้นสูง (Advanced Search)
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            ค้นหาข้อมูลคดีทั้งหมดในระบบ พร้อมตัวกรองและการประเมินความเสี่ยง
+            ค้นหาข้อมูลคดีทั้งหมดในระบบ พร้อมตัวกรองและสถานะการดำเนินการ
           </p>
         </div>
         <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none flex gap-2">
@@ -134,8 +119,8 @@ export default async function AdvancedSearchPage({
                     <option value="">-- ไม่ใช้ตัวกรองด่วน --</option>
                     <option value="unfinished">สำนวนที่ยังไม่เสร็จ</option>
                     <option value="no_officer">สำนวนยังไม่มีนิติกร</option>
-                    <option value="has_red_unfinished">มีเลขแดงแต่ยังไม่เสร็จสิ้น</option>
-                    <option value="completed_no_red">เสร็จสิ้นแต่ไม่มีเลขแดง</option>
+                    <option value="has_red_unfinished">มีข้อความเรื่องแดง แต่สถานะเดิมไม่ตรง</option>
+                    <option value="completed_no_red">สถานะเดิมเสร็จสิ้น แต่ช่องเรื่องแดงว่าง</option>
                     <option value="has_draft">สำนวนที่มีร่างคำวินิจฉัย</option>
                     <option value="no_documents">สำนวนที่ไม่มีเอกสาร</option>
                   </select>
@@ -193,18 +178,12 @@ export default async function AdvancedSearchPage({
                           <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10">
                             ดำ: {caseItem.blackNumber}
                           </span>
-                          {caseItem.redNumber && caseItem.redNumber !== '-' ? (
-                            <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">
-                              แดง: {caseItem.redNumber}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-slate-400 pl-1">- ไม่มีเลขแดง -</span>
-                          )}
+                          <RegistryRedBadge record={caseItem} />
                         </div>
                       </td>
                       <td className="py-4 px-3 text-sm text-slate-500 max-w-xs">
                         <div className="font-medium text-slate-900 truncate">
-                          {caseItem.petitionerName} <span className="text-slate-400 mx-1">vs</span> {caseItem.respondentName}
+                          <strong>{caseItem.petitionerName}</strong> <span className="text-slate-400 mx-1">vs</span> {caseItem.respondentName}
                         </div>
                         <div className="truncate text-xs mt-1 text-slate-500" title={caseItem.subject}>
                           {caseItem.subject}
@@ -212,7 +191,7 @@ export default async function AdvancedSearchPage({
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
                         <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                          {caseItem.currentStatus}
+                          {getRegistryCaseStatus(caseItem)}
                         </span>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
@@ -222,11 +201,7 @@ export default async function AdvancedSearchPage({
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500 flex flex-col gap-1 items-start">
-                        {caseItem.flags?.isOverdue && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
-                            <AlertTriangle className="h-3 w-3" /> เกินกำหนด
-                          </span>
-                        )}
+
                         {caseItem.flags?.missingImportantFields?.length > 0 && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700" title={caseItem.flags.missingImportantFields.join(", ")}>
                             <AlertTriangle className="h-3 w-3" /> ข้อมูลไม่ครบ
@@ -237,7 +212,7 @@ export default async function AdvancedSearchPage({
                             <AlertTriangle className="h-3 w-3" /> ขัดแย้ง
                           </span>
                         )}
-                        {!caseItem.flags?.isOverdue && !caseItem.flags?.missingImportantFields?.length && !caseItem.flags?.hasInconsistentStatus && (
+                        {!caseItem.flags?.missingImportantFields?.length && !caseItem.flags?.hasInconsistentStatus && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
                             <CheckCircle className="h-3 w-3" /> ปกติ
                           </span>

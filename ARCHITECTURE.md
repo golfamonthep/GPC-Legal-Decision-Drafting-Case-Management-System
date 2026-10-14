@@ -1,3 +1,11 @@
+## Tabler case workflow — 2026-10-14
+
+Same authenticated GPC Next App Router/Vercel app; no second site/database. Actual pinned Tabler core/icons; generated CSS namespaced .gpc-tabler in components layer, removes document/body resets while retaining tokens; custom navy/teal/Sarabun responsive CSS. No Bootstrap runtime JS. AppShell native modal dialog reuses Sidebar and provides keyboard focus trap/Escape/return.
+
+POST /api/cases requires IMPORT_REGISTRY; PATCH /api/cases/[id] and /status require EDIT_CASE and existing active actor. Server-only adapter enforces same-origin HTTPS, JSON/size validation and allowlisted fields; service transaction atomically compares expectedUpdatedAt and appends CaseEvent/AuditLog. No new grants, arbitrary assignments, invented dates or fake MVP User writes. Unrelated edit preserves legacy extracted redNumber when raw marker unchanged.
+
+caseList + registryNumbers centralize text/year/raw-red semantics and Thai-digit normalization. Advanced search scalar batches filter canonical completion before count/pagination. RSC GET search no longer mutates audit on render; explicit exports/mutations retain audit. csvCell/csvRow quote/neutralize formula-leading values. Deadline calculations/storage preserved, removed from operational presentation only.
+
 ## Authoritative registry completion — 2026-10-12
 
 caseStatus.ts centralizes getRegistryRedText/isClosedOrRedCase/getRegistryCaseStatus. Raw registryRedText, when present (including null/blank), takes precedence over extracted/legal redNumber and status metadata. Legacy DTOs without that property can supply the original red-cell aliases, never status-only completion. Case list applies the same exact trimmed-cell rule after its existing authorized query, not approximate Prisma status/number predicates. No new query or client state; literal cell strings remain React-escaped and permission-bound. Import/status normalization and workload/report consistency checks share the rule. Candidate only; no schema/authentication changes.

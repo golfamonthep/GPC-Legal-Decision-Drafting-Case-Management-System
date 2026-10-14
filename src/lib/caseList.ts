@@ -1,4 +1,25 @@
-import { isClosedOrRedCase, type RegistryCompletionRecord } from './caseStatus';
+import { getRegistryCaseStatus, isClosedCaseStatus, isClosedOrRedCase, type RegistryCompletionRecord } from './caseStatus';
+import type { Prisma } from '../generated/prisma';
+import { getBlackNumberYear } from './dashboard/metrics';
+
+export function caseTextSearch(term: string): Prisma.CaseWhereInput {
+  return { OR: ['blackNumber','registryRedText','petitionerName','respondentName','subject','proceedingNote'].map(field => ({ [field]: { contains: term.trim().slice(0, 200), mode: 'insensitive' as const } })) };
+}
+
+export function filterCasesByBlackYear<T extends { blackNumber: string }>(items: T[], year?: string) {
+  return year ? items.filter(item => getBlackNumberYear(item.blackNumber).replace('พ.ศ. ', '') === year) : items;
+}
+
+export function filterCaseWorkflowRecords<T extends RegistryCompletionRecord>(items: T[], status?: string, preset?: string): T[] {
+  return items.filter(item => {
+    const completed = isClosedOrRedCase(item);
+    if (status && getRegistryCaseStatus(item) !== status) return false;
+    if (preset === 'unfinished') return !completed;
+    if (preset === 'has_red_unfinished') return completed && !isClosedCaseStatus(item.currentStatus);
+    if (preset === 'completed_no_red') return !completed && isClosedCaseStatus(item.currentStatus);
+    return true;
+  });
+}
 
 /** Apply exact trimmed-cell semantics, including arbitrary text and whitespace-only blanks. */
 export function filterCasesByRegistryCompletion<T extends RegistryCompletionRecord>(

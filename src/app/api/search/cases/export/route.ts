@@ -2,6 +2,8 @@ import { requireApiPermission } from "@/lib/auth/requireApiPermission";
 import { searchCases } from "@/lib/search/caseSearch";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import prisma from "@/lib/db";
+import { csvRow } from "@/lib/csv";
+import { getRegistryCaseStatus, getRegistryRedText } from "@/lib/caseStatus";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +33,7 @@ export async function GET(request: Request) {
     if (user) {
       await prisma.auditLog.create({
         data: {
-          userId: user.id,
+          userId: user.id.startsWith('mvp-') ? null : user.id,
           action: "ADVANCED_SEARCH_EXPORTED",
           entityType: "SearchExport",
           entityId: "cases-csv",
@@ -52,28 +54,20 @@ export async function GET(request: Request) {
       "สถานะ",
       "นิติกร",
       "วันที่รับเรื่อง",
-      "เกินกำหนด",
+      "การดำเนินการล่าสุด",
       "ข้อมูลไม่ครบ"
     ];
 
-    const rows = result.items.map((c: any, index: number) => [
-      index + 1,
-      c.blackNumber || "-",
-      c.redNumber || "-",
-      c.type || "-",
-      `"${(c.petitionerName || "").replace(/"/g, '""')}"`,
-      `"${(c.respondentName || "").replace(/"/g, '""')}"`,
-      `"${(c.subject || "").replace(/"/g, '""')}"`,
-      c.currentStatus || "-",
-      `"${(c.legalOfficerName || c.owner?.name || "-").replace(/"/g, '""')}"`,
-      c.receivedDate ? c.receivedDate.toISOString().split('T')[0] : "-",
-      c.flags?.isOverdue ? "ใช่" : "ไม่",
-      c.flags?.missingImportantFields.length > 0 ? "ใช่" : "ไม่"
+    const rows = result.items.map((c, index) => [
+      index + 1, c.blackNumber || "-", getRegistryRedText(c) || "-", c.type || "-",
+      c.petitionerName, c.respondentName, c.subject, getRegistryCaseStatus(c),
+      c.legalOfficerName || c.legalOfficer?.name || "-", c.receivedDate?.toISOString().split('T')[0] || "-",
+      c.proceedingNote || "", c.flags?.missingImportantFields.length > 0 ? "ใช่" : "ไม่",
     ]);
 
     const csvContent = [
-      headers.join(","),
-      ...rows.map((row: string[]) => row.join(","))
+      csvRow(headers),
+      ...rows.map(csvRow)
     ].join("\n");
 
     // Prepend BOM for Excel UTF-8 support

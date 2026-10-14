@@ -67,7 +67,7 @@ export function RankedBars({ title, note, data, total, scaleMax, accent }: {
     {data.length ? <ol className="mt-4 space-y-3">{data.map((item, index) => <li key={item.label}>
       <div className="mb-1.5 flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
         <div className="flex min-w-0 items-start gap-2"><span aria-hidden="true" className="mt-0.5 shrink-0 text-[11px] font-semibold tabular-nums text-slate-400">{String(index + 1).padStart(2, "0")}</span>
-          <span className="min-w-0 whitespace-pre-wrap break-words text-sm font-medium leading-6 text-slate-700 [overflow-wrap:anywhere]">{item.label}</span></div>
+          <span className="min-w-0 whitespace-pre-wrap break-words text-sm font-normal leading-6 text-slate-700 [overflow-wrap:anywhere]">{item.label}</span></div>
         <div className="flex shrink-0 items-baseline gap-2 text-right"><strong className="block text-sm tabular-nums text-slate-950">{number.format(item.count)} เรื่อง</strong><span className="text-[11px] tabular-nums text-slate-600">{percent.format(total ? item.count / total * 100 : 0)}% ของเรื่องค้าง</span></div>
       </div>
       <div aria-hidden="true" className="h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${barClasses[accent]}`} style={{ width: `${item.count / max * 100}%` }} /></div>

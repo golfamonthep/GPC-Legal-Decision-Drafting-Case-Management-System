@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireApiPermission } from '@/lib/auth/requireApiPermission';
 import { calculateWorkload } from '@/lib/assignments/caseAssignment';
 import prisma from '@/lib/db';
+import { csvRow } from '@/lib/csv';
 
 export async function GET() {
   try {
@@ -14,25 +15,25 @@ export async function GET() {
     
     // Header for Legal Officers
     rows.push('--- นิติกร ---');
-    rows.push('ชื่อ,รวมทั้งหมด,Active,เกินกำหนด,ใกล้ครบกำหนด,สำนวนเสร็จสิ้น,ยังไม่มีเลขแดง');
+    rows.push('ชื่อ,รวมทั้งหมด,ค้าง,เสร็จสิ้น');
     workload.legalOfficers.forEach(lo => {
-      rows.push(`"${lo.name}",${lo.totalCases},${lo.activeCases},${lo.overdueCases},${lo.nearDueCases},${lo.completedCases},${lo.noRedNumber}`);
+      rows.push(csvRow([lo.name, lo.totalCases, lo.activeCases, lo.completedCases]));
     });
     
     rows.push(''); // Empty line
 
     // Header for Committee Owners
     rows.push('--- กรรมการเจ้าของสำนวน ---');
-    rows.push('ชื่อ,รวมทั้งหมด,Active,เกินกำหนด,ใกล้ครบกำหนด,สำนวนเสร็จสิ้น,ยังไม่มีเลขแดง');
+    rows.push('ชื่อ,รวมทั้งหมด,ค้าง,เสร็จสิ้น');
     workload.committeeOwners.forEach(co => {
-      rows.push(`"${co.name}",${co.totalCases},${co.activeCases},${co.overdueCases},${co.nearDueCases},${co.completedCases},${co.noRedNumber}`);
+      rows.push(csvRow([co.name, co.totalCases, co.activeCases, co.completedCases]));
     });
 
     const csvContent = '\uFEFF' + rows.join('\n'); // Add BOM for Excel Thai support
 
     await prisma.auditLog.create({
       data: {
-        userId: user.id,
+        userId: user.id.startsWith('mvp-') ? null : user.id,
         action: 'WORKLOAD_REPORT_EXPORTED',
         entityType: 'System',
         entityId: 'assignments',

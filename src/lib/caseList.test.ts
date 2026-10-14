@@ -5,6 +5,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { filterCasesByRegistryCompletion, groupCasesByRegistry } from "./caseList";
 import { CaseRegistryBlocks } from "../components/CaseRegistryBlocks";
 import type { Case } from "../types";
+import { CaseTable } from "../components/CaseTable";
+import { TopHeader } from "../components/TopHeader";
+import * as caseList from "./caseList";
 
 function fixture(id: string, type: Case["type"]): Case {
   return {
@@ -82,4 +85,47 @@ test("case rows display literal red text as completed and do not display stale e
   assert.doesNotMatch(pending, /99999\/68/);
   assert.doesNotMatch(pending, />เสร็จสิ้น</);
   assert.match(pending, /อยู่ระหว่างดำเนินการ/);
+});
+
+test("petitioner is the emphasized identity and deadline flags cannot color or label a row", () => {
+  const html = renderToStaticMarkup(createElement(CaseTable, { cases: [{ ...fixture("identity", "อุทธรณ์"),
+    petitionerName: "ผู้อุทธรณ์ทดสอบ", legalOfficer: "นิติกรทดสอบ", isOverdue: true, daysUntilDue: -999,
+  }] }));
+  assert.match(html, /<strong[^>]*>ผู้อุทธรณ์ทดสอบ<\/strong>/);
+  assert.doesNotMatch(html, /<strong[^>]*>นิติกรทดสอบ<\/strong>/);
+  assert.doesNotMatch(html, /เกินกำหนด|กำหนดเวลา|เหลือ .*วัน|bg-red-50\/50|รับเรื่อง:/);
+});
+
+test("long proceedings are explicitly expandable instead of requiring wide rows", () => {
+  const note = "การดำเนินการที่ต้องตรวจอ่านทั้งหมด ".repeat(25);
+  const html = renderToStaticMarkup(createElement(CaseTable, { cases: [{ ...fixture("long", "ร้องทุกข์"), proceedingNote: note }] }));
+  assert.match(html, /<details/);
+  assert.match(html, /<summary[^>]*>[\s\S]*อ่านการดำเนินการทั้งหมด/);
+  assert.ok(html.includes(note));
+  assert.doesNotMatch(html, /min-w-\[1320px\]/);
+});
+
+test("global header offers an accessible navigation toggle and a real case search without deadline alert", () => {
+  const html = renderToStaticMarkup(createElement(TopHeader, { user: null }));
+  assert.match(html, /aria-label="เปิดเมนูหลัก"/);
+  assert.match(html, /action="\/cases"/);
+  assert.match(html, /name="q"/);
+  assert.doesNotMatch(html, /ใกล้ครบกำหนด/);
+});
+
+test("query search covers the petitioner and proceedings, and registry-year filtering keeps carry-over cases", () => {
+  const functions = caseList as unknown as { caseTextSearch?: (term: string) => object; filterCasesByBlackYear?: <T extends { blackNumber: string }>(items: T[], year: string) => T[] };
+  assert.equal(typeof functions.caseTextSearch, 'function', 'case text search must exist');
+  assert.deepEqual(functions.caseTextSearch!(' รอคำชี้แจง '), { OR: ['blackNumber','registryRedText','petitionerName','respondentName','subject','proceedingNote'].map(field => ({ [field]: { contains: 'รอคำชี้แจง', mode: 'insensitive' } })) });
+  assert.equal(typeof functions.filterCasesByBlackYear, 'function');
+  assert.deepEqual(functions.filterCasesByBlackYear!([{ blackNumber: '1/68' }, { blackNumber: '2/2568' }, { blackNumber: '3/69' }], '2568').map(row => row.blackNumber), ['1/68','2/2568']);
+});
+
+test('advanced search completion filters use raw red cells before counts or pagination', () => {
+  const functions = caseList as unknown as { filterCaseWorkflowRecords?: <T>(items: T[], status?: string, preset?: string) => T[] };
+  assert.equal(typeof functions.filterCaseWorkflowRecords, 'function');
+  const rows = [{ id: 'literal', registryRedText: 'แดงแล้ว', currentStatus: 'รับเรื่อง' }, { id: 'pending', registryRedText: ' ', currentStatus: 'เสร็จสิ้น' }];
+  assert.deepEqual(functions.filterCaseWorkflowRecords!(rows, '', 'unfinished').map(row => row.id), ['pending']);
+  assert.deepEqual(functions.filterCaseWorkflowRecords!(rows, 'เสร็จสิ้น').map(row => row.id), ['literal']);
+  assert.deepEqual(functions.filterCaseWorkflowRecords!(rows, 'อยู่ระหว่างดำเนินการ').map(row => row.id), ['pending']);
 });
