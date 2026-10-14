@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { StatusBadge } from "@/components/StatusBadge";
+import { CaseCompletionBadge } from "@/components/CaseCompletionBadge";
 import { Timeline } from "@/components/Timeline";
 import { DocumentList } from "@/components/DocumentList";
 import Link from "next/link";
@@ -11,9 +11,8 @@ import { requirePermission } from "@/lib/auth/requirePermission";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 import { auditLog } from "@/lib/audit";
-import { CaseStatus } from "@/types";
 import { CaseDetailActions } from "@/components/CaseDetailActions";
-import { getRegistryCaseStatus, getRegistryRedText, isClosedCaseStatus, isClosedOrRedCase } from "@/lib/caseStatus";
+import { getRegistryRedText, isClosedCaseStatus, isClosedOrRedCase } from "@/lib/caseStatus";
 
 import { checkGraphIntegrationStatus } from "@/lib/microsoft/graphConfig";
 import { DocumentLinkModal } from "@/components/DocumentLinkModal";
@@ -145,7 +144,7 @@ export default async function CaseDetailPage({
         <div className="min-w-0 flex-1">
           <h2 className="text-2xl font-bold leading-7 text-slate-900 sm:truncate sm:text-3xl sm:tracking-tight flex items-center gap-4">
             เรื่อง: {caseData.subject}
-            <StatusBadge status={getRegistryCaseStatus(caseData) as CaseStatus} className="text-sm px-3 py-1" />
+            <CaseCompletionBadge record={caseData} />
           </h2>
           <div className="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6 text-sm text-slate-500">
             <div className="mt-2 flex items-center">

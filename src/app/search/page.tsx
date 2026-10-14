@@ -1,4 +1,5 @@
 import { RegistryRedBadge } from "@/components/RegistryRedBadge";
+import { CaseCompletionBadge } from '@/components/CaseCompletionBadge';
 import { getRegistryCaseStatus } from "@/lib/caseStatus";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import { searchCases } from "@/lib/search/caseSearch";
@@ -190,9 +191,7 @@ export default async function AdvancedSearchPage({
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                        <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                          {getRegistryCaseStatus(caseItem)}
-                        </span>
+                        <CaseCompletionBadge record={caseItem} /><div className="mt-1 text-xs text-slate-600">{getRegistryCaseStatus(caseItem)}</div>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
                         <div className="flex flex-col">

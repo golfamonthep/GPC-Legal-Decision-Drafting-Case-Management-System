@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Loader2, Save } from 'lucide-react';
+import { notifyCaseChanged } from './CaseDataRefresh';
 
 interface CaseStatusUpdateFormProps {
   caseId: string;
@@ -70,6 +71,7 @@ export function CaseStatusUpdateForm({
       if (!response.ok) {
         throw new Error(data?.message || 'ไม่สามารถบันทึกข้อมูลได้');
       }
+      notifyCaseChanged();
 
       setStatus(data.case.currentStatus);
       setNote(data.case.proceedingNote ?? '');
@@ -102,6 +104,7 @@ export function CaseStatusUpdateForm({
             </label>
             <select
               id="case-status"
+              name="currentStatus"
               value={status}
               onChange={(event) => setStatus(event.target.value)}
               disabled={!canEdit || isSaving}
@@ -119,6 +122,7 @@ export function CaseStatusUpdateForm({
             </label>
             <textarea
               id="case-proceeding-note"
+              name="proceedingNote"
               value={note}
               onChange={(event) => setNote(event.target.value)}
               rows={5}

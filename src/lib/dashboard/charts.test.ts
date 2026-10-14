@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { CompletionRing, RankedBars, YearColumns } from "../../components/dashboard/BacklogCharts";
+import { CompletionRing, RankedBars, YearColumns, YearOutcomeBars } from "../../components/dashboard/BacklogCharts";
 import { OfficerPerformance } from "../../components/dashboard/OfficerPerformance";
 import { RegistryOverview } from "../../components/dashboard/RegistryOverview";
 import { deriveDashboardSnapshot } from "./metrics";
@@ -26,7 +26,7 @@ test("registry overview is visible first and officer performance is the final cl
     assert.match(html, /^<section /);
     assert.equal((html.match(/<details[ >]/g) ?? []).length, 2);
     assert.doesNotMatch(html, /<details[^>]*\sopen(?:=|\s|>)/);
-    const order = ["สัดส่วนของทะเบียนทั้งหมด", "เรื่องค้างแยกตามปี", "เรื่องค้างแยกตามนิติกร", "รายละเอียดเรื่องค้าง", "ความรับผิดชอบและความสำเร็จรายนิติกร"];
+    const order = ["สัดส่วนของทะเบียนทั้งหมด", "สถานะเรื่องตามปีเลขดำ", "เรื่องค้างแยกตามนิติกร", "รายละเอียดเรื่องค้าง", "ความรับผิดชอบและความสำเร็จรายนิติกร"];
     order.forEach((label, index) => {
       assert.ok(html.includes(label));
       if (index) assert.ok(html.indexOf(order[index - 1]) < html.indexOf(label));
@@ -37,6 +37,18 @@ test("registry overview is visible first and officer performance is the final cl
     assert.match(html, /ยังไม่มีข้อมูลความรับผิดชอบ/);
     assert.doesNotMatch(html, /NaN|Infinity/);
   }
+});
+
+test('year outcome bars show measured counts and link to matching case filters', () => {
+  const html = renderToStaticMarkup(createElement(YearOutcomeBars, { data: [{ label: 'พ.ศ. 2568', pending: 3, completed: 7 }], scaleMax: 20, type: 'ร้องทุกข์' }));
+  assert.match(html, /width:50%/);
+  assert.match(html, /width:70%/);
+  assert.match(html, /เสร็จแล้ว 7/);
+  assert.match(html, /ค้าง 3/);
+  assert.match(html, /completionStatus=completed/);
+  assert.match(html, /completionStatus=open/);
+  assert.match(html, /year=2568/);
+  assert.doesNotMatch(html, /NaN|Infinity/);
 });
 
 test("registry detail disclosure preserves access restriction", () => {

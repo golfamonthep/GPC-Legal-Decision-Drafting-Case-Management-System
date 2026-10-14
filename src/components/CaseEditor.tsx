@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { IconDeviceFloppy } from '@tabler/icons-react';
+import { notifyCaseChanged } from './CaseDataRefresh';
 
 export type CaseEditorValues = {
   type: string; blackNumber: string; registryRedText: string; petitionerName: string; respondentName: string;
@@ -24,6 +25,7 @@ export function CaseEditor({ initial, id, expectedUpdatedAt, onSaved }: { initia
       const response = await fetch(id ? `/api/cases/${id}` : '/api/cases', { method: id ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...data, ...(id ? { expectedUpdatedAt } : {}) }) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'ไม่สามารถบันทึกข้อมูลได้');
+      notifyCaseChanged();
       if (onSaved) onSaved();
       else router.push(`/cases/${result.case.id}`);
       router.refresh();

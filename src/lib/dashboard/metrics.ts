@@ -7,6 +7,7 @@ import {
   getThisQuarterStart,
 } from "@/lib/date/fiscalYear";
 import { isClosedOrRedCase, isClosedCaseStatus } from "@/lib/caseStatus";
+import { buildOfficerDirectory } from './officerIdentity';
 import type {
   DashboardCaseRecord,
   DashboardFilters,
@@ -113,6 +114,11 @@ function countBacklogGroups(values: string[], sortByYear = false) {
       : b.count - a.count || a.label.localeCompare(b.label, "th"));
 }
 
+function officerCell(record: DashboardCaseRecord) {
+  const raw = record.legalOfficerName?.trim();
+  return raw && raw !== '-' && raw !== 'ไม่ระบุ' ? raw : record.legalOfficer?.name;
+}
+
 export function deriveDashboardSnapshot(
   payload: DashboardSourcePayload,
   filters: DashboardFilters,
@@ -121,18 +127,20 @@ export function deriveDashboardSnapshot(
 ): DashboardSnapshot {
   const records = filterCases(payload.cases, filters, now);
   const active = records.filter((record) => !isCaseClosed(record));
+  const officers = buildOfficerDirectory(payload.cases.map(officerCell));
+  const currentOfficers = (record: DashboardCaseRecord) => officers.current(officerCell(record));
   // Snapshot of current registry responsibility, not historic assignment or productivity.
   const performanceMap = new Map<string, { total: number; completed: number; pending: number; unassigned: boolean }>();
   for (const record of records) {
-    const officer = record.legalOfficerName?.trim() || record.legalOfficer?.name?.trim();
-    const name = permissions.canViewCaseDetails ? officer || "ยังไม่ระบุนิติกร" : "จำกัดตามสิทธิ์";
-    const value = performanceMap.get(name) ?? { total: 0, completed: 0, pending: 0, unassigned: !officer };
-    value.total += 1;
-    if (isCaseClosed(record)) value.completed += 1;
-    else value.pending += 1;
-    // Restricted DTO is one aggregate, never exposes officer-level ranks/counts.
-    if (!permissions.canViewCaseDetails) value.unassigned = false;
-    performanceMap.set(name, value);
+    const assigned = currentOfficers(record);
+    for (const name of permissions.canViewCaseDetails ? assigned.length ? assigned : ['ยังไม่ระบุนิติกร'] : ['จำกัดตามสิทธิ์']) {
+      const value = performanceMap.get(name) ?? { total: 0, completed: 0, pending: 0, unassigned: name === 'ยังไม่ระบุนิติกร' };
+      value.total += 1;
+      if (isCaseClosed(record)) value.completed += 1;
+      else value.pending += 1;
+      if (!permissions.canViewCaseDetails) value.unassigned = false;
+      performanceMap.set(name, value);
+    }
   }
   let previousTotal = -1;
   let previousRank = 0;
@@ -148,14 +156,23 @@ export function deriveDashboardSnapshot(
     id: record.id,
     blackNumber: record.blackNumber,
     year: getBlackNumberYear(record.blackNumber),
+    petitionerName: permissions.canViewCaseDetails ? record.petitionerName : 'ข้อมูลจำกัดตามสิทธิ์',
     officer: permissions.canViewCaseDetails
-      ? record.legalOfficerName?.trim() || record.legalOfficer?.name?.trim() || "ยังไม่ระบุนิติกร"
+      ? currentOfficers(record).join(', ') || "ยังไม่ระบุนิติกร"
       : "จำกัดตามสิทธิ์",
     proceeding: permissions.canViewCaseDetails
       ? record.proceedingNote?.trim() || "ยังไม่บันทึกการดำเนินการ"
       : "จำกัดตามสิทธิ์",
     subject: permissions.canViewCaseDetails ? record.subject : "ข้อมูลจำกัดตามสิทธิ์",
   })).sort((a, b) => a.year.localeCompare(b.year, "th") || a.blackNumber.localeCompare(b.blackNumber, "th", { numeric: true }));
+  const yearCompletion = new Map<string, { label: string; pending: number; completed: number }>();
+  for (const record of records) {
+    const label = getBlackNumberYear(record.blackNumber);
+    const value = yearCompletion.get(label) ?? { label, pending: 0, completed: 0 };
+    if (isCaseClosed(record)) value.completed += 1;
+    else value.pending += 1;
+    yearCompletion.set(label, value);
+  }
   const enriched = active.map((record) => ({ record, days: getDaysUntilDue(record, now), due: getNearestDueDate(record, now) }));
   const trend = monthSeries(now);
   const trendMap = new Map(trend.map((item) => [item.key, item]));
@@ -206,7 +223,8 @@ export function deriveDashboardSnapshot(
     officerPerformance,
     backlog: {
       byYear: countBacklogGroups(backlogCases.map((record) => record.year), true),
-      byOfficer: countBacklogGroups(backlogCases.map((record) => record.officer)),
+      byYearCompletion: [...yearCompletion.values()].sort((a, b) => a.label === 'ไม่ระบุปีในเลขดำ' ? 1 : b.label === 'ไม่ระบุปีในเลขดำ' ? -1 : a.label.localeCompare(b.label, 'th')),
+      byOfficer: countBacklogGroups(active.flatMap(record => permissions.canViewCaseDetails ? currentOfficers(record).length ? currentOfficers(record) : ['ยังไม่ระบุนิติกร'] : ['จำกัดตามสิทธิ์'])),
       byProceeding: countBacklogGroups(backlogCases.map((record) => record.proceeding)),
       cases: backlogCases,
     },
@@ -214,7 +232,7 @@ export function deriveDashboardSnapshot(
       active: active.length,
       overdue: enriched.filter(({ days }) => days !== null && days < 0).length,
       dueWithin7Days: enriched.filter(({ days }) => days !== null && days >= 0 && days <= 7).length,
-      unassigned: active.filter((record) => !record.legalOfficerId && !record.legalOfficerName && !record.legalOfficer?.name).length,
+      unassigned: active.filter((record) => currentOfficers(record).length === 0).length,
       criticalDataQuality,
     },
     trend,

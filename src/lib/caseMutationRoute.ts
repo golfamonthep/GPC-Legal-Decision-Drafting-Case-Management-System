@@ -5,6 +5,7 @@ import { requireApiPermission } from './auth/requireApiPermission';
 import { saveCaseRecord, saveCaseProgress } from './caseMutation';
 import { CaseInputError } from './caseEditor';
 import { assertSameOrigin } from './analysis/safety.mjs';
+import { revalidatePath } from 'next/cache';
 
 export async function handleCaseMutation(request: Request, id?: string, progress = false) {
   try {
@@ -16,6 +17,13 @@ export async function handleCaseMutation(request: Request, id?: string, progress
     let input: unknown;
     try { input = JSON.parse(raw); } catch { throw new CaseInputError('ข้อมูล JSON ไม่ถูกต้อง'); }
     const saved = progress && id ? await saveCaseProgress(prisma, actor, input, id) : await saveCaseRecord(prisma, actor, input, id);
+    try {
+      revalidatePath('/dashboard');
+      revalidatePath('/cases');
+      if (id) revalidatePath(`/cases/${id}`);
+    } catch (error) {
+      console.error('Case saved but page revalidation failed', error);
+    }
     return NextResponse.json({ success: true, case: { id: saved.id, currentStatus: saved.currentStatus, proceedingNote: saved.proceedingNote, updatedAt: saved.updatedAt }, message: id ? 'บันทึกการแก้ไขแล้ว' : 'เพิ่มเรื่องแล้ว' }, { status: id ? 200 : 201 });
   } catch (error) {
     const e = error as { message?: string; code?: string; status?: number };

@@ -6,7 +6,7 @@ import { ArrowLeft, FileText } from 'lucide-react';
 import prisma from '@/lib/db';
 import { requirePermission } from '@/lib/auth/requirePermission';
 import { hasPermission } from '@/lib/auth/permissions';
-import { StatusBadge } from '@/components/StatusBadge';
+import { CaseCompletionBadge } from '@/components/CaseCompletionBadge';
 import { CaseStatusUpdateForm } from '@/components/CaseStatusUpdateForm';
 import { getRegistryCaseStatus, getRegistryRedText } from '@/lib/caseStatus';
 
@@ -59,7 +59,7 @@ export default async function UpdateCasePage({
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold text-slate-900">อัปเดตการดำเนินการ</h1>
-                <StatusBadge status={getRegistryCaseStatus(caseData)} />
+                <CaseCompletionBadge record={caseData} />
               </div>
               <p className="mt-2 text-sm text-slate-500">
                 {caseData.type} · เรื่องดำ {caseData.blackNumber}

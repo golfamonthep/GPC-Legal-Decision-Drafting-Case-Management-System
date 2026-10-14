@@ -19,6 +19,7 @@ export interface DashboardCaseRecord {
   blackNumber: string;
   redNumber: string | null;
   registryRedText?: string | null;
+  petitionerName: string;
   subject: string;
   currentStatus: string;
   proceedingNote?: string | null;
@@ -79,9 +80,10 @@ export interface DashboardSnapshot {
   }>;
   backlog: {
     byYear: Array<{ label: string; count: number }>;
+    byYearCompletion: Array<{ label: string; pending: number; completed: number }>;
     byOfficer: Array<{ label: string; count: number }>;
     byProceeding: Array<{ label: string; count: number }>;
-    cases: Array<{ id: string; blackNumber: string; year: string; officer: string; proceeding: string; subject: string }>;
+    cases: Array<{ id: string; blackNumber: string; year: string; petitionerName: string; officer: string; proceeding: string; subject: string }>;
   };
   kpis: {
     active: number;

@@ -4,6 +4,7 @@ import React from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getRegistryRedText, getRegistryCaseStatus } from "@/lib/caseStatus";
+import { CaseCompletionBadge } from './CaseCompletionBadge';
 import { Prisma } from '@/generated/prisma';
 
 type CaseWithRelations = Prisma.CaseGetPayload<{
@@ -120,15 +121,7 @@ export default function RegistryTable({ data, metadata }: RegistryTableProps) {
                     <td className="px-4 py-3 whitespace-nowrap text-slate-700">{item.owner?.name || '-'}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-slate-700">{item.legalOfficer?.name || item.legalOfficerName || '-'}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                        item.currentStatus === 'รอดำเนินการ' ? 'bg-slate-100 text-slate-800' :
-                        item.currentStatus === 'อยู่ระหว่างพิจารณา' ? 'bg-blue-100 text-blue-800' :
-                        item.currentStatus === 'รอพิจารณาคำวินิจฉัย' ? 'bg-purple-100 text-purple-800' :
-                        item.currentStatus === 'วินิจฉัยแล้ว' ? 'bg-emerald-100 text-emerald-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {getRegistryCaseStatus(item)}
-                      </span>
+                      <CaseCompletionBadge record={item} /><div className="mt-1 text-xs text-slate-600">{getRegistryCaseStatus(item)}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-700 max-w-sm whitespace-pre-wrap">{item.proceedingNote || "ยังไม่มีการบันทึกการดำเนินการ"}</td><td className="px-4 py-3 whitespace-nowrap text-slate-600">{formatDate(item.meetingDate)}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-slate-700 font-medium">{item.decisionResult || '-'}</td>

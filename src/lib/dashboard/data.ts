@@ -2,7 +2,6 @@ import "server-only";
 
 import prisma from "@/lib/db";
 import { DemoDashboardDataSource } from "./demo";
-import { getDashboardDateRange } from "./metrics";
 import { loadDashboardFromSource } from "./loader";
 import type {
   DashboardDataSource,
@@ -14,24 +13,18 @@ import type {
 class DatabaseDashboardDataSource implements DashboardDataSource {
   readonly kind = "database" as const;
 
-  async load(filters: DashboardFilters): Promise<DashboardSourcePayload> {
+  async load(): Promise<DashboardSourcePayload> {
     const now = new Date();
-    const range = getDashboardDateRange(filters.period, now);
-    const type = filters.type === "complaint" ? "ร้องทุกข์" : filters.type === "appeal" ? "อุทธรณ์" : undefined;
-    const where = {
-      ...(type ? { type } : {}),
-      ...(range ? { receivedDate: range } : {}),
-    };
 
     const queries = await Promise.allSettled([
       prisma.case.findMany({
-        where,
         select: {
           id: true,
           type: true,
           blackNumber: true,
           redNumber: true,
           registryRedText: true,
+          petitionerName: true,
           subject: true,
           currentStatus: true,
           proceedingNote: true,
