@@ -12,9 +12,10 @@ interface AppShellProps {
   children: React.ReactNode;
   user: SessionUser | null;
   showInsecureModeBanner: boolean;
+  initialCaseRevision: string | null;
 }
 
-export function AppShell({ children, user, showInsecureModeBanner }: AppShellProps) {
+export function AppShell({ children, user, showInsecureModeBanner, initialCaseRevision }: AppShellProps) {
   const pathname = usePathname();
   const menuRef = useRef<HTMLDialogElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -46,7 +47,7 @@ export function AppShell({ children, user, showInsecureModeBanner }: AppShellPro
           </div>
         )}
         <TopHeader user={user} menuOpen={menuOpen} onOpenMenu={() => { menuRef.current?.showModal(); setMenuOpen(true); }} />
-        <CaseDataRefresh enabled={Boolean(user)} />
+        <CaseDataRefresh enabled={Boolean(user)} initialRevision={initialCaseRevision} />
         <main className="flex-1 overflow-y-auto pb-10">
           {children}
         </main>

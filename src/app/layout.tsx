@@ -5,6 +5,8 @@ import "./case-workspace.css";
 import { AppShell } from "@/components/AppShell";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { getAuthMode } from "@/lib/auth/mvp-auth";
+import { hasPermission } from "@/lib/auth/permissions";
+import { getCaseRevision } from "@/lib/caseRevision";
 
 export const metadata: Metadata = {
   title: "ระบบสนับสนุนการวินิจฉัย ก.พ.ค.ตร.",
@@ -18,6 +20,9 @@ export default async function RootLayout({
 }>) {
   const user = await getCurrentUser();
   const authMode = getAuthMode();
+  const initialCaseRevision = user && hasPermission(user.role, 'VIEW_CASES')
+    ? await getCaseRevision().catch(() => null)
+    : null;
 
   return (
     <html lang="th" className="h-full antialiased">
@@ -27,7 +32,7 @@ export default async function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="h-full flex bg-slate-50 text-slate-900 overflow-hidden">
-        <AppShell user={user} showInsecureModeBanner={authMode === "none"}>
+        <AppShell user={user} showInsecureModeBanner={authMode === "none"} initialCaseRevision={initialCaseRevision}>
           {children}
         </AppShell>
       </body>
