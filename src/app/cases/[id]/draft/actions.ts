@@ -3,6 +3,9 @@
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { auditLog } from "@/lib/audit";
+import { requirePermission } from "@/lib/auth/requirePermission";
+import { requireApiPermission } from "@/lib/auth/requireApiPermission";
+import { StaleRevisionError } from "@/lib/ai/revisionGuard";
 
 export type SectionStatus = "pending" | "in_progress" | "reviewing" | "completed";
 
@@ -17,7 +20,14 @@ const SECTION_TEMPLATES = [
   { type: "conclusion", title: "8. ผลการวินิจฉัย (มติ)", placeholder: "ให้ยกคำร้อง หรือ มีคำสั่งแก้ไขเปลี่ยนแปลง...", rows: 3 },
 ];
 
+function isSameTimestamp(expected: string | Date, actual: Date): boolean {
+  const parsed = expected instanceof Date ? expected : new Date(String(expected));
+  return !Number.isNaN(parsed.getTime()) && parsed.getTime() === actual.getTime();
+}
+
 export async function getOrCreateDraft(caseId: string) {
+  await requirePermission("VIEW_DRAFT");
+
   let draft = await prisma.decisionDraft.findFirst({
     where: { caseId },
     include: {
@@ -28,7 +38,6 @@ export async function getOrCreateDraft(caseId: string) {
   });
 
   if (!draft) {
-    // Determine a title for the draft
     const caseData = await prisma.case.findUnique({
       where: { id: caseId }
     });
@@ -55,7 +64,6 @@ export async function getOrCreateDraft(caseId: string) {
       }
     });
   } else if (draft.sections.length === 0) {
-    // If somehow a draft exists but sections were deleted
     await prisma.decisionDraftSection.createMany({
       data: SECTION_TEMPLATES.map((t, index) => ({
         draftId: draft!.id,
@@ -78,20 +86,47 @@ export async function getOrCreateDraft(caseId: string) {
   return draft;
 }
 
-export async function updateSection(sectionId: string, content: string, status: string, userId?: string) {
-  const section = await prisma.decisionDraftSection.update({
+export async function updateSection(
+  sectionId: string,
+  content: string,
+  status: string,
+  expectedUpdatedAt?: string | Date,
+) {
+  const user = await requireApiPermission("EDIT_DRAFT");
+
+  const currentSection = await prisma.decisionDraftSection.findUnique({
     where: { id: sectionId },
-    data: { content, status },
-    include: { draft: true }
+    include: { draft: true },
   });
 
-  // Create Audit Log
+  if (!currentSection) {
+    throw new Error("ไม่พบส่วนร่างคำวินิจฉัย");
+  }
+
+  if (expectedUpdatedAt && !isSameTimestamp(expectedUpdatedAt, currentSection.updatedAt)) {
+    throw new StaleRevisionError("ร่างส่วนนี้ถูกแก้ไขจากหน้าต่างอื่น กรุณาโหลดข้อมูลล่าสุดก่อนบันทึก");
+  }
+
+  const updated = await prisma.decisionDraftSection.updateMany({
+    where: { id: sectionId, updatedAt: currentSection.updatedAt },
+    data: { content, status, updatedAt: new Date() },
+  });
+
+  if (updated.count !== 1) {
+    throw new StaleRevisionError("ร่างส่วนนี้ถูกแก้ไขพร้อมกัน กรุณาโหลดข้อมูลล่าสุดก่อนบันทึก");
+  }
+
+  const section = await prisma.decisionDraftSection.findUniqueOrThrow({
+    where: { id: sectionId },
+    include: { draft: true },
+  });
+
   await auditLog({
-    userId,
+    userId: user.id,
     action: "UPDATE_DRAFT_SECTION",
     entityType: "DecisionDraftSection",
     entityId: section.id,
-    beforeValue: JSON.stringify({ status: section.status }), // Note: this is after update, so we don't have the real before value unless we fetched it, but this satisfies the signature. Let's just pass what we can or omit.
+    beforeValue: JSON.stringify({ content: currentSection.content, status: currentSection.status }),
     afterValue: JSON.stringify({ content, status }),
   });
 
@@ -99,22 +134,46 @@ export async function updateSection(sectionId: string, content: string, status: 
   return section;
 }
 
-export async function updateAllSections(sectionsData: { id: string, content: string, status: string }[], caseId: string, userId?: string) {
-  await prisma.$transaction(
-    sectionsData.map(data =>
+export async function updateAllSections(
+  sectionsData: { id: string; content: string; status: string; expectedUpdatedAt?: string | Date }[],
+  caseId: string,
+) {
+  const user = await requireApiPermission("EDIT_DRAFT");
+
+  const ids = sectionsData.map((s) => s.id);
+  const existingSections = await prisma.decisionDraftSection.findMany({
+    where: { id: { in: ids }, draft: { caseId } },
+  });
+
+  if (existingSections.length !== sectionsData.length) {
+    throw new Error("ข้อมูลส่วนร่างคำวินิจฉัยไม่ตรงกับสำนวนนี้");
+  }
+
+  const byId = new Map(existingSections.map((s) => [s.id, s]));
+  for (const item of sectionsData) {
+    const current = byId.get(item.id);
+    if (!current) {
+      throw new Error("ไม่พบส่วนร่างคำวินิจฉัย");
+    }
+    if (item.expectedUpdatedAt && !isSameTimestamp(item.expectedUpdatedAt, current.updatedAt)) {
+      throw new StaleRevisionError("ร่างบางส่วนถูกแก้ไขจากหน้าต่างอื่น กรุณาโหลดข้อมูลล่าสุดก่อนบันทึกทั้งหมด");
+    }
+  }
+
+  const updatedSections = await prisma.$transaction(
+    sectionsData.map((data) =>
       prisma.decisionDraftSection.update({
         where: { id: data.id },
         data: {
           content: data.content,
           status: data.status,
-        }
-      })
-    )
+        },
+      }),
+    ),
   );
 
-  // Create Audit Log
   await auditLog({
-    userId,
+    userId: user.id,
     action: "UPDATE_ALL_DRAFT_SECTIONS",
     entityType: "Case",
     entityId: caseId,
@@ -122,27 +181,56 @@ export async function updateAllSections(sectionsData: { id: string, content: str
   });
 
   revalidatePath(`/cases/${caseId}/draft`);
-  return { success: true };
+  return { success: true, sections: updatedSections };
 }
 
-export async function applyReviewSuggestion(sectionId: string, newContent: string, caseId: string, userId?: string) {
-  // Fetch current section to keep as beforeValue
+export async function applyReviewSuggestion(
+  sectionId: string,
+  newContent: string,
+  caseId: string,
+  expectedUpdatedAt?: string | Date,
+  expectedContent?: string,
+) {
+  const user = await requireApiPermission("EDIT_DRAFT");
+
   const currentSection = await prisma.decisionDraftSection.findUnique({
-    where: { id: sectionId }
+    where: { id: sectionId },
+    include: { draft: true },
   });
 
-  if (!currentSection) {
-    throw new Error("Section not found");
+  if (!currentSection || currentSection.draft.caseId !== caseId) {
+    throw new Error("ไม่พบส่วนร่างคำวินิจฉัยในสำนวนนี้");
   }
 
-  const updatedSection = await prisma.decisionDraftSection.update({
-    where: { id: sectionId },
-    data: { content: newContent }
+  if (expectedUpdatedAt && !isSameTimestamp(expectedUpdatedAt, currentSection.updatedAt)) {
+    throw new StaleRevisionError(
+      "ร่างส่วนนี้ถูกแก้ไขหลังจาก AI ตรวจถ้อยคำ ระบบยกเลิกการนำไปใช้เพื่อไม่ให้ทับร่างมนุษย์",
+    );
+  }
+
+  if (expectedContent !== undefined && currentSection.content !== expectedContent) {
+    throw new StaleRevisionError(
+      "เนื้อหาร่างในระบบเปลี่ยนไปหลังจาก AI ตรวจถ้อยคำ ระบบยกเลิกการนำไปใช้เพื่อไม่ให้ทับร่างมนุษย์",
+    );
+  }
+
+  const updated = await prisma.decisionDraftSection.updateMany({
+    where: { id: sectionId, updatedAt: currentSection.updatedAt },
+    data: { content: newContent, updatedAt: new Date() },
   });
 
-  // Create Audit Log for AI Wording Suggestion Applied
+  if (updated.count !== 1) {
+    throw new StaleRevisionError(
+      "ร่างส่วนนี้ถูกแก้ไขพร้อมกัน ระบบยกเลิกการนำไปใช้เพื่อไม่ให้ทับร่างมนุษย์",
+    );
+  }
+
+  const updatedSection = await prisma.decisionDraftSection.findUniqueOrThrow({
+    where: { id: sectionId },
+  });
+
   await auditLog({
-    userId,
+    userId: user.id,
     action: "AI_LEGAL_WORDING_SUGGESTION_APPLIED",
     entityType: "DecisionDraftSection",
     entityId: sectionId,
@@ -153,3 +241,4 @@ export async function applyReviewSuggestion(sectionId: string, newContent: strin
   revalidatePath(`/cases/${caseId}/draft`);
   return updatedSection;
 }
+

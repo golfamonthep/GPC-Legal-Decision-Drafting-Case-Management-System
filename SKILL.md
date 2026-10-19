@@ -1,3 +1,30 @@
+## สถานะปัจจุบันและกฎการทำงานหลัก (Current State & Mandatory Workflow) — 2026-10-19
+
+> **กฎเหล็กเมื่อเริ่มและจบงานทุกครั้ง (Mandatory Session & End-of-Task Rules)**
+> 1. **อ่านสถานะจากหัวไฟล์นี้ทันที**: ไม่ต้องย้อนไล่อ่านประวัติเก่าทั้งหมด ใช้สรุปสถานะด้านล่างเป็นแหล่งข้อมูลตั้งต้น (Single Source of Truth)
+> 2. **อัปเดตไฟล์ความจำหลักทุกครั้ง**: เมื่อทำงานเสร็จ ต้องอัปเดต `SKILL.md`, `PROJECT_STATE.md` และ `AGENTS.md` ให้สะท้อนสถานะล่าสุดเสมอ
+> 3. **Push GitHub + Deploy Vercel อัตโนมัติทุกครั้งเมื่อจบงาน**: เมื่อตรวจผ่าน (`npm test`, `npm run typecheck`, `npm run lint`, `npm run build`) แล้ว **ต้อง commit และ push ขึ้น GitHub (`origin/main` และ branch งานปัจจุบัน) เพื่อให้ Vercel Deploy อัปเดตหน้าเว็บไซต์ทันทีทุกครั้ง** โดยไม่ต้องรอให้ผู้ใช้สั่งซ้ำ
+> 4. **ห้าม reset หรือเขียนทับงานค้างใน `C:\APP`**: การทำงาน Git/Push ให้ทำผ่าน clean worktree (`C:\Users\polic\.codex\worktrees\ai-harness\APP`) และซิงก์เฉพาะไฟล์ที่เกี่ยวข้องกลับไปยัง `C:\APP` อย่างระมัดระวัง
+
+### สรุปสถานะระบบล่าสุด (2026-10-19)
+- **ชื่อระบบและอัตลักษณ์หน้าเว็บ (Branding)**: เปลี่ยนจาก `ก.พ.ค.ตร.` เป็น **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`** ครบทุกจุด (`Sidebar.tsx`, `TopHeader.tsx`, `dashboard/page.tsx`, `analysis/Workbench.jsx`, `login/page.tsx`, `layout.tsx`)
+- **AI Harness (`shared/ai-harness.mjs` & `src/lib/ai/*`)**:
+  - Provider-neutral รองรับ DeepSeek Responses API (`deepseek-v4-pro`), `store: false`, JSON Schema, ไม่มี tools/web search, ไม่มี automatic fallback
+  - ปิดบังข้อมูลส่วนบุคคล (Pseudonymization: ชื่อบุคคล เลขสำนวน เลขบัตร โทรศัพท์ อีเมล) + ตรวจ Citation Allowlist + ตัด `<think>...</think>` CoT leakage (`stripCotLeakage`)
+  - ตรวจ Stale Revision (`409 Conflict` / `STALE_REVISION`) ทั้งก่อนและหลังเรียก AI ครบทุกเส้นทาง (`draftSection.ts`, `legalWordingReviewer.ts`, `citationCoverageChecker.ts`, `legalQa.ts`, `analysis/service.mjs`) ด้วย `src/lib/ai/revisionGuard.ts`
+  - ค่าเริ่มต้น `AI_ENABLED=false` (โหมดปลอดภัย ปุ่ม AI แสดงสถานะปิดชัดเจน และงานร่างด้วยมือ/ส่งออก Word ทำงานได้ 100%)
+- **หน้าแดชบอร์ด (`/dashboard`)**:
+  - เพิ่ม `src/components/dashboard/DashboardInteractiveHub.tsx` (4 มุมมองอินเทอร์แอคทีฟ: เปรียบเทียบทะเบียน & สถานะ, ค้นหาเรื่องค้าง, ภาระงานนิติกร, เร่งด่วน & ความเคลื่อนไหว) คู่กับ `RegistryOverview.tsx`
+- **ระบบวิเคราะห์และร่างคำวินิจฉัย (`/analysis`)**:
+  - ครบ 6 แท็บตาม `docs/ANALYSIS-ONLY-SYSTEM-DESIGN-TH.md` (`ข้อมูลที่ใช้วิเคราะห์`, `เอกสารประกอบ`, `ผลวิเคราะห์`, `ร่างเบื้องต้น`, `ส่งออก`, `ฐานอ้างอิง`)
+  - มีแถบสถานะ 6 ขั้นตอน (`รับข้อมูลแล้ว` → `กำลังตรวจหลักฐาน` → `พร้อมวิเคราะห์` → `วิเคราะห์แล้ว` → `ร่างแล้ว` → `ส่งออกแล้ว`), `KnowledgeRail`, แถบเช็กความพร้อมข้อมูลตั้งต้น, ปุ่มนำเข้าย่อหน้าคำร้อง/คำชี้แจงเป็นข้อกล่าวอ้าง, เครื่องคำนวณโควตาตำแหน่งว่างจริง 50%, ปุ่มแทรกถ้อยคำวินิจฉัยมาตรฐาน (`พิเคราะห์แล้วเห็นว่า`, `พิจารณาแล้วเห็นว่า`), ตัวอย่างหน้ากระดาษ `ร่างคำวินิจฉัยเบื้องต้น` พร้อมส่งออก `.docx` (ตรวจ SHA-256)
+  - รองรับการค้นหาเลขไทย `๐-๙` <-> `0-9` (`normalizeSearchText`) และ fallback โหลดฐานข้อมูลที่ตรวจ hash แล้วจาก `C:\APP\data\police-appointments-2569`
+- **ผลตรวจสอบล่าสุด**:
+  - `npm test`: **ผ่าน 82/82 ข้อ**
+  - `analysis-app` tests: **ผ่าน 18/18 ข้อ**
+  - `npm run typecheck` & `npm run lint`: **ผ่าน (0 errors)**
+  - `npm run build`: **ผ่านสมบูรณ์ (35/35 routes)**
+
 ## Tabler case workflow lessons — 2026-10-14
 
 Use real Tabler within the existing GPC app, scoped AND layered below Tailwind utilities. Blind prefixing of body puts full-height layout onto every card; strip document resets, retain tokens and inspect actual render. Avoid mixing Tabler space-y utilities with Tailwind stacks; explicit grid gap is predictable. Check1366/768/320px, Sarabun, bold parties/normal officers, disclosures and keyboard modal focus/Escape return.

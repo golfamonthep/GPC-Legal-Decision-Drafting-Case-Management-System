@@ -1,11 +1,19 @@
 import prisma from '@/lib/db';
 import { searchChunks } from '@/lib/rag/retrieval/searchChunks';
 import { auditLog } from '@/lib/audit';
-import { createAiHarness } from '../../../shared/ai-harness.mjs';
+import { createAiHarness, pseudonymizeText } from '../../../shared/ai-harness.mjs';
+import {
+  assertChunkRevisionUnchanged,
+  assertDraftRevisionUnchanged,
+  captureChunkRevisionSnapshot,
+  captureDraftRevisionSnapshot,
+  DraftRevisionExpectation,
+  DraftRevisionSnapshot,
+} from './revisionGuard';
 
 export type ReviewMode = 'language_only' | 'legal_style' | 'consistency' | 'risk_check' | 'full_section_review';
 
-export interface LegalWordingReviewParams {
+export interface LegalWordingReviewParams extends DraftRevisionExpectation {
   caseId: string;
   draftId?: string;
   sectionId?: string;
@@ -33,23 +41,57 @@ export interface LegalWordingReviewResponse {
   citationNotes: string;
   humanReviewWarning: string;
   sourcesUsed: any[];
+  revision: DraftRevisionSnapshot;
 }
 
-export async function reviewLegalWording(params: LegalWordingReviewParams): Promise<LegalWordingReviewResponse> {
-  const { caseId, draftId, sectionId, sectionType, currentSectionText, reviewMode, userId } = params;
+export interface LegalWordingReviewDeps {
+  db?: any;
+  searchChunksFn?: typeof searchChunks;
+  harness?: ReturnType<typeof createAiHarness>;
+  auditLogFn?: (...args: Parameters<typeof auditLog>) => Promise<unknown>;
+}
+
+export async function reviewLegalWording(
+  params: LegalWordingReviewParams,
+  deps: LegalWordingReviewDeps = {},
+): Promise<LegalWordingReviewResponse> {
+  const {
+    caseId,
+    draftId,
+    sectionId,
+    sectionType,
+    currentSectionText,
+    reviewMode,
+    userId,
+    expectedCaseUpdatedAt,
+    expectedDraftUpdatedAt,
+    expectedSectionUpdatedAt,
+    expectedSectionContent,
+  } = params;
+  const db = deps.db ?? prisma;
+  const searchChunksFn = deps.searchChunksFn ?? searchChunks;
+  const harness = deps.harness ?? createAiHarness();
+  const auditLogFn = deps.auditLogFn ?? auditLog;
 
   if (!currentSectionText || currentSectionText.trim() === '') {
     throw new Error('Section text is empty. Cannot perform review.');
   }
 
-  // 1. Load case metadata
-  const caseData = await prisma.case.findUnique({
-    where: { id: caseId }
-  });
-
-  if (!caseData) {
-    throw new Error(`Case not found: ${caseId}`);
-  }
+  // 1. Load case/draft/section metadata & validate baseline revision before AI runs
+  const { caseData, snapshot } = await captureDraftRevisionSnapshot(
+    {
+      caseId,
+      draftId,
+      sectionId,
+      expected: {
+        expectedCaseUpdatedAt,
+        expectedDraftUpdatedAt,
+        expectedSectionUpdatedAt,
+        expectedSectionContent,
+      },
+    },
+    db,
+  );
 
   // 2. Retrieval using searchChunks if applicable (legal_style, consistency, risk_check, full_section_review)
   let searchResults: any[] = [];
@@ -59,7 +101,7 @@ export async function reviewLegalWording(params: LegalWordingReviewParams): Prom
   if (reviewMode !== 'language_only') {
     const searchQuery = `${sectionType} ${caseData.type} ${currentSectionText.substring(0, 500)}`;
     try {
-      searchResults = await searchChunks({
+      searchResults = await searchChunksFn({
         query: searchQuery,
         mode: 'hybrid',
         userId,
@@ -81,6 +123,7 @@ export async function reviewLegalWording(params: LegalWordingReviewParams): Prom
     }
   }
 
+  const chunkSnapshot = await captureChunkRevisionSnapshot(chunkIds, db);
   const hasSources = searchResults.length > 0;
 
   // 3. Construct system and user prompts
@@ -140,8 +183,17 @@ ${hasSources ? `Retrieved Context (USE ONLY THESE SOURCES for legal citations):\
 
 Please review the text in mode "${reviewMode}" and output ONLY valid JSON.`;
 
+  const sensitiveValues: Array<{ kind: 'PERSON' | 'CASE' | 'ID'; value: string }> = [
+    {kind: 'PERSON', value: caseData.petitionerName || ''},
+    {kind: 'PERSON', value: caseData.respondentName || ''},
+    {kind: 'PERSON', value: caseData.legalOfficerName || ''},
+    {kind: 'PERSON', value: caseData.committeeOwnerName || ''},
+    {kind: 'CASE', value: caseData.blackNumber || ''},
+    {kind: 'CASE', value: caseData.redNumber || ''},
+  ];
+
   // 4. Call LLM
-  const aiResult = await createAiHarness().generateStructured<LegalWordingReviewResponse>({
+  const aiResult = await harness.generateStructured<Omit<LegalWordingReviewResponse, 'sourcesUsed' | 'revision'>>({
     instructions: systemPrompt,
     input: userPrompt,
     schemaName: 'legal_wording_review',
@@ -162,16 +214,15 @@ Please review the text in mode "${reviewMode}" and output ONLY valid JSON.`;
       additionalProperties: false,
     },
     approvedSourceIds: chunkIds,
-    sensitiveValues: [
-      {kind: 'PERSON', value: caseData.petitionerName || ''},
-      {kind: 'PERSON', value: caseData.respondentName || ''},
-      {kind: 'CASE', value: caseData.blackNumber || ''},
-      {kind: 'CASE', value: caseData.redNumber || ''},
-    ],
+    sensitiveValues,
     userId,
   });
+
+  // 4b. Re-verify revision after AI completes; abort with 409 if case/draft/section/sources changed
+  await assertDraftRevisionUnchanged(snapshot, db);
+  await assertChunkRevisionUnchanged(chunkSnapshot, db);
+
   const parsedResult = aiResult.data;
-  const generatedContent = JSON.stringify(parsedResult);
 
   // Enforce the required warning message and insufficient source warning
   parsedResult.humanReviewWarning = "ข้อเสนอจาก AI เป็นเพียงร่างเพื่อช่วยตรวจถ้อยคำ ต้องตรวจสอบโดยนิติกร/กรรมการก่อนนำไปใช้จริง และไม่ถือเป็นผลคำวินิจฉัยของ ก.พ.ค.ตร.";
@@ -179,12 +230,15 @@ Please review the text in mode "${reviewMode}" and output ONLY valid JSON.`;
     parsedResult.citationNotes = "ระบบไม่พบแหล่งอ้างอิงที่เพียงพอสำหรับตรวจถ้อยคำเชิงกฎหมาย จึงแสดงได้เฉพาะข้อเสนอด้านภาษาเท่านั้น\n" + (parsedResult.citationNotes || "");
   }
 
+  const redactedPrompt = pseudonymizeText(userPrompt, sensitiveValues).text;
+  const redactedResponse = pseudonymizeText(JSON.stringify(parsedResult), sensitiveValues).text;
+
   // 5. Store the AI operation in AiQueryLog
-  const aiQuery = await prisma.aiQueryLog.create({
+  const aiQuery = await db.aiQueryLog.create({
     data: {
       userId,
-      prompt: userPrompt,
-      response: generatedContent,
+      prompt: redactedPrompt,
+      response: redactedResponse,
       tokensUsed: aiResult.meta.usage.totalTokens,
       modelUsed: aiResult.meta.model,
     }
@@ -192,7 +246,7 @@ Please review the text in mode "${reviewMode}" and output ONLY valid JSON.`;
 
   // 6. Log the audit event (using AuditLog)
   if (userId) {
-    await auditLog({
+    await auditLogFn({
       userId,
       action: "AI_LEGAL_WORDING_REVIEW_COMPLETED",
       entityType: "DecisionDraftSection",
@@ -206,7 +260,8 @@ Please review the text in mode "${reviewMode}" and output ONLY valid JSON.`;
         reviewMode, 
         riskLevel: parsedResult.riskLevel,
         chunkIds,
-        aiQueryId: aiQuery.id
+        aiQueryId: aiQuery.id,
+        sectionUpdatedAt: snapshot.sectionUpdatedAt,
       })
     });
   }
@@ -219,6 +274,8 @@ Please review the text in mode "${reviewMode}" and output ONLY valid JSON.`;
     improvedSectionText: parsedResult.improvedSectionText || currentSectionText,
     citationNotes: parsedResult.citationNotes || "",
     humanReviewWarning: parsedResult.humanReviewWarning,
-    sourcesUsed: searchResults
+    sourcesUsed: searchResults,
+    revision: snapshot,
   };
 }
+

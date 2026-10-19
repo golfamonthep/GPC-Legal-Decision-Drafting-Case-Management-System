@@ -9,8 +9,8 @@ import { hasPermission } from "@/lib/auth/permissions";
 import { getCaseRevision } from "@/lib/caseRevision";
 
 export const metadata: Metadata = {
-  title: "ระบบสนับสนุนการวินิจฉัย ก.พ.ค.ตร.",
-  description: "ระบบสนับสนุนการทำงานและร่างคำวินิจฉัย คณะกรรมการพิทักษ์ระบบคุณธรรมข้าราชการตำรวจ",
+  title: "พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร. — ระบบบริหารสำนวนและวิเคราะห์คำวินิจฉัย",
+  description: "ระบบบริหารจัดการสำนวน วิเคราะห์ข้อเท็จจริง และร่างคำวินิจฉัย พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.",
 };
 
 export default async function RootLayout({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { 
   ArrowLeft, Save, Sparkles, CheckSquare, FileText, 
   Search, BookOpen, CheckCircle, Clock, AlertCircle,
@@ -9,8 +9,33 @@ import {
 import Link from "next/link";
 import { updateSection, updateAllSections, SectionStatus, applyReviewSuggestion } from "./actions";
 
-export function DraftEditor({ caseData, draftData, templateExists = false, aiDraftEnabled = false, aiReviewEnabled = false, aiUnavailableReason = 'บัญชีนี้ไม่มีสิทธิ์ใช้ AI' }: { caseData: any, draftData: any, templateExists?: boolean, aiDraftEnabled?: boolean, aiReviewEnabled?: boolean, aiUnavailableReason?: string }) {
+export function DraftEditor({
+  caseData,
+  draftData,
+  templateExists = false,
+  canEditDraft = true,
+  aiDraftEnabled = false,
+  aiReviewEnabled = false,
+  aiUnavailableReason = 'บัญชีนี้ไม่มีสิทธิ์ใช้ AI',
+}: {
+  caseData: any;
+  draftData: any;
+  templateExists?: boolean;
+  canEditDraft?: boolean;
+  aiDraftEnabled?: boolean;
+  aiReviewEnabled?: boolean;
+  aiUnavailableReason?: string;
+}) {
   const [sections, setSections] = useState(draftData.sections);
+  const sectionsRef = useRef(draftData.sections);
+  const updateSectionsState = (updater: (prev: any[]) => any[]) => {
+    setSections((prev: any[]) => {
+      const next = updater(prev);
+      sectionsRef.current = next;
+      return next;
+    });
+  };
+
   const [isSaving, setIsSaving] = useState(false);
   const [savingSectionId, setSavingSectionId] = useState<string | null>(null);
 
@@ -18,7 +43,13 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
   const [activeAiSectionId, setActiveAiSectionId] = useState<string | null>(null);
   const [aiInstruction, setAiInstruction] = useState("");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
-  const [aiResult, setAiResult] = useState<{ generatedText: string, sourcesUsed: any[] } | null>(null);
+  const [aiResult, setAiResult] = useState<{
+    generatedText: string;
+    sourcesUsed: any[];
+    sectionId: string;
+    baselineContent: string;
+    baselineUpdatedAt: string | Date | null;
+  } | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
 
   // New states for AI Wording Review
@@ -39,36 +70,77 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
   const hasContent = sections.some((s: any) => s.content && s.content.trim().length > 0);
 
   const handleSectionChange = (id: string, content: string) => {
-    setSections((prev: any) => 
+    updateSectionsState((prev: any[]) => 
       prev.map((s: any) => s.id === id ? { ...s, content } : s)
     );
   };
 
   const handleStatusChange = (id: string, status: string) => {
-    setSections((prev: any) => 
+    updateSectionsState((prev: any[]) => 
       prev.map((s: any) => s.id === id ? { ...s, status } : s)
     );
   };
 
   const handleSaveSection = async (id: string) => {
+    if (!canEditDraft) return;
     setSavingSectionId(id);
-    const section = sections.find((s: any) => s.id === id);
-    if (section) {
-      await updateSection(section.id, section.content, section.status);
+    try {
+      const section = sectionsRef.current.find((s: any) => s.id === id);
+      if (section) {
+        const updated = await updateSection(
+          section.id,
+          section.content,
+          section.status,
+          section.updatedAt,
+        );
+        updateSectionsState((prev: any[]) =>
+          prev.map((s: any) =>
+            s.id === id ? { ...s, updatedAt: updated.updatedAt, status: updated.status } : s,
+          ),
+        );
+      }
+    } catch (err: any) {
+      alert(err?.message || "ไม่สามารถบันทึกส่วนร่างคำวินิจฉัยได้");
+    } finally {
+      setSavingSectionId(null);
     }
-    setSavingSectionId(null);
   };
 
   const handleSaveAll = async () => {
+    if (!canEditDraft) return;
     setIsSaving(true);
-    await updateAllSections(
-      sections.map((s: any) => ({ id: s.id, content: s.content, status: s.status })),
-      caseData.id
-    );
-    setIsSaving(false);
+    try {
+      const res = await updateAllSections(
+        sectionsRef.current.map((s: any) => ({
+          id: s.id,
+          content: s.content,
+          status: s.status,
+          expectedUpdatedAt: s.updatedAt,
+        })),
+        caseData.id,
+      );
+      if (res?.sections) {
+        const updatedById = new Map(res.sections.map((s: any) => [s.id, s]));
+        updateSectionsState((prev: any[]) =>
+          prev.map((s: any) => {
+            const u = updatedById.get(s.id);
+            return u ? { ...s, updatedAt: u.updatedAt, status: u.status } : s;
+          }),
+        );
+      }
+    } catch (err: any) {
+      alert(err?.message || "ไม่สามารถบันทึกร่างทั้งหมดได้");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleGenerateAi = async (sectionId: string, sectionType: string) => {
+    const baselineSection = sectionsRef.current.find((s: any) => s.id === sectionId);
+    if (!baselineSection) return;
+    const baselineContent = String(baselineSection.content ?? "");
+    const baselineUpdatedAt = baselineSection.updatedAt ?? null;
+
     setIsGeneratingAi(true);
     setAiError(null);
     setAiResult(null);
@@ -84,6 +156,9 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
           sectionType,
           userInstruction: aiInstruction,
           legalCategory: caseData.legalCategory,
+          expectedCaseUpdatedAt: caseData.updatedAt,
+          expectedDraftUpdatedAt: draftData.updatedAt,
+          expectedSectionUpdatedAt: baselineUpdatedAt,
         }),
       });
 
@@ -93,7 +168,23 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
         throw new Error(data.error || "Failed to generate draft");
       }
 
-      setAiResult(data);
+      const currentSection = sectionsRef.current.find((s: any) => s.id === sectionId);
+      if (
+        !currentSection ||
+        String(currentSection.content ?? "") !== baselineContent ||
+        String(currentSection.updatedAt ?? "") !== String(baselineUpdatedAt ?? "")
+      ) {
+        throw new Error(
+          "ร่างส่วนนี้ถูกแก้ไขระหว่างประมวลผล AI ระบบยกเลิกผลลัพธ์เพื่อไม่ให้ทับร่างมนุษย์",
+        );
+      }
+
+      setAiResult({
+        ...data,
+        sectionId,
+        baselineContent,
+        baselineUpdatedAt: data.revision?.sectionUpdatedAt ?? baselineUpdatedAt,
+      });
     } catch (err: any) {
       setAiError(err.message);
     } finally {
@@ -101,17 +192,40 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
     }
   };
 
+  const handleAcceptAiDraft = (sectionId: string) => {
+    if (!canEditDraft || !aiResult || aiResult.sectionId !== sectionId) return;
+    const currentSection = sectionsRef.current.find((s: any) => s.id === sectionId);
+    if (
+      !currentSection ||
+      String(currentSection.content ?? "") !== aiResult.baselineContent ||
+      (aiResult.baselineUpdatedAt &&
+        currentSection.updatedAt &&
+        new Date(currentSection.updatedAt).getTime() !==
+          new Date(aiResult.baselineUpdatedAt).getTime())
+    ) {
+      setAiError(
+        "ร่างส่วนนี้ถูกแก้ไขหลังจาก AI สร้างข้อเสนอ ระบบยกเลิกการนำไปใช้เพื่อไม่ให้ทับร่างมนุษย์ กรุณาสร้างร่างใหม่",
+      );
+      setAiResult(null);
+      return;
+    }
+    handleSectionChange(sectionId, aiResult.generatedText);
+    setActiveAiSectionId(null);
+  };
+
   const handleReviewWording = async (sectionId: string, sectionType: string) => {
     setIsReviewing(true);
     setReviewError(null);
     setReviewResult(null);
 
-    const section = sections.find((s: any) => s.id === sectionId);
+    const section = sectionsRef.current.find((s: any) => s.id === sectionId);
     if (!section || !section.content.trim()) {
       setReviewError("ไม่มีข้อความให้ตรวจ กรุณาพิมพ์ข้อความก่อน");
       setIsReviewing(false);
       return;
     }
+    const baselineContent = String(section.content);
+    const baselineUpdatedAt = section.updatedAt ?? null;
 
     try {
       const res = await fetch("/api/draft/review-wording", {
@@ -122,8 +236,11 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
           draftId: draftData.id,
           sectionId,
           sectionType,
-          currentSectionText: section.content,
+          currentSectionText: baselineContent,
           reviewMode,
+          expectedCaseUpdatedAt: caseData.updatedAt,
+          expectedDraftUpdatedAt: draftData.updatedAt,
+          expectedSectionUpdatedAt: baselineUpdatedAt,
         }),
       });
 
@@ -133,7 +250,23 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
         throw new Error(data.error || "Failed to review wording");
       }
 
-      setReviewResult(data);
+      const currentSection = sectionsRef.current.find((s: any) => s.id === sectionId);
+      if (
+        !currentSection ||
+        String(currentSection.content ?? "") !== baselineContent ||
+        String(currentSection.updatedAt ?? "") !== String(baselineUpdatedAt ?? "")
+      ) {
+        throw new Error(
+          "ร่างส่วนนี้ถูกแก้ไขระหว่างตรวจถ้อยคำ ระบบยกเลิกผลลัพธ์เพื่อไม่ให้ทับร่างมนุษย์",
+        );
+      }
+
+      setReviewResult({
+        ...data,
+        sectionId,
+        baselineContent,
+        baselineUpdatedAt: data.revision?.sectionUpdatedAt ?? baselineUpdatedAt,
+      });
     } catch (err: any) {
       setReviewError(err.message);
     } finally {
@@ -146,12 +279,14 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
     setCoverageError(null);
     setCoverageResult(null);
 
-    const section = sections.find((s: any) => s.id === sectionId);
+    const section = sectionsRef.current.find((s: any) => s.id === sectionId);
     if (!section || !section.content.trim()) {
       setCoverageError("ไม่มีข้อความให้ตรวจ กรุณาพิมพ์ข้อความก่อน");
       setIsCheckingCoverage(false);
       return;
     }
+    const baselineContent = String(section.content);
+    const baselineUpdatedAt = section.updatedAt ?? null;
 
     try {
       const res = await fetch("/api/draft/check-citations", {
@@ -162,8 +297,11 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
           draftId: draftData.id,
           sectionId,
           sectionType,
-          currentSectionText: section.content,
+          currentSectionText: baselineContent,
           coverageMode,
+          expectedCaseUpdatedAt: caseData.updatedAt,
+          expectedDraftUpdatedAt: draftData.updatedAt,
+          expectedSectionUpdatedAt: baselineUpdatedAt,
         }),
       });
 
@@ -173,7 +311,23 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
         throw new Error(data.error || "Failed to check coverage");
       }
 
-      setCoverageResult(data);
+      const currentSection = sectionsRef.current.find((s: any) => s.id === sectionId);
+      if (
+        !currentSection ||
+        String(currentSection.content ?? "") !== baselineContent ||
+        String(currentSection.updatedAt ?? "") !== String(baselineUpdatedAt ?? "")
+      ) {
+        throw new Error(
+          "ร่างส่วนนี้ถูกแก้ไขระหว่างตรวจแหล่งอ้างอิง ระบบยกเลิกผลลัพธ์เพื่อป้องกันความคลาดเคลื่อน",
+        );
+      }
+
+      setCoverageResult({
+        ...data,
+        sectionId,
+        baselineContent,
+        baselineUpdatedAt: data.revision?.sectionUpdatedAt ?? baselineUpdatedAt,
+      });
     } catch (err: any) {
       setCoverageError(err.message);
     } finally {
@@ -182,10 +336,44 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
   };
 
   const handleApplyReviewSuggestion = async (sectionId: string, suggestedText: string) => {
+    if (!canEditDraft) return;
+    const currentSection = sectionsRef.current.find((s: any) => s.id === sectionId);
+    if (
+      !currentSection ||
+      !reviewResult ||
+      reviewResult.sectionId !== sectionId ||
+      String(currentSection.content ?? "") !== reviewResult.baselineContent ||
+      (reviewResult.baselineUpdatedAt &&
+        currentSection.updatedAt &&
+        new Date(currentSection.updatedAt).getTime() !==
+          new Date(reviewResult.baselineUpdatedAt).getTime())
+    ) {
+      setReviewError(
+        "ร่างส่วนนี้ถูกแก้ไขหลังจาก AI ตรวจถ้อยคำ ระบบยกเลิกการนำไปใช้เพื่อไม่ให้ทับร่างมนุษย์ กรุณาตรวจถ้อยคำใหม่",
+      );
+      setReviewResult(null);
+      return;
+    }
+
     if (confirm("คุณแน่ใจหรือไม่ที่จะนำข้อเสนอแนะนี้ไปแทนที่ข้อความเดิม?")) {
-      await applyReviewSuggestion(sectionId, suggestedText, caseData.id);
-      handleSectionChange(sectionId, suggestedText);
-      setActiveReviewSectionId(null);
+      try {
+        const updated = await applyReviewSuggestion(
+          sectionId,
+          suggestedText,
+          caseData.id,
+          reviewResult.baselineUpdatedAt ?? currentSection.updatedAt,
+        );
+        updateSectionsState((prev: any[]) =>
+          prev.map((s: any) =>
+            s.id === sectionId
+              ? { ...s, content: suggestedText, updatedAt: updated.updatedAt }
+              : s,
+          ),
+        );
+        setActiveReviewSectionId(null);
+      } catch (err: any) {
+        setReviewError(err?.message || "ไม่สามารถนำข้อเสนอไปใช้ได้เนื่องจากข้อมูลเปลี่ยน");
+      }
     }
   };
 
@@ -248,22 +436,22 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
   ];
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-slate-100 overflow-hidden">
+    <div className="min-h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] flex flex-col bg-slate-100 lg:overflow-hidden">
       {/* Top Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
-          <Link href={`/cases/${caseData.id}`} className="text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-md transition-colors">
+      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <Link href={`/cases/${caseData.id}`} className="text-sm text-slate-500 hover:text-slate-900 flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-md transition-colors shrink-0">
             <ArrowLeft className="h-4 w-4" /> กลับ
           </Link>
-          <div>
-            <h1 className="text-xl font-bold text-slate-800">พื้นที่ร่างคำวินิจฉัย</h1>
-            <p className="text-xs text-slate-500 mt-0.5">คดีหมายเลขดำที่ {caseData.blackNumber}</p>
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold text-slate-800 truncate">พื้นที่ร่างคำวินิจฉัย</h1>
+            <p className="text-xs text-slate-500 mt-0.5 truncate">คดีหมายเลขดำที่ {caseData.blackNumber}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button 
             onClick={handleSaveAll}
-            disabled={isSaving}
+            disabled={isSaving || !canEditDraft}
             className="inline-flex items-center rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-700 transition-colors disabled:opacity-50"
           >
             <Save className="-ml-0.5 mr-2 h-4 w-4" /> {isSaving ? "กำลังบันทึก..." : "บันทึกร่างทั้งหมด"}
@@ -272,11 +460,11 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
       </div>
 
       {/* Main Two-Panel Layout */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1 lg:overflow-hidden">
         
         {/* Left Panel: Context & Checklist */}
-        <div className="w-[380px] bg-slate-50 border-r border-slate-200 flex flex-col overflow-y-auto custom-scrollbar">
-          <div className="p-5 space-y-6">
+        <div className="w-full lg:w-[380px] bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col lg:overflow-y-auto custom-scrollbar shrink-0">
+          <div className="p-4 sm:p-5 space-y-6">
             
             {/* Case Facts Section */}
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
@@ -309,10 +497,10 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
         </div>
 
         {/* Right Panel: Editor Area */}
-        <div className="flex-1 flex flex-col bg-slate-100">
+        <div className="flex-1 min-w-0 flex flex-col bg-slate-100">
           
           {/* AI Tools Toolbar (Disabled) */}
-          <div className="bg-white px-6 py-3 border-b border-slate-200 flex flex-wrap gap-2 items-center shadow-sm z-10 shrink-0">
+          <div className="bg-white px-4 sm:px-6 py-3 border-b border-slate-200 flex flex-wrap gap-2 items-center shadow-sm z-10 shrink-0">
             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2 flex items-center gap-1">
               <Sparkles className="h-4 w-4" /> เครื่องมือช่วยร่าง
             </div>
@@ -333,7 +521,7 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
               <BookOpen className="h-4 w-4" /> ค้นแนวคำวินิจฉัย
             </button>
             
-            <div className="h-6 w-px bg-slate-300 mx-1"></div>
+            <div className="hidden sm:block h-6 w-px bg-slate-300 mx-1"></div>
             
             <button disabled className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-400 border border-slate-200 rounded-md text-sm font-medium cursor-not-allowed">
               <CheckCircle className="h-4 w-4" /> ตรวจถ้อยคำ
@@ -342,7 +530,7 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
               <Scale className="h-4 w-4" /> ตรวจข้อกฎหมาย
             </button>
             
-            <div className="ml-auto flex items-center gap-2">
+            <div className="w-full sm:w-auto sm:ml-auto flex flex-wrap items-center gap-2">
               {!hasContent && (
                 <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded border border-red-200">
                   ยังไม่มีร่างคำวินิจฉัยสำหรับส่งออก
@@ -371,39 +559,40 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
           </div>
 
           {/* Document Editor Canvas */}
-          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          <div className="flex-1 lg:overflow-y-auto p-3 sm:p-8 custom-scrollbar">
             <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden mb-12">
               
               {/* Document Header */}
-              <div className="bg-slate-900 text-white px-10 py-8 text-center relative overflow-hidden">
+              <div className="bg-slate-900 text-white px-4 sm:px-10 py-6 sm:py-8 text-center relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
-                <h1 className="text-2xl font-bold mb-2">ร่างคำวินิจฉัย</h1>
-                <p className="text-slate-300 text-sm">
+                <h1 className="text-xl sm:text-2xl font-bold mb-2">ร่างคำวินิจฉัย</h1>
+                <p className="text-slate-300 text-xs sm:text-sm">
                   คณะกรรมการพิทักษ์ระบบคุณธรรมข้าราชการตำรวจ (ก.พ.ค.ตร.)
                 </p>
-                <div className="mt-6 flex justify-between text-sm text-slate-400 font-mono">
+                <div className="mt-6 flex flex-col sm:flex-row justify-between gap-1 text-xs sm:text-sm text-slate-400 font-mono">
                   <span>คดีหมายเลขดำที่ {caseData.blackNumber}</span>
                   <span>คดีหมายเลขแดงที่ {caseData.redNumber || "........................"}</span>
                 </div>
               </div>
 
               {/* Document Body */}
-              <div className="p-10">
+              <div className="p-4 sm:p-10">
                 {sections.map((section: any) => {
                   const template = sectionTemplates.find(t => t.type === section.sectionType);
                   if (!template) return null;
                   
                   return (
-                    <div key={section.id} className="mb-6 p-5 border border-slate-200 rounded-xl bg-white shadow-sm hover:border-blue-300 transition-colors">
-                      <div className="flex justify-between items-center mb-3">
-                        <div className="flex items-center gap-3">
+                    <div key={section.id} className="mb-6 p-4 sm:p-5 border border-slate-200 rounded-xl bg-white shadow-sm hover:border-blue-300 transition-colors">
+                      <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <div className="flex items-center gap-3 min-w-0">
                           <h3 className="text-base font-bold text-slate-800">{template.title}</h3>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                           <select 
                             value={section.status}
+                            disabled={!canEditDraft}
                             onChange={(e) => handleStatusChange(section.id, e.target.value)}
-                            className="text-xs font-medium border-slate-200 rounded bg-slate-50 px-2 py-1"
+                            className="text-xs font-medium border-slate-200 rounded bg-slate-50 px-2 py-1 disabled:opacity-50"
                           >
                             {statusOptions.map(opt => (
                               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -411,7 +600,7 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
                           </select>
                           <button 
                             onClick={() => handleSaveSection(section.id)}
-                            disabled={savingSectionId === section.id}
+                            disabled={savingSectionId === section.id || !canEditDraft}
                             className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded border border-slate-200 transition-colors flex items-center disabled:opacity-50"
                           >
                             <Save className="w-3 h-3 mr-1" /> {savingSectionId === section.id ? "กำลังบันทึก..." : "บันทึก"}
@@ -421,13 +610,14 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
                       <textarea
                         rows={template.rows}
                         value={section.content}
+                        readOnly={!canEditDraft}
                         onChange={(e) => handleSectionChange(section.id, e.target.value)}
                         className="block w-full rounded-md border-0 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-4 bg-slate-50 focus:bg-white transition-colors"
                         placeholder={template.placeholder}
                       />
                       
                       {/* AI Assistant Button */}
-                      <div className="flex gap-2 mt-3">
+                      <div className="flex flex-wrap gap-2 mt-3">
                         <button
                           disabled={!aiDraftEnabled}
                           onClick={() => {
@@ -475,7 +665,7 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
                         <div className="mt-4 p-4 bg-indigo-50/50 border border-indigo-100 rounded-lg shadow-inner">
                           <div className="mb-3">
                             <label className="block text-xs font-semibold text-slate-700 mb-1">คำสั่งเพิ่มเติม (Instruction)</label>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
                               <input
                                 type="text"
                                 value={aiInstruction}
@@ -486,7 +676,7 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
                               <button
                                 onClick={() => handleGenerateAi(section.id, section.sectionType)}
                                 disabled={isGeneratingAi || !aiInstruction}
-                                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+                                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2"
                               >
                                 {isGeneratingAi ? "กำลังค้นหาและร่าง..." : "สร้างร่าง"}
                               </button>
@@ -518,12 +708,9 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
                                 
                                 <div className="mt-4 flex justify-end">
                                   <button
-                                    onClick={() => {
-                                      // Append or replace? Let's just set the content directly
-                                      handleSectionChange(section.id, aiResult.generatedText);
-                                      setActiveAiSectionId(null);
-                                    }}
-                                    className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 flex items-center gap-1.5 shadow-sm"
+                                    disabled={!canEditDraft}
+                                    onClick={() => handleAcceptAiDraft(section.id)}
+                                    className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
                                   >
                                     <CheckCircle className="w-4 h-4" /> นำข้อความไปใช้ในช่องร่าง
                                   </button>
@@ -633,8 +820,9 @@ export function DraftEditor({ caseData, draftData, templateExists = false, aiDra
                                     </div>
                                     <div className="mt-3 flex justify-end">
                                       <button
+                                        disabled={!canEditDraft}
                                         onClick={() => handleApplyReviewSuggestion(section.id, reviewResult.improvedSectionText)}
-                                        className="bg-emerald-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-emerald-700 flex items-center gap-1.5 shadow-sm"
+                                        className="bg-emerald-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
                                       >
                                         <CheckCircle className="w-4 h-4" /> นำข้อเสนอไปใช้
                                       </button>

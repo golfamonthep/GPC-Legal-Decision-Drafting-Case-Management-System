@@ -1,3 +1,24 @@
+## AI Harness, Commissioner Branding & Analysis Workbench Complete — 2026-10-19
+
+- **System Identity / Branding**: Updated across the entire web application from `ก.พ.ค.ตร.` to **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`** (`src/components/Sidebar.tsx`, `src/components/TopHeader.tsx`, `src/app/dashboard/page.tsx`, `src/components/analysis/Workbench.jsx`, `src/app/login/page.tsx`, `src/app/layout.tsx`).
+- **Provider-Neutral AI Harness (`shared/ai-harness.mjs` & `src/lib/ai/*`)**:
+  - Default DeepSeek Responses API (`deepseek-v4-pro`), `store: false`, strict JSON Schema, no tools/web search, no silent model fallback.
+  - Thai PII pseudonymization (person names, case numbers, national IDs, phone numbers, emails), citation allowlist verification, and DeepSeek `<think>...</think>` CoT leakage stripping (`stripCotLeakage`).
+  - Pre-flight and post-flight stale-revision protection (`409 Conflict` / `STALE_REVISION`) across all AI routes (`src/lib/ai/revisionGuard.ts`, `draftSection.ts`, `legalWordingReviewer.ts`, `citationCoverageChecker.ts`, `legalQa.ts`, `src/lib/analysis/service.mjs`).
+  - Default `AI_ENABLED=false` in Production until live provider smoke test is approved by the system owner.
+- **Interactive Dashboard (`/dashboard`)**:
+  - Added `src/components/dashboard/DashboardInteractiveHub.tsx` with 4 interactive operational tabs (`เปรียบเทียบทะเบียน & สถานะ`, `ค้นหาเรื่องค้าง`, `ภาระงานนิติกร`, `เร่งด่วน & ความเคลื่อนไหว`) while preserving `RegistryOverview.tsx` and all 19/19 dashboard/chart tests.
+- **Complete Analysis Workbench (`/analysis`)**:
+  - Upgraded `Workbench.jsx`, `InputForm.jsx`, `Documents.jsx`, `Analysis.jsx`, `Drafts.jsx`, `Knowledge.jsx`, `api.js`, `workbench.css`, `engine.mjs`, `knowledge.mjs`, and `service.mjs` per `docs/ANALYSIS-ONLY-SYSTEM-DESIGN-TH.md`.
+  - Includes 6-stage workflow progression bar, `KnowledgeRail`, intake readiness checklist, document status filter, one-click claim/response paragraph importer into Fact vs Assertion table, 50% vacancy quota calculator, 8-section drafting studio with standard legal phrase chips (`พิเคราะห์แล้วเห็นว่า`, `พิจารณาแล้วเห็นว่า`), `.docx` paper preview with SHA-256 verification, Thai numeral (`๐-๙` <-> `0-9`) search normalization, and verified local bundle fallback (`C:\APP\data\police-appointments-2569`).
+- **Verification**:
+  - Main web app `npm test`: **82/82 passed**
+  - `analysis-app` tests: **18/18 passed**
+  - `npm run typecheck` & `npm run lint`: **0 errors**
+  - `npm run build`: **35/35 routes passed**
+- **Mandatory End-of-Task Workflow**:
+  - Always update `SKILL.md`, `PROJECT_STATE.md`, and `AGENTS.md`, then commit and push to GitHub (`origin/main` and active branch) so Vercel automatically deploys and updates the live website at the end of every task.
+
 ## Tabler case workflow — 2026-10-14 (release candidate)
 
 Base main297962c/PR22 WAS merged and deployed to original GPC Production. Older candidate/blocked frontend statements below are historical. Last verified snapshot remains216=168complete+48pending (complaint107/97/10; appeal109/71/38). This UI task does NOT import new files, mutate live records, run DDL/reset/seed, change auth or complete the separate private Storage/AI workflow.

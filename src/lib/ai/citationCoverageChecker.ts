@@ -1,11 +1,19 @@
 import prisma from '@/lib/db';
 import { searchChunks } from '@/lib/rag/retrieval/searchChunks';
 import { auditLog } from '@/lib/audit';
-import { createAiHarness } from '../../../shared/ai-harness.mjs';
+import { createAiHarness, pseudonymizeText } from '../../../shared/ai-harness.mjs';
+import {
+  assertChunkRevisionUnchanged,
+  assertDraftRevisionUnchanged,
+  captureChunkRevisionSnapshot,
+  captureDraftRevisionSnapshot,
+  DraftRevisionExpectation,
+  DraftRevisionSnapshot,
+} from './revisionGuard';
 
 export type CoverageMode = 'facts' | 'legal_basis' | 'reasoning' | 'precedent' | 'full_section_coverage';
 
-export interface CitationCoverageCheckerParams {
+export interface CitationCoverageCheckerParams extends DraftRevisionExpectation {
   caseId: string;
   draftId?: string;
   sectionId?: string;
@@ -40,23 +48,57 @@ export interface CitationCoverageCheckerResponse {
   sourceSummary: string;
   humanReviewWarning: string;
   retrievedChunksUsed: any[];
+  revision: DraftRevisionSnapshot;
 }
 
-export async function checkCitationCoverage(params: CitationCoverageCheckerParams): Promise<CitationCoverageCheckerResponse> {
-  const { caseId, draftId, sectionId, sectionType, currentSectionText, coverageMode, userId } = params;
+export interface CitationCoverageDeps {
+  db?: any;
+  searchChunksFn?: typeof searchChunks;
+  harness?: ReturnType<typeof createAiHarness>;
+  auditLogFn?: (...args: Parameters<typeof auditLog>) => Promise<unknown>;
+}
+
+export async function checkCitationCoverage(
+  params: CitationCoverageCheckerParams,
+  deps: CitationCoverageDeps = {},
+): Promise<CitationCoverageCheckerResponse> {
+  const {
+    caseId,
+    draftId,
+    sectionId,
+    sectionType,
+    currentSectionText,
+    coverageMode,
+    userId,
+    expectedCaseUpdatedAt,
+    expectedDraftUpdatedAt,
+    expectedSectionUpdatedAt,
+    expectedSectionContent,
+  } = params;
+  const db = deps.db ?? prisma;
+  const searchChunksFn = deps.searchChunksFn ?? searchChunks;
+  const harness = deps.harness ?? createAiHarness();
+  const auditLogFn = deps.auditLogFn ?? auditLog;
 
   if (!currentSectionText || currentSectionText.trim() === '') {
     throw new Error('Section text is empty. Cannot perform citation coverage check.');
   }
 
-  // 1. Load case metadata
-  const caseData = await prisma.case.findUnique({
-    where: { id: caseId }
-  });
-
-  if (!caseData) {
-    throw new Error(`Case not found: ${caseId}`);
-  }
+  // 1. Load case/draft/section metadata & validate baseline revision before AI runs
+  const { caseData, snapshot } = await captureDraftRevisionSnapshot(
+    {
+      caseId,
+      draftId,
+      sectionId,
+      expected: {
+        expectedCaseUpdatedAt,
+        expectedDraftUpdatedAt,
+        expectedSectionUpdatedAt,
+        expectedSectionContent,
+      },
+    },
+    db,
+  );
 
   // 2. Retrieval using searchChunks
   let searchResults: any[] = [];
@@ -65,7 +107,7 @@ export async function checkCitationCoverage(params: CitationCoverageCheckerParam
 
   const searchQuery = `${sectionType} ${caseData.type} ${currentSectionText.substring(0, 500)}`;
   try {
-    searchResults = await searchChunks({
+    searchResults = await searchChunksFn({
       query: searchQuery,
       mode: 'hybrid',
       userId,
@@ -85,6 +127,7 @@ export async function checkCitationCoverage(params: CitationCoverageCheckerParam
     // Mark as insufficient later if it fails and there's no chunk
   }
 
+  const chunkSnapshot = await captureChunkRevisionSnapshot(chunkIds, db);
   const hasSources = searchResults.length > 0;
 
   // 3. Construct system and user prompts
@@ -155,8 +198,17 @@ ${hasSources ? `Retrieved Context:\n${contextChunks}` : "No retrieved context av
 
 Please check the citation coverage in mode "${coverageMode}" and output ONLY valid JSON matching the format. If no retrieved context is available, overallCoverage must be 'insufficient' unless the section is completely administrative/empty ('not_applicable').`;
 
+  const sensitiveValues: Array<{ kind: 'PERSON' | 'CASE' | 'ID'; value: string }> = [
+    {kind: 'PERSON', value: caseData.petitionerName || ''},
+    {kind: 'PERSON', value: caseData.respondentName || ''},
+    {kind: 'PERSON', value: caseData.legalOfficerName || ''},
+    {kind: 'PERSON', value: caseData.committeeOwnerName || ''},
+    {kind: 'CASE', value: caseData.blackNumber || ''},
+    {kind: 'CASE', value: caseData.redNumber || ''},
+  ];
+
   // 4. Call LLM
-  const aiResult = await createAiHarness().generateStructured<Omit<CitationCoverageCheckerResponse, 'retrievedChunksUsed'>>({
+  const aiResult = await harness.generateStructured<Omit<CitationCoverageCheckerResponse, 'retrievedChunksUsed' | 'revision'>>({
     instructions: systemPrompt,
     input: userPrompt,
     schemaName: 'citation_coverage',
@@ -178,16 +230,15 @@ Please check the citation coverage in mode "${coverageMode}" and output ONLY val
       additionalProperties: false,
     },
     approvedSourceIds: chunkIds,
-    sensitiveValues: [
-      {kind: 'PERSON', value: caseData.petitionerName || ''},
-      {kind: 'PERSON', value: caseData.respondentName || ''},
-      {kind: 'CASE', value: caseData.blackNumber || ''},
-      {kind: 'CASE', value: caseData.redNumber || ''},
-    ],
+    sensitiveValues,
     userId,
   });
+
+  // 4b. Re-verify revision after AI completes; abort with 409 if case/draft/section/sources changed
+  await assertDraftRevisionUnchanged(snapshot, db);
+  await assertChunkRevisionUnchanged(chunkSnapshot, db);
+
   const parsedResult = aiResult.data;
-  const generatedContent = JSON.stringify(parsedResult);
 
   // Enforce required warning
   parsedResult.humanReviewWarning = "ผลการตรวจแหล่งอ้างอิงเป็นเครื่องมือช่วยตรวจสอบเบื้องต้น ต้องตรวจสอบโดยนิติกร/กรรมการก่อนใช้ประกอบคำวินิจฉัยจริง";
@@ -203,12 +254,15 @@ Please check the citation coverage in mode "${coverageMode}" and output ONLY val
     }
   }
 
+  const redactedPrompt = pseudonymizeText(userPrompt, sensitiveValues).text;
+  const redactedResponse = pseudonymizeText(JSON.stringify(parsedResult), sensitiveValues).text;
+
   // 5. Store the AI operation in AiQueryLog
-  const aiQuery = await prisma.aiQueryLog.create({
+  const aiQuery = await db.aiQueryLog.create({
     data: {
       userId,
-      prompt: userPrompt,
-      response: generatedContent,
+      prompt: redactedPrompt,
+      response: redactedResponse,
       tokensUsed: aiResult.meta.usage.totalTokens,
       modelUsed: aiResult.meta.model,
     }
@@ -216,7 +270,7 @@ Please check the citation coverage in mode "${coverageMode}" and output ONLY val
 
   // 6. Log the audit event
   if (userId) {
-    await auditLog({
+    await auditLogFn({
       userId,
       action: "AI_CITATION_COVERAGE_CHECK_COMPLETED",
       entityType: "DecisionDraftSection",
@@ -231,7 +285,8 @@ Please check the citation coverage in mode "${coverageMode}" and output ONLY val
         overallCoverage: parsedResult.overallCoverage,
         coverageScore: parsedResult.coverageScore,
         chunkIds,
-        aiQueryId: aiQuery.id
+        aiQueryId: aiQuery.id,
+        sectionUpdatedAt: snapshot.sectionUpdatedAt,
       })
     });
   }
@@ -245,6 +300,8 @@ Please check the citation coverage in mode "${coverageMode}" and output ONLY val
     missingSupport: Array.isArray(parsedResult.missingSupport) ? parsedResult.missingSupport : [],
     sourceSummary: parsedResult.sourceSummary || "",
     humanReviewWarning: parsedResult.humanReviewWarning,
-    retrievedChunksUsed: searchResults
+    retrievedChunksUsed: searchResults,
+    revision: snapshot,
   };
 }
+

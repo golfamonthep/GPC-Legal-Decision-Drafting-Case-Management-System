@@ -4,3 +4,14 @@ export const emptyInput={title:'',external_case_ref:'',subject_name:'',rank_posi
 export const SECTIONS=['ข้อมูลเรื่องและบุคคล','คำร้องและคำขอ','คำชี้แจง','ข้อเท็จจริงและหลักฐาน','ประเด็นที่พิจารณา','กฎหมายและหลักเกณฑ์','การวิเคราะห์','ข้อเสนอเบื้องต้น'];
 export const blankSections=()=>Object.fromEntries(SECTIONS.map(s=>[s,'']));
 export const statusLabel=x=>({assertion:'ข้อกล่าวอ้าง',established:'ยืนยันจากหลักฐาน',unresolved:'ยังไม่ยืนยัน',HUMAN_REVIEWED:'ตรวจข้อความแล้ว',EXTRACTED_NEEDS_REVIEW:'รอตรวจข้อความ',UNRESOLVED_NEEDS_TRANSCRIPTION:'ต้องถอดข้อความ',INHERITED_OLD_BUNDLE_NOT_REVERIFIED:'รับจากฐานเดิม รอตรวจต้นฉบับ',VISUAL_SENIORITY_PDF_VERIFIED:'ตรวจภาพอาวุโสแล้ว',NEEDS_REVIEW:'มีข้อมูลรอตรวจ',READY_FOR_REVIEW:'พร้อมให้ผู้รับผิดชอบตรวจ'}[x]||x);
+export const WORKFLOW_STAGES=['รับข้อมูลแล้ว','กำลังตรวจหลักฐาน','พร้อมวิเคราะห์','วิเคราะห์แล้ว','ร่างแล้ว','ส่งออกแล้ว'];
+export function jobStatus(job){
+ if(!job)return 'รับข้อมูลแล้ว';
+ if(job.exports?.length)return 'ส่งออกแล้ว';
+ if(job.revisions?.length)return 'ร่างแล้ว';
+ if(job.runs?.length)return 'วิเคราะห์แล้ว';
+ if((job.data?.references?.length||0)+(job.documents?.filter(d=>d.data.reviewed).length||0)>0)return 'พร้อมวิเคราะห์';
+ if(job.documents?.length)return 'กำลังตรวจหลักฐาน';
+ return 'รับข้อมูลแล้ว';
+}
+

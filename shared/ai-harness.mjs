@@ -108,8 +108,14 @@ export function pseudonymizeText(value, sensitiveValues = []) {
   return {text: replaceWithTokens(text, mapping), mapping};
 }
 
+function stripCotLeakage(value) {
+  return String(value ?? '')
+    .replace(/<think>[\s\S]*?<\/think>\s*/gi, '')
+    .replace(/<\/?think>/gi, '');
+}
+
 export function restorePseudonyms(value, mapping = []) {
-  let text = String(value ?? '');
+  let text = stripCotLeakage(value);
   const known = new Set(mapping.map(item => item.token));
   for (const token of text.match(/\[\[(?:PERSON|CASE|ID)_\d+\]\]/g) || []) {
     if (!known.has(token)) throw new AiHarnessError('AI_PSEUDONYM_ERROR', 502);
@@ -163,7 +169,11 @@ function validateCitationIds(value, approved, key = '') {
 
 function extractOutputText(payload) {
   for (const item of payload?.output || []) {
-    for (const content of item?.content || []) if (content?.type === 'output_text' && typeof content.text === 'string') return content.text;
+    for (const content of item?.content || []) {
+      if (content?.type === 'output_text' && typeof content.text === 'string') {
+        return stripCotLeakage(content.text).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+      }
+    }
   }
   return '';
 }

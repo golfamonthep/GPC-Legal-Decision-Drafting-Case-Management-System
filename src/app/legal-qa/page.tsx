@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Search, AlertTriangle, FileText, CheckCircle2, ShieldAlert, BookOpen } from 'lucide-react';
 
 export default function LegalQaPage() {
   const [query, setQuery] = useState("");
+  const queryRef = useRef("");
+  const requestSeqRef = useRef(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -22,7 +24,9 @@ export default function LegalQaPage() {
 
   const handleAsk = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!query.trim()) return;
+    const submittedQuery = query.trim();
+    if (!submittedQuery) return;
+    const reqId = ++requestSeqRef.current;
     
     setLoading(true);
     setError(null);
@@ -35,22 +39,30 @@ export default function LegalQaPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          query,
+          query: submittedQuery,
           mode: "hybrid",
           topK: 5
         })
       });
       
       const data = await res.json();
+      if (reqId !== requestSeqRef.current) return;
       if (!res.ok) throw new Error(data.error || "Failed to fetch response");
+      if (queryRef.current.trim() !== submittedQuery) {
+        throw new Error("คำถามถูกแก้ไขระหว่างประมวลผล ระบบยกเลิกผลลัพธ์เดิมเพื่อป้องกันความสับสน กรุณากดถามอีกครั้ง");
+      }
       
       setAnswer(data.answer);
       setCitations(data.citations || []);
       setModelUsed(data.modelUsed);
     } catch (err: any) {
-      setError(err.message);
+      if (reqId === requestSeqRef.current) {
+        setError(err.message);
+      }
     } finally {
-      setLoading(false);
+      if (reqId === requestSeqRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -73,7 +85,7 @@ export default function LegalQaPage() {
               <div className="relative">
                 <textarea
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={(e) => { queryRef.current = e.target.value; setQuery(e.target.value); }}
                   className="block w-full p-4 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base min-h-[120px] resize-y shadow-sm"
                   placeholder="ตัวอย่าง: การอุทธรณ์คำสั่งลงโทษทางวินัยอย่างร้ายแรงต้องทำภายในกี่วัน และต้องทำเป็นหนังสือหรือไม่?"
                 />

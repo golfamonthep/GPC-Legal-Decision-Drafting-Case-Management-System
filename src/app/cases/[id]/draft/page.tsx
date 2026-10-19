@@ -50,7 +50,8 @@ export default async function DraftWorkspacePage({
   const upcomingMeeting = caseData.agendaItems?.[0];
   const aiStatus = analysisAiStatus();
   const aiConfigured = aiStatus.enabled && aiStatus.configured;
-  const canDraftWithAi = hasPermission(user.role, 'USE_AI_DRAFT');
+  const canEditDraft = hasPermission(user.role, 'EDIT_DRAFT');
+  const canDraftWithAi = hasPermission(user.role, 'USE_AI_DRAFT') && canEditDraft;
   const canReviewWithAi = hasPermission(user.role, 'USE_AI_REVIEW');
   const aiUnavailableReason = !canDraftWithAi && !canReviewWithAi
     ? 'บัญชีนี้ไม่มีสิทธิ์ใช้ AI'
@@ -107,6 +108,7 @@ export default async function DraftWorkspacePage({
         caseData={caseData}
         draftData={draftData}
         templateExists={templateExists}
+        canEditDraft={canEditDraft}
         aiDraftEnabled={aiConfigured && canDraftWithAi}
         aiReviewEnabled={aiConfigured && canReviewWithAi}
         aiUnavailableReason={aiUnavailableReason}

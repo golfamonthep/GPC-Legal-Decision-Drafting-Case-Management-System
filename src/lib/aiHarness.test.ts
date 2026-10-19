@@ -206,3 +206,37 @@ test('incomplete or malformed provider output is never accepted', async () => {
     (error: unknown) => error instanceof AiHarnessError && error.code === 'AI_INVALID_RESPONSE',
   );
 });
+
+test('strips leaked DeepSeek <think> reasoning tags before parsing and inside restored strings', async () => {
+  const harness = createAiHarness({
+    env: configuredEnv,
+    fetchImpl: async () => new Response(JSON.stringify({
+      id: 'resp-cot',
+      status: 'completed',
+      model: 'deepseek-v4-pro',
+      output: [{
+        type: 'message',
+        content: [{
+          type: 'output_text',
+          text: '<think>Internal chain-of-thought reasoning</think>\n' + JSON.stringify({
+            text: '<think>hidden</think>พิเคราะห์แล้วเห็นว่า [[PERSON_1]] [law-1]',
+            citations: ['law-1'],
+            gaps: [],
+          }),
+        }],
+      }],
+      usage: {input_tokens: 40, output_tokens: 20, total_tokens: 60},
+    }), {status: 200, headers: {'Content-Type': 'application/json'}}),
+  });
+  const result = await harness.generateStructured<{text: string; citations: string[]; gaps: string[]}>({
+    instructions: 'ร่างเฉพาะส่วน',
+    input: 'ผู้ร้อง สมชาย ใจดี',
+    schemaName: 'section_proposal',
+    schema,
+    approvedSourceIds: ['law-1'],
+    sensitiveValues: [{kind: 'PERSON', value: 'สมชาย ใจดี'}],
+  });
+  assert.equal(result.data.text, 'พิเคราะห์แล้วเห็นว่า สมชาย ใจดี [law-1]');
+  assert.equal(result.data.text.includes('<think>'), false);
+});
+

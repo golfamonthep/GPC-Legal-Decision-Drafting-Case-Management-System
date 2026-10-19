@@ -1,35 +1,104 @@
 import prisma from "@/lib/db";
 import { searchChunks, SearchMode, RetrievalResultItem, SearchFilters } from "@/lib/rag/retrieval/searchChunks";
 import { auditLog } from "@/lib/audit";
-import { createAiHarness, getAiHarnessStatus } from '../../../shared/ai-harness.mjs';
+import { createAiHarness, getAiHarnessStatus, pseudonymizeText } from '../../../shared/ai-harness.mjs';
+import {
+  assertChunkRevisionUnchanged,
+  assertDraftRevisionUnchanged,
+  captureChunkRevisionSnapshot,
+  captureDraftRevisionSnapshot,
+  DraftRevisionExpectation,
+  DraftRevisionSnapshot,
+} from "./revisionGuard";
 
-export interface GenerateQaOptions {
+export interface GenerateQaOptions extends DraftRevisionExpectation {
   query: string;
   mode?: SearchMode;
   filters?: SearchFilters;
   userId?: string;
   topK?: number;
+  caseId?: string;
+  draftId?: string;
+  sectionId?: string;
 }
 
 export interface QaResponse {
   answer: string;
   citations: RetrievalResultItem[];
   modelUsed: string;
+  revision?: DraftRevisionSnapshot | null;
 }
 
-export async function generateLegalAnswer(options: GenerateQaOptions): Promise<QaResponse> {
-  const { query, mode = "hybrid", filters, userId, topK = 5 } = options;
+export interface LegalQaDeps {
+  db?: any;
+  searchChunksFn?: typeof searchChunks;
+  harness?: ReturnType<typeof createAiHarness>;
+  auditLogFn?: (...args: Parameters<typeof auditLog>) => Promise<unknown>;
+}
 
-  // 1. Create RetrievalQuery explicitly to capture its ID
-  const retrievalQuery = await prisma.retrievalQuery.create({
+export async function generateLegalAnswer(
+  options: GenerateQaOptions,
+  deps: LegalQaDeps = {},
+): Promise<QaResponse> {
+  const {
+    query,
+    mode = "hybrid",
+    filters,
+    userId,
+    topK = 5,
+    caseId,
+    draftId,
+    sectionId,
+    expectedCaseUpdatedAt,
+    expectedDraftUpdatedAt,
+    expectedSectionUpdatedAt,
+    expectedSectionContent,
+  } = options;
+  const db = deps.db ?? prisma;
+  const searchChunksFn = deps.searchChunksFn ?? searchChunks;
+  const harness = deps.harness ?? createAiHarness();
+  const auditLogFn = deps.auditLogFn ?? auditLog;
+
+  let draftRevisionSnapshot: DraftRevisionSnapshot | null = null;
+  let sensitiveValues: Array<{ kind: 'PERSON' | 'CASE' | 'ID'; value: string }> = [];
+
+  if (caseId) {
+    const captured = await captureDraftRevisionSnapshot(
+      {
+        caseId,
+        draftId,
+        sectionId,
+        expected: {
+          expectedCaseUpdatedAt,
+          expectedDraftUpdatedAt,
+          expectedSectionUpdatedAt,
+          expectedSectionContent,
+        },
+      },
+      db,
+    );
+    draftRevisionSnapshot = captured.snapshot;
+    sensitiveValues = [
+      { kind: 'PERSON', value: captured.caseData.petitionerName || '' },
+      { kind: 'PERSON', value: captured.caseData.respondentName || '' },
+      { kind: 'PERSON', value: captured.caseData.legalOfficerName || '' },
+      { kind: 'PERSON', value: captured.caseData.committeeOwnerName || '' },
+      { kind: 'CASE', value: captured.caseData.blackNumber || '' },
+      { kind: 'CASE', value: captured.caseData.redNumber || '' },
+    ];
+  }
+
+  // 1. Create RetrievalQuery explicitly to capture its ID (store redacted query text)
+  const redactedQueryText = pseudonymizeText(query, sensitiveValues).text;
+  const retrievalQuery = await db.retrievalQuery.create({
     data: {
-      queryText: query,
+      queryText: redactedQueryText,
       userId: userId || null,
     }
   });
 
   // 2. Search chunks
-  const searchResults = await searchChunks({
+  const searchResults = await searchChunksFn({
     query,
     mode,
     filters,
@@ -38,22 +107,29 @@ export async function generateLegalAnswer(options: GenerateQaOptions): Promise<Q
     queryId: retrievalQuery.id, // pass the explicitly created queryId
   });
 
-  const configuredModel = getAiHarnessStatus().model;
+  const configuredModel = harness.status?.model || getAiHarnessStatus().model;
 
   // If no chunks found, fallback
   if (searchResults.length === 0) {
+    if (draftRevisionSnapshot) {
+      await assertDraftRevisionUnchanged(draftRevisionSnapshot, db);
+    }
     const fallbackAnswer = "ไม่พบข้อมูลที่เพียงพอในฐานข้อมูลที่ได้รับอนุมัติ";
-    await saveAnswerToDb(retrievalQuery.id, fallbackAnswer, configuredModel, []);
-    await logAudit(userId, retrievalQuery.id);
+    await saveAnswerToDb(db, retrievalQuery.id, fallbackAnswer, configuredModel, []);
+    await logAudit(auditLogFn, userId, retrievalQuery.id);
     return {
       answer: fallbackAnswer,
       citations: [],
-      modelUsed: configuredModel
+      modelUsed: configuredModel,
+      revision: draftRevisionSnapshot,
     };
   }
 
+  const chunkIds = searchResults.map(result => result.chunkId);
+  const chunkSnapshot = await captureChunkRevisionSnapshot(chunkIds, db);
+
   // 3. Format context
-  const contextText = searchResults.map((chunk, index) => {
+  const contextText = searchResults.map((chunk) => {
     return `[Source ID: ${chunk.chunkId}]
 หัวข้อ: ${chunk.sourceTitle}
 ประเภท: ${chunk.sourceType}
@@ -83,7 +159,7 @@ ${contextText}
 ส่งผลลัพธ์เป็น JSON ที่มี answer และ citations เท่านั้น`;
 
   // 5. Call Model
-  const aiResult = await createAiHarness().generateStructured<{answer: string; citations: string[]}>({
+  const aiResult = await harness.generateStructured<{answer: string; citations: string[]}>({
     instructions: systemPrompt,
     input: query,
     schemaName: 'legal_qa',
@@ -93,28 +169,37 @@ ${contextText}
       required: ['answer', 'citations'],
       additionalProperties: false,
     },
-    approvedSourceIds: searchResults.map(result => result.chunkId),
+    approvedSourceIds: chunkIds,
+    sensitiveValues,
     userId,
   });
+
+  // 5b. Re-verify revision after AI completes; abort with 409 if case/draft/section or retrieved chunks changed
+  if (draftRevisionSnapshot) {
+    await assertDraftRevisionUnchanged(draftRevisionSnapshot, db);
+  }
+  await assertChunkRevisionUnchanged(chunkSnapshot, db);
+
   const generatedAnswer = aiResult.data.answer || "ไม่พบข้อมูลที่เพียงพอในฐานข้อมูลที่ได้รับอนุมัติ";
   const citedIds = aiResult.data.citations;
   const citedResults = searchResults.filter(result => citedIds.includes(result.chunkId));
 
   // 6. Save Answer
-  await saveAnswerToDb(retrievalQuery.id, generatedAnswer, aiResult.meta.model, citedIds);
+  await saveAnswerToDb(db, retrievalQuery.id, generatedAnswer, aiResult.meta.model, citedIds);
   
   // 7. Log audit
-  await logAudit(userId, retrievalQuery.id, aiResult.meta);
+  await logAudit(auditLogFn, userId, retrievalQuery.id, aiResult.meta);
 
   return {
     answer: generatedAnswer,
     citations: citedResults,
-    modelUsed: aiResult.meta.model
+    modelUsed: aiResult.meta.model,
+    revision: draftRevisionSnapshot,
   };
 }
 
-async function saveAnswerToDb(queryId: string, answerText: string, modelUsed: string, chunkIds: string[]) {
-  const answer = await prisma.legalAnswer.create({
+async function saveAnswerToDb(db: any, queryId: string, answerText: string, modelUsed: string, chunkIds: string[]) {
+  const answer = await db.legalAnswer.create({
     data: {
       queryId,
       answerText,
@@ -123,7 +208,7 @@ async function saveAnswerToDb(queryId: string, answerText: string, modelUsed: st
   });
 
   if (chunkIds.length > 0) {
-    await prisma.legalAnswerCitation.createMany({
+    await db.legalAnswerCitation.createMany({
       data: chunkIds.map(chunkId => ({
         answerId: answer.id,
         chunkId,
@@ -132,9 +217,14 @@ async function saveAnswerToDb(queryId: string, answerText: string, modelUsed: st
   }
 }
 
-async function logAudit(userId: string | undefined, queryId: string, meta?: {provider: string; model: string; usage: unknown; inputHash: string; redactedCount: number}) {
+async function logAudit(
+  auditLogFn: (...args: Parameters<typeof auditLog>) => Promise<unknown>,
+  userId: string | undefined,
+  queryId: string,
+  meta?: {provider: string; model: string; usage: unknown; inputHash: string; redactedCount: number},
+) {
   if (userId) {
-    await auditLog({
+    await auditLogFn({
       userId,
       action: "LEGAL_QA_GENERATED",
       entityType: "RetrievalQuery",
@@ -143,3 +233,4 @@ async function logAudit(userId: string | undefined, queryId: string, meta?: {pro
     });
   }
 }
+

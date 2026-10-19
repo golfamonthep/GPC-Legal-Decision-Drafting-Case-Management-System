@@ -67,8 +67,11 @@ function LoginContent() {
           <Scale className="h-12 w-12" />
         </div>
         <h1 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-slate-900">
-          ระบบบริหารจัดการคดี ก.พ.ค.ตร.
+          พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.
         </h1>
+        <p className="mt-1 text-center text-xs font-semibold text-slate-700">
+          ระบบบริหารสำนวนและวิเคราะห์ร่างคำวินิจฉัย
+        </p>
         <p className="mt-2 text-center text-sm text-slate-600">
           {isSimpleMode
             ? "เข้าสู่ระบบด้วยบัญชีภายใน"

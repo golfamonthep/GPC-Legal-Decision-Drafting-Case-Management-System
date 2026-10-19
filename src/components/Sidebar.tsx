@@ -35,12 +35,21 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
   const pathname = usePathname();
 
   return (
-    <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-slate-200 bg-slate-900 px-6 pb-4 pt-6 text-white">
-      <div className="flex h-16 shrink-0 items-center gap-3 font-semibold text-lg tracking-tight">
-        <Scale className="h-8 w-8 text-yellow-500" />
-        <span>ก.พ.ค.ตร.</span>
+    <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-slate-800 bg-[#0b1f35] px-5 pb-4 pt-6 text-white">
+      <div className="flex shrink-0 items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 text-amber-400 ring-1 ring-amber-400/30">
+          <Scale className="h-6 w-6" aria-hidden="true" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-bold leading-5 text-white">
+            พล.ต.อ.วิเชียร พจน์โพธิ์ศรี
+          </p>
+          <p className="mt-0.5 text-xs font-semibold text-cyan-300">
+            กรรมการ ก.พ.ค.ตร.
+          </p>
+        </div>
       </div>
-      <nav aria-label="เมนูหลัก" className="flex flex-1 flex-col mt-4">
+      <nav aria-label="เมนูหลัก" className="mt-2 flex flex-1 flex-col">
         <ul role="list" className="flex flex-1 flex-col gap-y-7">
           <li>
             <ul role="list" className="-mx-2 space-y-1">
@@ -57,14 +66,14 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
                         isActive
-                          ? "bg-slate-800 text-white"
-                          : "text-slate-300 hover:bg-slate-800 hover:text-white",
-                        "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-medium transition-colors",
+                          ? "bg-cyan-400/15 text-white ring-1 ring-inset ring-cyan-300/30"
+                          : "text-slate-300 hover:bg-white/5 hover:text-white",
+                        "group flex gap-x-3 rounded-xl px-3 py-2.5 text-sm leading-6 font-medium transition-colors",
                       )}
                     >
                       <item.icon
                         className={cn(
-                          isActive ? "text-white" : "text-slate-400 group-hover:text-white",
+                          isActive ? "text-cyan-300" : "text-slate-400 group-hover:text-white",
                           "h-5 w-5 shrink-0",
                         )}
                         aria-hidden="true"
@@ -78,8 +87,9 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
           </li>
         </ul>
       </nav>
-      <div className="mt-auto pt-4 text-xs text-slate-400 text-center border-t border-slate-800">
-        ระบบสนับสนุนการวินิจฉัย v1.0
+      <div className="mt-auto border-t border-white/10 pt-4 text-center text-xs leading-5 text-slate-400">
+        <p className="font-semibold text-slate-300">พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.</p>
+        <p>ระบบบริหารสำนวนและวิเคราะห์คำวินิจฉัย</p>
       </div>
     </div>
   );

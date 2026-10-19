@@ -1,3 +1,5 @@
+const THAI_DIGITS = '๐๑๒๓๔๕๖๗๘๙';
+export const normalizeSearchText = x => String(x || '').normalize('NFC').replace(/[๐-๙]/g, d => String(THAI_DIGITS.indexOf(d))).replace(/\s+/g, '').toLowerCase();
 export const normalizeName = x => String(x || '').normalize('NFC').replace(/^(พล\.?\s*ต\.?\s*อ\.?|พล\.?\s*ต\.?\s*ท\.?|พล\.?\s*ต\.?\s*ต\.?|พ\.?\s*ต\.?\s*อ\.?|พลตำรวจเอก|พลตำรวจโท|พลตำรวจตรี|พันตำรวจเอก)\s*/, '').replace(/\s+/g, '');
 export const sections=['ข้อมูลเรื่องและบุคคล','คำร้องและคำขอ','คำชี้แจง','ข้อเท็จจริงและหลักฐาน','ประเด็นที่พิจารณา','กฎหมายและหลักเกณฑ์','การวิเคราะห์','ข้อเสนอเบื้องต้น'];
 export function analyze(job, documents, knowledge) {

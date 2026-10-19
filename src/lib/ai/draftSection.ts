@@ -1,9 +1,15 @@
 import prisma from '@/lib/db';
 import { searchChunks } from '@/lib/rag/retrieval/searchChunks';
 import { auditLog } from '@/lib/audit';
-import { createAiHarness } from '../../../shared/ai-harness.mjs';
+import { createAiHarness, pseudonymizeText } from '../../../shared/ai-harness.mjs';
+import {
+  assertDraftRevisionUnchanged,
+  captureDraftRevisionSnapshot,
+  DraftRevisionExpectation,
+  DraftRevisionSnapshot,
+} from './revisionGuard';
 
-export interface GenerateDraftSectionParams {
+export interface GenerateDraftSectionParams extends DraftRevisionExpectation {
   caseId: string;
   draftId: string;
   sectionId: string;
@@ -16,24 +22,58 @@ export interface GenerateDraftSectionParams {
 export interface GenerateDraftSectionResponse {
   generatedText: string;
   sourcesUsed: any[];
+  revision: DraftRevisionSnapshot;
 }
 
-export async function generateDraftSection(params: GenerateDraftSectionParams): Promise<GenerateDraftSectionResponse> {
-  const { caseId, draftId, sectionId, sectionType, userInstruction, userId, legalCategory } = params;
+export interface DraftSectionDeps {
+  db?: any;
+  searchChunksFn?: typeof searchChunks;
+  harness?: ReturnType<typeof createAiHarness>;
+  auditLogFn?: (...args: Parameters<typeof auditLog>) => Promise<unknown>;
+}
 
-  // 1. Load case metadata
-  const caseData = await prisma.case.findUnique({
-    where: { id: caseId }
-  });
+export async function generateDraftSection(
+  params: GenerateDraftSectionParams,
+  deps: DraftSectionDeps = {},
+): Promise<GenerateDraftSectionResponse> {
+  const {
+    caseId,
+    draftId,
+    sectionId,
+    sectionType,
+    userInstruction,
+    userId,
+    legalCategory,
+    expectedCaseUpdatedAt,
+    expectedDraftUpdatedAt,
+    expectedSectionUpdatedAt,
+    expectedSectionContent,
+  } = params;
+  const db = deps.db ?? prisma;
+  const searchChunksFn = deps.searchChunksFn ?? searchChunks;
+  const harness = deps.harness ?? createAiHarness();
+  const auditLogFn = deps.auditLogFn ?? auditLog;
 
-  if (!caseData) {
-    throw new Error(`Case not found: ${caseId}`);
-  }
+  // 1. Load case/draft/section metadata & validate baseline revision before AI runs
+  const { caseData, snapshot } = await captureDraftRevisionSnapshot(
+    {
+      caseId,
+      draftId,
+      sectionId,
+      expected: {
+        expectedCaseUpdatedAt,
+        expectedDraftUpdatedAt,
+        expectedSectionUpdatedAt,
+        expectedSectionContent,
+      },
+    },
+    db,
+  );
 
   // 2. Retrieval using searchChunks (using hybrid search for best results)
   const searchQuery = userInstruction; // We search using the user's instruction
   
-  const searchResults = await searchChunks({
+  const searchResults = await searchChunksFn({
     query: searchQuery,
     mode: 'hybrid',
     userId,
@@ -52,6 +92,7 @@ export async function generateDraftSection(params: GenerateDraftSectionParams): 
   // Extract chunk contents and ids
   const contextChunks = searchResults.map(r => `Source ID: ${r.chunkId}\nSource: ${r.sourceTitle}\nCitation: ${r.citationMetadata?.referenceNumber || 'N/A'}\nContent:\n${r.content}`).join('\n\n---\n\n');
   const chunkIds = searchResults.map(r => r.chunkId);
+  const chunkSnapshot = await import('./revisionGuard').then(m => m.captureChunkRevisionSnapshot(chunkIds, db));
 
   // 3. Construct system and user prompts
   const systemPrompt = `You are an AI assistant assisting a legal officer in drafting a single section of a ก.พ.ค.ตร. decision.
@@ -82,8 +123,17 @@ ${contextChunks}
 
 Please draft the section based on the above instruction and context.`;
 
+  const sensitiveValues: Array<{ kind: 'PERSON' | 'CASE' | 'ID'; value: string }> = [
+    { kind: 'PERSON', value: caseData.petitionerName || '' },
+    { kind: 'PERSON', value: caseData.respondentName || '' },
+    { kind: 'PERSON', value: caseData.legalOfficerName || '' },
+    { kind: 'PERSON', value: caseData.committeeOwnerName || '' },
+    { kind: 'CASE', value: caseData.blackNumber || '' },
+    { kind: 'CASE', value: caseData.redNumber || '' },
+  ];
+
   // 4. Call LLM
-  const aiResult = await createAiHarness().generateStructured<{text: string; citations: string[]; gaps: string[]}>({
+  const aiResult = await harness.generateStructured<{text: string; citations: string[]; gaps: string[]}>({
     instructions: systemPrompt,
     input: userPrompt,
     schemaName: 'draft_section',
@@ -98,25 +148,28 @@ Please draft the section based on the above instruction and context.`;
       additionalProperties: false,
     },
     approvedSourceIds: chunkIds,
-    sensitiveValues: [
-      {kind: 'PERSON', value: caseData.petitionerName || ''},
-      {kind: 'PERSON', value: caseData.respondentName || ''},
-      {kind: 'CASE', value: caseData.blackNumber || ''},
-      {kind: 'CASE', value: caseData.redNumber || ''},
-    ],
+    sensitiveValues,
     userId,
   });
+
+  // 4b. Re-verify revision after AI completes; abort with 409 if case/draft/section/sources changed
+  await assertDraftRevisionUnchanged(snapshot, db);
+  const { assertChunkRevisionUnchanged } = await import('./revisionGuard');
+  await assertChunkRevisionUnchanged(chunkSnapshot, db);
+
   const generatedText = aiResult.data.text;
+  const redactedPrompt = pseudonymizeText(userPrompt, sensitiveValues).text;
+  const redactedInstruction = pseudonymizeText(userInstruction, sensitiveValues).text;
 
   // 5. Store the AI operation in DraftSectionAiLog
-  await prisma.draftSectionAiLog.create({
+  await db.draftSectionAiLog.create({
     data: {
       caseId,
       draftId,
       sectionId,
       sectionType,
-      userInstruction,
-      prompt: userPrompt,
+      userInstruction: redactedInstruction,
+      prompt: redactedPrompt,
       generatedText,
       modelUsed: aiResult.meta.model,
       userId,
@@ -126,17 +179,19 @@ Please draft the section based on the above instruction and context.`;
 
   // 6. Log the audit event
   if (userId) {
-    await auditLog({
+    await auditLogFn({
       userId,
       action: "AI_DRAFT_SECTION_GENERATED",
       entityType: "DecisionDraftSection",
       entityId: sectionId,
-      afterValue: JSON.stringify({model: aiResult.meta.model, provider: aiResult.meta.provider, usage: aiResult.meta.usage, inputHash: aiResult.meta.inputHash, redactedCount: aiResult.meta.redactedCount, sourcesCount: chunkIds.length})
+      afterValue: JSON.stringify({model: aiResult.meta.model, provider: aiResult.meta.provider, usage: aiResult.meta.usage, inputHash: aiResult.meta.inputHash, redactedCount: aiResult.meta.redactedCount, sourcesCount: chunkIds.length, sectionUpdatedAt: snapshot.sectionUpdatedAt})
     });
   }
 
   return {
     generatedText,
-    sourcesUsed: searchResults
+    sourcesUsed: searchResults,
+    revision: snapshot,
   };
 }
+
