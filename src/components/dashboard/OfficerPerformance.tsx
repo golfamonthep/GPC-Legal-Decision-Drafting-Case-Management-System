@@ -3,7 +3,10 @@ import type { RegistryAccent } from "./BacklogCharts";
 
 const number = new Intl.NumberFormat("th-TH");
 const percent = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 1 });
-const fills = { teal: "bg-emerald-600", blue: "bg-emerald-600" };
+const fills = {
+  teal: "bg-gradient-to-r from-[#881337] via-[#be123c] to-[#fb7185]",
+  blue: "bg-gradient-to-r from-[#7f1d1d] via-[#b91c1c] to-[#fda4af]",
+};
 
 /** Absolute stacked bars: completed + pending = total, with a common zero scale. */
 export function OfficerPerformance({ title, snapshot, accent, scaleMax }: {

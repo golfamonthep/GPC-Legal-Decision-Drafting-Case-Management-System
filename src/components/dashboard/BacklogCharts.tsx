@@ -5,8 +5,11 @@ export type RegistryAccent = "teal" | "blue";
 
 const number = new Intl.NumberFormat("th-TH");
 const percent = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 1 });
-const colors = { teal: "#34d399", blue: "#34d399" };
-const barClasses = { teal: "bg-cyan-600", blue: "bg-blue-600" };
+const colors = { teal: "#f43f5e", blue: "#fb7185" };
+const barClasses = {
+  teal: "bg-gradient-to-r from-[#881337] via-[#be123c] to-[#fb7185]",
+  blue: "bg-gradient-to-r from-[#7f1d1d] via-[#b91c1c] to-[#fda4af]",
+};
 const chartCard = "h-full min-w-0 rounded-[1.25rem] border border-white bg-white p-4 shadow-[0_6px_18px_-12px_rgba(15,42,70,0.35)] sm:p-5";
 
 export function CompletionRing({ total, pending, accent, tone = "light" }: { total: number; pending: number; accent: RegistryAccent; tone?: "light" | "dark" }) {
@@ -17,8 +20,8 @@ export function CompletionRing({ total, pending, accent, tone = "light" }: { tot
     <figcaption className={`w-full text-base font-bold ${dark ? "text-white" : "text-slate-900"}`}>สัดส่วนของทะเบียนทั้งหมด</figcaption>
     <div className="relative h-36 w-36 shrink-0">
       <svg viewBox="0 0 144 144" className="h-full w-full" aria-hidden="true">
-        <circle cx="72" cy="72" r="59" fill="none" stroke={dark ? "#496581" : "#e2e8f0"} strokeWidth="14" />
-        {total > 0 && <circle cx="72" cy="72" r="59" fill="none" stroke={dark ? colors[accent] : "#059669"} strokeWidth="14" pathLength="100"
+        <circle cx="72" cy="72" r="59" fill="none" stroke={dark ? "#3a1d24" : "#e2e8f0"} strokeWidth="14" />
+        {total > 0 && <circle cx="72" cy="72" r="59" fill="none" stroke={dark ? colors[accent] : "#be123c"} strokeWidth="14" pathLength="100"
           strokeDasharray={`${share * 100} 100`} transform="rotate(-90 72 72)" />}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">

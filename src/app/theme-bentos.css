@@ -1,0 +1,244 @@
+/*
+ * CYBER Executive & Royal Thai Police Deep Maroon / Crimson Theme
+ * Dark obsidian surfaces (#08080a / #101014) + Deep Police Maroon/Crimson gradients (#8b1820 / #be123c / #e11d48).
+ */
+.gpc-bentos {
+  --bt-bg: #08080a;
+  --bt-surface: #101014;
+  --bt-surface-2: #16161d;
+  --bt-surface-3: #1f1f29;
+  --bt-border: #262632;
+  --bt-border-strong: #382329;
+  --bt-text: #f4f4f5;
+  --bt-text-2: #d4d4d8;
+  --bt-muted: #a1a1aa;
+  --bt-faint: #71717a;
+  --bt-accent: #b91c1c;
+  --bt-accent-hover: #dc2626;
+  --bt-accent-deep: #7f1d1d;
+  --bt-accent-text: #fb7185;
+  --bt-accent-soft: rgb(185 28 28 / .16);
+  --bt-accent-ring: rgb(225 29 72 / .42);
+  --background: var(--bt-bg);
+  --foreground: var(--bt-text);
+  color-scheme: dark;
+  background: var(--bt-bg);
+  color: var(--bt-text);
+}
+
+/* Surfaces */
+.gpc-bentos .bg-\[\#e8eff5\] { background-color: var(--bt-bg); }
+.gpc-bentos .bg-\[\#f2f6fa\] { background-color: var(--bt-surface); }
+.gpc-bentos .bg-\[\#f6f9fc\] { background-color: var(--bt-surface-2); }
+.gpc-bentos .bg-white,
+.gpc-bentos .bg-white\/80,
+.gpc-bentos .bg-white\/90,
+.gpc-bentos .bg-gray-50\/50 { background-color: var(--bt-surface); }
+.gpc-bentos .bg-slate-50,
+.gpc-bentos .bg-gray-50,
+.gpc-bentos .bg-slate-50\/50,
+.gpc-bentos .bg-slate-50\/60,
+.gpc-bentos .bg-slate-50\/70,
+.gpc-bentos .bg-slate-50\/80 { background-color: var(--bt-surface-2); }
+.gpc-bentos .bg-slate-100,
+.gpc-bentos .bg-gray-100,
+.gpc-bentos .bg-slate-200,
+.gpc-bentos .bg-gray-200 { background-color: var(--bt-surface-3); }
+.gpc-bentos main.bg-slate-50,
+.gpc-bentos .min-h-screen.bg-slate-50 { background-color: var(--bt-bg); }
+
+/* Text */
+.gpc-bentos .text-slate-950,
+.gpc-bentos .text-slate-900,
+.gpc-bentos .text-gray-900,
+.gpc-bentos .text-slate-800,
+.gpc-bentos .text-gray-800,
+.gpc-bentos .text-black { color: var(--bt-text); }
+.gpc-bentos .text-slate-700,
+.gpc-bentos .text-gray-700,
+.gpc-bentos .text-slate-600,
+.gpc-bentos .text-gray-600 { color: var(--bt-text-2); }
+.gpc-bentos .text-slate-500,
+.gpc-bentos .text-gray-500 { color: var(--bt-muted); }
+.gpc-bentos .text-slate-400,
+.gpc-bentos .text-gray-400 { color: var(--bt-faint); }
+
+/* Borders & dividers */
+.gpc-bentos .border-white,
+.gpc-bentos .border-white\/80,
+.gpc-bentos .border-slate-200\/80,
+.gpc-bentos .border-slate-100,
+.gpc-bentos .border-slate-200,
+.gpc-bentos .border-slate-300,
+.gpc-bentos .border-gray-100,
+.gpc-bentos .border-gray-200,
+.gpc-bentos .border-gray-300 { border-color: var(--bt-border); }
+.gpc-bentos .divide-slate-100 > :not(:last-child),
+.gpc-bentos .divide-slate-200 > :not(:last-child),
+.gpc-bentos .divide-gray-100 > :not(:last-child),
+.gpc-bentos .divide-gray-200 > :not(:last-child) { border-color: var(--bt-border); }
+.gpc-bentos .ring-slate-200,
+.gpc-bentos .ring-slate-200\/80,
+.gpc-bentos .ring-slate-900\/5,
+.gpc-bentos .ring-gray-200 { --tw-ring-color: var(--bt-border); }
+.gpc-bentos .shadow-sm,
+.gpc-bentos .shadow,
+.gpc-bentos .shadow-md { --tw-shadow-color: rgb(0 0 0 / .55); }
+
+/* Hover states */
+.gpc-bentos .hover\:bg-slate-50:hover,
+.gpc-bentos .hover\:bg-gray-50:hover,
+.gpc-bentos .hover\:bg-slate-100:hover,
+.gpc-bentos .hover\:bg-gray-100:hover,
+.gpc-bentos .hover\:bg-white:hover { background-color: var(--bt-surface-3); }
+.gpc-bentos .hover\:text-slate-900:hover,
+.gpc-bentos .hover\:text-slate-700:hover { color: var(--bt-text); }
+
+/* Elevated dark containers vs Police Maroon CTA buttons */
+.gpc-bentos div.bg-\[\#102b46\],
+.gpc-bentos header.bg-\[\#102b46\],
+.gpc-bentos section.bg-\[\#102b46\],
+.gpc-bentos .bg-\[\#0a2138\],
+.gpc-bentos .bg-\[\#071b30\] {
+  background: radial-gradient(125% 110% at 50% 105%, rgb(153 27 27 / .32) 0%, rgb(22 22 29 / .98) 68%);
+  border-color: var(--bt-border-strong);
+}
+.gpc-bentos .bg-blue-600,
+.gpc-bentos .bg-blue-700,
+.gpc-bentos .bg-indigo-600,
+.gpc-bentos button.bg-slate-900,
+.gpc-bentos a.bg-slate-900,
+.gpc-bentos button.bg-\[\#102b46\],
+.gpc-bentos a.bg-\[\#102b46\],
+.gpc-bentos .bg-\[\#0b1f35\] {
+  background: linear-gradient(135deg, #be123c 0%, #991b1b 55%, #6b111b 100%);
+  color: #fff;
+}
+.gpc-bentos .hover\:bg-blue-700:hover,
+.gpc-bentos .hover\:bg-blue-800:hover,
+.gpc-bentos .hover\:bg-indigo-700:hover,
+.gpc-bentos .hover\:bg-slate-800:hover,
+.gpc-bentos .hover\:bg-slate-700:hover {
+  background: linear-gradient(135deg, #e11d48 0%, #b91c1c 60%, #7f1d1d 100%);
+}
+.gpc-bentos .text-\[\#102b46\] { color: var(--bt-text); }
+.gpc-bentos svg.text-\[\#102b46\],
+.gpc-bentos .text-blue-600,
+.gpc-bentos .text-blue-700,
+.gpc-bentos .text-indigo-600 { color: var(--bt-accent-text); }
+.gpc-bentos .bg-blue-50,
+.gpc-bentos .bg-indigo-50 { background-color: var(--bt-accent-soft); }
+.gpc-bentos .border-blue-200,
+.gpc-bentos .border-blue-300,
+.gpc-bentos .border-indigo-200 { border-color: var(--bt-accent-ring); }
+.gpc-bentos .text-blue-800,
+.gpc-bentos .text-blue-900 { color: #fda4af; }
+
+/* Soft status tints on dark */
+.gpc-bentos .bg-emerald-50,
+.gpc-bentos .bg-emerald-100,
+.gpc-bentos .bg-green-50 { background-color: rgb(16 185 129 / .14); }
+.gpc-bentos .bg-amber-50,
+.gpc-bentos .bg-yellow-50,
+.gpc-bentos .bg-amber-100 { background-color: rgb(245 158 11 / .15); }
+.gpc-bentos .bg-red-50,
+.gpc-bentos .bg-red-100,
+.gpc-bentos .bg-rose-50 { background-color: rgb(225 29 72 / .18); }
+.gpc-bentos .bg-teal-50,
+.gpc-bentos .bg-teal-100,
+.gpc-bentos .bg-cyan-50,
+.gpc-bentos .bg-sky-50 { background-color: rgb(185 28 28 / .16); }
+.gpc-bentos .bg-blue-100 { background-color: var(--bt-accent-soft); }
+.gpc-bentos .text-emerald-700,
+.gpc-bentos .text-emerald-800,
+.gpc-bentos .text-emerald-900,
+.gpc-bentos .text-green-700,
+.gpc-bentos .text-green-800 { color: #6ee7b7; }
+.gpc-bentos .text-amber-700,
+.gpc-bentos .text-amber-800,
+.gpc-bentos .text-amber-900,
+.gpc-bentos .text-amber-950,
+.gpc-bentos .text-yellow-800 { color: #fcd34d; }
+.gpc-bentos .text-red-700,
+.gpc-bentos .text-red-800,
+.gpc-bentos .text-red-900,
+.gpc-bentos .text-rose-700 { color: #fda4af; }
+.gpc-bentos .text-teal-700,
+.gpc-bentos .text-teal-800,
+.gpc-bentos .text-teal-900,
+.gpc-bentos .text-cyan-700,
+.gpc-bentos .text-cyan-800,
+.gpc-bentos .text-cyan-900 { color: #fda4af; }
+.gpc-bentos .border-emerald-200,
+.gpc-bentos .border-amber-200,
+.gpc-bentos .border-red-200,
+.gpc-bentos .border-teal-200 { border-color: var(--bt-border-strong); }
+
+/* Form controls */
+.gpc-bentos input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),
+.gpc-bentos select,
+.gpc-bentos textarea {
+  background-color: var(--bt-surface-2);
+  color: var(--bt-text);
+  border-color: var(--bt-border-strong);
+}
+.gpc-bentos input::placeholder,
+.gpc-bentos textarea::placeholder { color: var(--bt-faint); }
+.gpc-bentos input:focus,
+.gpc-bentos select:focus,
+.gpc-bentos textarea:focus { border-color: var(--bt-accent); outline-color: var(--bt-accent); }
+.gpc-bentos input[type=checkbox],
+.gpc-bentos input[type=radio] { accent-color: var(--bt-accent); }
+.gpc-bentos ::selection { background: var(--bt-accent); color: #fff; }
+
+/* Tables */
+.gpc-bentos table thead,
+.gpc-bentos th { color: var(--bt-muted); }
+.gpc-bentos a:not([class]) { color: var(--bt-accent-text); }
+
+/* Tabler-scoped case screens */
+.gpc-bentos .gpc-tabler {
+  --tblr-primary: #b91c1c;
+  --tblr-primary-rgb: 185, 28, 28;
+  --tblr-body-color: var(--bt-text);
+  --tblr-body-bg: var(--bt-bg);
+  --tblr-bg-surface: var(--bt-surface);
+  --tblr-bg-surface-secondary: var(--bt-surface-2);
+  --tblr-border-color: var(--bt-border);
+  --tblr-secondary: var(--bt-muted);
+  --tblr-secondary-color: var(--bt-muted);
+  --tblr-link-color: #fb7185;
+  --tblr-link-color-rgb: 251, 113, 133;
+  color-scheme: dark;
+  color: var(--bt-text);
+}
+.gpc-bentos .gpc-tabler .card { background: var(--bt-surface); border-color: var(--bt-border); box-shadow: none; color: var(--bt-text); }
+.gpc-bentos .gpc-tabler .card-header,
+.gpc-bentos .gpc-tabler .card-footer { background: var(--bt-surface); border-color: var(--bt-border); }
+.gpc-bentos .gpc-tabler .case-workspace-header h1,
+.gpc-bentos .gpc-tabler .case-person strong { color: var(--bt-text); }
+.gpc-bentos .gpc-tabler .case-workspace-header p,
+.gpc-bentos .gpc-tabler .case-party-label,
+.gpc-bentos .gpc-tabler .case-subject,
+.gpc-bentos .gpc-tabler .case-officer { color: var(--bt-muted); }
+.gpc-bentos .gpc-tabler .case-note-preview { color: var(--bt-text-2); }
+.gpc-bentos .gpc-tabler .case-registry-header { background: var(--bt-surface-2); border-left-color: var(--bt-accent); }
+.gpc-bentos .gpc-tabler .case-registry-appeal .case-registry-header { background: var(--bt-surface-2); border-left-color: #f59e0b; }
+.gpc-bentos .gpc-tabler .case-table { --tblr-table-bg: transparent; --tblr-table-color: var(--bt-text); color: var(--bt-text); }
+.gpc-bentos .gpc-tabler .case-table thead th { background: var(--bt-surface-2); color: var(--bt-muted); }
+.gpc-bentos .gpc-tabler .case-table td { border-color: var(--bt-border); }
+.gpc-bentos .gpc-tabler .case-table tr:hover { background: var(--bt-surface-2); }
+.gpc-bentos .gpc-tabler .case-number-link,
+.gpc-bentos .gpc-tabler .case-more summary { color: var(--bt-accent-text); }
+.gpc-bentos .gpc-tabler .case-state-complete { background: rgb(16 185 129 / .14); color: #6ee7b7; }
+.gpc-bentos .gpc-tabler .case-state-pending { background: var(--bt-accent-soft); color: #fda4af; }
+.gpc-bentos .gpc-tabler .form-control,
+.gpc-bentos .gpc-tabler .form-select { background-color: var(--bt-surface-2); color: var(--bt-text); border-color: var(--bt-border-strong); }
+.gpc-bentos .gpc-tabler .btn-primary { --tblr-btn-bg: #b91c1c; --tblr-btn-border-color: #b91c1c; --tblr-btn-hover-bg: #dc2626; --tblr-btn-hover-border-color: #dc2626; --tblr-btn-color: #fff; }
+
+/* Native dialog / mobile navigation */
+.gpc-bentos .gpc-navigation-dialog { background: var(--bt-surface); }
+.gpc-bentos .gpc-navigation-dialog::backdrop { background: rgb(0 0 0 / .65); }
+
+/* Thin dark scrollbars */
+.gpc-bentos * { scrollbar-color: var(--bt-border-strong) transparent; }

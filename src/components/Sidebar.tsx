@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "../lib/utils";
@@ -14,11 +15,14 @@ import {
   Users,
   Search,
   AlertTriangle,
+  UserRound,
 } from "lucide-react";
 import type { SessionUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
+import { OWNER_PHOTO } from "@/lib/owner";
 
 const navigation = [
+  { name: "เจ้าของเว็บไซต์", href: "/owner", icon: UserRound },
   { name: "หน้าหลัก (Dashboard)", href: "/dashboard", icon: LayoutDashboard },
   { name: "รายการคดี", href: "/cases", icon: Files },
   { name: "วิเคราะห์และร่างคำวินิจฉัย", href: "/analysis", icon: Scale, permission: "USE_ANALYSIS" as const },
@@ -35,21 +39,21 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
   const pathname = usePathname();
 
   return (
-    <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-slate-800 bg-[#0b1f35] px-5 pb-4 pt-6 text-white">
-      <div className="flex shrink-0 items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 text-amber-400 ring-1 ring-amber-400/30">
-          <Scale className="h-6 w-6" aria-hidden="true" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-bold leading-5 text-white">
-            พล.ต.อ.วิเชียร พจน์โพธิ์ศรี
-          </p>
-          <p className="mt-0.5 text-xs font-semibold text-cyan-300">
-            กรรมการ ก.พ.ค.ตร.
-          </p>
-        </div>
-      </div>
-      <nav aria-label="เมนูหลัก" className="mt-2 flex flex-1 flex-col">
+    <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-[#262632] bg-[#0b0b0e] px-5 pb-4 pt-6 text-white">
+      <Link
+        href="/owner"
+        onClick={onNavigate}
+        className="group relative flex shrink-0 items-center gap-3 overflow-hidden rounded-2xl border border-[#3a1d24] bg-[radial-gradient(120%_110%_at_50%_105%,rgba(153,27,27,0.42)_0%,rgba(18,18,24,0.96)_70%)] p-3 transition-all hover:border-[#be123c]/70"
+      >
+        <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-gradient-to-b from-[#be123c] to-[#6b111b] ring-2 ring-[#e11d48]/45 shadow-[0_8px_20px_-4px_rgba(185,28,28,0.65)]">
+          <Image src={OWNER_PHOTO} alt="" fill sizes="96px" className="scale-[2.6] object-cover object-[50%_32%]" />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-sm font-bold leading-5 text-white">พล.ต.อ.วิเชียร พจน์โพธิ์ศรี</span>
+          <span className="mt-0.5 block text-xs font-semibold text-[#fda4af]">กรรมการ ก.พ.ค.ตร.</span>
+        </span>
+      </Link>
+      <nav aria-label="เมนูหลัก" className="mt-1 flex flex-1 flex-col">
         <ul role="list" className="flex flex-1 flex-col gap-y-7">
           <li>
             <ul role="list" className="-mx-2 space-y-1">
@@ -66,14 +70,14 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
                         isActive
-                          ? "bg-cyan-400/15 text-white ring-1 ring-inset ring-cyan-300/30"
-                          : "text-slate-300 hover:bg-white/5 hover:text-white",
-                        "group flex gap-x-3 rounded-xl px-3 py-2.5 text-sm leading-6 font-medium transition-colors",
+                          ? "bg-gradient-to-r from-[#be123c] via-[#991b1b] to-[#6b111b] text-white shadow-[0_8px_20px_-6px_rgba(185,28,28,0.65)] ring-1 ring-inset ring-white/15"
+                          : "text-zinc-400 hover:bg-white/5 hover:text-white",
+                        "group flex gap-x-3 rounded-full px-3.5 py-2.5 text-sm leading-6 font-medium transition-all",
                       )}
                     >
                       <item.icon
                         className={cn(
-                          isActive ? "text-cyan-300" : "text-slate-400 group-hover:text-white",
+                          isActive ? "text-white" : "text-zinc-500 group-hover:text-[#fda4af]",
                           "h-5 w-5 shrink-0",
                         )}
                         aria-hidden="true"
@@ -87,8 +91,8 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
           </li>
         </ul>
       </nav>
-      <div className="mt-auto border-t border-white/10 pt-4 text-center text-xs leading-5 text-slate-400">
-        <p className="font-semibold text-slate-300">พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.</p>
+      <div className="mt-auto border-t border-[#262632] pt-4 text-center text-xs leading-5 text-zinc-500">
+        <p className="font-semibold text-zinc-300">พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.</p>
         <p>ระบบบริหารสำนวนและวิเคราะห์คำวินิจฉัย</p>
       </div>
     </div>
