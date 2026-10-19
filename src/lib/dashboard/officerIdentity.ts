@@ -1,4 +1,12 @@
 const rank = /(?:ว่าที่\s*)?(?:(?:พล|พ|ร)\s*\.?\s*ต\s*\.?\s*(?:ท|อ|ต)\s*\.?|จ\.?\s*ส\.?\s*ต\.?|ด\.?\s*ต\.?)(?:\s*(?:หญิง|ญ\.?))?/gu;
+const confirmedAliases = new Map([
+  ['ชญาณ์พิมพ์ บัวดิษฐ์เดชา', 'ชญาณทิพย์ บัวดิษฐ์เดชา'],
+  ['ปราโมท พุ่มบรรเทา', 'ปราโมทย์ พุ่มบรรเทา'],
+]);
+
+function canonicalName(name: string) {
+  return confirmedAliases.get(name) ?? name;
+}
 
 function parseCurrentNames(raw: string | null | undefined): string[] {
   if (!raw?.trim()) return [];
@@ -66,7 +74,10 @@ function likelySamePerson(a: string, b: string) {
 
 export function buildOfficerDirectory(rawNames: Array<string | null | undefined>) {
   const counts = new Map<string, number>();
-  for (const raw of rawNames) for (const name of parseCurrentNames(raw)) counts.set(name, (counts.get(name) ?? 0) + 1);
+  for (const raw of rawNames) for (const parsed of parseCurrentNames(raw)) {
+    const name = canonicalName(parsed);
+    counts.set(name, (counts.get(name) ?? 0) + 1);
+  }
   const ordered = [...counts].sort((a, b) => b[1] - a[1] || a[0].split(' ').length - b[0].split(' ').length || a[0].localeCompare(b[0], 'th')).map(([name]) => name);
   const canonical = new Map<string, string>();
   const anchors: string[] = [];
@@ -78,7 +89,7 @@ export function buildOfficerDirectory(rawNames: Array<string | null | undefined>
   }
   return {
     current(raw: string | null | undefined) {
-      return [...new Set(parseCurrentNames(raw).map(name => {
+      return [...new Set(parseCurrentNames(raw).map(canonicalName).map(name => {
         if (canonical.has(name)) return canonical.get(name)!;
         const matches = anchors.filter(anchor => likelySamePerson(name, anchor));
         return matches.length === 1 ? matches[0] : name;

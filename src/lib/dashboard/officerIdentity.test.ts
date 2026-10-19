@@ -11,6 +11,19 @@ test('groups rank, whitespace and one-character spelling changes by full name', 
   assert.deepEqual(directory.current('กิตติ ศรีธรรม'), ['กิตติ ศรีธรรม']);
 });
 
+test('groups the explicitly confirmed officer name variants', () => {
+  const directory = buildOfficerDirectory([
+    'ชญาณทิพย์ บัวดิษฐ์เดชา',
+    'ชญาณ์พิมพ์ บัวดิษฐ์เดชา',
+    'ปราโมทย์ พุ่มบรรเทา',
+    'ปราโมท พุ่มบรรเทา',
+  ]);
+  assert.deepEqual(directory.current('ชญาณทิพย์ บัวดิษฐ์เดชา'), ['ชญาณทิพย์ บัวดิษฐ์เดชา']);
+  assert.deepEqual(directory.current('ชญาณ์พิมพ์ บัวดิษฐ์เดชา'), ['ชญาณทิพย์ บัวดิษฐ์เดชา']);
+  assert.deepEqual(directory.current('ปราโมทย์ พุ่มบรรเทา'), ['ปราโมทย์ พุ่มบรรเทา']);
+  assert.deepEqual(directory.current('ปราโมท พุ่มบรรเทา'), ['ปราโมทย์ พุ่มบรรเทา']);
+});
+
 test('retains titled and three-part names while matching by given name and surname', () => {
   const directory = buildOfficerDirectory(['กิตติ ศรีวัฒน์', 'กิตติ ธนา ศรีวัฒน์']);
   assert.deepEqual(directory.current('นาย กิตติ ศรีวัฒน์'), ['กิตติ ศรีวัฒน์']);
