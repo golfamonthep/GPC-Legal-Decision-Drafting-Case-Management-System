@@ -14,7 +14,7 @@ This is a candidate for the existing website at https://gpc-legal-decision-draft
 
 Use the existing sidebar entry **วิเคราะห์และร่างคำวินิจฉัย**, or enter from a selected case. Input, evidence review, source approval, deterministic checks, immutable manual drafts, Word export, and deliberately reviewed case attachment are ported. Official case status, owners and legal officer assignments are never updated by the analysis service.
 
-Incomplete: AI proposals are deliberately disabled; PDF/DOCX/XLSX/image automatic extraction needs a bounded server-compatible parser; uploads currently allow 3 MB (not the local app's 20 MB); large direct-to-private-storage upload and local SQLite job migration still need implementation. Do not call this a completed migration or enable a production rollout yet.
+AI proposals now route through the shared server-only Harness, but remain disabled by default. Manual drafting and Word export continue without an AI key. Enable only in Preview after configuring `AI_API_KEY` and passing a synthetic-data smoke test; Production stays disabled until that result is accepted. PDF/DOCX/XLSX/image automatic extraction still needs a bounded server-compatible parser; uploads currently allow 3 MB (not the local app's 20 MB); large direct-to-private-storage upload and local SQLite job migration still need implementation.
 
 ## Infrastructure blockers
 

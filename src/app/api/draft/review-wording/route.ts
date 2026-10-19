@@ -5,9 +5,9 @@ import { requireApiPermission } from "@/lib/auth/requireApiPermission";
 
 export async function POST(req: Request) {
   try {
-    await requireApiPermission("USE_AI_REVIEW");
+    const user = await requireApiPermission("USE_AI_REVIEW");
     const body = await req.json();
-    const { caseId, draftId, sectionId, sectionType, currentSectionText, reviewMode, userId } = body;
+    const { caseId, draftId, sectionId, sectionType, currentSectionText, reviewMode } = body;
 
     if (!caseId || !sectionType || !currentSectionText || !reviewMode) {
       return NextResponse.json(
@@ -16,15 +16,13 @@ export async function POST(req: Request) {
       );
     }
 
-    if (userId) {
-      await auditLog({
-        userId,
+    await auditLog({
+        userId: user.id,
         action: "AI_LEGAL_WORDING_REVIEW_REQUESTED",
         entityType: "DecisionDraftSection",
         entityId: sectionId || "unknown",
         afterValue: JSON.stringify({ reviewMode, sectionType })
       });
-    }
 
     // Attempt to review the section wording using AI
     const result = await reviewLegalWording({
@@ -34,7 +32,7 @@ export async function POST(req: Request) {
       sectionType,
       currentSectionText,
       reviewMode: reviewMode as ReviewMode,
-      userId,
+      userId: user.id,
     });
 
     return NextResponse.json(result, { status: 200 });
@@ -56,23 +54,6 @@ export async function POST(req: Request) {
       );
     }
     
-    // Attempt to get userId from the request somehow to log failure, but req.json might have already failed
-    // We already try-catched the error.
-    try {
-        const body = await req.clone().json();
-        if (body.userId) {
-          await auditLog({
-            userId: body.userId,
-            action: "AI_LEGAL_WORDING_REVIEW_FAILED",
-            entityType: "DecisionDraftSection",
-            entityId: body.sectionId || "unknown",
-            afterValue: JSON.stringify({ error: error.message || "Unknown error" })
-          });
-        }
-    } catch(e) {
-      // Ignore
-    }
-
     return NextResponse.json(
       { error: 'ระบบเกิดข้อผิดพลาดในการตรวจสอบถ้อยคำ กรุณาลองใหม่อีกครั้ง' },
       { status: 500 }

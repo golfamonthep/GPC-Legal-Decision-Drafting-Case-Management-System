@@ -1,14 +1,7 @@
-import { PrismaClient } from '@/generated/prisma';
 import prisma from '@/lib/db';
-import OpenAI from 'openai';
 import { searchChunks } from '@/lib/rag/retrieval/searchChunks';
 import { auditLog } from '@/lib/audit';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "dummy-key-for-build",
-});
-
-const AI_MODEL = process.env.AI_DRAFT_MODEL || "gpt-4o-mini";
+import { createAiHarness } from '../../../shared/ai-harness.mjs';
 
 export interface GenerateDraftSectionParams {
   caseId: string;
@@ -57,7 +50,7 @@ export async function generateDraftSection(params: GenerateDraftSectionParams): 
   }
 
   // Extract chunk contents and ids
-  const contextChunks = searchResults.map(r => `Source: ${r.sourceTitle}\nCitation: ${r.citationMetadata?.referenceNumber || 'N/A'}\nContent:\n${r.content}`).join('\n\n---\n\n');
+  const contextChunks = searchResults.map(r => `Source ID: ${r.chunkId}\nSource: ${r.sourceTitle}\nCitation: ${r.citationMetadata?.referenceNumber || 'N/A'}\nContent:\n${r.content}`).join('\n\n---\n\n');
   const chunkIds = searchResults.map(r => r.chunkId);
 
   // 3. Construct system and user prompts
@@ -71,7 +64,8 @@ CRITICAL RULES:
 5. You are drafting ONLY ONE SECTION of the decision (Section Type: ${sectionType}). Do NOT write the entire decision.
 6. Use cautious legal wording.
 7. Include citation references (อ้างอิง) inline where appropriate, based on the provided context.
-8. Do NOT determine the final outcome or result of the case unless explicitly requested in the user's instruction based on the facts provided.`;
+8. Do NOT determine the final outcome or result of the case unless explicitly requested in the user's instruction based on the facts provided.
+9. Return JSON only. Put every used Source ID in citations and list missing information in gaps.`;
 
   const userPrompt = `Case Details:
 - Case Number (Black): ${caseData.blackNumber}
@@ -89,16 +83,30 @@ ${contextChunks}
 Please draft the section based on the above instruction and context.`;
 
   // 4. Call LLM
-  const response = await openai.chat.completions.create({
-    model: AI_MODEL,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt }
+  const aiResult = await createAiHarness().generateStructured<{text: string; citations: string[]; gaps: string[]}>({
+    instructions: systemPrompt,
+    input: userPrompt,
+    schemaName: 'draft_section',
+    schema: {
+      type: 'object',
+      properties: {
+        text: {type: 'string'},
+        citations: {type: 'array', items: {type: 'string'}},
+        gaps: {type: 'array', items: {type: 'string'}},
+      },
+      required: ['text', 'citations', 'gaps'],
+      additionalProperties: false,
+    },
+    approvedSourceIds: chunkIds,
+    sensitiveValues: [
+      {kind: 'PERSON', value: caseData.petitionerName || ''},
+      {kind: 'PERSON', value: caseData.respondentName || ''},
+      {kind: 'CASE', value: caseData.blackNumber || ''},
+      {kind: 'CASE', value: caseData.redNumber || ''},
     ],
-    temperature: 0.1, // Keep it deterministic and factual
+    userId,
   });
-
-  const generatedText = response.choices[0].message.content || "";
+  const generatedText = aiResult.data.text;
 
   // 5. Store the AI operation in DraftSectionAiLog
   await prisma.draftSectionAiLog.create({
@@ -110,7 +118,7 @@ Please draft the section based on the above instruction and context.`;
       userInstruction,
       prompt: userPrompt,
       generatedText,
-      modelUsed: AI_MODEL,
+      modelUsed: aiResult.meta.model,
       userId,
       chunkIds,
     }
@@ -123,7 +131,7 @@ Please draft the section based on the above instruction and context.`;
       action: "AI_DRAFT_SECTION_GENERATED",
       entityType: "DecisionDraftSection",
       entityId: sectionId,
-      afterValue: JSON.stringify({ model: AI_MODEL, sourcesCount: chunkIds.length })
+      afterValue: JSON.stringify({model: aiResult.meta.model, provider: aiResult.meta.provider, usage: aiResult.meta.usage, inputHash: aiResult.meta.inputHash, redactedCount: aiResult.meta.redactedCount, sourcesCount: chunkIds.length})
     });
   }
 

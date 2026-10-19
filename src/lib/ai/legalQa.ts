@@ -1,11 +1,7 @@
-import OpenAI from "openai";
 import prisma from "@/lib/db";
 import { searchChunks, SearchMode, RetrievalResultItem, SearchFilters } from "@/lib/rag/retrieval/searchChunks";
 import { auditLog } from "@/lib/audit";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "dummy-key-for-build",
-});
+import { createAiHarness, getAiHarnessStatus } from '../../../shared/ai-harness.mjs';
 
 export interface GenerateQaOptions {
   query: string;
@@ -42,23 +38,23 @@ export async function generateLegalAnswer(options: GenerateQaOptions): Promise<Q
     queryId: retrievalQuery.id, // pass the explicitly created queryId
   });
 
-  const modelName = "gpt-4o-mini";
+  const configuredModel = getAiHarnessStatus().model;
 
   // If no chunks found, fallback
   if (searchResults.length === 0) {
     const fallbackAnswer = "ไม่พบข้อมูลที่เพียงพอในฐานข้อมูลที่ได้รับอนุมัติ";
-    await saveAnswerToDb(retrievalQuery.id, fallbackAnswer, modelName, []);
+    await saveAnswerToDb(retrievalQuery.id, fallbackAnswer, configuredModel, []);
     await logAudit(userId, retrievalQuery.id);
     return {
       answer: fallbackAnswer,
       citations: [],
-      modelUsed: modelName
+      modelUsed: configuredModel
     };
   }
 
   // 3. Format context
   const contextText = searchResults.map((chunk, index) => {
-    return `[เอกสารอ้างอิงที่ ${index + 1}]
+    return `[Source ID: ${chunk.chunkId}]
 หัวข้อ: ${chunk.sourceTitle}
 ประเภท: ${chunk.sourceType}
 อ้างอิง: ${chunk.citationMetadata?.referenceNumber || "ไม่มี"}
@@ -77,40 +73,43 @@ export async function generateLegalAnswer(options: GenerateQaOptions): Promise<Q
    - ข้อกฎหมาย (หลักกฎหมายที่เกี่ยวข้อง)
    - แนวคำวินิจฉัย/แนวคำพิพากษา (ถ้ามีในบริบท)
    - ข้อสังเกต (สรุปหรือข้อควรระวัง)
-5. ทุกประเด็นสำคัญที่อ้างอิง ต้องระบุแหล่งที่มา (เช่น "[เอกสารอ้างอิงที่ 1]") ท้ายประโยคเสมอ ห้ามอ้างอิงขึ้นมาเอง
+5. ทุกประเด็นสำคัญต้องอ้าง Source ID ที่ให้ไว้ในรูป [source_id] และส่งรหัสที่ใช้จริงใน citations ห้ามอ้างรหัสขึ้นมาเอง
 6. ห้ามสร้าง มาตรา วันที่ หมายเลขคดี หรือชื่อบุคคล ที่ไม่มีในบริบท
 7. ห้ามร่างคำวินิจฉัยฉบับเต็ม และไม่ใช่การทดแทนการตรวจสอบโดยนักกฎหมาย
 
 บริบท (Context):
-${contextText}`;
+${contextText}
+
+ส่งผลลัพธ์เป็น JSON ที่มี answer และ citations เท่านั้น`;
 
   // 5. Call Model
-  let generatedAnswer = "";
-  try {
-    const completion = await openai.chat.completions.create({
-      model: modelName,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: query }
-      ],
-      temperature: 0,
-    });
-    generatedAnswer = completion.choices[0].message.content || "ไม่พบข้อมูลที่เพียงพอในฐานข้อมูลที่ได้รับอนุมัติ";
-  } catch (error) {
-    console.error("OpenAI Error:", error);
-    generatedAnswer = "เกิดข้อผิดพลาดในการประมวลผลคำตอบ กรุณาลองใหม่อีกครั้ง";
-  }
+  const aiResult = await createAiHarness().generateStructured<{answer: string; citations: string[]}>({
+    instructions: systemPrompt,
+    input: query,
+    schemaName: 'legal_qa',
+    schema: {
+      type: 'object',
+      properties: {answer: {type: 'string'}, citations: {type: 'array', items: {type: 'string'}}},
+      required: ['answer', 'citations'],
+      additionalProperties: false,
+    },
+    approvedSourceIds: searchResults.map(result => result.chunkId),
+    userId,
+  });
+  const generatedAnswer = aiResult.data.answer || "ไม่พบข้อมูลที่เพียงพอในฐานข้อมูลที่ได้รับอนุมัติ";
+  const citedIds = aiResult.data.citations;
+  const citedResults = searchResults.filter(result => citedIds.includes(result.chunkId));
 
   // 6. Save Answer
-  await saveAnswerToDb(retrievalQuery.id, generatedAnswer, modelName, searchResults.map(r => r.chunkId));
+  await saveAnswerToDb(retrievalQuery.id, generatedAnswer, aiResult.meta.model, citedIds);
   
   // 7. Log audit
-  await logAudit(userId, retrievalQuery.id);
+  await logAudit(userId, retrievalQuery.id, aiResult.meta);
 
   return {
     answer: generatedAnswer,
-    citations: searchResults,
-    modelUsed: modelName
+    citations: citedResults,
+    modelUsed: aiResult.meta.model
   };
 }
 
@@ -133,13 +132,14 @@ async function saveAnswerToDb(queryId: string, answerText: string, modelUsed: st
   }
 }
 
-async function logAudit(userId: string | undefined, queryId: string) {
+async function logAudit(userId: string | undefined, queryId: string, meta?: {provider: string; model: string; usage: unknown; inputHash: string; redactedCount: number}) {
   if (userId) {
     await auditLog({
       userId,
       action: "LEGAL_QA_GENERATED",
       entityType: "RetrievalQuery",
       entityId: queryId,
+      afterValue: meta ? JSON.stringify(meta) : undefined,
     });
   }
 }

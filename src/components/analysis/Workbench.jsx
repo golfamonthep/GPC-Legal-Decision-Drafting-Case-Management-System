@@ -10,7 +10,7 @@ import Knowledge from './Knowledge';
 import './workbench.css';
 
 const TABS=['ข้อมูลที่ใช้วิเคราะห์','เอกสารประกอบ','ผลวิเคราะห์','ร่างเบื้องต้น','ส่งออก','ฐานอ้างอิง'];
-export default function Workbench({initialJobId=null,caseId=null,canAI=false,canAttach=false}){
+export default function Workbench({initialJobId=null,caseId=null,canAI=false,aiUnavailableReason=null,canAttach=false}){
  const [jobs,setJobs]=useState([]),[job,setJob]=useState(null),[input,setInput]=useState({...emptyInput}),[knowledge,setKnowledge]=useState(null),[knowledgeError,setKnowledgeError]=useState(null),[tab,setTab]=useState(0),[busy,setBusy]=useState(false),[notice,setNotice]=useState(null),[draftDirty,setDraftDirty]=useState(false),[exported,setExported]=useState(null);
  const dirty=JSON.stringify(input)!==JSON.stringify(Object.fromEntries(Object.keys(emptyInput).map(k=>[k,job?.data[k]||''])));
  const [activeCaseId,setActiveCaseId]=useState(caseId);
@@ -37,7 +37,7 @@ export default function Workbench({initialJobId=null,caseId=null,canAI=false,can
   {job?<div key={job.id}>
    <div hidden={tab!==1}><Documents job={job} setJob={setJob} operate={operate}/></div>
    <div hidden={tab!==2}>{knowledge?<Analysis job={job} setJob={setJob} operate={operate} knowledge={knowledge} onSources={()=>safeSwitch(()=>setTab(5))}/>:<p>ฐานอ้างอิงยังไม่พร้อม จึงไม่สร้างผลวิเคราะห์</p>}</div>
-   <div hidden={tab!==3}><Drafts job={jobWithoutAI} setJob={setJob} operate={operate} onDirty={setDraftDirty} canAI={canAI}/></div>
+   <div hidden={tab!==3}><Drafts job={jobWithoutAI} setJob={setJob} operate={operate} onDirty={setDraftDirty} canAI={canAI} aiUnavailableReason={aiUnavailableReason}/></div>
    <div hidden={tab!==4}><h2>ร่างฉบับที่บันทึกและส่งออก</h2><p className="warning">ร่างเบื้องต้น ต้องตรวจข้อเท็จจริง กฎหมาย และแหล่งอ้างอิงก่อนใช้ทุกครั้ง</p>{job.revisions.length?job.revisions.map(r=><article className="review-form" key={r.id}><h3>{r.data.title}</h3><p>ฉบับ {r.id} · {new Date(r.created_at).toLocaleString('th-TH')} · ข้อมูลรุ่น {r.data.job_version}</p><button disabled={busy} onClick={()=>exportDraft(r)}>สร้างไฟล์ Word</button>{job.case_id&&canAttach?<button className="outline" disabled={busy} onClick={()=>attach(r)}>ตรวจและยืนยันแนบร่างเข้าสำนวน</button>:null}</article>):<p>บันทึกร่างก่อนส่งออก</p>}{exported?<p><a href={exported.url}>ดาวน์โหลดร่าง Word</a></p>:null}</div>
   </div>:null}
   <div hidden={tab!==5}>{knowledge?<Knowledge knowledge={knowledge} job={job} setJob={setJob} operate={operate}/>:<p>ยังไม่มีฐานอ้างอิงบนเว็บที่ผ่านการตรวจความครบถ้วน</p>}</div>

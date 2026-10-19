@@ -1,14 +1,7 @@
-import { PrismaClient } from '@/generated/prisma';
 import prisma from '@/lib/db';
-import OpenAI from 'openai';
 import { searchChunks } from '@/lib/rag/retrieval/searchChunks';
 import { auditLog } from '@/lib/audit';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "dummy-key-for-build",
-});
-
-const AI_MODEL = process.env.AI_DRAFT_MODEL || "gpt-4o-mini";
+import { createAiHarness } from '../../../shared/ai-harness.mjs';
 
 export type CoverageMode = 'facts' | 'legal_basis' | 'reasoning' | 'precedent' | 'full_section_coverage';
 
@@ -163,24 +156,38 @@ ${hasSources ? `Retrieved Context:\n${contextChunks}` : "No retrieved context av
 Please check the citation coverage in mode "${coverageMode}" and output ONLY valid JSON matching the format. If no retrieved context is available, overallCoverage must be 'insufficient' unless the section is completely administrative/empty ('not_applicable').`;
 
   // 4. Call LLM
-  const response = await openai.chat.completions.create({
-    model: AI_MODEL,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt }
+  const aiResult = await createAiHarness().generateStructured<Omit<CitationCoverageCheckerResponse, 'retrievedChunksUsed'>>({
+    instructions: systemPrompt,
+    input: userPrompt,
+    schemaName: 'citation_coverage',
+    schema: {
+      type: 'object',
+      properties: {
+        overallCoverage: {type: 'string', enum: ['sufficient', 'partial', 'insufficient', 'not_applicable']},
+        coverageScore: {type: 'number'},
+        riskLevel: {type: 'string', enum: ['low', 'medium', 'high']},
+        sectionType: {type: 'string'},
+        checkedClaims: {type: 'array', items: {type: 'object', properties: {
+          claimText: {type: 'string'}, claimType: {type: 'string', enum: ['fact', 'law', 'reasoning', 'conclusion', 'procedural', 'citation']}, supportStatus: {type: 'string', enum: ['supported', 'partially_supported', 'unsupported', 'not_checked']}, supportingSourceChunkIds: {type: 'array', items: {type: 'string'}}, explanationThai: {type: 'string'}, recommendedActionThai: {type: 'string'},
+        }, required: ['claimText', 'claimType', 'supportStatus', 'supportingSourceChunkIds', 'explanationThai', 'recommendedActionThai'], additionalProperties: false}},
+        missingSupport: {type: 'array', items: {type: 'object', properties: {statement: {type: 'string'}, whySupportIsNeededThai: {type: 'string'}, suggestedSourceTypeThai: {type: 'string'}}, required: ['statement', 'whySupportIsNeededThai', 'suggestedSourceTypeThai'], additionalProperties: false}},
+        sourceSummary: {type: 'string'},
+        humanReviewWarning: {type: 'string'},
+      },
+      required: ['overallCoverage', 'coverageScore', 'riskLevel', 'sectionType', 'checkedClaims', 'missingSupport', 'sourceSummary', 'humanReviewWarning'],
+      additionalProperties: false,
+    },
+    approvedSourceIds: chunkIds,
+    sensitiveValues: [
+      {kind: 'PERSON', value: caseData.petitionerName || ''},
+      {kind: 'PERSON', value: caseData.respondentName || ''},
+      {kind: 'CASE', value: caseData.blackNumber || ''},
+      {kind: 'CASE', value: caseData.redNumber || ''},
     ],
-    temperature: 0.0, // High determinism
-    response_format: { type: "json_object" }
+    userId,
   });
-
-  const generatedContent = response.choices[0].message.content || "{}";
-  let parsedResult: any;
-
-  try {
-    parsedResult = JSON.parse(generatedContent);
-  } catch (e) {
-    throw new Error('Failed to parse AI citation check result as JSON.');
-  }
+  const parsedResult = aiResult.data;
+  const generatedContent = JSON.stringify(parsedResult);
 
   // Enforce required warning
   parsedResult.humanReviewWarning = "ผลการตรวจแหล่งอ้างอิงเป็นเครื่องมือช่วยตรวจสอบเบื้องต้น ต้องตรวจสอบโดยนิติกร/กรรมการก่อนใช้ประกอบคำวินิจฉัยจริง";
@@ -202,7 +209,8 @@ Please check the citation coverage in mode "${coverageMode}" and output ONLY val
       userId,
       prompt: userPrompt,
       response: generatedContent,
-      modelUsed: AI_MODEL,
+      tokensUsed: aiResult.meta.usage.totalTokens,
+      modelUsed: aiResult.meta.model,
     }
   });
 
@@ -214,7 +222,11 @@ Please check the citation coverage in mode "${coverageMode}" and output ONLY val
       entityType: "DecisionDraftSection",
       entityId: sectionId || "unknown",
       afterValue: JSON.stringify({ 
-        model: AI_MODEL, 
+        model: aiResult.meta.model,
+        provider: aiResult.meta.provider,
+        usage: aiResult.meta.usage,
+        inputHash: aiResult.meta.inputHash,
+        redactedCount: aiResult.meta.redactedCount,
         coverageMode, 
         overallCoverage: parsedResult.overallCoverage,
         coverageScore: parsedResult.coverageScore,

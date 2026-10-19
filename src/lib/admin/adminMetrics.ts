@@ -32,7 +32,7 @@ export type AdminMetrics = {
   recentFailedIngestionJobs: number;
 
   // Integration readiness (booleans only)
-  openAiConfigured: boolean;
+  aiConfigured: boolean;
   microsoftGraphConfigured: boolean;
 };
 
@@ -88,7 +88,7 @@ export async function getAdminMetrics(userId: string): Promise<AdminMetrics> {
   });
 
   // 4️⃣ Integration readiness booleans
-  const openAiConfigured = isConfigured('OPENAI_API_KEY');
+  const aiConfigured = process.env.AI_ENABLED === 'true' && isConfigured('AI_API_KEY');
   const microsoftGraphConfigured = isConfigured('MICROSOFT_TENANT_ID') && isConfigured('MICROSOFT_CLIENT_ID');
 
   return {
@@ -111,7 +111,7 @@ export async function getAdminMetrics(userId: string): Promise<AdminMetrics> {
     aiFailureCount,
     ragIngestionJobsByStatus,
     recentFailedIngestionJobs,
-    openAiConfigured,
+    aiConfigured,
     microsoftGraphConfigured,
   };
 }

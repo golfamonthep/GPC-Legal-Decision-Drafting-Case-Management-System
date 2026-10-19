@@ -60,17 +60,27 @@ Configuration for Microsoft integration (if enabled).
   - Scope: Production / Preview / Development
   - Example: `https://your-production-domain.vercel.app/api/auth/callback/microsoft`
 
-## 4. OpenAI / RAG Group
-Configuration for AI and Retrieval-Augmented Generation features.
+## 4. AI Harness and embeddings
+Generation is routed through the server-only provider-neutral AI Harness. Embeddings remain a separate OpenAI integration.
 
 - `OPENAI_API_KEY` (Optional)
-  - Purpose: API key for accessing OpenAI services.
+  - Purpose: OpenAI key for embeddings only. The generation Harness does not read this value.
   - Scope: Production / Preview / Development
   - Example: `sk-...`
-- `OPENAI_MODEL` (Optional)
-  - Purpose: The specific AI model to be used.
+- `EMBEDDING_MODEL` (Optional)
+  - Purpose: Embedding model.
   - Scope: Production / Preview / Development
-  - Example: `gpt-4o`
+  - Example: `text-embedding-3-small`
+- `AI_ENABLED` (Required)
+  - Purpose: Emergency kill switch for all AI generation. Keep `false` until a synthetic-data smoke test passes.
+  - Example: `false`
+- `AI_PROVIDER` / `AI_API_KEY` / `AI_BASE_URL` / `AI_MODEL`
+  - Purpose: Server-only generation provider settings. Defaults are `deepseek`, `https://api.deepseek.com`, and `deepseek-v4-pro`.
+  - Scope: set secrets separately for Preview and Production; never use a `NEXT_PUBLIC_` name.
+- `AI_TIMEOUT_MS` / `AI_MAX_OUTPUT_TOKENS` (Optional)
+  - Purpose: request bounds; defaults are `90000` and `6000`.
+
+The Harness sends `store:false`, JSON Schema output, no tools and no web search. It pseudonymizes known people, case numbers and common identifiers before each request. Production must remain disabled until a real provider key is installed and the Preview smoke test with synthetic data passes.
 
 ## 5. App / Runtime Group
 Configuration for application runtime behavior.

@@ -98,8 +98,8 @@ export default async function SystemConsolePage() {
               <div className="flex items-center gap-2 font-medium"><StatusIcon ok={health.config.MICROSOFT_TENANT_ID && health.config.MICROSOFT_CLIENT_ID} /></div>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-slate-600">OpenAI API</span>
-              <div className="flex items-center gap-2 font-medium"><StatusIcon ok={health.config.OPENAI_API_KEY} /></div>
+              <span className="text-slate-600">AI Harness</span>
+              <div className="flex items-center gap-2 font-medium"><StatusIcon ok={health.config.AI_ENABLED && health.config.AI_API_KEY} /></div>
             </div>
             {health.alerts.map((alert, i) => (
               <div key={i} className={`mt-2 text-xs flex items-center gap-1.5 p-2 rounded ${alert.level === 'CRITICAL' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'}`}>

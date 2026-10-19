@@ -1,14 +1,7 @@
-import { PrismaClient } from '@/generated/prisma';
 import prisma from '@/lib/db';
-import OpenAI from 'openai';
 import { searchChunks } from '@/lib/rag/retrieval/searchChunks';
 import { auditLog } from '@/lib/audit';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "dummy-key-for-build",
-});
-
-const AI_MODEL = process.env.AI_DRAFT_MODEL || "gpt-4o-mini";
+import { createAiHarness } from '../../../shared/ai-harness.mjs';
 
 export type ReviewMode = 'language_only' | 'legal_style' | 'consistency' | 'risk_check' | 'full_section_review';
 
@@ -148,24 +141,37 @@ ${hasSources ? `Retrieved Context (USE ONLY THESE SOURCES for legal citations):\
 Please review the text in mode "${reviewMode}" and output ONLY valid JSON.`;
 
   // 4. Call LLM
-  const response = await openai.chat.completions.create({
-    model: AI_MODEL,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt }
+  const aiResult = await createAiHarness().generateStructured<LegalWordingReviewResponse>({
+    instructions: systemPrompt,
+    input: userPrompt,
+    schemaName: 'legal_wording_review',
+    schema: {
+      type: 'object',
+      properties: {
+        overallAssessment: {type: 'string'},
+        riskLevel: {type: 'string', enum: ['low', 'medium', 'high']},
+        canSuggestRewrite: {type: 'boolean'},
+        issues: {type: 'array', items: {type: 'object', properties: {
+          type: {type: 'string'}, severity: {type: 'string', enum: ['low', 'medium', 'high']}, originalText: {type: 'string'}, explanationThai: {type: 'string'}, suggestedText: {type: 'string'}, sourceChunkIds: {type: 'array', items: {type: 'string'}},
+        }, required: ['type', 'severity', 'originalText', 'explanationThai', 'suggestedText'], additionalProperties: false}},
+        improvedSectionText: {type: 'string'},
+        citationNotes: {type: 'string'},
+        humanReviewWarning: {type: 'string'},
+      },
+      required: ['overallAssessment', 'riskLevel', 'canSuggestRewrite', 'issues', 'improvedSectionText', 'citationNotes', 'humanReviewWarning'],
+      additionalProperties: false,
+    },
+    approvedSourceIds: chunkIds,
+    sensitiveValues: [
+      {kind: 'PERSON', value: caseData.petitionerName || ''},
+      {kind: 'PERSON', value: caseData.respondentName || ''},
+      {kind: 'CASE', value: caseData.blackNumber || ''},
+      {kind: 'CASE', value: caseData.redNumber || ''},
     ],
-    temperature: 0.1,
-    response_format: { type: "json_object" }
+    userId,
   });
-
-  const generatedContent = response.choices[0].message.content || "{}";
-  let parsedResult: any;
-
-  try {
-    parsedResult = JSON.parse(generatedContent);
-  } catch (e) {
-    throw new Error('Failed to parse AI review result as JSON.');
-  }
+  const parsedResult = aiResult.data;
+  const generatedContent = JSON.stringify(parsedResult);
 
   // Enforce the required warning message and insufficient source warning
   parsedResult.humanReviewWarning = "ข้อเสนอจาก AI เป็นเพียงร่างเพื่อช่วยตรวจถ้อยคำ ต้องตรวจสอบโดยนิติกร/กรรมการก่อนนำไปใช้จริง และไม่ถือเป็นผลคำวินิจฉัยของ ก.พ.ค.ตร.";
@@ -179,7 +185,8 @@ Please review the text in mode "${reviewMode}" and output ONLY valid JSON.`;
       userId,
       prompt: userPrompt,
       response: generatedContent,
-      modelUsed: AI_MODEL,
+      tokensUsed: aiResult.meta.usage.totalTokens,
+      modelUsed: aiResult.meta.model,
     }
   });
 
@@ -191,7 +198,11 @@ Please review the text in mode "${reviewMode}" and output ONLY valid JSON.`;
       entityType: "DecisionDraftSection",
       entityId: sectionId || "unknown",
       afterValue: JSON.stringify({ 
-        model: AI_MODEL, 
+        model: aiResult.meta.model,
+        provider: aiResult.meta.provider,
+        usage: aiResult.meta.usage,
+        inputHash: aiResult.meta.inputHash,
+        redactedCount: aiResult.meta.redactedCount,
         reviewMode, 
         riskLevel: parsedResult.riskLevel,
         chunkIds,

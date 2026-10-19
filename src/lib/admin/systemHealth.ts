@@ -19,6 +19,8 @@ export type SystemHealth = {
     DIRECT_URL: boolean;
     OPENAI_API_KEY: boolean;
     EMBEDDING_MODEL: boolean;
+    AI_ENABLED: boolean;
+    AI_API_KEY: boolean;
     AUTH_SECRET: boolean;
     AUTH_URL: boolean;
     MICROSOFT_TENANT_ID: boolean;
@@ -63,6 +65,8 @@ export async function getSystemHealth(userId: string): Promise<SystemHealth> {
     DIRECT_URL: checkEnv('DIRECT_URL'),
     OPENAI_API_KEY: checkEnv('OPENAI_API_KEY'),
     EMBEDDING_MODEL: checkEnv('EMBEDDING_MODEL'),
+    AI_ENABLED: process.env.AI_ENABLED === 'true',
+    AI_API_KEY: checkEnv('AI_API_KEY'),
     AUTH_SECRET: checkEnv('AUTH_SECRET'),
     AUTH_URL: checkEnv('AUTH_URL'),
     MICROSOFT_TENANT_ID: checkEnv('MICROSOFT_TENANT_ID'),
@@ -72,8 +76,10 @@ export async function getSystemHealth(userId: string): Promise<SystemHealth> {
   };
 
   // 5️⃣ Deterministic alerts based on config
-  if (!config.OPENAI_API_KEY) {
-    alerts.push({ level: 'WARNING', message: 'OpenAI not configured' });
+  if (config.AI_ENABLED && !config.AI_API_KEY) {
+    alerts.push({ level: 'WARNING', message: 'AI Harness is enabled but has no API key' });
+  } else if (!config.AI_ENABLED) {
+    alerts.push({ level: 'INFO', message: 'AI Harness is disabled; manual drafting remains available' });
   }
   if (!config.MICROSOFT_TENANT_ID || !config.MICROSOFT_CLIENT_ID) {
     alerts.push({ level: 'WARNING', message: 'Microsoft Graph not configured' });

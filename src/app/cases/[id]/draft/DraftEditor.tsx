@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 import { updateSection, updateAllSections, SectionStatus, applyReviewSuggestion } from "./actions";
 
-export function DraftEditor({ caseData, draftData, templateExists = false }: { caseData: any, draftData: any, templateExists?: boolean }) {
+export function DraftEditor({ caseData, draftData, templateExists = false, aiDraftEnabled = false, aiReviewEnabled = false, aiUnavailableReason = 'บัญชีนี้ไม่มีสิทธิ์ใช้ AI' }: { caseData: any, draftData: any, templateExists?: boolean, aiDraftEnabled?: boolean, aiReviewEnabled?: boolean, aiUnavailableReason?: string }) {
   const [sections, setSections] = useState(draftData.sections);
   const [isSaving, setIsSaving] = useState(false);
   const [savingSectionId, setSavingSectionId] = useState<string | null>(null);
@@ -320,6 +320,9 @@ export function DraftEditor({ caseData, draftData, templateExists = false }: { c
             <button disabled className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-400 border border-slate-200 rounded-md text-sm font-medium cursor-not-allowed">
               <FileSearch className="h-4 w-4" /> สรุปคำร้อง
             </button>
+            {!aiDraftEnabled && !aiReviewEnabled && (
+              <span className="text-xs text-slate-500" role="status">{aiUnavailableReason} · ยังร่างและส่งออกด้วยมือได้ตามปกติ</span>
+            )}
             <button disabled className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-400 border border-slate-200 rounded-md text-sm font-medium cursor-not-allowed">
               <FileSearch className="h-4 w-4" /> สรุปคำแก้
             </button>
@@ -426,6 +429,7 @@ export function DraftEditor({ caseData, draftData, templateExists = false }: { c
                       {/* AI Assistant Button */}
                       <div className="flex gap-2 mt-3">
                         <button
+                          disabled={!aiDraftEnabled}
                           onClick={() => {
                             setActiveAiSectionId(activeAiSectionId === section.id ? null : section.id);
                             setAiInstruction("");
@@ -434,11 +438,12 @@ export function DraftEditor({ caseData, draftData, templateExists = false }: { c
                             setActiveReviewSectionId(null);
                             setActiveCoverageSectionId(null);
                           }}
-                          className="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 rounded border border-indigo-200 transition-colors flex items-center gap-1.5 font-semibold"
+                          className="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-3 py-1.5 rounded border border-indigo-200 transition-colors flex items-center gap-1.5 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Sparkles className="w-3.5 h-3.5" /> ช่วยร่างส่วนนี้
                         </button>
                         <button
+                          disabled={!aiReviewEnabled}
                           onClick={() => {
                             setActiveReviewSectionId(activeReviewSectionId === section.id ? null : section.id);
                             setReviewResult(null);
@@ -446,11 +451,12 @@ export function DraftEditor({ caseData, draftData, templateExists = false }: { c
                             setActiveAiSectionId(null);
                             setActiveCoverageSectionId(null);
                           }}
-                          className="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-1.5 rounded border border-emerald-200 transition-colors flex items-center gap-1.5 font-semibold"
+                          className="text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-3 py-1.5 rounded border border-emerald-200 transition-colors flex items-center gap-1.5 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <CheckCircle className="w-3.5 h-3.5" /> ตรวจถ้อยคำ
                         </button>
                         <button
+                          disabled={!aiReviewEnabled}
                           onClick={() => {
                             setActiveCoverageSectionId(activeCoverageSectionId === section.id ? null : section.id);
                             setCoverageResult(null);
@@ -458,7 +464,7 @@ export function DraftEditor({ caseData, draftData, templateExists = false }: { c
                             setActiveAiSectionId(null);
                             setActiveReviewSectionId(null);
                           }}
-                          className="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded border border-blue-200 transition-colors flex items-center gap-1.5 font-semibold"
+                          className="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded border border-blue-200 transition-colors flex items-center gap-1.5 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <FileSearch className="w-3.5 h-3.5" /> ตรวจแหล่งอ้างอิง
                         </button>

@@ -51,9 +51,10 @@ This document outlines standard operating procedures for the ก.พ.ค.ตร.
 
 ### 3.3 Handling AI API Failures
 - If AI features timeout or return 500s:
-- Check OpenAI API status (https://status.openai.com).
+- Set `AI_ENABLED=false` first if proposals are unsafe or repeatedly failing. Manual drafting and Word export remain available.
+- Check the configured provider status and the server-only `AI_PROVIDER`, `AI_BASE_URL`, `AI_MODEL` settings.
 - Check Vercel logs for rate limit (`429`) or auth (`401`) errors.
-- Ensure billing is active in the OpenAI platform.
+- Ensure billing/credit is active for the configured generation provider. Do not enable automatic fallback: it can send the same case twice and charge twice.
 
 ### 3.4 Handling DOCX Export Failures
 - If export fails, check if the draft contains unusual characters or extremely large text blocks causing memory limits.
@@ -67,12 +68,11 @@ This document outlines standard operating procedures for the ก.พ.ค.ตร.
 - Immediately update `DATABASE_URL` and `DIRECT_URL` in Vercel Environment Variables.
 - Trigger a new deployment in Vercel to apply the changes.
 
-### 4.2 Rotate OpenAI Key
-- Go to OpenAI platform -> API Keys.
-- Generate a new key.
-- Update `OPENAI_API_KEY` in Vercel Environment Variables.
-- Delete the old key in OpenAI.
-- Trigger a new deployment in Vercel.
+### 4.2 Rotate AI keys
+- `AI_API_KEY` is for generation through the Harness; `OPENAI_API_KEY` is for embeddings only.
+- Set `AI_ENABLED=false`, rotate the affected server-only secret, redeploy Preview, and smoke test with synthetic data.
+- Delete the old key only after Preview succeeds. Redeploy Production, then set `AI_ENABLED=true` only when the release is approved.
+- Never paste keys into source, logs, client-side variables or issue comments.
 
 ### 4.3 Rotate Microsoft Client Secret
 - Go to Azure Portal -> Entra ID -> App Registrations -> Certificates & secrets.

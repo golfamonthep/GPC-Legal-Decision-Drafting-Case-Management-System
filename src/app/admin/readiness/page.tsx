@@ -20,7 +20,7 @@ export default async function ReadinessPage() {
 
   const authConfigured = !!(process.env.AZURE_AD_CLIENT_ID && process.env.AZURE_AD_CLIENT_SECRET && process.env.NEXTAUTH_SECRET);
   const msGraphConfigured = !!(process.env.AZURE_AD_CLIENT_ID && process.env.AZURE_AD_CLIENT_SECRET && process.env.AZURE_AD_TENANT_ID);
-  const openAIConfigured = !!process.env.OPENAI_API_KEY;
+  const aiConfigured = process.env.AI_ENABLED === 'true' && !!process.env.AI_API_KEY;
   const adminBootstrap = process.env.ADMIN_BOOTSTRAP_ENABLED === 'true';
 
   const checkIcon = (status: boolean) => 
@@ -93,10 +93,10 @@ export default async function ReadinessPage() {
             </div>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-slate-100">
-            <span className="text-sm text-slate-600">OpenAI API</span>
+            <span className="text-sm text-slate-600">AI Harness</span>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{openAIConfigured ? "Configured" : "Missing Vars"}</span>
-              {checkIcon(openAIConfigured)}
+              <span className="text-sm font-medium">{aiConfigured ? "Configured" : "Disabled / Missing Vars"}</span>
+              {checkIcon(aiConfigured)}
             </div>
           </div>
         </div>

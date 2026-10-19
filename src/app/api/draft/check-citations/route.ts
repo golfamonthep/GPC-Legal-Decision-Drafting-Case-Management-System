@@ -5,9 +5,9 @@ import { auditLog } from '@/lib/audit';
 
 export async function POST(req: Request) {
   try {
-    await requireApiPermission("USE_AI_REVIEW");
+    const user = await requireApiPermission("USE_AI_REVIEW");
     const body = await req.json();
-    const { caseId, draftId, sectionId, sectionType, currentSectionText, coverageMode, userId } = body;
+    const { caseId, draftId, sectionId, sectionType, currentSectionText, coverageMode } = body;
 
     if (!caseId || !sectionType || !currentSectionText || !coverageMode) {
       return NextResponse.json(
@@ -16,15 +16,13 @@ export async function POST(req: Request) {
       );
     }
 
-    if (userId) {
-      await auditLog({
-        userId,
+    await auditLog({
+        userId: user.id,
         action: "AI_CITATION_COVERAGE_CHECK_REQUESTED",
         entityType: "DecisionDraftSection",
         entityId: sectionId || "unknown",
         afterValue: JSON.stringify({ coverageMode, sectionType })
       });
-    }
 
     const result = await checkCitationCoverage({
       caseId,
@@ -33,7 +31,7 @@ export async function POST(req: Request) {
       sectionType,
       currentSectionText,
       coverageMode: coverageMode as CoverageMode,
-      userId,
+      userId: user.id,
     });
 
     return NextResponse.json(result, { status: 200 });
@@ -54,21 +52,6 @@ export async function POST(req: Request) {
       );
     }
     
-    try {
-        const body = await req.clone().json();
-        if (body.userId) {
-          await auditLog({
-            userId: body.userId,
-            action: "AI_CITATION_COVERAGE_CHECK_FAILED",
-            entityType: "DecisionDraftSection",
-            entityId: body.sectionId || "unknown",
-            afterValue: JSON.stringify({ error: error.message || "Unknown error" })
-          });
-        }
-    } catch(e) {
-      // Ignore
-    }
-
     return NextResponse.json(
       { error: 'ระบบเกิดข้อผิดพลาดในการตรวจสอบแหล่งอ้างอิง กรุณาลองใหม่อีกครั้ง' },
       { status: 500 }

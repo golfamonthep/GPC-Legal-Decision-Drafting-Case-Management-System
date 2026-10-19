@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, AlertTriangle, FileText, CheckCircle2, ShieldAlert, BookOpen } from 'lucide-react';
 
 export default function LegalQaPage() {
@@ -11,6 +11,14 @@ export default function LegalQaPage() {
   const [answer, setAnswer] = useState<string | null>(null);
   const [citations, setCitations] = useState<any[]>([]);
   const [modelUsed, setModelUsed] = useState<string | null>(null);
+  const [aiStatus, setAiStatus] = useState<{ready: boolean; reason?: string} | null>(null);
+
+  useEffect(() => {
+    fetch('/api/rag/qa')
+      .then(async response => response.ok ? response.json() : {ready: false, reason: response.status === 403 ? 'forbidden' : 'unavailable'})
+      .then(setAiStatus)
+      .catch(() => setAiStatus({ready: false, reason: 'unavailable'}));
+  }, []);
 
   const handleAsk = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -73,7 +81,7 @@ export default function LegalQaPage() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={loading || !query.trim()}
+                  disabled={loading || !query.trim() || !aiStatus?.ready}
                   className="inline-flex justify-center items-center py-3 px-8 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {loading ? (
@@ -92,6 +100,11 @@ export default function LegalQaPage() {
                   )}
                 </button>
               </div>
+              {aiStatus && !aiStatus.ready && (
+                <p className="text-sm text-amber-800" role="status">
+                  {aiStatus.reason === 'forbidden' ? 'บัญชีนี้ไม่มีสิทธิ์ใช้ AI' : aiStatus.reason === 'disabled' ? 'ผู้ดูแลยังไม่เปิดบริการ AI' : 'ระบบ AI ยังไม่พร้อมใช้งาน'} · การค้นเอกสารและงานร่างด้วยมือยังใช้ได้ตามปกติ
+                </p>
+              )}
             </div>
           </form>
         </div>

@@ -8,13 +8,15 @@ import { PostMeetingFollowupStatus } from "@/lib/finalization/postMeetingFollowu
 import { AlertTriangle, CheckCircle } from "lucide-react";
 import fs from "fs/promises";
 import path from "path";
+import { hasPermission } from "@/lib/auth/permissions";
+import { analysisAiStatus } from "@/lib/analysis/ai.mjs";
 
 export default async function DraftWorkspacePage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  await requirePermission("VIEW_DRAFT");
+  const user = await requirePermission("VIEW_DRAFT");
   const resolvedParams = await params;
   const caseId = resolvedParams.id;
   
@@ -46,6 +48,15 @@ export default async function DraftWorkspacePage({
   }
 
   const upcomingMeeting = caseData.agendaItems?.[0];
+  const aiStatus = analysisAiStatus();
+  const aiConfigured = aiStatus.enabled && aiStatus.configured;
+  const canDraftWithAi = hasPermission(user.role, 'USE_AI_DRAFT');
+  const canReviewWithAi = hasPermission(user.role, 'USE_AI_REVIEW');
+  const aiUnavailableReason = !canDraftWithAi && !canReviewWithAi
+    ? 'บัญชีนี้ไม่มีสิทธิ์ใช้ AI'
+    : aiStatus.reason === 'disabled'
+      ? 'ผู้ดูแลยังไม่เปิดบริการ AI'
+      : 'ระบบ AI ยังไม่ได้ตั้งค่า API key';
 
   return (
     <div className="flex flex-col h-full">
@@ -92,7 +103,14 @@ export default async function DraftWorkspacePage({
           </div>
         </div>
       )}
-      <DraftEditor caseData={caseData} draftData={draftData} templateExists={templateExists} />
+      <DraftEditor
+        caseData={caseData}
+        draftData={draftData}
+        templateExists={templateExists}
+        aiDraftEnabled={aiConfigured && canDraftWithAi}
+        aiReviewEnabled={aiConfigured && canReviewWithAi}
+        aiUnavailableReason={aiUnavailableReason}
+      />
     </div>
   );
 }

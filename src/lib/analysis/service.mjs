@@ -3,6 +3,7 @@ import prisma from '@/lib/db';
 import {randomUUID} from 'node:crypto';
 import {Document,Paragraph,TextRun,Packer,HeadingLevel} from 'docx';
 import {analyze,sections,normalizeName} from './engine.mjs';
+import {proposeAnalysisSection} from './ai.mjs';
 import {knowledge} from './knowledge.mjs';
 import {storageRead,storageWrite,storageRemove,storageSignedRead} from './storage.mjs';
 import {fail,hash,assertOwner,assertAssignment,cleanInput,validateCitations,invalidateDocument,boundedAppend,invalidateSource} from './safety.mjs';
@@ -69,7 +70,10 @@ export async function analysisService(parts,method,p,url,actor){
  if(action==='vacancies'&&method==='POST'){expected(p,j);if(!Number.isSafeInteger(p.value)||p.value<0||p.value>10000||p.applies!==true||!j.data.references.some(r=>r.id===p.vacancy_reference&&r.reviewed&&r.kind==='vacancy')||!j.data.references.some(r=>r.id===p.rule_reference&&r.reviewed&&r.kind==='law'))fail('ต้องยืนยันตำแหน่งว่างจริงและหลักเกณฑ์ที่ตรวจแล้ว');j.data.vacancies={value:p.value,vacancy_reference:p.vacancy_reference,rule_reference:p.rule_reference,applies:true};return save(row,j,actor,true,'VACANCIES_SAVED');}
  if(action==='analyze'&&method==='POST'){const k=await knowledge();if(j.data.bundle_fingerprint!==k.summary.fingerprint||j.data.references.some(r=>r.bundle_fingerprint&&r.bundle_fingerprint!==k.summary.fingerprint))fail('ฐานอ้างอิงเปลี่ยน ต้องตรวจแหล่งรุ่นปัจจุบันก่อนวิเคราะห์',409);boundedAppend(j.runs,item({...analyze(j,j.documents,k),input_snapshot:j.data,document_snapshot:j.documents.map(d=>({id:d.id,sha256:d.sha256,version:d.data.version,reviewed:d.data.reviewed,text:d.data.text}))}));return save(row,j,actor,false,'ANALYSIS_RUN');}
  if(action==='drafts'&&method==='POST'){expected(p,j);const texts={};for(const s of sections){if(typeof p.sections?.[s]!=='string'||p.sections[s].length>60000)fail('ข้อความร่างไม่ถูกต้อง');texts[s]=p.sections[s];}let gaps=['ฐานอ้างอิงยังไม่พร้อม ต้องตรวจโดยผู้รับผิดชอบ'];try{const k=await knowledge();gaps=analyze(j,j.documents,k).gaps;}catch{}boundedAppend(j.revisions,item({sections:texts,job_version:j.version,bundle_version:j.data.bundle_version,bundle_fingerprint:j.data.bundle_fingerprint,title:j.data.title,external_case_ref:j.data.external_case_ref,references:[...j.data.references,...j.documents.map(d=>({id:'doc-'+d.id,label:d.name,source_pdf:d.name,reviewed:d.data.reviewed,sha256:d.sha256,document_version:d.data.version,text:d.data.text}))],gaps,created_by:actor.id,template_version:'analysis-web-draft-v1'}));return save(row,j,actor,false,'DRAFT_REVISION_SAVED');}
- if(action==='propose'&&method==='POST'){fail('การเสนอร่าง AI บนเว็บยังไม่เปิดใช้งาน เขียนและส่งออกร่างด้วยตนเองได้',503);}
+ if(action==='propose'&&method==='POST'){
+  expected(p,j);const k=await knowledge();const proposal=await proposeAnalysisSection({job:j,documents:j.documents,knowledge:k,section:p.section,userId:actor.id});
+  boundedAppend(j.proposals,item(proposal));return save(row,j,actor,false,'AI_PROPOSAL_CREATED');
+ }
  if(action==='export'&&method==='POST'){const e=await exportRevision(row,j,p.revision_id,actor);return {export_id:e.id,url:'/api/analysis/jobs/'+row.id+'/export/'+e.id,sha256:e.sha256};}
  if(action==='export'&&method==='GET'){const e=j.exports.find(e=>e.id===parts[3]);if(!e)fail('ไม่พบไฟล์ส่งออก',404);const bytes=await storageRead(e.object_key);if(hash(bytes)!==e.sha256)fail('ไฟล์ส่งออกไม่ผ่านการตรวจความครบถ้วน',503);return new Response(bytes,{headers:{'Content-Type':DOCX,'Content-Disposition':'attachment; filename="analysis-draft.docx"','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});}
  if(action==='attach'&&method==='POST'){
