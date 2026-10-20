@@ -28,7 +28,7 @@ export function RegistryOverview({ title, snapshot, canViewDetails, accent, year
       </div>
     </div>
     <details className="group min-w-0 rounded-2xl border border-white/[0.08] bg-[#131317] px-4 py-1">
-      <summary className="min-h-11 cursor-pointer rounded py-3 text-sm font-bold text-white focus-visible:outline-2 focus-visible:outline-[#c81e2b]">รายละเอียดเรื่องค้าง · {number.format(snapshot.kpis.active)} เรื่อง</summary>
+      <summary className="flex min-h-11 cursor-pointer items-center justify-between rounded py-3 text-sm font-bold text-white transition hover:text-[#d62839] focus-visible:outline-2 focus-visible:outline-[#c81e2b]"><span>รายละเอียดเรื่องค้าง · {number.format(snapshot.kpis.active)} เรื่อง</span><span className="text-xs text-zinc-400 transition-transform duration-200 group-open:rotate-180">▼</span></summary>
       {!canViewDetails ? <p className="mt-4 text-sm text-zinc-400">บัญชีนี้ไม่มีสิทธิ์ดูรายละเอียดเรื่อง</p>
         : snapshot.backlog.cases.length ? <div className="mt-4 space-y-3">{snapshot.backlog.cases.map(item => <article key={item.id} className="min-w-0 rounded-xl border border-white/[0.06] bg-[#17171c] p-4">
           <div className="flex min-w-0 flex-wrap items-start justify-between gap-2"><div className="min-w-0"><p className="text-[11px] text-zinc-400">{accent === 'teal' ? 'ผู้ร้องทุกข์' : 'ผู้อุทธรณ์'}</p><h3 className="mt-0.5 break-words text-base font-bold text-white">{item.petitionerName || 'ยังไม่ระบุชื่อผู้ร้อง'}</h3></div><span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-semibold text-zinc-300"><IconClockHour4 size={14} aria-hidden="true" />ยังไม่เสร็จสิ้น</span></div>
@@ -37,7 +37,7 @@ export function RegistryOverview({ title, snapshot, canViewDetails, accent, year
         </article>)}</div> : <p className="mt-4 rounded-xl bg-[#17171c] p-5 text-sm font-medium text-zinc-400">ไม่มีเรื่องค้างในทะเบียนนี้</p>}
     </details>
     <details data-testid={`officer-performance-${accent}`} className="group min-w-0 rounded-2xl border border-white/[0.08] bg-[#131317] px-4 py-1">
-      <summary className="min-h-11 cursor-pointer rounded py-3 text-sm font-bold text-white focus-visible:outline-2 focus-visible:outline-[#c81e2b]">ความรับผิดชอบและความสำเร็จรายนิติกร · {title}</summary>
+      <summary className="flex min-h-11 cursor-pointer items-center justify-between rounded py-3 text-sm font-bold text-white transition hover:text-[#d62839] focus-visible:outline-2 focus-visible:outline-[#c81e2b]"><span>ความรับผิดชอบและความสำเร็จรายนิติกร · {title}</span><span className="text-xs text-zinc-400 transition-transform duration-200 group-open:rotate-180">▼</span></summary>
       <div className="mb-4 mt-4 space-y-3">
         <p className="text-xs leading-5 text-zinc-400">% สำเร็จ = เสร็จแล้ว ÷ รับทั้งหมด × 100 · เรื่องร่วมคิดหนึ่งเรื่องต่อผู้รับผิดชอบแต่ละคน · ยศและชื่อสะกดใกล้เคียงถูกรวมเมื่อระบุตัวบุคคลได้ ไม่ใช่คะแนนความเร็ว</p>
         <OfficerPerformance title={title} snapshot={snapshot} accent={accent} scaleMax={responsibilityMax} />

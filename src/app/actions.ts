@@ -24,7 +24,13 @@ export async function updateCaseStatus(caseId: string, status: string, userId?: 
     afterValue: status,
   });
 
+  revalidatePath("/dashboard");
+  revalidatePath("/cases");
+  revalidatePath("/dashboard");
+  revalidatePath("/cases");
   revalidatePath(`/cases/${caseId}`);
+  revalidatePath("/");
+  revalidatePath("/");
   return updatedCase;
 }
 

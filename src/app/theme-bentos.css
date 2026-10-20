@@ -617,3 +617,401 @@ html:not([data-theme="dark"]) .badge-police-red svg {
   color: #ffffff !important;
   stroke: #ffffff !important;
 }
+
+
+/* ==========================================================================
+   5. LIGHT MODE STYLES FOR ANALYSIS WORKBENCH (/analysis)
+   ========================================================================== */
+html[data-theme="light"] .analysis-workbench,
+html:not([data-theme="dark"]) .analysis-workbench {
+  --navy: #09090b !important;
+  --muted: #64748b !important;
+  --line: #e2e8f0 !important;
+  --warn: #fef2f2 !important;
+  background-color: #f8fafc !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .analysis-workbench h1,
+html[data-theme="light"] .analysis-workbench h2,
+html[data-theme="light"] .analysis-workbench h3,
+html[data-theme="light"] .analysis-workbench h4,
+html:not([data-theme="dark"]) .analysis-workbench h1,
+html:not([data-theme="dark"]) .analysis-workbench h2,
+html:not([data-theme="dark"]) .analysis-workbench h3,
+html:not([data-theme="dark"]) .analysis-workbench h4 {
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .analysis-workbench p,
+html:not([data-theme="dark"]) .analysis-workbench p {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .muted,
+html:not([data-theme="dark"]) .analysis-workbench .muted,
+html[data-theme="light"] .analysis-workbench small,
+html:not([data-theme="dark"]) .analysis-workbench small {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .app-header,
+html:not([data-theme="dark"]) .analysis-workbench .app-header {
+  border-bottom-color: #e2e8f0 !important;
+  background-color: #ffffff !important;
+}
+
+html[data-theme="light"] .analysis-workbench .outline,
+html:not([data-theme="dark"]) .analysis-workbench .outline {
+  background-color: #ffffff !important;
+  color: #09090b !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .outline-link,
+html:not([data-theme="dark"]) .analysis-workbench .outline-link {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .outline-link:hover,
+html:not([data-theme="dark"]) .analysis-workbench .outline-link:hover {
+  border-color: #b91c1c !important;
+  color: #991b1b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .workflow-pipeline,
+html:not([data-theme="dark"]) .analysis-workbench .workflow-pipeline {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .analysis-workbench .stage-step,
+html:not([data-theme="dark"]) .analysis-workbench .stage-step {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .stage-step small,
+html:not([data-theme="dark"]) .analysis-workbench .stage-step small {
+  background-color: #e2e8f0 !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .stage-step.completed,
+html:not([data-theme="dark"]) .analysis-workbench .stage-step.completed {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .stage-step.completed small,
+html:not([data-theme="dark"]) .analysis-workbench .stage-step.completed small {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .analysis-workbench .workspace-bar,
+html:not([data-theme="dark"]) .analysis-workbench .workspace-bar {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .analysis-workbench .intake-readiness,
+html:not([data-theme="dark"]) .analysis-workbench .intake-readiness {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .check-pill,
+html:not([data-theme="dark"]) .analysis-workbench .check-pill {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .check-pill.done,
+html:not([data-theme="dark"]) .analysis-workbench .check-pill.done {
+  background-color: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #047857 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .pill-btn,
+html:not([data-theme="dark"]) .analysis-workbench .pill-btn {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .kpi-chip,
+html:not([data-theme="dark"]) .analysis-workbench .kpi-chip {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .analysis-workbench .kpi-chip strong,
+html:not([data-theme="dark"]) .analysis-workbench .kpi-chip strong {
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .chip-btn,
+html:not([data-theme="dark"]) .analysis-workbench .chip-btn {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .cite-chip,
+html:not([data-theme="dark"]) .analysis-workbench .cite-chip {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+  color: #991b1b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tabs,
+html:not([data-theme="dark"]) .analysis-workbench .tabs {
+  border-bottom-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tabs button,
+html:not([data-theme="dark"]) .analysis-workbench .tabs button {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tabs button.active,
+html:not([data-theme="dark"]) .analysis-workbench .tabs button.active {
+  color: #09090b !important;
+  border-bottom-color: #c81e2b !important;
+}
+
+html[data-theme="light"] .analysis-workbench input:not([type=checkbox]):not([type=file]),
+html:not([data-theme="dark"]) .analysis-workbench input:not([type=checkbox]):not([type=file]),
+html[data-theme="light"] .analysis-workbench select,
+html:not([data-theme="dark"]) .analysis-workbench select,
+html[data-theme="light"] .analysis-workbench textarea,
+html:not([data-theme="dark"]) .analysis-workbench textarea {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .source-row,
+html:not([data-theme="dark"]) .analysis-workbench .source-row {
+  background-color: #ffffff !important;
+  border-bottom-color: #e2e8f0 !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .source-row.selected,
+html:not([data-theme="dark"]) .analysis-workbench .source-row.selected {
+  background-color: #fef2f2 !important;
+  border-left-color: #c81e2b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .review-form,
+html:not([data-theme="dark"]) .analysis-workbench .review-form {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .proposal pre,
+html:not([data-theme="dark"]) .analysis-workbench .proposal pre {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .section-nav button,
+html:not([data-theme="dark"]) .analysis-workbench .section-nav button {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .section-nav button.active,
+html:not([data-theme="dark"]) .analysis-workbench .section-nav button.active {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border-left-color: #c81e2b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .warning,
+html:not([data-theme="dark"]) .analysis-workbench .warning,
+html[data-theme="light"] .analysis-workbench .gap-list,
+html:not([data-theme="dark"]) .analysis-workbench .gap-list {
+  background-color: #fef2f2 !important;
+  border-color: rgba(200, 30, 43, 0.3) !important;
+  color: #991b1b !important;
+}
+
+html[data-theme="light"] .analysis-workbench table th,
+html:not([data-theme="dark"]) .analysis-workbench table th {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .analysis-workbench table td,
+html:not([data-theme="dark"]) .analysis-workbench table td {
+  border-bottom-color: #e2e8f0 !important;
+  color: #09090b !important;
+}
+
+/* ==========================================================================
+   6. GLOBAL DARK MODE STYLES ACROSS ALL TABS (/search, /library, /data-quality, /cases/[id], etc.)
+   ========================================================================== */
+html[data-theme="dark"] .bg-white,
+html.dark .bg-white {
+  background-color: #121215 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .bg-slate-50,
+html.dark .bg-slate-50,
+html[data-theme="dark"] .bg-gray-50,
+html.dark .bg-gray-50,
+html[data-theme="dark"] .bg-zinc-50,
+html.dark .bg-zinc-50 {
+  background-color: #16161b !important;
+}
+
+html[data-theme="dark"] .bg-slate-100,
+html.dark .bg-slate-100,
+html[data-theme="dark"] .bg-gray-100,
+html.dark .bg-gray-100 {
+  background-color: #1c1c22 !important;
+}
+
+html[data-theme="dark"] .border-slate-200,
+html.dark .border-slate-200,
+html[data-theme="dark"] .border-slate-300,
+html.dark .border-slate-300,
+html[data-theme="dark"] .border-gray-200,
+html.dark .border-gray-200,
+html[data-theme="dark"] .border-gray-300,
+html.dark .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+html[data-theme="dark"] .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .text-slate-900,
+html.dark .text-slate-900,
+html[data-theme="dark"] .text-gray-900,
+html.dark .text-gray-900 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .text-slate-800,
+html.dark .text-slate-800,
+html[data-theme="dark"] .text-gray-800,
+html.dark .text-gray-800 {
+  color: #f4f4f5 !important;
+}
+
+html[data-theme="dark"] .text-slate-700,
+html.dark .text-slate-700,
+html[data-theme="dark"] .text-gray-700,
+html.dark .text-gray-700 {
+  color: #d4d4d8 !important;
+}
+
+html[data-theme="dark"] .text-slate-600,
+html.dark .text-slate-600,
+html[data-theme="dark"] .text-slate-500,
+html.dark .text-slate-500,
+html[data-theme="dark"] .text-gray-500,
+html.dark .text-gray-500 {
+  color: #a1a1aa !important;
+}
+
+html[data-theme="dark"] .text-slate-400,
+html.dark .text-slate-400,
+html[data-theme="dark"] .text-gray-400,
+html.dark .text-gray-400 {
+  color: #71717a !important;
+}
+
+html[data-theme="dark"] .ring-slate-300,
+html.dark .ring-slate-300,
+html[data-theme="dark"] .ring-gray-300,
+html.dark .ring-gray-300 {
+  --tw-ring-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Soft colored alert banners in Dark Mode */
+html[data-theme="dark"] .bg-amber-50,
+html.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  color: #fcd34d !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+html[data-theme="dark"] .bg-blue-50,
+html.dark .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  color: #93c5fd !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+html[data-theme="dark"] .bg-teal-50,
+html.dark .bg-teal-50 {
+  background-color: rgba(20, 184, 166, 0.12) !important;
+  color: #5eead4 !important;
+  border-color: rgba(20, 184, 166, 0.3) !important;
+}
+
+html[data-theme="dark"] .bg-red-50,
+html.dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+html[data-theme="dark"] .bg-emerald-50,
+html.dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Fix text contrast in soft alerts */
+html[data-theme="dark"] .text-amber-800,
+html.dark .text-amber-800,
+html[data-theme="dark"] .text-amber-700,
+html.dark .text-amber-700 {
+  color: #fcd34d !important;
+}
+
+html[data-theme="dark"] .text-blue-800,
+html.dark .text-blue-800,
+html[data-theme="dark"] .text-blue-700,
+html.dark .text-blue-700 {
+  color: #93c5fd !important;
+}
+
+html[data-theme="dark"] .text-red-800,
+html.dark .text-red-800,
+html[data-theme="dark"] .text-red-700,
+html.dark .text-red-700 {
+  color: #fca5a5 !important;
+}
+
+html[data-theme="dark"] .text-teal-800,
+html.dark .text-teal-800,
+html[data-theme="dark"] .text-teal-700,
+html.dark .text-teal-700 {
+  color: #5eead4 !important;
+}

@@ -155,8 +155,10 @@ export async function updateCase(caseId: string, data: any) {
       });
     }
 
+    revalidatePath("/dashboard");
     revalidatePath("/cases");
     revalidatePath(`/cases/${caseId}`);
+    revalidatePath("/");
 
     return updatedCase;
   });

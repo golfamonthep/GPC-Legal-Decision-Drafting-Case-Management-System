@@ -10,6 +10,7 @@ import { parseDashboardFilters } from "@/lib/dashboard/metrics";
 import { RegistryOverview } from "@/components/dashboard/RegistryOverview";
 import { DashboardInteractiveHub } from "@/components/dashboard/DashboardInteractiveHub";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DashboardRefreshButton } from "@/components/dashboard/DashboardRefreshButton";
 import {
   OWNER_EMBLEM,
   OWNER_NAME,
@@ -188,13 +189,7 @@ export default async function DashboardPage({
                 </button>
               </form>
               <ThemeToggle />
-              <Link
-                href={currentHref}
-                title="รีเฟรชข้อมูล"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#121215] text-zinc-300 transition hover:border-white/20 hover:text-white"
-              >
-                <RefreshCw size={15} aria-hidden="true" />
-              </Link>
+              <DashboardRefreshButton />
               {canUseAnalysis && (
                 <Link
                   href="/analysis"
@@ -276,13 +271,13 @@ export default async function DashboardPage({
                 </div>
 
                 {/* Front Active Fanned Card 1 */}
-                <div className="cyber-insight-front relative z-10 w-full sm:w-[76%] sm:-rotate-[2deg] rounded-[1.5rem] p-6 transition-transform duration-300 hover:rotate-0">
+                <Link href="/cases" title="คลิกเพื่อดูรายการคดีทั้งหมด" className="cyber-insight-front group/card relative z-10 block w-full sm:w-[76%] sm:-rotate-[2deg] rounded-[1.5rem] p-6 transition-transform duration-300 hover:rotate-0 hover:shadow-2xl cursor-pointer text-inherit">
                   <div className="flex items-center justify-between text-xs font-medium text-zinc-400">
                     <span className="inline-flex items-center gap-1.5">
                       <Zap size={13} className="text-[#dc2626]" aria-hidden="true" />
                       <span>Account Insights</span>
                     </span>
-                    <ChevronsRight size={16} className="text-[#dc2626]" aria-hidden="true" />
+                    <ChevronsRight size={16} className="text-[#dc2626] transition-transform duration-200 group-hover/card:translate-x-1" aria-hidden="true" />
                   </div>
 
                   <p className="mt-4 text-base font-normal leading-relaxed text-zinc-300 sm:text-[19px] sm:leading-[1.45]">
@@ -309,7 +304,7 @@ export default async function DashboardPage({
                         : "ล่าสุด"}
                     </span>
                   </div>
-                </div>
+                </Link>
               </div>
             </div>
           </div>

@@ -2,6 +2,20 @@
 
 ## สรุปสถานะระบบล่าสุด (2026-10-20)
 
+- **แก้ไขสีเพี้ยนและสลับโหมด Dark/Light สมบูรณ์ทั่วทุกแท็บเมนู (Theme Consistency Across All Tabs)**:
+  - **โหมดมืด รายการคดี (`/cases`)**: ปรับแต่ง `.gpc-tabler` ให้รองรับ Dark Mode เต็มรูปแบบ ทั้งการ์ด (`.card`), ส่วนหัวทะเบียน (`.case-registry-header`), ตารางคดี (`.case-table`), รายการลิงก์ข้าม (`.case-registry-links`), ปุ่มควบคุม (`.btn:not(.btn-primary)`), ช่องกรอก (`.form-control`, `.form-select`) และป้ายสถานะ (`CaseCompletionBadge`) ให้แสดงผลในโทน CYBER Dark (#121215, #16161b, ขอบ rgba(255,255,255,0.08)) สบายตา ไม่สว่างจ้า
+  - **โหมดสว่าง วิเคราะห์และร่างคำวินิจฉัย (`/analysis`)**: เพิ่มสไตล์ Light Mode ให้กับ `.analysis-workbench` ปรับพื้นหลังเป็น `#f8fafc` / `#ffffff`, ตัวอักษรสีดำเข้ม `#09090b`, การ์ดและอินพุตขอบ `#cbd5e1`/`#e2e8f0`, สเต็ปไปป์ไลน์, ชิป KPI และเมนูแท็บให้เป็นโทนสว่างนุ่มนวล กลมกลืนกับ Shell ของระบบ
+  - **ปรับแต่งทุกแท็บเมนู (`/search`, `/library`, `/data-quality`, `/registry`, `/admin/users`, `/upload`, `/admin/system`, `/cases/[id]`)**: กำหนดสไตล์ใน `theme-bentos.css` สำหรับ Dark Mode ให้ครอบคลุมคลาส `.bg-white`, `.border-slate-*`, `.text-slate-*`, `.bg-slate-*`, ตาราง และฟอร์ม ทำให้ทุกเมนูสลับธีมได้อย่างสมบูรณ์ ไร้จุดสีเพี้ยน
+- **แก้ไขปัญหาอัปเดตข้อมูลคดีแล้วแดชบอร์ดไม่อัปเดต (Dashboard Real-time Revalidation & Auto-refresh)**:
+  - แก้ไข `updateCase` (`caseActions.ts`) และ `updateCaseStatus` (`actions.ts`) ให้เรียก `revalidatePath("/dashboard")` และ `revalidatePath("/")`
+  - แก้ไข `CaseDataRefresh.tsx` ในจังหวะ `onLocalSave` และ `onExternalChange` ให้เรียก `refresh()` ทันทีเพื่อดึงข้อมูลล่าสุดของ Server Components
+  - เพิ่มปุ่มรีเฟรชข้อมูลแดชบอร์ด (`DashboardRefreshButton`) บน Dashboard Header พร้อมไอคอนหมุนแสดงสถานะ
+- **เพิ่มความสามารถ Interactive บนแดชบอร์ด (Interactive Dashboard Cards & Charts)**:
+  - การ์ด Account Insights (3D Fanned Card) สามารถคลิกเพื่อลิงก์ไปยังหน้ารายการคดี (`/cases`)
+  - กราฟแท่งสถานะตามปีเลขดำ (`YearOutcomeBars`) คลิกที่แท่งกราฟเพื่อเปิดดูคดีตามปี (`/cases?type=...&year=...`)
+  - เรื่องค้างแยกตามนิติกร (`RankedBars`) คลิกที่แถบนิติกรเพื่อดูรายการคดีค้างของนิติกรผู้นั้น (`/cases?legalOfficer=...&completionStatus=open`)
+  - กราฟโดนัท (`CompletionRing`) คลิกข้อความกำกับเพื่อดูคดีที่เสร็จสิ้น/ยังไม่เสร็จสิ้น
+  - เพิ่มตัวบ่งชี้การเปิด/ปิด (Chevron indicator) บน `<details>` ใน RegistryOverview ให้ชัดเจน
 - **ปรับแต่งกราฟใน Dark Mode ให้กลมกลืนเนียนตาเหมือนต้นฉบับ (Harmonious Restrained Dark Mode Charts)**:
   - แก้ไขปัญหาแทร็กรางกราฟและแท่งข้อมูลรองที่สว่างโดดใน Dark Mode โดยเปลี่ยนมาใช้ระบบ CSS Class Tokens เฉพาะ (`.cyber-chart-track`, `.cyber-bar-secondary`, `.cyber-gauge-track`, `.cyber-legend-secondary`)
   - ใน Dark Mode: รางแท่งกราฟใช้สีมืดโปร่งแสงนุ่มนวล `rgba(255, 255, 255, 0.05)` ขอบบางเบา `rgba(255, 255, 255, 0.04)`, แท่งข้อมูลรองเป็นสีเทาเข้มกลมกลืน `rgba(255, 255, 255, 0.12)`, วงแหวนแทร็กโดนัท `rgba(255, 255, 255, 0.08)` ไม่สว่างจ้าหรือเด่นเกินไป กลมกลืนเนียนตาตามอัตลักษณ์ต้นฉบับ CYBER Dark Mode

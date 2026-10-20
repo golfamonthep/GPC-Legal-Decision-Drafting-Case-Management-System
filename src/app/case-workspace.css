@@ -62,3 +62,178 @@
   .gpc-tabler .case-workspace-header h1 { font-size: 1.45rem; }
   .gpc-tabler .case-editor-grid { grid-template-columns: minmax(0,1fr); }
 }
+
+
+/* ==========================================================================
+   Tabler Dark Mode Styles for Case Workspace (/cases)
+   ========================================================================== */
+html[data-theme="dark"] .gpc-tabler,
+html.dark .gpc-tabler {
+  color-scheme: dark;
+  --tblr-body-color: #e4e4e7;
+  color: #e4e4e7;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-workspace-header h1,
+html.dark .gpc-tabler .case-workspace-header h1 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-workspace-header p,
+html.dark .gpc-tabler .case-workspace-header p {
+  color: #a1a1aa !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .card,
+html.dark .gpc-tabler .card {
+  background-color: #121215 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5) !important;
+  color: #e4e4e7 !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-registry-header,
+html.dark .gpc-tabler .case-registry-header {
+  background: rgba(7, 135, 124, 0.15) !important;
+  border-left-color: #14b8a6 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-registry-appeal .case-registry-header,
+html.dark .gpc-tabler .case-registry-appeal .case-registry-header {
+  background: rgba(53, 101, 188, 0.18) !important;
+  border-left-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-registry-header h2,
+html.dark .gpc-tabler .case-registry-header h2 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-registry-links a,
+html.dark .gpc-tabler .case-registry-links a {
+  background: #17171b !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e4e4e7 !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-registry-links a:hover,
+html.dark .gpc-tabler .case-registry-links a:hover {
+  background: #1f1f26 !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-table thead th,
+html.dark .gpc-tabler .case-table thead th {
+  background: #16161b !important;
+  color: #a1a1aa !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-table td,
+html.dark .gpc-tabler .case-table td {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  color: #d4d4d8 !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-table tr:hover,
+html.dark .gpc-tabler .case-table tr:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-person strong,
+html.dark .gpc-tabler .case-person strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-party-label,
+html.dark .gpc-tabler .case-party-label {
+  color: #a1a1aa !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-number-link,
+html.dark .gpc-tabler .case-number-link {
+  color: #60a5fa !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-red,
+html.dark .gpc-tabler .case-red {
+  color: #f87171 !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-subject,
+html.dark .gpc-tabler .case-subject {
+  color: #a1a1aa !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-note-preview,
+html.dark .gpc-tabler .case-note-preview {
+  color: #d4d4d8 !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-more summary,
+html.dark .gpc-tabler .case-more summary {
+  color: #60a5fa !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-more p,
+html.dark .gpc-tabler .case-more p {
+  color: #e4e4e7 !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-officer,
+html.dark .gpc-tabler .case-officer {
+  color: #a1a1aa !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-missing,
+html.dark .gpc-tabler .case-missing {
+  color: #71717a !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-state-complete,
+html.dark .gpc-tabler .case-state-complete {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #6ee7b7 !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .case-state-pending,
+html.dark .gpc-tabler .case-state-pending {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #93c5fd !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .btn:not(.btn-primary),
+html.dark .gpc-tabler .btn:not(.btn-primary) {
+  background: #17171b !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e4e4e7 !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .btn:not(.btn-primary):hover,
+html.dark .gpc-tabler .btn:not(.btn-primary):hover {
+  background: #24242d !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .form-control,
+html.dark .gpc-tabler .form-control,
+html[data-theme="dark"] .gpc-tabler .form-select,
+html.dark .gpc-tabler .form-select {
+  background: #16161a !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .form-label,
+html.dark .gpc-tabler .form-label {
+  color: #e4e4e7 !important;
+}
+
+html[data-theme="dark"] .gpc-tabler .text-secondary,
+html.dark .gpc-tabler .text-secondary {
+  color: #a1a1aa !important;
+}

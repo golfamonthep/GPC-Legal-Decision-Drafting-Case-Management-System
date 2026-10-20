@@ -55,7 +55,7 @@ export function CaseDataRefresh({ enabled, initialRevision }: { enabled: boolean
     };
     const onVisibility = () => { if (!document.hidden) void check(); };
     const onLocalSave = () => {
-      previousRevision.current = null;
+      refresh();
       // Wait for controlled fields to render the canonical values returned by the server.
       window.requestAnimationFrame(() => {
         if (!active) return;
@@ -63,7 +63,7 @@ export function CaseDataRefresh({ enabled, initialRevision }: { enabled: boolean
         void check();
       });
     };
-    const onExternalChange = () => { void check(); };
+    const onExternalChange = () => { refresh(); void check(); };
     document.addEventListener('focusin', onFocus, true);
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('gpc:case-saved', onLocalSave);
