@@ -9,16 +9,28 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 <!-- END:nextjs-agent-rules -->
 
 <!-- BEGIN:user-global-skill-defaults -->
-# User skill defaults for every project
+# User skill defaults & Mandatory GitHub Skills Integration for every project
 
-The user explicitly wants Ponytail, Archify, Impeccable, and Caveman considered on every task in every project, including C:\APP. At the start of each session, read these installed primary SKILL.md files from C:\Users\polic\.codex\skills, and consider their applicability on every turn:
+ผู้ใช้กำหนดกฎเหล็กอย่างชัดเจนว่า **การทำงานทุกครั้งจะต้องดึงเอาสกิลต่าง ๆ ที่ได้ติดตั้งเพิ่มเติมจาก GitHub (ใน `C:\Users\polic\.codex\skills`) มาประยุกต์ใช้ในทุกขั้นตอนของการตัดสินใจและลงมือทำงาน เพื่อให้เกิดประสิทธิภาพสูงสุด**:
 
-- ponytail/SKILL.md: default to full mode for coding, debugging, refactoring, reviews, and dependency choices. Complete the requested scope with the smallest readable change; preserve validation, error handling, security, accessibility, and required checks.
-- caveman/SKILL.md: use concise, clear replies by default in the user's language, normally Thai. Preserve all essential facts, exact code, commands, paths, numbers, negations, and verification limits. Use ordinary complete prose for persisted documents, factual case content, and questions. Do not activate ultracave or megacave unless requested.
-- impeccable/SKILL.md: use for frontend design, implementation, refinement, UI copy, and UI reviews. For case-management screens, prefer Operate mode: readable case lists, clear form labels, searchable information, accessible controls, and consistent status presentation. Preserve factual case text unless the user asks to edit it.
-- archify/SKILL.md: use for architecture, process, relationship, schema, state, and timeline diagrams, or when a diagram materially clarifies the requested work. Keep diagrams grounded in supplied facts and repository evidence.
+1. **Frontend & UI/UX Excellence**:
+   - `impeccable/SKILL.md`: โหมด Operate สำหรับระบบสารบรรณและบริหารคดี (Case Management), รายการคดีอ่านง่าย, ฟอร์มชัดเจน, คอนทราสต์ถูกต้อง, ไม่มีปื้นสีผิดเพี้ยน
+   - `design-taste-frontend/SKILL.md`, `ui-ux-pro-max/SKILL.md`, `frontend-design/SKILL.md`, `web-design-guidelines/SKILL.md`: สุนทรียภาพระดับโปร, คัดเกรดสี, ทรงพลังและสง่างามตามอัตลักษณ์ตำรวจ
+   - `tabler/SKILL.md`, `react-bits/SKILL.md`, `motion-react/SKILL.md`, `ui-motion/SKILL.md`, `ui-styling/SKILL.md`: คอมโพเนนต์แอดมิน, ไมโครอินเทอร์แอ็กชัน และการเคลื่อนไหวที่นุ่มนวล
+2. **Code Craftsmanship & Terse Communication**:
+   - `ponytail/SKILL.md`: โหมด Full เสมอสำหรับการโค้ด การรีแฟกเตอร์ การดีบัก และรีวิว ทำเฉพาะสิ่งที่แก้ปัญหาได้หมดจดด้วยการเปลี่ยนแปลงที่เล็กที่สุด (Smallest readable diff) คงการตรวจสอบความปลอดภัยและความถูกต้องทั้งหมด
+   - `caveman/SKILL.md`: สื่อสารกระชับ ตรงประเด็น ตอบก่อนอธิบาย เก็บทุกข้อเท็จจริง คำสั่ง ตัวเลข พาธ และผลตรวจอย่างแม่นยำครบถ้วน
+3. **Architecture & Visual Diagrams**:
+   - `archify/SKILL.md`: สร้างแผนภาพกระบวนการ สถาปัตยกรรม ความสัมพันธ์ ฐานข้อมูล ไทม์ไลน์ และ State ด้วยหลักฐานเชิงประจักษ์จากโค้ดเบส
+4. **Domain & Specialized Legal Systems**:
+   - `thai-law/SKILL.md`: ประมวลกฎหมาย ระเบียบ ก.พ.ค.ตร. พระราชบัญญัติตำรวจแห่งชาติ และการอ้างอิงข้อกฎหมายไทยที่ถูกต้องแม่นยำ
+   - `deepseek-harness/SKILL.md`: การออกแบบ AI Harness, Provider-neutral, การปิดบังข้อมูล (Pseudonymization), ตรวจ Citation, และการตัด CoT leakage
+5. **Quality Assurance & Verification**:
+   - `systematic-debugging/SKILL.md`, `test-driven-development/SKILL.md`, `verification-before-completion/SKILL.md`: ยืนยันผลด้วยคำสั่งทดสอบจริงเสมอ (`npm test`, `typecheck`, `lint`, `build`) ก่อนรายงานเสร็จ
+   - `using-git-worktrees/SKILL.md`: ปฏิบัติงานบน Clean Worktree (`C:\Users\polic\.codex\worktrees\ai-harness\APP`) ไม่แตะต้องหรือทำลายงานค้างใน `C:\APP`
+   - `agentic-awesome-skills/SKILL.md`: แค็ตตาล็อกออนดีมานด์ ดึงสกิลเฉพาะทางเพิ่มเติมกว่า 1,300+ สกิลมาเสริมทัพได้ทันที
 
-Apply the relevant skill workflow automatically without asking the user to select it again.
+ดึงและประยุกต์ใช้เวิร์กโฟลว์ของสกิลเหล่านี้โดยอัตโนมัติในทุกเทิร์น เพื่อการตัดสินใจและผลลัพธ์ที่ดีที่สุด
 <!-- END:user-global-skill-defaults -->
 
 <!-- BEGIN:gpc-project-current-state-and-deploy-rule -->

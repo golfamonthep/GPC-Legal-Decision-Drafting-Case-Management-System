@@ -5,6 +5,7 @@
 > 2. **อัปเดตไฟล์ความจำหลักทุกครั้ง**: เมื่อทำงานเสร็จ ต้องอัปเดต `SKILL.md`, `PROJECT_STATE.md` และ `AGENTS.md` ให้สะท้อนสถานะล่าสุดเสมอ
 > 3. **Push GitHub + Deploy Vercel อัตโนมัติทุกครั้งเมื่อจบงาน**: เมื่อตรวจผ่าน (`npm test`, `npm run typecheck`, `npm run lint`, `npm run build`) แล้ว **ต้อง commit และ push ขึ้น GitHub (`origin/main` และ branch งานปัจจุบัน) เพื่อให้ Vercel Deploy อัปเดตหน้าเว็บไซต์ทันทีทุกครั้ง** โดยไม่ต้องรอให้ผู้ใช้สั่งซ้ำ
 > 4. **ห้าม reset หรือเขียนทับงานค้างใน `C:\APP`**: การทำงาน Git/Push ให้ทำผ่าน clean worktree (`C:\Users\polic\.codex\worktrees\ai-harness\APP`) และซิงก์เฉพาะไฟล์ที่เกี่ยวข้องกลับไปยัง `C:\APP` อย่างระมัดระวัง
+> 5. **ดึงสกิลที่ติดตั้งเพิ่มเติมจาก GitHub มาใช้ทุกครั้ง (Mandatory GitHub Installed Skills Integration)**: การทำงานทุกครั้งจะต้องดึงเอาสกิลต่าง ๆ ที่ได้ติดตั้งเพิ่มเติมจาก GitHub (ใน `C:\Users\polic\.codex\skills` เช่น `impeccable`, `design-taste-frontend`, `ui-ux-pro-max`, `ponytail`, `caveman`, `archify`, `thai-law`, `deepseek-harness`, `tabler`, `react-bits`, `motion-react`, `systematic-debugging`, `verification-before-completion`, `agentic-awesome-skills` ฯลฯ) มาประยุกต์ใช้ในการตัดสินใจและลงมือปฏิบัติงานทุกครั้ง เพื่อให้ผลงานมีประสิทธิภาพและคุณภาพสูงสุด
 
 ### สรุปสถานะระบบล่าสุด (2026-10-20)
 
