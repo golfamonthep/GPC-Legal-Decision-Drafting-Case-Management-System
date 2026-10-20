@@ -72,7 +72,7 @@ function LoginContent() {
             fill
             sizes="128px"
             priority
-            className="scale-[1.45] object-cover object-[50%_18%]"
+            className="rounded-full object-cover object-[50%_15%]"
           />
         </div>
         <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[#121215] px-3.5 py-1 text-[11px] font-medium text-zinc-300">

@@ -1,8 +1,31 @@
-## Restrained CYBER Dark Theme, Person-Only Police Red Portrait, AI Harness & Analysis Workbench — 2026-10-19
+﻿## Refined CYBER Tablet Alignment & Cutout Update — 2026-10-20
 
-- **System Identity / Branding**: Updated across the entire web application from `ก.พ.ค.ตร.` to **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`** (`src/components/Sidebar.tsx`, `src/components/TopHeader.tsx`, `src/app/dashboard/page.tsx`, `src/components/analysis/Workbench.jsx`, `src/app/login/page.tsx`, `src/app/layout.tsx`). Per user instruction, no separate `/owner` tab or route is created.
+- **System Identity / Branding**: Updated across the entire web application to **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.** (src/components/Sidebar.tsx, src/components/TopHeader.tsx, src/app/dashboard/page.tsx, src/components/analysis/Workbench.jsx, src/app/login/page.tsx, src/app/layout.tsx). Strictly no separate /owner tab or route per user instruction.
+- **Hero Section CYBER Tablet Layout (media_1792477952073_1dbddec9.png)**:
+  - Removed cluttering hero left identity box to match the clean CYBER tablet template: left column now has clean typography (Data Based on all registries, Dashboard Overview, พล.ต.อ.วิเชียร พจน์โพธิ์ศรี · กรรมการ ก.พ.ค.ตร.) and right column has the 3D fanned Account Insights cards with bottom-center ambient Police Red glow.
+- **Strict Typography Hierarchy**:
+  - Primary / bold words / KPI numbers: pure crisp white (#ffffff).
+  - Secondary text / descriptions: soft white / light grey (#a1a1aa / 	ext-zinc-300).
+  - Axis / micro text: muted grey (#71717a).
+  - Zero pink or red font colors used in content.
+- **Person-Only Cutout Portrait on Solid Police Red Background (public/owner/wichian-studio-red.jpg & public/owner/wichian-cutout.png)**:
+  - Segmented exclusively the person silhouette of **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี** (removing all wall background, emblem, and wall lettering) with smooth anatomical shoulder and hair contour blending over solid Police Red (#991b1b).
+  - Displayed exclusively in the top-right circular avatar and sidebar header profile.
+- **Verification**:
+  - Main web app 
+pm test: **83/83 passed**
+  - nalysis-app tests: **18/18 passed**
+  - 
+pm run typecheck & 
+pm run lint: **0 errors**
+  - 
+pm run build: **35/35 routes passed**
+
+## Restrained CYBER Dark Theme, Person-Only Police Red Portrait, AI Harness & Analysis Workbench โ€” 2026-10-19
+
+- **System Identity / Branding**: Updated across the entire web application from `เธ.เธ.เธ.เธ•เธฃ.` to **`เธเธฅ.เธ•.เธญ.เธงเธดเน€เธเธตเธขเธฃ เธเธเธเนเนเธเธเธดเนเธจเธฃเธต เธเธฃเธฃเธกเธเธฒเธฃ เธ.เธ.เธ.เธ•เธฃ.`** (`src/components/Sidebar.tsx`, `src/components/TopHeader.tsx`, `src/app/dashboard/page.tsx`, `src/components/analysis/Workbench.jsx`, `src/app/login/page.tsx`, `src/app/layout.tsx`). Per user instruction, no separate `/owner` tab or route is created.
 - **Person-Only Cutout Portrait on Police Red Background (`public/owner/wichian-studio-red.jpg` & `public/owner/wichian-cutout.png`)**:
-  - Segmented only the person silhouette of **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี** (removing the background wall, emblem, and wall lettering) and composited him over a clean studio Police Red background (`#991b1b` → `#4c080d`) matching the website's Police Red accent (`src/lib/owner.ts`).
+  - Segmented only the person silhouette of **เธเธฅ.เธ•.เธญ.เธงเธดเน€เธเธตเธขเธฃ เธเธเธเนเนเธเธเธดเนเธจเธฃเธต** (removing the background wall, emblem, and wall lettering) and composited him over a clean studio Police Red background (`#991b1b` โ’ `#4c080d`) matching the website's Police Red accent (`src/lib/owner.ts`).
 - **Restrained CYBER Dark Charcoal Theme (`src/app/theme-bentos.css`, `DashboardInteractiveHub.tsx`, `BacklogCharts.tsx`, `OfficerPerformance.tsx`, `RegistryOverview.tsx`)**:
   - Calm matte dark charcoal canvas (`#0a0a0c`) and card surfaces (`#121215`, `#131317`) with thin neutral grey borders (`rgba(255,255,255,0.08)`).
   - **Typography Hierarchy**: Crisp pure white (`#ffffff`, bold) for headings, bold words, and KPI numbers; soft white / light grey (`#a1a1aa`) for secondary descriptions and labels; muted grey (`#71717a`) for axis labels and notes.
@@ -22,7 +45,7 @@
 - **Mandatory End-of-Task Workflow**:
   - Always update `SKILL.md`, `PROJECT_STATE.md`, and `AGENTS.md`, then commit and push to GitHub (`origin/main` and active branch) so Vercel automatically deploys and updates the live website at the end of every task.
 
-## Tabler case workflow — 2026-10-14 (release candidate)
+## Tabler case workflow โ€” 2026-10-14 (release candidate)
 
 Base main297962c/PR22 WAS merged and deployed to original GPC Production. Older candidate/blocked frontend statements below are historical. Last verified snapshot remains216=168complete+48pending (complaint107/97/10; appeal109/71/38). This UI task does NOT import new files, mutate live records, run DDL/reset/seed, change auth or complete the separate private Storage/AI workflow.
 
@@ -32,45 +55,45 @@ Verification:50 tests, Prisma validate, TypeScript, error-only ESLint and produc
 
 Targeted security patches: Next/eslint-config-next16.4.0, sharp0.35.5, xmldom0.9.12. Latest npm audit:0critical/15high/1moderate; omit-dev:0critical/7high/1moderate (Prisma/tooling graph included). Broad automatic fix rejected; no bypass/force/Prisma downgrade. Residual advisories need separate scoped review. Original dirty C:/APP and untracked design-qa.md preserved.
 
-## Strict registry completion rule — 2026-10-12 (code candidate, not Production)
+## Strict registry completion rule โ€” 2026-10-12 (code candidate, not Production)
 
-Owner confirmed: any nonblank original red-cell text is complete (including `แดงแล้ว`, arbitrary text and pending numeric allocation); whitespace/null/empty is pending. The presence of registryRedText is authoritative even when empty: neither a closed currentStatus nor a stale extracted redNumber overrides it. Shared helpers now govern dashboard/officer percentages, case-list filters/display, import/status normalization, workload and consistency checks. Literal text is displayed, not replaced with an invented unique number. Workload selection now includes raw red text and removes the nonexistent Case.status selection. Authentication/permissions/schema/private Storage remain unchanged.
+Owner confirmed: any nonblank original red-cell text is complete (including `เนเธ”เธเนเธฅเนเธง`, arbitrary text and pending numeric allocation); whitespace/null/empty is pending. The presence of registryRedText is authoritative even when empty: neither a closed currentStatus nor a stale extracted redNumber overrides it. Shared helpers now govern dashboard/officer percentages, case-list filters/display, import/status normalization, workload and consistency checks. Literal text is displayed, not replaced with an invented unique number. Workload selection now includes raw red text and removes the nonexistent Case.status selection. Authentication/permissions/schema/private Storage remain unchanged.
 
 Validation: dashboard 19/19, case-list 5/5, Prisma validate, typecheck and production build pass using unreachable test-only DB (no DB-write attempt). Targeted ESLint has no errors, pre-existing any warnings remain. Independent real-data snapshot validation reconciles all 216 source rows and SQL/dashboard sums. Fresh read-only SQL: complaint 107 = 97 complete + 10 pending (29 complete without numeric red); appeal 109 = 71 complete + 38 pending (19 complete without numeric red). No database write was needed for this clarification. PR22 remains draft/Preview; existing private Storage/analysis integration Production release gates still apply. Historical definitions below are superseded by this rule.
 
-## Latest registry data synchronized — 2026-10-12 (live database operation)
+## Latest registry data synchronized โ€” 2026-10-12 (live database operation)
 
 Completed user-authorized data refresh in Supabase GPC `tlqszhlggvoirhalsxge`, without schema changes or a frontend release. First sheets only; file hashes and every extracted source cell verified. Added 18 cases (11 complaint, 7 appeal), updated 198 existing cases, preserved original IDs/app-only fields and deleted nothing. Live totals: complaint 107 = 97 completed + 10 pending; appeal 109 = 71 completed + 38 pending. Total 216 = 168 completed + 48 pending. Nonblank registry red text is completion evidence, including nonnumeric text; stored numeric red numbers retain composite uniqueness.
 
-Rollback rehearsal passed before the single atomic commit. Case snapshots backed up outside Git; before/after audits and case events recorded for all 216 cases. Post-import equality against all payload fields, retained IDs/app-only fields, counts, unique keys, completion consistency, officer performance sums and normalized black-number years passed. Production `/api/health/db` returned `ok` with no host/credential disclosure. Dashboard/case data refresh at request time; Preview demo data intentionally remains synthetic. Source formula/date errors were preserved as old dates or null rather than guessed (54 cells), six missing required source values use the existing `ไม่ระบุ` convention, two invalid link cells retain a valid prior link or null, and five dual 60-day dates use the established earliest-date mapping. Original XLSM files were not edited. Private evidence: `private-test-data/registry-refresh-20261012-verified/verification.json` and snapshots.
+Rollback rehearsal passed before the single atomic commit. Case snapshots backed up outside Git; before/after audits and case events recorded for all 216 cases. Post-import equality against all payload fields, retained IDs/app-only fields, counts, unique keys, completion consistency, officer performance sums and normalized black-number years passed. Production `/api/health/db` returned `ok` with no host/credential disclosure. Dashboard/case data refresh at request time; Preview demo data intentionally remains synthetic. Source formula/date errors were preserved as old dates or null rather than guessed (54 cells), six missing required source values use the existing `เนเธกเนเธฃเธฐเธเธธ` convention, two invalid link cells retain a valid prior link or null, and five dual 60-day dates use the established earliest-date mapping. Original XLSM files were not edited. Private evidence: `private-test-data/registry-refresh-20261012-verified/verification.json` and snapshots.
 
 The latest-register import gate is now complete. Remaining private Storage/analysis integration UAT and Production UI release gates are separate and unchanged. Historical entries below describe their state before this database refresh.
 
-## Reference styling and removed proceeding chart — 2026-10-12 (candidate, not Production)
+## Reference styling and removed proceeding chart โ€” 2026-10-12 (candidate, not Production)
 
 Final automated validation: dashboard 18/18, case-list 3/3, typecheck, targeted ESLint and production build passed. Unreachable test DB confirms no DB-write attempt during build. Original C:/APP checkout left untouched.
 
 Implemented supplied aesthetic reference (middle light-card/navy variant) in existing GPC dashboard. Navy pending KPI and completion cards, elevated light year/officer plots, complaint/appeal anchor navigation, compact disclosures. Proceeding chart removed from both registries; original detail text intact. Dashboard 18/18 and case-list 3/3 tests pass; typecheck/lint/build final result appended after completion. In-app synthetic Browser QA: desktop 1366x900, tablet 768x1024, mobile 320x720 no horizontal body overflow; filter, anchors and independent keyboard officer expansion pass; screenshots compared together with source; console [] after filter. Local design-qa.md passed and is not committed. Existing private Storage/import/live integration release gates unchanged.
 
-## Overview-first dashboard — 2026-10-12 (candidate, not Production)
+## Overview-first dashboard โ€” 2026-10-12 (candidate, not Production)
 
 Final validation: production build passed with an unreachable test database, no attempted DB writes. Dashboard 16/16 and case-list 3/3 tests, typecheck and targeted lint passed.
 
 Reordered to match supplied reference: visible registry overview first, officer responsibility/completion ranking folded at each registry footer. Dashboard tests 16/16, case-list regression 3/3, typecheck and targeted ESLint pass. Synthetic localhost Browser QA: 1366x900 and 320x720 have no body overflow; default disclosures closed, keyboard opening independently for both registries and appeal filter passed; screenshot captured and inspected, sampled console clean after filter navigation. Production build required before publish. Not real-data/Storage/import UAT; existing release gates remain unchanged.
 
-## Case list split — 2026-10-12 (candidate, not Production)
+## Case list split โ€” 2026-10-12 (candidate, not Production)
 
 /cases now has distinct teal complaint / blue appeal blocks, per-filter counts, jump anchors, explicit empty blocks and optional unknown-type block. Existing DB query/filter/detail/update paths unchanged. New case-list tests 3/3, dashboard regression 14/14, typecheck and production build pass. Targeted ESLint: 0 errors, 3 pre-existing any warnings in cases/page.tsx. Isolated synthetic component Browser QA on localhost: two named tables, anchor navigation, 320px no body overflow (wide tables scroll inside their blocks), screenshot and clean console. This is not authenticated live /cases filter/data UAT; production data and release blockers unchanged.
 
-## Officer chart candidate — 2026-10-12 (not Production)
+## Officer chart candidate โ€” 2026-10-12 (not Production)
 
 Adds all-officer total/completed/pending/% completion, ranked by total with shared ranks; unassigned separate, restricted DTO aggregate only. Snapshot based on currently recorded responsibility, not historical credit, case complexity or speed. Compact header/KPI strip + side-by-side complaint/appeal figures above folded year/proceeding/detail views. Synthetic local browser: all six rows per registry fit first 1366x900 viewport (bottom ~896), 320x720 no horizontal overflow, appeal filter and keyboard disclosure passed. Real data may have more officers/longer labels and require scrolling. Grammarly external hydration warning persists; screenshot captured after one timeout. Tests 14/14, typecheck/targeted ESLint passed. Existing private Storage/live import/integration release blockers remain; no Production mutation.
 
-## Latest visual change — 2026-10-12 (candidate, not Production)
+## Latest visual change โ€” 2026-10-12 (candidate, not Production)
 
 Added four figures per registry: completion share with explicit total denominator, pending by black-number year, pending by all officers and literal proceeding text. Always-visible values/percentages, missing groups retained, no hover requirement. Local synthetic QA: 1366x900 and 320x720, no main overflow, appeal filter and keyboard disclosure passed. Grammarly injects body attributes causing an external hydration warning; not suppressed. Dashboard tests 12/12, typecheck and targeted ESLint pass. Production release and latest real registry import remain blocked/unexecuted as documented below.
 
-## Latest dashboard change — 2026-10-12 (candidate, not Production)
+## Latest dashboard change โ€” 2026-10-12 (candidate, not Production)
 
 Backlog-only dashboard: remaining count; year from black-number suffix (123/68 -> 2568); registry legal officer; exact proceedingNote from column K. Complaint/appeal sections contain no deadline KPI/risk/urgent table or header deadline alert. Old received-date filters no longer hide carry-over cases. Complete year/officer/proceeding groups and pending details, explicit missing values, permission masking.
 
@@ -78,7 +101,7 @@ Backlog-only dashboard: remaining count; year from black-number suffix (123/68 -
 
 Owner reported reconnecting; Vercel connector still returns no GPC project, and Supabase Browser auto-review explicitly denied re-access. Do not circumvent. Production release, private Storage and latest registry import remain blocked; original site unchanged.
 
-## Current update — 2026-10-12: integrate analysis into existing GPC
+## Current update โ€” 2026-10-12: integrate analysis into existing GPC
 
 Latest release check: branch Preview for commit 4f53d3a passes GitHub Prisma/lint/typecheck and Vercel deployment checks. Production-only server configuration is saved; SUPABASE_SERVICE_ROLE_KEY was verified as Secret (bulk .env initially defaulted to Config, corrected explicitly without rotating/revealing it). Other four non-sensitive analysis settings are Production Config. The owner explicitly approved transferring the existing GPC key to the same GPC Production only. Sensitive clipboard copy was cleared.
 
@@ -105,7 +128,7 @@ Private source export integrity verified: 7 PDFs, 870 indexed records, 2,723,939
 **Status:** Prompt 93 Completed. MVP Dashboard infinite loading and AccessDenied resolved. `AUTH_MODE=none` now automatically maps to `ADMIN` role and explicitly bypasses all server-side and component-level permission checks. Also fixed SSG build failures on Vercel for `/meetings` and `/finalization` by marking them `force-dynamic`.
 **Important Risk**: This leaves the application completely open to anyone with the URL. No authentication exists in the active path.
 
-# PROJECT_STATE.md — GPC Legal Decision Drafting & Case Management System
+# PROJECT_STATE.md โ€” GPC Legal Decision Drafting & Case Management System
 
 > **Mandatory Read-First Rule**: All future prompts must begin by reading
 > `SKILL.md`, `ARCHITECTURE.md`, `PROJECT_STATE.md`, `DATABASE_SCHEMA.md`, and `COMPONENT_MAP.md`
@@ -129,12 +152,12 @@ were unavailable during Prompt 47.
 | Item | Value |
 |------|-------|
 | Branch | `main` |
-| Latest commit | `56713e7` — docs: record preview staging pilot workflow execution — Prompt 50 CONDITIONAL GO |
+| Latest commit | `56713e7` โ€” docs: record preview staging pilot workflow execution โ€” Prompt 50 CONDITIONAL GO |
 | Stable tag | `stable-post-prompt-42c` |
-| Vercel status | Deployed (assumed Ready — verify after each push) |
-| Database connectivity | ✅ `/api/health/db` returns `status: ok`, `canConnect: true` |
-| Login page | ✅ Renders successfully |
-| Session endpoint | ✅ `/api/auth/session` responds |
+| Vercel status | Deployed (assumed Ready โ€” verify after each push) |
+| Database connectivity | โ… `/api/health/db` returns `status: ok`, `canConnect: true` |
+| Login page | โ… Renders successfully |
+| Session endpoint | โ… `/api/auth/session` responds |
 
 ---
 
@@ -142,36 +165,36 @@ were unavailable during Prompt 47.
 
 | Prompt | Description | Status |
 |--------|-------------|--------|
-| 42C | System Administration + Maintenance Actions console | ✅ Committed, tagged `stable-post-prompt-42c` |
-| 43 | Production acceptance + operations runbook documents | ✅ Committed |
-| 44 | Authenticated UAT planning + role-permission matrix | ✅ Committed |
-| 45 | Authenticated UAT execution + documentation | ✅ Committed |
-| 46 | Targeted permission gap hardening (RAG API, library page) | ✅ Committed |
-| 47 | Full authenticated role-by-role regression UAT + sign-off pack | ✅ Committed (partial — 2 roles code-audited only) |
-| 47.5 | Project intelligence files audit + creation | ✅ Committed |
-| 48 | Pilot Data Seeding + Controlled Real-Case Trial | ✅ Committed (Dry-run executed, docs ready) |
-| 49 | Execute Pilot Data Dry-Run + Seed Preview/Staging Only | ✅ Committed (Dry-run passed, Preview/Staging seed pending approval) |
-| 50 | Preview/Staging Pilot Workflow Execution | ⚠️ CONDITIONAL GO — BLOCKED at environment confirmation. Build ✅. Static audit ✅. Live workflow tests ❌ (environment + accounts blocked). |
-| 50B | Establish Non-Production Staging DB + Pilot Seed Readiness | ⚠️ BLOCKED — staging DB not confirmed non-production. Seed script hardened (✅ fix applied). Docs created. Build ✅. |
-| 51 | Build Records Retention UI | ✅ Committed (Read-only UI and query layer built. Destructive actions deferred.) |
-| 52 | Records Retention UAT + Archive Action Design | ✅ Committed |
-| 53 | Archive Dry-Run Preview Endpoint + Permission-Safe UI Panel | ✅ Committed (Endpoint and UI panel built, dry-run guaranteed) |
-| 54 | Archive Execution Design Review + Schema Gap Decision | ✅ Committed |
-| 55 | Archive/Retention Schema Migration Plan and Prisma Model Updates | ✅ Committed |
-| 56 | Dedicated Records Retention Permissions and Role Mapping | ✅ Committed |
-| 57 | Archive Execution Endpoint (Staging-only) | ✅ Committed |
-| 58 | Archive Execution UI (Preview-first, Staging-only) | ✅ Committed (UI state machine, safety gates built) |
-| 59 | Archive Execution UAT and Rollback/Reversal Verification | ✅ Committed (UAT documented/partial; audit/reversal verified) |
-| 62 | Microsoft Graph Document Sync Foundation | ✅ Committed (Mock UI/API built, live sync disabled) |
-| 63 | Microsoft Graph Live Auth Configuration Checklist + Staging-Only Connectivity Test | ✅ Committed (Blocked on owner confirmation) |
-| 64 | Microsoft Graph Metadata-Only Staging Sync Dry Run | ✅ Committed (Blocked on owner confirmation) |
-| 67 | Microsoft Graph Document Content Ingestion Design Gate | ❌ MISSING / NO-GO |
-| 68 | Microsoft Graph Content Ingestion Staging Prototype | ⚠️ BLOCKED (Missing Prompt 67 Design Gate) |
-| 69 | Content Ingestion Prototype UAT + Quarantine Workflow | ✅ Committed (Quarantine UI/API added, live UAT blocked) |
-| 71 | Staging Operator Trial for Graph Content Prototype | ⚠️ BLOCKED (Evidence pack created, execution blocked) |
-| 72 | DOCX/PDF File-Type Expansion Design Gate | ❌ NO-GO (Docs created, expansion blocked) |
-| 73 | DOCX/PDF Parser Spike Implementation | ⚠️ BLOCKED (Parser spike blocked pending owner confirmation) |
-| 74 | DOCX/PDF Parser Spike UAT + Evidence Pack | ⚠️ BLOCKED (Evidence pack created, UAT blocked) |
+| 42C | System Administration + Maintenance Actions console | โ… Committed, tagged `stable-post-prompt-42c` |
+| 43 | Production acceptance + operations runbook documents | โ… Committed |
+| 44 | Authenticated UAT planning + role-permission matrix | โ… Committed |
+| 45 | Authenticated UAT execution + documentation | โ… Committed |
+| 46 | Targeted permission gap hardening (RAG API, library page) | โ… Committed |
+| 47 | Full authenticated role-by-role regression UAT + sign-off pack | โ… Committed (partial โ€” 2 roles code-audited only) |
+| 47.5 | Project intelligence files audit + creation | โ… Committed |
+| 48 | Pilot Data Seeding + Controlled Real-Case Trial | โ… Committed (Dry-run executed, docs ready) |
+| 49 | Execute Pilot Data Dry-Run + Seed Preview/Staging Only | โ… Committed (Dry-run passed, Preview/Staging seed pending approval) |
+| 50 | Preview/Staging Pilot Workflow Execution | โ ๏ธ CONDITIONAL GO โ€” BLOCKED at environment confirmation. Build โ…. Static audit โ…. Live workflow tests โ (environment + accounts blocked). |
+| 50B | Establish Non-Production Staging DB + Pilot Seed Readiness | โ ๏ธ BLOCKED โ€” staging DB not confirmed non-production. Seed script hardened (โ… fix applied). Docs created. Build โ…. |
+| 51 | Build Records Retention UI | โ… Committed (Read-only UI and query layer built. Destructive actions deferred.) |
+| 52 | Records Retention UAT + Archive Action Design | โ… Committed |
+| 53 | Archive Dry-Run Preview Endpoint + Permission-Safe UI Panel | โ… Committed (Endpoint and UI panel built, dry-run guaranteed) |
+| 54 | Archive Execution Design Review + Schema Gap Decision | โ… Committed |
+| 55 | Archive/Retention Schema Migration Plan and Prisma Model Updates | โ… Committed |
+| 56 | Dedicated Records Retention Permissions and Role Mapping | โ… Committed |
+| 57 | Archive Execution Endpoint (Staging-only) | โ… Committed |
+| 58 | Archive Execution UI (Preview-first, Staging-only) | โ… Committed (UI state machine, safety gates built) |
+| 59 | Archive Execution UAT and Rollback/Reversal Verification | โ… Committed (UAT documented/partial; audit/reversal verified) |
+| 62 | Microsoft Graph Document Sync Foundation | โ… Committed (Mock UI/API built, live sync disabled) |
+| 63 | Microsoft Graph Live Auth Configuration Checklist + Staging-Only Connectivity Test | โ… Committed (Blocked on owner confirmation) |
+| 64 | Microsoft Graph Metadata-Only Staging Sync Dry Run | โ… Committed (Blocked on owner confirmation) |
+| 67 | Microsoft Graph Document Content Ingestion Design Gate | โ MISSING / NO-GO |
+| 68 | Microsoft Graph Content Ingestion Staging Prototype | โ ๏ธ BLOCKED (Missing Prompt 67 Design Gate) |
+| 69 | Content Ingestion Prototype UAT + Quarantine Workflow | โ… Committed (Quarantine UI/API added, live UAT blocked) |
+| 71 | Staging Operator Trial for Graph Content Prototype | โ ๏ธ BLOCKED (Evidence pack created, execution blocked) |
+| 72 | DOCX/PDF File-Type Expansion Design Gate | โ NO-GO (Docs created, expansion blocked) |
+| 73 | DOCX/PDF Parser Spike Implementation | โ ๏ธ BLOCKED (Parser spike blocked pending owner confirmation) |
+| 74 | DOCX/PDF Parser Spike UAT + Evidence Pack | โ ๏ธ BLOCKED (Evidence pack created, UAT blocked) |
 
 ---
 
@@ -179,27 +202,27 @@ were unavailable during Prompt 47.
 
 | Module | Implementation Status | UAT Status |
 |--------|----------------------|------------|
-| Auth (NextAuth + Azure AD) | ✅ Complete | ✅ Verified (ADMIN path; other roles code-audited) |
-| User Admin | ✅ Complete | ✅ Code-audited |
-| Case Registry | ✅ Complete | ✅ Code-audited |
-| Case Registry Import (Excel) | ✅ Complete | ✅ Code-audited |
-| Case Detail | ✅ Complete | ✅ Code-audited |
-| Case Drafting | ✅ Complete | ✅ Code-audited |
-| AI Draft Section Assistant | ✅ Complete | ✅ Code-audited |
-| AI Legal Q&A (RAG) | ✅ Complete | ✅ Code-audited |
-| Legal Knowledge Library | ✅ Complete | ✅ Code-audited |
-| Document Ingestion/Embedding | ✅ Complete | ✅ Code-audited |
-| Finalization Workflow | ✅ Complete | ✅ Code-audited |
-| Dispatch Workflow | ✅ Complete | ✅ Code-audited |
-| Assignments | ✅ Complete | ✅ Code-audited |
-| Meetings | ✅ Complete | ✅ Code-audited |
-| Executive Reports | ✅ Complete | ✅ Code-audited |
-| Data Quality | ✅ Complete | ✅ Code-audited |
-| Search / Case Intelligence | ✅ Complete | ✅ Code-audited |
-| System Administration Console | ✅ Complete | ✅ Code-audited |
-| Maintenance Actions Console | ✅ Complete | ✅ Code-audited |
-| Records Retention UI | ✅ Read-only UI | ⚠️ Pending live UAT |
-| Microsoft Graph (fields) | ⚠️ Partial schema | ❌ Live sync not implemented |
+| Auth (NextAuth + Azure AD) | โ… Complete | โ… Verified (ADMIN path; other roles code-audited) |
+| User Admin | โ… Complete | โ… Code-audited |
+| Case Registry | โ… Complete | โ… Code-audited |
+| Case Registry Import (Excel) | โ… Complete | โ… Code-audited |
+| Case Detail | โ… Complete | โ… Code-audited |
+| Case Drafting | โ… Complete | โ… Code-audited |
+| AI Draft Section Assistant | โ… Complete | โ… Code-audited |
+| AI Legal Q&A (RAG) | โ… Complete | โ… Code-audited |
+| Legal Knowledge Library | โ… Complete | โ… Code-audited |
+| Document Ingestion/Embedding | โ… Complete | โ… Code-audited |
+| Finalization Workflow | โ… Complete | โ… Code-audited |
+| Dispatch Workflow | โ… Complete | โ… Code-audited |
+| Assignments | โ… Complete | โ… Code-audited |
+| Meetings | โ… Complete | โ… Code-audited |
+| Executive Reports | โ… Complete | โ… Code-audited |
+| Data Quality | โ… Complete | โ… Code-audited |
+| Search / Case Intelligence | โ… Complete | โ… Code-audited |
+| System Administration Console | โ… Complete | โ… Code-audited |
+| Maintenance Actions Console | โ… Complete | โ… Code-audited |
+| Records Retention UI | โ… Read-only UI | โ ๏ธ Pending live UAT |
+| Microsoft Graph (fields) | โ ๏ธ Partial schema | โ Live sync not implemented |
 
 ---
 
@@ -207,13 +230,13 @@ were unavailable during Prompt 47.
 
 | Gap | Severity | Notes |
 |-----|----------|-------|
-| COMMISSIONER role — live UAT blocked | Medium | No live account available during Prompts 47–50B |
-| VIEWER role — live UAT blocked | Low | No live account available during Prompts 47–50B |
+| COMMISSIONER role โ€” live UAT blocked | Medium | No live account available during Prompts 47โ€“50B |
+| VIEWER role โ€” live UAT blocked | Low | No live account available during Prompts 47โ€“50B |
 | Records Retention Actions | Medium | UI built as read-only; destructive archive/purge actions intentionally deferred |
 | Microsoft Graph live document sync | Medium | Fields in schema; actual sync not implemented |
 | Background job queue for bulk embedding | Medium | Risk of Vercel timeout on large ingestion |
 | pgvector HNSW index | Low | Standard index present; HNSW for scale not added |
-| Preview/staging pilot seed | High | Blocked — Vercel preview DB not confirmed non-production; owner must check Vercel dashboard |
+| Preview/staging pilot seed | High | Blocked โ€” Vercel preview DB not confirmed non-production; owner must check Vercel dashboard |
 | GAP-003: upload-placeholder permission | Medium | `UPLOAD_DOCUMENTS` check missing; deferred |
 | GAP-002: `/rag/retrieval-test`, `/legal-qa` | Medium | Partially hardened; full hardening deferred |
 | Azure AD auth constraint for pilot accounts | Medium | Seed creates `@example.test` DB records but Azure AD OAuth requires real Microsoft accounts for login |
@@ -225,7 +248,7 @@ were unavailable during Prompt 47.
 | Risk | Notes |
 |------|-------|
 | JWT staleness after role change | Re-login required after admin changes user role |
-| Vercel build ≠ runtime parity | Always verify `/api/health/db` and key routes post-deploy |
+| Vercel build โ  runtime parity | Always verify `/api/health/db` and key routes post-deploy |
 | Linux path casing | Windows build may pass but Vercel (Linux) can fail on wrong casing |
 | Bulk embedding timeout | Long jobs may hit Vercel serverless timeout |
 
@@ -238,20 +261,20 @@ were unavailable during Prompt 47.
 
 | Check | Result |
 |-------|--------|
-| Build | ✅ Passed (all 67 routes, TypeScript clean) |
-| `/api/health/db` (production) | ✅ ok, canConnect: true (prior baseline) |
-| `/api/health/db` (preview) | ⚠️ 401 — authenticated route; DB classification unknown |
-| Login page renders | ✅ Confirmed |
-| `/api/auth/session` | ✅ Responds |
-| Unauthenticated access → redirect | ✅ Middleware enforces |
-| ADMIN permission checks | ✅ Code-verified |
-| LEGAL_OFFICER permission checks | ✅ Code-verified |
-| REGISTRY_OFFICER permission checks | ✅ Code-verified |
-| COMMISSIONER (live) | ⚠️ Code-audited only |
-| VIEWER (live) | ⚠️ Code-audited only |
-| Secret scan | ✅ No actual values in tracked files |
-| All 67 routes compiled | ✅ Passed |
-| Pilot workflow live tests | ❌ Blocked — environment + accounts not confirmed |
+| Build | โ… Passed (all 67 routes, TypeScript clean) |
+| `/api/health/db` (production) | โ… ok, canConnect: true (prior baseline) |
+| `/api/health/db` (preview) | โ ๏ธ 401 โ€” authenticated route; DB classification unknown |
+| Login page renders | โ… Confirmed |
+| `/api/auth/session` | โ… Responds |
+| Unauthenticated access โ’ redirect | โ… Middleware enforces |
+| ADMIN permission checks | โ… Code-verified |
+| LEGAL_OFFICER permission checks | โ… Code-verified |
+| REGISTRY_OFFICER permission checks | โ… Code-verified |
+| COMMISSIONER (live) | โ ๏ธ Code-audited only |
+| VIEWER (live) | โ ๏ธ Code-audited only |
+| Secret scan | โ… No actual values in tracked files |
+| All 67 routes compiled | โ… Passed |
+| Pilot workflow live tests | โ Blocked โ€” environment + accounts not confirmed |
 
 ---
 
@@ -268,16 +291,16 @@ were unavailable during Prompt 47.
 
 | Gate | Status |
 |------|--------|
-| DB health OK | ✅ |
-| Migrations applied | ✅ (6 migrations deployed) |
-| Build passes | ✅ |
-| Login functional | ✅ |
-| Core module pages load | ✅ (verified by code audit) |
-| No secrets in tracked files | ✅ |
-| ADMIN role fully verified | ✅ |
-| All roles live-verified | ⚠️ Partial — 2 roles blocked |
+| DB health OK | โ… |
+| Migrations applied | โ… (6 migrations deployed) |
+| Build passes | โ… |
+| Login functional | โ… |
+| Core module pages load | โ… (verified by code audit) |
+| No secrets in tracked files | โ… |
+| ADMIN role fully verified | โ… |
+| All roles live-verified | โ ๏ธ Partial โ€” 2 roles blocked |
 
-**Overall**: **Conditionally Production Ready** — suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Preview/staging seed blocked until Vercel preview DB is confirmed non-production (owner action required). Prompt 50B hardened seed script and created staging readiness docs. Expand to COMMISSIONER/VIEWER when accounts available.
+**Overall**: **Conditionally Production Ready** โ€” suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Preview/staging seed blocked until Vercel preview DB is confirmed non-production (owner action required). Prompt 50B hardened seed script and created staging readiness docs. Expand to COMMISSIONER/VIEWER when accounts available.
 
 ---
 
@@ -293,15 +316,15 @@ Execution of Prompt 52 is **BLOCKED** until the owner completes the live workflo
 
 | Route / Module | Status |
 |----------------|--------|
-| `/admin/system` (RBAC) | ✅ Fully enforced |
-| `/api/cases` (Creation) | ✅ Safe (`requireApiPermission` guarded) |
-| `/api/cases/[id]/documents` | ⚠️ Missing upload permission check |
-| `/api/draft/section-ai` | ✅ Token bound |
-| `/library` (RAG ingestion) | ✅ Build verified; performance risks open |
-| Admin Role fully verified | ✅ |
-| All roles live-verified | ⚠️ Partial — 2 roles blocked (Handoff to owner for full test) |
+| `/admin/system` (RBAC) | โ… Fully enforced |
+| `/api/cases` (Creation) | โ… Safe (`requireApiPermission` guarded) |
+| `/api/cases/[id]/documents` | โ ๏ธ Missing upload permission check |
+| `/api/draft/section-ai` | โ… Token bound |
+| `/library` (RAG ingestion) | โ… Build verified; performance risks open |
+| Admin Role fully verified | โ… |
+| All roles live-verified | โ ๏ธ Partial โ€” 2 roles blocked (Handoff to owner for full test) |
 
-**Overall**: **Conditionally Production Ready** — suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Owner has confirmed staging DB is non-production. Prompt 50C execution officially handed off to owner due to security boundaries.
+**Overall**: **Conditionally Production Ready** โ€” suitable for pilot with ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER accounts. Owner has confirmed staging DB is non-production. Prompt 50C execution officially handed off to owner due to security boundaries.
 
 ---
 
@@ -349,9 +372,9 @@ Objectives:
 | 54 | Archive Execution Design Review + Schema Gap Decision (Completed) |
 | 55 | Add Archive/Retention Schema Migration Plan and Prisma Model Updates (Completed) |
 | 56 | Add Dedicated Records Retention Permissions and Role Mapping (Completed) |
-| 58 | Archive Execution UI — Confirmation, Impact Preview, and Audit Result (Completed) |
+| 58 | Archive Execution UI โ€” Confirmation, Impact Preview, and Audit Result (Completed) |
 | 59 | Archive Execution UAT and Rollback/Reversal Verification (Completed - UAT blocked) |
-| 60 | Production Archive Release Gate — NO-GO Pack and Operator SOP (Completed) |
+| 60 | Production Archive Release Gate โ€” NO-GO Pack and Operator SOP (Completed) |
 | 61A | Establish Verified Staging DB + Archive Pilot Records (Prepared/Blocked on environment) |
 | 61B | Execute Staging DB Migration and Pilot Seed (Blocked on owner confirmation) |
 | 62 | Microsoft Graph Document Sync Foundation (Completed) |
@@ -364,7 +387,7 @@ Objectives:
 * **Latest Execution Phase**: Phase 20 (Final checks)
 * **Primary Objective**: Safely apply staging migration and seed archive pilot records pending owner confirmation.
 * **Archive Execution Readiness**: STAGING-ONLY READY (Production disabled).
-* **Archive UAT Status**: PARTIAL / BLOCKED — Staging DB blocked, pilot records not executed.
+* **Archive UAT Status**: PARTIAL / BLOCKED โ€” Staging DB blocked, pilot records not executed.
 * **Archive Audit Verification Status**: VERIFIED via code audit.
 * **Archive Reversal Readiness Status**: Conceptually ready, implementation deferred.
 * **Production Release Readiness**: NO-GO. Pending staging execution tests.
@@ -453,7 +476,7 @@ Objectives:
 * next recommended prompt: Prompt 75 (or manual owner tests for Prompt 71/74).
 
 ## Prompt 75 Status
-- Prompt 75: Official Document Workflow Integration Design Gate � Completed (Docs only).
+- Prompt 75: Official Document Workflow Integration Design Gate ๏ฟฝ Completed (Docs only).
 - Prompt 74 dependency result: BLOCKED (Parser Spike UAT could not be run).
 - Official integration gate decision: NO-GO.
 - Remaining blockers: Missing staging environment, owner approval, and DOCX/PDF parser spike.
@@ -483,7 +506,7 @@ Objectives:
 
 
 ## 11. Prompt 79 E2E Pilot Workflow Test Summary
-- **Status**: ✅ Completed
+- **Status**: โ… Completed
 - **Pilot Readiness**: 98% Ready for Limited Pilot Users
 - **Remaining Blockers**: None in codebase. Pending Vercel Preview Database setup.
 - **Recommended Next Step**: Prompt 80 - Pilot User SOP and Training Manual
@@ -510,7 +533,7 @@ Objectives:
 
 
 ## 15. Prompt 83 Pilot Issue Batch Fix Round 1 Summary
-- **Status**: ✅ Completed
+- **Status**: โ… Completed
 - **Outcome**: Addressed pre-pilot data integrity and closed case filtering logic across the registry import, case list, and dashboard.
 - **Issues Fixed**: PRE-1 (Import Red-Number logic), PRE-2 (Dashboard Status Filters), PRE-3 (Case Search Status Filters).
 - **Remaining Blockers**: Entra ID and Vercel DB configuration.
@@ -518,7 +541,7 @@ Objectives:
 - **Recommended Next Step**: Prompt 84: Pilot Readiness Review and Controlled Launch Sign-Off.
  
  # #   1 6 .   P r o m p t   8 4   E v i d e n c e - B a s e d   P i l o t   S t a b i l i z a t i o n   o r   S i g n - O f f   D e c i s i o n  
- -   * * S t a t u s * * :   B� &   C o m p l e t e d  
+ -   * * S t a t u s * * :   B๏ฟฝ &   C o m p l e t e d  
  -   * * S e l e c t e d   P a t h * * :   P a t h   F   ( P i l o t   R e a d i n e s s   R e v i e w   a n d   C o n t r o l l e d   L a u n c h   S i g n - O f f )  
  -   * * O u t c o m e * * :   R e v i e w e d   P i l o t   T r i a g e   B o a r d   R o u n d   1 .   S y s t e m   b u i l d s   p a s s ,   n o   P 0 / P 1   b l o c k e r s   r e m a i n .   A u t h o r i z e d   a   C o n d i t i o n a l   G o   f o r   c o n t r o l l e d   p i l o t   l a u n c h .  
  -   * * R e m a i n i n g   B l o c k e r s * * :   V e r c e l   P r e v i e w   D a t a b a s e   c o n f i g u r a t i o n   a n d   M i c r o s o f t   E n t r a   I D   t e s t   u s e r   p r o v i s i o n i n g .   ( E x t e r n a l   P O   A c t i o n s ) .  
@@ -591,4 +614,5 @@ Objectives:
 - **Cases/Dashboard status**: Blocked.
 - **Initialization method**: Database currently initialized through db push for MVP (Blocked).
 - **Proper migration baseline**: Remains a future production task.
+
 

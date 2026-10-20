@@ -1,4 +1,4 @@
-## สถานะปัจจุบันและกฎการทำงานหลัก (Current State & Mandatory Workflow) — 2026-10-19
+﻿## สถานะปัจจุบันและกฎการทำงานหลัก (Current State & Mandatory Workflow) — 2026-10-20
 
 > **กฎเหล็กเมื่อเริ่มและจบงานทุกครั้ง (Mandatory Session & End-of-Task Rules)**
 > 1. **อ่านสถานะจากหัวไฟล์นี้ทันที**: ไม่ต้องย้อนไล่อ่านประวัติเก่าทั้งหมด ใช้สรุปสถานะด้านล่างเป็นแหล่งข้อมูลตั้งต้น (Single Source of Truth)
@@ -6,16 +6,17 @@
 > 3. **Push GitHub + Deploy Vercel อัตโนมัติทุกครั้งเมื่อจบงาน**: เมื่อตรวจผ่าน (`npm test`, `npm run typecheck`, `npm run lint`, `npm run build`) แล้ว **ต้อง commit และ push ขึ้น GitHub (`origin/main` และ branch งานปัจจุบัน) เพื่อให้ Vercel Deploy อัปเดตหน้าเว็บไซต์ทันทีทุกครั้ง** โดยไม่ต้องรอให้ผู้ใช้สั่งซ้ำ
 > 4. **ห้าม reset หรือเขียนทับงานค้างใน `C:\APP`**: การทำงาน Git/Push ให้ทำผ่าน clean worktree (`C:\Users\polic\.codex\worktrees\ai-harness\APP`) และซิงก์เฉพาะไฟล์ที่เกี่ยวข้องกลับไปยัง `C:\APP` อย่างระมัดระวัง
 
-### สรุปสถานะระบบล่าสุด (2026-10-19)
-- **ชื่อระบบและอัตลักษณ์หน้าเว็บ (Branding)**: เปลี่ยนจาก `ก.พ.ค.ตร.` เป็น **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`** ครบทุกจุด (`Sidebar.tsx`, `TopHeader.tsx`, `dashboard/page.tsx`, `analysis/Workbench.jsx`, `login/page.tsx`, `layout.tsx`) โดย **ไม่มีการสร้างแท็บ/หน้า `/owner` แยก** ตามคำสั่งผู้ใช้
+### สรุปสถานะระบบล่าสุด (2026-10-20)
+- **ชื่อระบบและอัตลักษณ์หน้าเว็บ (Branding)**: เปลี่ยนจาก `ก.พ.ค.ตร.` เป็น **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`** ครบทุกจุด (`Sidebar.tsx`, `TopHeader.tsx`, `dashboard/page.tsx`, `analysis/Workbench.jsx`, `login/page.tsx`, `layout.tsx`) โดย **ไม่มีการสร้างแท็บ/หน้า /owner แยก** ตามคำสั่งผู้ใช้
 - **ภาพบุคคลไดคัทเฉพาะตัวบุคคลบนพื้นหลังสีแดงตำรวจ (`public/owner/wichian-studio-red.jpg` & `public/owner/wichian-cutout.png`)**:
-  - ไดคัทเฉพาะตัวบุคคลของ **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี** (ตัดฉากผนัง ตัวอักษร และตราสัญลักษณ์ด้านหลังออกทั้งหมด) แล้ววางบนพื้นหลังสีแดงตำรวจ (`#991b1b` → `#4c080d`) ที่เข้ากับธีมเว็บไซต์ (`src/lib/owner.ts`)
+  - ไดคัทเฉพาะตัวบุคคลของ **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี** (ตัดฉากผนัง ตัวอักษร และตราสัญลักษณ์ด้านหลังออกทั้งหมด) ผสานขอบลาดไหล่และเส้นผมอย่างประณีต วางบนพื้นหลังสีแดงตำรวจทึบสะอาดตา (`#991b1b`) เข้ากับธีมเว็บไซต์ (`src/lib/owner.ts`) แสดงผลเฉพาะใน Avatar วงกลมด้านขวาบน และการ์ดโปรไฟล์ส่วนหัว Sidebar
 - **ธีมเว็บไซต์ CYBER Dark Charcoal แบบเรียบหรู สบายตา (`src/app/theme-bentos.css`)**:
   - พื้นหลังและตัวการ์ดใช้สีดำเทาด้าน (`#0a0a0c`, `#121215`, `#131317`) ขอบสีเทาจาง (`rgba(255,255,255,0.08)`) ไม่ใช้กรอบสีแดงหรือตัวอักษรสีชมพูรกตา
-  - **ลำดับชั้นตัวอักษร (Typography Hierarchy)**: คำเน้น/ตัวหนา/หัวข้อ ใช้ **สีขาวคมชัด (`#ffffff`)**, ข้อความรองใช้ **สีขาวจาง/เทาอ่อน (`#a1a1aa`)**, ข้อความแกนกราฟ/หมายเหตุใช้ **สีเทาหม่น (`#71717a`)**
+  - **Hero Section ถอดแบบจากแท็บเล็ต CYBER อย่างแม่นยำ**: ด้านซ้ายเป็น Typography สะอาดตา (`Data Based on all registries`, `Dashboard Overview`, `พล.ต.อ.วิเชียร พจน์โพธิ์ศรี · กรรมการ ก.พ.ค.ตร.`) ไม่มีการ์ดรูปกล่องสี่เหลี่ยมบดบัง ด้านขวาเป็นการ์ดพัดซ้อน 3 มิติ (`Account Insights`)
+  - **ลำดับชั้นตัวอักษร (Typography Hierarchy)**: คำเน้น/ตัวหนา/หัวข้อ ใช้ **สีขาวคมชัด (`#ffffff`)**, ข้อความรองใช้ **สีขาวจาง/เทาอ่อน (`#a1a1aa` / `text-zinc-300`)**, ข้อความแกนกราฟ/หมายเหตุใช้ **สีเทาหม่น (`#71717a`)** โดยไม่มีการใช้ตัวอักษรสีแดง/ชมพูในเนื้อหา
   - **การใช้สีแดงตำรวจ (`#991b1b` / `#c81e2b` / `#d62839`) เฉพาะจุดเน้นสำคัญเท่านั้น**:
     - ปุ่มเมนูแคปซูลที่กำลังเลือก (`Dashboard`) และปุ่มคำสั่งหลัก
-    - แสงเรืองด้านล่างของการ์ดพัดซ้อน 3 มิติ (`Account Insights`) และตัวเลขผลลัพธ์สำคัญในประโยค
+    - แสงเรืองด้านล่างของการ์ดพัดซ้อน 3 มิติ (`Account Insights`) และป้ายผลลัพธ์เปอร์เซ็นต์
     - **กราฟเกจครึ่งวงกลมพร้อมเข็มชี้**: ส่วนหลักเป็นสีแดงตำรวจ (`#c81e2b`), ส่วนที่สองสีครีมอ่อน (`#e5c7b5`), ส่วนที่สามสีขาวนวล (`#f4f4f5`) พร้อมเข็มสีเงิน
     - **กราฟคลื่นสองเส้นบาง (`1.75px`)**: เส้นหลักสีแดงตำรวจ (`#d62839`) คู่กับเส้นเปรียบเทียบสีครีมเทาโปร่งแสง (`rgba(229,199,181,0.55)`)
     - **กราฟแท่งเสา (Operations Pillar Chart)**: แท่งทั่วไปเป็น **สีเทาจางโปร่งแสง (`from-white/[0.16] to-transparent`)** และใช้ **สีแดงตำรวจไล่เฉดจากปลายสีขาว (`from-white via-[#d62839] to-[#450a0a]/40`) เฉพาะแท่งที่ต้องการเน้นเพียงแท่งเดียว**
@@ -27,12 +28,12 @@
 - **ระบบวิเคราะห์และร่างคำวินิจฉัย (`/analysis`)**:
   - ครบ 6 แท็บตาม `docs/ANALYSIS-ONLY-SYSTEM-DESIGN-TH.md` พร้อมแถบสถานะ 6 ขั้นตอน, `KnowledgeRail`, แถบเช็กความพร้อมข้อมูลตั้งต้น, ปุ่มนำเข้าย่อหน้าคำร้อง/คำชี้แจงเป็นข้อกล่าวอ้าง, เครื่องคำนวณโควตาตำแหน่งว่างจริง 50%, ปุ่มแทรกถ้อยคำวินิจฉัยมาตรฐาน (`พิเคราะห์แล้วเห็นว่า`, `พิจารณาแล้วเห็นว่า`), ตัวอย่างหน้ากระดาษ `ร่างคำวินิจฉัยเบื้องต้น` พร้อมส่งออก `.docx` (ตรวจ SHA-256) และค้นหาเลขไทย `๐-๙` <-> `0-9`
 - **ผลตรวจสอบล่าสุด**:
-  - `npm test`: **ผ่าน 82/82 ข้อ**
+  - `npm test`: **ผ่าน 83/83 ข้อ**
   - `analysis-app` tests: **ผ่าน 18/18 ข้อ**
   - `npm run typecheck` & `npm run lint`: **ผ่าน (0 errors)**
   - `npm run build`: **ผ่านสมบูรณ์ (35/35 routes)**
 
-## Tabler case workflow lessons — 2026-10-14
+## Tabler case workflow lessons โ€” 2026-10-14
 
 Use real Tabler within the existing GPC app, scoped AND layered below Tailwind utilities. Blind prefixing of body puts full-height layout onto every card; strip document resets, retain tokens and inspect actual render. Avoid mixing Tabler space-y utilities with Tailwind stacks; explicit grid gap is predictable. Check1366/768/320px, Sarabun, bold parties/normal officers, disclosures and keyboard modal focus/Escape return.
 
@@ -40,31 +41,31 @@ Literal red-cell text must survive forms/search/CSV; stale extracted numbers/sta
 
 Target reviewed security patches; do not bypass rejected broad dependency updates. Document residual advisories, not a clean-security claim. PR22 frontend was deployed before this task; old release-blocked notes are historical. Private Storage/AI completion remains separate.
 
-## Reference styling lessons — 2026-10-12
+## Reference styling lessons โ€” 2026-10-12
 
 Use the supplied design as aesthetic inspiration for the actual product rather than copying unrelated finance measures. Keep quantitative plots native, solid-fill and source-backed; never invent radar/trends for visual density. Removing a chart need not erase original case text. Mobile select/button should share a minmax(0,1fr)/auto row to avoid unnecessarily tall headers; test all four KPI cards and long disclosures. Compare reference plus actual rendered cards in the same review input.
 
-## Overview-first disclosure lessons — 2026-10-12
+## Overview-first disclosure lessons โ€” 2026-10-12
 
 Executive reading starts with workload overview, then literal breakdowns, then optional individual ranking. Native details provides keyboard activation without client JavaScript. Keep pending-by-officer counts separate from all-case responsibility/completion ranking. Test default closed state, independent expansion, source order and mobile geometry; do not treat visual hiding as security.
 
-## Case-list separation lessons — 2026-10-12
+## Case-list separation lessons โ€” 2026-10-12
 
 Separate after existing filtering, not via repeated queries. Preserve original order and IDs; black numbers may legitimately repeat across registry types. Keep empty counterpart explicit and unknown-type records visible. A synthetic component fixture proves grouping, anchors and layout, not database/filter/authentication UAT. Keep QA fixture outside Git and stop its local server after testing.
 
-## Officer ranking lessons — 2026-10-12
+## Officer ranking lessons โ€” 2026-10-12
 
 Never divide completed cases by pending count. Rank total responsibility separately from completion share; ties get equal rank, unknown officers remain visible outside ranking. Current assignment snapshots are not historic attribution or productivity scores. Preserve full rows and direct measures; place both registries above disclosures for a compact executive read. Measure actual first-viewport geometry; don't promise all real officer rows fit solely because six synthetic rows do.
 
-## Visualization lessons — 2026-10-12
+## Visualization lessons โ€” 2026-10-12
 
 Use common zero scales for matching complaint/appeal plots, direct values and explicit denominators. Retain every officer and exact proceeding text rather than top-N or an inferred funnel. Plain server-rendered SVG/CSS is sufficient; add no query/library. Test empty rings for no fake zero percentage and preserve accessible HTML labels. Responsive QA uses actual DOM viewport dimensions because user browser zoom affects viewport overrides; reset overrides after testing.
 
-## Backlog dashboard lessons — 2026-10-12
+## Backlog dashboard lessons โ€” 2026-10-12
 
 Owner replaced deadline/risk requirements with backlog count, black-number suffix year, registry officer and literal proceedingNote. Retain carry-over cases across all received dates. Never infer proceedings from currentStatus or truncate officer groups; every dimension must sum to active count. Hide deadline alerts on /dashboard only. Browser Supabase access remains explicitly denied after owner reported reconnecting; no circumvention.
 
-## Analysis integration lessons — 2026-10-12
+## Analysis integration lessons โ€” 2026-10-12
 
 Validated alternative backup: read-only Supabase SQL Editor snapshot + native Download CSV, followed by local JSON/table-row verification. The download event can time out even though Chrome saved the file; inspect the exact generated download and verify it before retrying. Vercel bulk .env paste can change selection from Production to Production+Preview; explicitly verify and narrow scope before Save. Service-role transmission requires explicit destination-specific approval; obtained for the same GPC Production only, never Preview.
 
@@ -119,7 +120,7 @@ Provider restore can fail because the owner already has 2 active Free projects. 
 2. **Next.js Font Fix**: Replacing `next/font/google` with a `<link>` in `layout.tsx` is a fast, safe way to unblock Turbopack build errors.
 3. **Strict Linting vs. Launch**: Downgrading legacy TypeScript any errors to warnings in ESLint allows the pilot to proceed to real-world testing without rewriting legacy code.
 
-# SKILL.md — GPC Legal Decision Drafting & Case Management System
+# SKILL.md โ€” GPC Legal Decision Drafting & Case Management System
 
 > **MANDATORY AGENT WORKFLOW RULE**
 > Every future prompt MUST:
@@ -129,7 +130,7 @@ Provider restore can fail because the owner already has 2 active Free projects. 
 
 ## 1. Mission
 
-You are assisting development of a production-grade Thai legal decision drafting and case management system for ก.พ.ค.ตร. (คณะกรรมการพิทักษ์ระบบคุณธรรมข้าราชการตำรวจ).
+You are assisting development of a production-grade Thai legal decision drafting and case management system for เธ.เธ.เธ.เธ•เธฃ. (เธเธ“เธฐเธเธฃเธฃเธกเธเธฒเธฃเธเธดเธ—เธฑเธเธฉเนเธฃเธฐเธเธเธเธธเธ“เธเธฃเธฃเธกเธเนเธฒเธฃเธฒเธเธเธฒเธฃเธ•เธณเธฃเธงเธ).
 
 The system must support:
 - case registry and case tracking
@@ -150,7 +151,7 @@ This is a legal/government workflow system. Reliability, traceability, source co
 
 ## 2. Current Project Status
 
-The project has reached **Prompt 47.5** — see `PROJECT_STATE.md` for the definitive status table.
+The project has reached **Prompt 47.5** โ€” see `PROJECT_STATE.md` for the definitive status table.
 
 Summary:
 - All core modules are **implemented and deployed** on Vercel.
@@ -158,7 +159,7 @@ Summary:
 - Role-by-role UAT regression completed (Prompt 47): ADMIN/LEGAL_OFFICER/REGISTRY_OFFICER code-verified; COMMISSIONER/VIEWER blocked (no live accounts).
 - Permission hardening complete as of Prompt 46.
 - Stable tag: `stable-post-prompt-42c`.
-- Next recommended step: **Prompt 48 — Pilot Data Seeding + Controlled**
+- Next recommended step: **Prompt 48 โ€” Pilot Data Seeding + Controlled**
 
 ### Schema Design and Migrations
 1. **Migrations**: `DATABASE_URL` is for the application at runtime (transaction mode pooler, port 6543). `DIRECT_URL` uses session-mode pooler (port 5432) for migrations.
@@ -233,16 +234,16 @@ This system is for legal decision drafting. Follow these rules strictly:
 Use formal Thai legal/government language.
 
 Preferred wording patterns:
-- “ข้อเท็จจริงรับฟังได้ว่า…”
-- “มีประเด็นที่จะต้องวินิจฉัยว่า…”
-- “พิเคราะห์แล้วเห็นว่า…”
-- “เมื่อพิจารณาประกอบกับ…”
-- “จึงเห็นได้ว่า…”
-- “กรณีจึงเป็นไปตามหลักเกณฑ์และวิธีการที่กฎหมายกำหนด”
-- “คำร้องทุกข์ฟังไม่ขึ้น”
-- “อุทธรณ์ฟังขึ้น”
-- “จึงวินิจฉัยยกคำร้องทุกข์”
-- “จึงวินิจฉัยยกเลิกคำสั่ง…”
+- โ€เธเนเธญเน€เธ—เนเธเธเธฃเธดเธเธฃเธฑเธเธเธฑเธเนเธ”เนเธงเนเธฒโ€ฆโ€
+- โ€เธกเธตเธเธฃเธฐเน€เธ”เนเธเธ—เธตเนเธเธฐเธ•เนเธญเธเธงเธดเธเธดเธเธเธฑเธขเธงเนเธฒโ€ฆโ€
+- โ€เธเธดเน€เธเธฃเธฒเธฐเธซเนเนเธฅเนเธงเน€เธซเนเธเธงเนเธฒโ€ฆโ€
+- โ€เน€เธกเธทเนเธญเธเธดเธเธฒเธฃเธ“เธฒเธเธฃเธฐเธเธญเธเธเธฑเธโ€ฆโ€
+- โ€เธเธถเธเน€เธซเนเธเนเธ”เนเธงเนเธฒโ€ฆโ€
+- โ€เธเธฃเธ“เธตเธเธถเธเน€เธเนเธเนเธเธ•เธฒเธกเธซเธฅเธฑเธเน€เธเธ“เธ‘เนเนเธฅเธฐเธงเธดเธเธตเธเธฒเธฃเธ—เธตเนเธเธเธซเธกเธฒเธขเธเธณเธซเธเธ”โ€
+- โ€เธเธณเธฃเนเธญเธเธ—เธธเธเธเนเธเธฑเธเนเธกเนเธเธถเนเธโ€
+- โ€เธญเธธเธ—เธเธฃเธ“เนเธเธฑเธเธเธถเนเธโ€
+- โ€เธเธถเธเธงเธดเธเธดเธเธเธฑเธขเธขเธเธเธณเธฃเนเธญเธเธ—เธธเธเธเนโ€
+- โ€เธเธถเธเธงเธดเธเธดเธเธเธฑเธขเธขเธเน€เธฅเธดเธเธเธณเธชเธฑเนเธโ€ฆโ€
 
 Avoid:
 - casual wording
@@ -250,13 +251,13 @@ Avoid:
 - overclaiming
 - unsupported conclusions
 - ambiguous legal references
-- inconsistent terms such as mixing “ผู้ร้องทุกข์” and “ผู้อุทธรณ์” incorrectly
+- inconsistent terms such as mixing โ€เธเธนเนเธฃเนเธญเธเธ—เธธเธเธเนโ€ and โ€เธเธนเนเธญเธธเธ—เธเธฃเธ“เนโ€ incorrectly
 
 Terminology:
-- ร้องทุกข์: use “ผู้ร้องทุกข์” and “คู่กรณีในการร้องทุกข์”
-- อุทธรณ์: use “ผู้อุทธรณ์” and “คู่กรณีในอุทธรณ์”
-- Use “ก.พ.ค.ตร.” consistently.
-- Use “คำวินิจฉัย” consistently.
+- เธฃเนเธญเธเธ—เธธเธเธเน: use โ€เธเธนเนเธฃเนเธญเธเธ—เธธเธเธเนโ€ and โ€เธเธนเนเธเธฃเธ“เธตเนเธเธเธฒเธฃเธฃเนเธญเธเธ—เธธเธเธเนโ€
+- เธญเธธเธ—เธเธฃเธ“เน: use โ€เธเธนเนเธญเธธเธ—เธเธฃเธ“เนโ€ and โ€เธเธนเนเธเธฃเธ“เธตเนเธเธญเธธเธ—เธเธฃเธ“เนโ€
+- Use โ€เธ.เธ.เธ.เธ•เธฃ.โ€ consistently.
+- Use โ€เธเธณเธงเธดเธเธดเธเธเธฑเธขโ€ consistently.
 - Keep Thai legal structure and order.
 
 ---
@@ -264,7 +265,7 @@ Terminology:
 ## 6. Core Decision Document Structure
 
 For grievance decisions:
-1. Heading / เรื่องดำ / เรื่องแดง
+1. Heading / เน€เธฃเธทเนเธญเธเธ”เธณ / เน€เธฃเธทเนเธญเธเนเธ”เธ
 2. Committee name
 3. Date
 4. Parties
@@ -283,7 +284,7 @@ For grievance decisions:
 17. Committee signatures
 
 For appeal decisions:
-1. Heading / เรื่องดำ / เรื่องแดง
+1. Heading / เน€เธฃเธทเนเธญเธเธ”เธณ / เน€เธฃเธทเนเธญเธเนเธ”เธ
 2. Committee name
 3. Date
 4. Parties
@@ -348,7 +349,7 @@ Rules:
 - Seed validation must confirm prefix/tag, idempotency, and no real data.
 - Cleanup must be planned before real seed.
 - Cleanup must identify pilot records by prefix/tag and never delete real records.
-- Controlled real-case trials must start with 3–5 sanitized cases, not broad rollout.
+- Controlled real-case trials must start with 3โ€“5 sanitized cases, not broad rollout.
 
 ---
 
@@ -365,12 +366,12 @@ Important:
 - Do not change Prisma schema casually.
 - If schema changes, create a migration and explain why.
 - **Vercel preview deployments share the production database by default.** Always verify the "Preview" environment variable tab in the Vercel dashboard before executing any seed or mutation against a preview deployment.
-- **HTTP 401 from `/api/health/db` proves auth is working — it does NOT prove the database is separate from production.** Do not infer DB classification from auth responses alone.
+- **HTTP 401 from `/api/health/db` proves auth is working โ€” it does NOT prove the database is separate from production.** Do not infer DB classification from auth responses alone.
 - **Real pilot seed requires confirmed non-production DB, owner approval, dry-run pass, and cleanup plan.** All four conditions must be met before executing any real seed.
 - **Environment variable values must be verified by name/scope only.** Never document actual secret values, connection strings, or passwords anywhere in tracked files.
-- **Staging Supabase projects use pooler URLs** — the same URL pattern as production Supabase. Use `NODE_ENV=production` (not URL content) to detect true production environment in scripts.
-- **Use separate flag names for staging vs. production overrides** — `ALLOW_STAGING_PILOT_SEED=YES` for staging, `ALLOW_PRODUCTION_PILOT_SEED=YES` for production. Never use the production flag for staging.
-- **Prisma client initializes at import time** — dry-run scripts still require a DATABASE_URL even if they make no DB calls. This is expected behavior, not a bug.
+- **Staging Supabase projects use pooler URLs** โ€” the same URL pattern as production Supabase. Use `NODE_ENV=production` (not URL content) to detect true production environment in scripts.
+- **Use separate flag names for staging vs. production overrides** โ€” `ALLOW_STAGING_PILOT_SEED=YES` for staging, `ALLOW_PRODUCTION_PILOT_SEED=YES` for production. Never use the production flag for staging.
+- **Prisma client initializes at import time** โ€” dry-run scripts still require a DATABASE_URL even if they make no DB calls. This is expected behavior, not a bug.
 - **Never use `prisma db push --accept-data-loss` on staging or production.** Use migration-based schema changes only (`prisma migrate deploy`).
 - **Any command reading `.env*` can expose secrets in terminal logs.** Do not commit terminal or task logs to the repository.
 - **Pilot seed execution must not proceed if DB target cannot be proven non-production.**
@@ -380,10 +381,10 @@ Important:
 - Seed validation must confirm prefix/tag, idempotency, and no real data.
 - Cleanup must be planned before real seed.
 - Cleanup must identify pilot records by prefix/tag and never delete real records.
-- Controlled real-case trials must start with 3–5 sanitized cases, not broad rollout.
-- **Preview/staging pilot workflow execution must verify end-to-end workflows with pilot-only data.** Static code audit is insufficient — live authenticated role tests are required for a full pass.
-- **Pilot workflow pass requires route, role, API, and data-scope verification** — build-only or static-audit-only must be recorded as partial, not full pass.
-- **Core workflow failures must be classified (Severity A–D) before applying code fixes.**
+- Controlled real-case trials must start with 3โ€“5 sanitized cases, not broad rollout.
+- **Preview/staging pilot workflow execution must verify end-to-end workflows with pilot-only data.** Static code audit is insufficient โ€” live authenticated role tests are required for a full pass.
+- **Pilot workflow pass requires route, role, API, and data-scope verification** โ€” build-only or static-audit-only must be recorded as partial, not full pass.
+- **Core workflow failures must be classified (Severity Aโ€“D) before applying code fixes.**
 - **Production mutation remains prohibited until explicit real-case trial approval.**
 - Untracked scripts (`curl_all.ps1`, `test_routes.ps1`, etc.) that are localhost-only developer tools should be added to `.gitignore`, not committed.
 - **Microsoft Entra ID (Azure AD) OAuth authentication means DB-seeded `@example.test` users cannot log in** without real Microsoft accounts. Live pilot UAT requires real staff Microsoft accounts assigned to pilot roles in the staging DB via the admin UI.
@@ -511,10 +512,10 @@ For errors:
 - show actionable next steps
 
 Production database error example:
-“ไม่สามารถเชื่อมต่อฐานข้อมูล Production ได้ กรุณาตรวจสอบ DATABASE_URL ใน Vercel Environment Variables”
+โ€เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เน€เธเธทเนเธญเธกเธ•เนเธญเธเธฒเธเธเนเธญเธกเธนเธฅ Production เนเธ”เน เธเธฃเธธเธ“เธฒเธ•เธฃเธงเธเธชเธญเธ DATABASE_URL เนเธ Vercel Environment Variablesโ€
 
 AI warning:
-“ข้อความนี้เป็นร่างจาก AI ต้องตรวจสอบโดยนิติกร/กรรมการก่อนใช้งานจริง”
+โ€เธเนเธญเธเธงเธฒเธกเธเธตเนเน€เธเนเธเธฃเนเธฒเธเธเธฒเธ AI เธ•เนเธญเธเธ•เธฃเธงเธเธชเธญเธเนเธ”เธขเธเธดเธ•เธดเธเธฃ/เธเธฃเธฃเธกเธเธฒเธฃเธเนเธญเธเนเธเนเธเธฒเธเธเธฃเธดเธโ€
 
 ---
 
@@ -644,9 +645,9 @@ Warnings / next steps:
 
 ## 16. Current Recommended Next Step
 
-See `PROJECT_STATE.md` §12 for the definitive recommended next step.
+See `PROJECT_STATE.md` ยง12 for the definitive recommended next step.
 
-Summary: **Prompt 48 — Pilot Data Seeding + Controlled Real-Case Trial**
+Summary: **Prompt 48 โ€” Pilot Data Seeding + Controlled Real-Case Trial**
 
 Prerequisites:
 - Intelligence baseline: completed (this prompt, Prompt 47.5)
@@ -686,7 +687,7 @@ Prerequisites:
 ### Before starting work:
 1. Read `SKILL.md` (this file)
 2. Read `ARCHITECTURE.md` (if touching system structure, deployment, or tech stack)
-3. Read `PROJECT_STATE.md` (always — to know where we are)
+3. Read `PROJECT_STATE.md` (always โ€” to know where we are)
 4. Read `DATABASE_SCHEMA.md` (if touching Prisma schema, migrations, or models)
 5. Read `COMPONENT_MAP.md` (if adding/modifying routes, components, or API handlers)
 
@@ -716,7 +717,7 @@ These patterns have caused real problems in this project. Do not repeat them:
 | Write audit logs in React Server Component render | Write mutations only in API routes / Server Actions |
 | Call `requireApiPermission` without try/catch | Always wrap in try/catch; return 401/403 NextResponse |
 | Claim full UAT when accounts unavailable | Document as partial; list blocked items explicitly |
-| Commit `.env`, `.env.local`, secrets, tokens, passwords | Never commit — always verify with `git grep` |
+| Commit `.env`, `.env.local`, secrets, tokens, passwords | Never commit โ€” always verify with `git grep` |
 | Mix mock data with production data | Always guard with `NODE_ENV` checks |
 | Trust Windows build for Linux/Vercel path casing | Use lowercase filenames; verify on Vercel |
 | Claim untracked files are deployed | Always run `git status --untracked-files=all` before claiming parity |
@@ -725,7 +726,7 @@ These patterns have caused real problems in this project. Do not repeat them:
 | Auto-overwrite human draft text | AI output must be manually inserted; never auto-overwrite |
 | Draft full legal decision in one AI call | Draft section-by-section only |
 | Skip updating intelligence files after a prompt | Always update relevant docs as the final step |
-| Assume Vercel preview = separate staging DB | Verify in Vercel dashboard → Project → Settings → Environment Variables → Preview tab before any seed |
+| Assume Vercel preview = separate staging DB | Verify in Vercel dashboard โ’ Project โ’ Settings โ’ Environment Variables โ’ Preview tab before any seed |
 | Execute pilot seed before environment is confirmed | Always confirm non-production environment classification first; block and document if uncertain |
 | Claim pilot workflow passed with static audit only | Static audit + build = partial pass; live authenticated role tests are required for full pass |
 | Leave temporary developer scripts untracked | Add to `.gitignore` or commit as utility; never leave ambiguous in working tree |
@@ -839,9 +840,9 @@ Warnings / next steps:
 
 ## 16. Current Recommended Next Step
 
-See `PROJECT_STATE.md` §12 for the definitive recommended next step.
+See `PROJECT_STATE.md` ยง12 for the definitive recommended next step.
 
-Summary: **Prompt 48 — Pilot Data Seeding + Controlled Real-Case Trial**
+Summary: **Prompt 48 โ€” Pilot Data Seeding + Controlled Real-Case Trial**
 
 Prerequisites:
 - Intelligence baseline: completed (this prompt, Prompt 47.5)
@@ -885,7 +886,7 @@ Prerequisites:
 ### Before starting work:
 1. Read `SKILL.md` (this file)
 2. Read `ARCHITECTURE.md` (if touching system structure, deployment, or tech stack)
-3. Read `PROJECT_STATE.md` (always — to know where we are)
+3. Read `PROJECT_STATE.md` (always โ€” to know where we are)
 4. Read `DATABASE_SCHEMA.md` (if touching Prisma schema, migrations, or models)
 5. Read `COMPONENT_MAP.md` (if adding/modifying routes, components, or API handlers)
 
@@ -1055,7 +1056,7 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 
 1. **Evidence over Momentum**: If the Pilot was blocked and no operational evidence exists, do not fabricate a positive review. Truth is more important than momentum.
 2. **Relaunch Gate Necessity**: When critical blockers force a Pilot suspension, resuming requires a formal relaunch gate (Path D) to ensure technical stability is re-verified.
-3. **Business Logic Verification**: Core business rules (like mapping red case numbers to Completed/เสร็จสิ้น) must be verified through code evidence, not just assumptions.
+3. **Business Logic Verification**: Core business rules (like mapping red case numbers to Completed/เน€เธชเธฃเนเธเธชเธดเนเธ) must be verified through code evidence, not just assumptions.
 4. **Controlled Pilot Discipline**: Never expand Pilot scope without evidence. If a week passes without usage due to blockers, do not invent new features; resolve the blockers and restart the observation period safely.
 
 ### MVP Simple Access Mode
@@ -1069,3 +1070,4 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - **Rule**: After disabling login, verify page content and APIs, not only route access.
 - **Rule**: MVP no-auth mode must use a role that passes dashboard/API permission checks.
 - **Rule**: Dashboard must never spin forever; it must show data, empty state, or error.
+

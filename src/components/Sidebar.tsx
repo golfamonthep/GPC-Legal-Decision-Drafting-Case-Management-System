@@ -44,7 +44,7 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
         className="group relative flex shrink-0 items-center gap-3 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#121215] p-3 transition-colors hover:border-white/20"
       >
         <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#991b1b] ring-1 ring-white/15">
-          <Image src={OWNER_PHOTO} alt="" fill sizes="96px" className="scale-[1.65] object-cover object-[50%_18%]" />
+          <Image src={OWNER_PHOTO} alt="" fill sizes="96px" className="rounded-full object-cover object-[50%_15%]" />
         </span>
         <span className="min-w-0">
           <span className="block text-sm font-bold leading-5 text-white">พล.ต.อ.วิเชียร พจน์โพธิ์ศรี</span>

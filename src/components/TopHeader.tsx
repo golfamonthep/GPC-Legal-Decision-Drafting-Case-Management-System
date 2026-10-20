@@ -37,7 +37,7 @@ export function TopHeader({
               alt={OWNER_NAME}
               fill
               sizes="32px"
-              className="scale-[1.65] object-cover object-[50%_18%]"
+              className="rounded-full object-cover object-[50%_15%]"
             />
           </span>
           <span className="whitespace-nowrap text-xs font-bold text-white group-hover:text-zinc-300 transition-colors">

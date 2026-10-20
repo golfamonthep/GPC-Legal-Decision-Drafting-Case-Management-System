@@ -203,50 +203,27 @@ export default async function DashboardPage({
                   alt={OWNER_NAME}
                   fill
                   sizes="40px"
-                  className="scale-[1.65] rounded-full object-cover object-[50%_18%]"
+                  className="rounded-full object-cover object-[50%_15%]"
                 />
               </div>
             </div>
           </div>
 
-          {/* Hero Overview Row: Left Title & Cutout Portrait + Right 3D Fanned Account Insights Deck */}
+          {/* Hero Overview Row: Left Title & Executive Identity + Right 3D Fanned Account Insights Deck */}
           <div className="grid grid-cols-1 gap-8 pt-2 lg:grid-cols-12 lg:items-end">
-            {/* Left (5 cols): Dashboard Overview Title + Clean Person-Only Cutout Identity */}
-            <div className="lg:col-span-5 space-y-4">
-              <div>
-                <p className="text-xs font-medium text-zinc-400">
-                  Data Based on all registries · ข้อมูลทะเบียนคุมสำนวนทั้งหมด
-                </p>
-                <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                  Dashboard Overview
-                </h1>
-              </div>
-
-              {/* Executive Identity Card with Person-Only Cutout on Police Red */}
-              <div className="flex items-center gap-4 rounded-2xl border border-white/[0.08] bg-[#121215] p-3.5">
-                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-[#991b1b] shadow-[0_10px_24px_-8px_rgba(153,27,27,0.7)]">
-                  <Image
-                    src={OWNER_PHOTO}
-                    alt={`${OWNER_NAME} ${OWNER_ROLE}`}
-                    fill
-                    sizes="96px"
-                    priority
-                    className="scale-[1.2] object-cover object-[50%_12%]"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-base font-bold text-white sm:text-lg">
-                    {OWNER_NAME}
-                  </p>
-                  <p className="text-xs font-semibold text-zinc-300">
-                    {OWNER_ROLE}
-                  </p>
-                  <p className="mt-1 flex items-center gap-1.5 text-[11px] text-zinc-400">
-                    <Scale size={12} className="shrink-0 text-[#dc2626]" aria-hidden="true" />
-                    <span className="truncate">{OWNER_ORG_TH}</span>
-                  </p>
-                </div>
-              </div>
+            {/* Left (5 cols): Clean Typography matching CYBER Tablet Template */}
+            <div className="lg:col-span-5 space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                Data Based on all registries · ทะเบียนคุมสำนวน ก.พ.ค.ตร.
+              </p>
+              <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Dashboard Overview
+              </h1>
+              <p className="pt-1 text-sm font-medium text-zinc-300">
+                <strong className="font-semibold text-white">{OWNER_NAME}</strong>{" "}
+                <span className="text-zinc-500">·</span>{" "}
+                <span className="text-zinc-400">{OWNER_ROLE}</span>
+              </p>
             </div>
 
             {/* Right (7 cols): 3D Fanned "Account Insights" Cards (Faithful to CYBER Template) */}
@@ -298,10 +275,13 @@ export default async function DashboardPage({
                     <ChevronsRight size={16} className="text-[#dc2626]" aria-hidden="true" />
                   </div>
 
-                  <p className="mt-4 text-lg font-medium leading-relaxed text-white sm:text-[21px] sm:leading-[1.45]">
+                  <p className="mt-4 text-base font-normal leading-relaxed text-zinc-300 sm:text-[19px] sm:leading-[1.45]">
                     ผลการพิจารณาวินิจฉัยสะสมดำเนินการแล้วเสร็จ{" "}
-                    <span className="font-bold text-[#ef4444]">
-                      {number.format(completedCount)}/{number.format(snapshot?.totalCases ?? 0)} เรื่อง ({completionPct}%).
+                    <strong className="font-bold text-white">
+                      {number.format(completedCount)}/{number.format(snapshot?.totalCases ?? 0)} เรื่อง
+                    </strong>{" "}
+                    <span className="inline-block rounded-md bg-[#991b1b] px-2 py-0.5 text-xs font-bold text-white shadow">
+                      +{completionPct}%
                     </span>
                   </p>
 
