@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/lib/*.test.ts src/lib/dashboard/*.test.ts src/lib/analysis/*.test.ts",
+    "test": "tsx --test src/lib/*.test.ts src/lib/dashboard/*.test.ts src/lib/analysis/*.test.ts src/lib/thai-law/*.test.ts",
     "db:seed": "prisma db seed",
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
