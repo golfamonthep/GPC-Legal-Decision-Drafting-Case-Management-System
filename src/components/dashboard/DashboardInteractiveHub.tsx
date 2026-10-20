@@ -53,6 +53,17 @@ function buildSmoothWavePath(points: Array<{ x: number; y: number }>): string {
   return d;
 }
 
+function getCaseTypePrefix(type?: string, blackNumber?: string): string {
+  if (blackNumber && (blackNumber.startsWith("อุทธรณ์") || blackNumber.startsWith("ร้องทุกข์"))) {
+    return "";
+  }
+  if (!type) return "";
+  const t = type.trim().toLowerCase();
+  if (t === "appeal" || t.includes("อุทธรณ์")) return "อุทธรณ์";
+  if (t === "complaint" || t.includes("ทุกข์")) return "ร้องทุกข์";
+  return type;
+}
+
 export function DashboardInteractiveHub({
   snapshot,
   sections,
@@ -767,6 +778,7 @@ export function DashboardInteractiveHub({
               <div className="mt-4 space-y-3">
                 {snapshot.urgentCases.slice(0, 3).map((c) => {
                   const isOverdue = c.daysUntilDue < 0;
+                  const typePrefix = getCaseTypePrefix(c.type, c.blackNumber);
                   return (
                     <div
                       key={c.id}
@@ -782,7 +794,12 @@ export function DashboardInteractiveHub({
                         </span>
                         <div className="min-w-0">
                           <p className="truncate text-xs font-semibold text-white">
-                            {c.blackNumber}
+                            <span>{typePrefix ? `${typePrefix} ` : ""}{c.blackNumber}</span>
+                            {c.petitionerName && (
+                              <span className="font-medium text-zinc-300 ml-1.5">
+                                · {c.petitionerName}
+                              </span>
+                            )}
                           </p>
                           <p className="truncate text-[11px] text-zinc-400">
                             {c.subject} · {c.legalOfficer}
@@ -1300,18 +1317,24 @@ export function DashboardInteractiveHub({
               </div>
 
               <div className="mt-3 max-h-[300px] space-y-2 overflow-auto pr-1">
-                {snapshot.urgentCases.slice(0, 12).map((c) => (
-                  <div
-                    key={c.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-[#121215] p-3 text-xs"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-white">{c.blackNumber}</span>
-                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold text-zinc-300">
-                          {c.type}
-                        </span>
-                      </div>
+                {snapshot.urgentCases.slice(0, 12).map((c) => {
+                  const typePrefix = getCaseTypePrefix(c.type, c.blackNumber);
+                  return (
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-[#121215] p-3 text-xs"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="font-bold text-white">
+                            {typePrefix ? `${typePrefix} ` : ""}{c.blackNumber}
+                          </span>
+                          {c.petitionerName && (
+                            <span className="font-medium text-zinc-300">
+                              · {c.petitionerName}
+                            </span>
+                          )}
+                        </div>
                       <p className="mt-0.5 truncate text-zinc-300">{c.subject}</p>
                       <p className="mt-0.5 text-[11px] text-zinc-500">
                         ผู้รับผิดชอบ: {c.legalOfficer} · สถานะ: {c.status}
@@ -1329,7 +1352,7 @@ export function DashboardInteractiveHub({
                       </span>
                     </div>
                   </div>
-                ))}
+                ); })}
                 {snapshot.urgentCases.length === 0 && (
                   <p className="py-6 text-center text-xs text-zinc-500">
                     ไม่มีสำนวนที่เกินกำหนดหรือครบกำหนดใน 7 วัน

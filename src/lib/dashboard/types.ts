@@ -100,6 +100,7 @@ export interface DashboardSnapshot {
     id: string;
     blackNumber: string;
     type: string;
+    petitionerName?: string;
     subject: string;
     status: string;
     legalOfficer: string;

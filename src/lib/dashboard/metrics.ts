@@ -253,6 +253,7 @@ export function deriveDashboardSnapshot(
         id: record.id,
         blackNumber: record.blackNumber,
         type: record.type,
+        petitionerName: permissions.canViewCaseDetails ? record.petitionerName || "" : "ข้อมูลจำกัดตามสิทธิ์",
         subject: permissions.canViewCaseDetails ? record.subject : "ข้อมูลคดีจำกัดตามสิทธิ์",
         status: record.currentStatus || "ยังไม่ระบุ",
         legalOfficer: permissions.canViewCaseDetails
