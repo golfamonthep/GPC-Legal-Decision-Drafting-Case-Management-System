@@ -285,13 +285,21 @@ html:not([data-theme="dark"]) .cyber-insight-front {
 html[data-theme="light"] .cyber-insight-back,
 html:not([data-theme="dark"]) .cyber-insight-back {
   background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%) !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .cyber-insight-back p,
+html[data-theme="light"] .cyber-insight-back div,
+html:not([data-theme="dark"]) .cyber-insight-back p,
+html:not([data-theme="dark"]) .cyber-insight-back div {
+  color: #64748b !important;
 }
 
 /* SVGs & Charts in Light Mode */
 html[data-theme="light"] .cyber-gauge-track,
 html:not([data-theme="dark"]) .cyber-gauge-track {
-  stroke: #e2e8f0 !important;
+  stroke: #cbd5e1 !important;
 }
 
 html[data-theme="light"] .cyber-chart-kpi,

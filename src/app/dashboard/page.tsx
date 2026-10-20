@@ -230,7 +230,7 @@ export default async function DashboardPage({
                 Dashboard Overview
               </h1>
               <p className="pt-1 text-sm font-medium text-zinc-300">
-                <strong className="font-semibold text-white">{OWNER_NAME}</strong>{" "}
+                <strong className="font-semibold text-white whitespace-nowrap">{OWNER_NAME}</strong>{" "}
                 <span className="text-zinc-500">·</span>{" "}
                 <span className="text-zinc-400">{OWNER_ROLE}</span>
               </p>
@@ -242,35 +242,35 @@ export default async function DashboardPage({
                 {/* Far Back Fanned Card 4 */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-5 right-0 hidden w-[64%] translate-x-10 rotate-[12deg] rounded-[1.5rem] border border-white/[0.06] bg-[#111114]/70 p-5 sm:block"
+                  className="pointer-events-none absolute inset-y-5 right-0 hidden w-[64%] translate-x-10 rotate-[12deg] rounded-[1.5rem] cyber-insight-back p-5 opacity-60 sm:block"
                 />
                 {/* Back Fanned Card 3 */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-3 right-6 hidden w-[68%] translate-x-6 rotate-[8deg] rounded-[1.5rem] border border-white/[0.08] bg-[radial-gradient(60%_50%_at_50%_100%,rgba(185,28,28,0.16)_0%,rgba(17,17,20,0.92)_100%)] p-5 sm:block"
+                  className="pointer-events-none absolute inset-y-3 right-6 hidden w-[68%] translate-x-6 rotate-[8deg] rounded-[1.5rem] cyber-insight-back p-5 opacity-85 sm:block"
                 >
-                  <div className="flex justify-end text-zinc-600">
+                  <div className="flex justify-end text-zinc-500">
                     <ChevronsRight size={15} />
                   </div>
-                  <p className="mt-9 text-right text-sm font-medium text-white/15">
+                  <p className="mt-9 text-right text-sm font-medium opacity-40">
                     ...สำนวน
                   </p>
-                  <p className="mt-1 text-right text-sm font-medium text-white/15">
+                  <p className="mt-1 text-right text-sm font-medium opacity-40">
                     ...วินิจฉัย
                   </p>
                 </div>
                 {/* Middle Fanned Card 2 */}
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-y-1.5 right-14 hidden w-[72%] translate-x-3 rotate-[4deg] rounded-[1.5rem] border border-white/10 bg-[radial-gradient(60%_55%_at_50%_100%,rgba(185,28,28,0.24)_0%,rgba(19,19,23,0.96)_100%)] p-5 sm:block"
+                  className="pointer-events-none absolute inset-y-1.5 right-14 hidden w-[72%] translate-x-3 rotate-[4deg] rounded-[1.5rem] cyber-insight-back p-5 sm:block"
                 >
-                  <div className="flex justify-end text-[#dc2626]/60">
+                  <div className="flex justify-end text-[#dc2626]/70">
                     <ChevronsRight size={16} />
                   </div>
-                  <p className="mt-8 text-right text-base font-medium text-white/25">
+                  <p className="mt-8 text-right text-base font-medium opacity-50">
                     ...ดำเนินการ
                   </p>
-                  <p className="mt-1 text-right text-base font-medium text-white/25">
+                  <p className="mt-1 text-right text-base font-medium opacity-50">
                     ...สำเร็จ
                   </p>
                 </div>

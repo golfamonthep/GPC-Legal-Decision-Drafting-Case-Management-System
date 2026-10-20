@@ -32,7 +32,7 @@ export function AppShell({ children, user, showInsecureModeBanner, initialCaseRe
 
   return (
     <>
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-80 lg:flex-col">
         <Sidebar user={user} />
       </div>
 
@@ -40,7 +40,7 @@ export function AppShell({ children, user, showInsecureModeBanner, initialCaseRe
         <button type="button" onClick={closeMenu} autoFocus aria-label="ปิดเมนูหลัก" className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-lg text-slate-200 hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-white"><X className="h-5 w-5" /></button>
         <Sidebar user={user} onNavigate={closeMenu} />
       </dialog>
-      <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden lg:pl-72">
+      <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden lg:pl-80">
         {showInsecureModeBanner && (
           <div className="bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-800">
             โหมดพัฒนา: ระบบยืนยันตัวตนถูกปิดใช้งาน

@@ -1008,12 +1008,12 @@ export function DashboardInteractiveHub({
                           <strong className="text-white">{numberFmt.format(st.count)}</strong> เรื่อง ({pctFmt.format(pct)}%)
                         </span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.07]">
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/[0.07] border border-slate-200/50 dark:border-transparent">
                         <div
                           className={`h-full rounded-full ${
                             isFocalStage
                               ? "bg-gradient-to-r from-[#991b1b] to-[#ef4444]"
-                              : "bg-white/25"
+                              : "bg-slate-300 dark:bg-white/25"
                           }`}
                           style={{ width: `${Math.max(4, Math.min(100, pct))}%` }}
                         />

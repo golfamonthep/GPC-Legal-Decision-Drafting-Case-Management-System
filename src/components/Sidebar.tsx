@@ -47,9 +47,13 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
         <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-[#991b1b] ring-2 ring-white/20">
           <Image src={OWNER_PHOTO} alt="" fill sizes="112px" className="rounded-full object-cover object-[50%_15%]" />
         </span>
-        <span className="min-w-0">
-          <span className="block text-sm font-bold leading-5 text-white">พล.ต.อ.วิเชียร พจน์โพธิ์ศรี</span>
-          <span className="mt-0.5 block text-xs font-medium text-zinc-400">กรรมการ ก.พ.ค.ตร.</span>
+        <span className="min-w-0 flex-1">
+          <span className="block whitespace-nowrap text-sm font-bold leading-5 text-white" style={{ whiteSpace: "nowrap" }}>
+            พล.ต.อ.วิเชียร พจน์โพธิ์ศรี
+          </span>
+          <span className="mt-0.5 block whitespace-nowrap text-xs font-medium text-zinc-400">
+            กรรมการ ก.พ.ค.ตร.
+          </span>
         </span>
       </Link>
       <nav aria-label="เมนูหลัก" className="mt-1 flex flex-1 flex-col">
