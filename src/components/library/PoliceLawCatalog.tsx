@@ -21,12 +21,13 @@ import { PoliceLawSection, PoliceLawAct } from "@/lib/thai-law/types";
 import LawReaderModal from "./LawReaderModal";
 
 const QUICK_SUGGESTIONS = [
-  { label: "ม.105 (อุทธรณ์)", query: "105" },
-  { label: "การร้องทุกข์", query: "การร้องทุกข์" },
-  { label: "การสืบสวนข้อเท็จจริง", query: "สืบสวนข้อเท็จจริง" },
-  { label: "การสอบสวนพิจารณา", query: "สอบสวนพิจารณา" },
-  { label: "การสั่งพักราชการ", query: "พักราชการ" },
-  { label: "ความผิดชัดแจ้ง", query: "ปรากฏชัดแจ้ง" },
+  { label: "ม.141 (อุทธรณ์ ก.พ.ค.ตร.)", query: "141" },
+  { label: "ม.147 (ร้องทุกข์ ก.พ.ค.ตร.)", query: "147" },
+  { label: "ม.33 (จัดตั้ง ก.พ.ค.ตร.)", query: "33" },
+  { label: "ม.116 (โทษวินัย 7 สถาน)", query: "116" },
+  { label: "ม.125 (สืบสวนข้อเท็จจริง)", query: "125" },
+  { label: "ม.131 (สั่งพัก/สั่งให้ออก)", query: "131" },
+  { label: "ก.ตร. แต่งตั้ง 2567", query: "แต่งตั้ง" },
   { label: "ม.157 ป.อาญา", query: "157" },
   { label: "ความรับผิดทางละเมิด", query: "ละเมิด" },
   { label: "พ.ร.บ.จราจรทางบก", query: "จราจรทางบก" },
@@ -138,7 +139,7 @@ export default function PoliceLawCatalog() {
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-red-600/30 text-red-200 border border-red-500/30">
             <Sparkles className="h-3.5 w-3.5 text-red-400" />
-            <span>แคตตาล็อกกฎหมายตำรวจ · สำนักงานคณะกรรมการกฤษฎีกา / PyThaiNLP</span>
+            <span>แคตตาล็อกกฎหมายตำรวจ · พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ (ฉบับปัจจุบัน) & กฤษฎีกา</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
@@ -146,7 +147,7 @@ export default function PoliceLawCatalog() {
           </h1>
 
           <p className="text-sm text-slate-300 leading-relaxed max-w-2xl">
-            รวบรวมพระราชบัญญัติตำรวจแห่งชาติ, กฎ ก.ตร. วินัย อุทธรณ์ ร้องทุกข์, ประมวลกฎหมายอาญา, และกฎหมายปกครองที่เกี่ยวข้อง ค้นหารายมาตราพร้อมบทคัดย่อและอ่านฉบับเต็มได้ทันที
+            รวบรวมพระราชบัญญัติตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ (ฉบับปัจจุบัน), ก.พ.ค.ตร., กฎ ก.ตร. วินัย อุทธรณ์ ร้องทุกข์ และแต่งตั้ง ๒๕๖๗, ประมวลกฎหมายอาญา, และกฎหมายปกครอง ค้นหารายมาตราและอ่านฉบับเต็มได้ทันที
           </p>
 
           {/* Search Bar */}
@@ -157,7 +158,7 @@ export default function PoliceLawCatalog() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="พิมพ์คีย์เวิร์ด หรือเลขมาตรา เช่น '105', 'อุทธรณ์', '157', 'ร้องทุกข์', 'พักราชการ'..."
+                placeholder="พิมพ์คีย์เวิร์ด หรือเลขมาตรา เช่น '141' (อุทธรณ์), '147' (ร้องทุกข์), '33' (ก.พ.ค.ตร.), '157'..."
                 className="w-full pl-12 pr-28 py-3.5 rounded-xl bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all shadow-inner"
               />
               {query && (

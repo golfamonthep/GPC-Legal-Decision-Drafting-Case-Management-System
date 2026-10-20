@@ -3,6 +3,7 @@ import path from 'path';
 
 const RAW_DIR = 'C:/Users/polic/.gemini/antigravity/brain/de5ac5fc-025e-4d6a-a90e-de7180a72e9d/scratch/raw';
 const CRIMINAL_FILE = 'C:/Users/polic/.gemini/antigravity/brain/de5ac5fc-025e-4d6a-a90e-de7180a72e9d/scratch/criminal.csv';
+const LAW_2565_MD = 'C:/APP/data/police-appointments-2569/CURRENT/1-เนื้อหาหลักและดัชนี/01-กฎหมาย.md';
 
 const TARGET_PATHS = [
   'C:/Users/polic/.codex/worktrees/ai-harness/APP/src/data/thai-law/police-laws.json',
@@ -21,7 +22,7 @@ function toArabicNum(str) {
 
 const actsConfig = [
   // 1. วินัย อุทธรณ์ ร้องทุกข์ และกำลังพลตำรวจ
-  { id: 'police-act-2547', sysid: '646678', category: 'วินัย อุทธรณ์ ร้องทุกข์', type: 'section', prefix: 'มาตรา' },
+  { id: 'ktr-appointment-2567', category: 'วินัย อุทธรณ์ ร้องทุกข์', type: 'rule', prefix: 'ข้อ' },
   { id: 'ktr-appeal-2547', sysid: '441914', category: 'วินัย อุทธรณ์ ร้องทุกข์', type: 'rule', prefix: 'ข้อ' },
   { id: 'ktr-petition-2547', sysid: '446315', category: 'วินัย อุทธรณ์ ร้องทุกข์', type: 'rule', prefix: 'ข้อ' },
   { id: 'ktr-investigation-fact-2556', sysid: '687259', category: 'วินัย อุทธรณ์ ร้องทุกข์', type: 'rule', prefix: 'ข้อ' },
@@ -36,6 +37,7 @@ const actsConfig = [
   { id: 'ktr-regular-reserve-2548', sysid: '458480', category: 'วินัย อุทธรณ์ ร้องทุกข์', type: 'rule', prefix: 'ข้อ' },
   { id: 'ktr-order-manner-2547', sysid: '453318', category: 'วินัย อุทธรณ์ ร้องทุกข์', type: 'rule', prefix: 'ข้อ' },
   { id: 'ktr-qualifications-2547', sysid: '591955', category: 'วินัย อุทธรณ์ ร้องทุกข์', type: 'rule', prefix: 'ข้อ' },
+  { id: 'police-act-2547', sysid: '646678', category: 'วินัย อุทธรณ์ ร้องทุกข์', type: 'section', prefix: 'มาตรา' },
   
   // 2. กฎหมายอาญาและวิธีพิจารณา
   { id: 'witness-protection-2546', sysid: '387881', category: 'กฎหมายอาญาและวิธีพิจารณา', type: 'section', prefix: 'มาตรา' },
@@ -65,14 +67,124 @@ const actsConfig = [
 const catalog = [];
 const actList = [];
 
-// 1. Process Acts & Regulations from scratch/raw
+// 1. PRIMARY LAW: พระราชบัญญัติตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ (ฉบับปัจจุบัน)
+if (fs.existsSync(LAW_2565_MD)) {
+  const mdContent = fs.readFileSync(LAW_2565_MD, 'utf8');
+
+  // A. Parse พระราชบัญญัติตำรวจแห่งชาติ พ.ศ. ๒๕๖๕
+  const act2565Title = 'พระราชบัญญัติตำรวจแห่งชาติ พ.ศ. 2565 (ฉบับปัจจุบัน)';
+  actList.push({
+    id: 'police-act-2565',
+    sysid: 'police-act-2565',
+    title: act2565Title,
+    category: 'วินัย อุทธรณ์ ร้องทุกข์',
+    source: 'ราชกิจจานุเบกษา เล่ม ๑๓๙ ตอนที่ ๖๔ ก (๑๖ ตุลาคม ๒๕๖๕)',
+    sourceUrl: 'http://www.ratchakitcha.soc.go.th/DATA/PDF/2565/A/064/T_0001.PDF'
+  });
+
+  const actStart = mdContent.indexOf('## พระราชบัญญัติตำรวจแห่งชาติ พ.ศ. ๒๕๖๕');
+  if (actStart !== -1) {
+    const actContent = mdContent.slice(actStart);
+    const sectionBlocks = actContent.split(/(?=## (?:มาตรา|บทนำ) )/).slice(1);
+
+    for (const b of sectionBlocks) {
+      const headerMatch = b.match(/^## (มาตรา|บทนำ)\s*([๐-๙\d]+)?\s*\|\s*หน้า PDF\s*(\d+)?/);
+      if (!headerMatch) continue;
+      const isIntro = headerMatch[1] === 'บทนำ';
+      const secNum = isIntro ? 'บทนำ' : headerMatch[2];
+      const secNumArabic = isIntro ? 'intro' : toArabicNum(secNum);
+      const sectionLabel = isIntro ? 'บทนำ' : 'มาตรา ' + secNum;
+
+      let body = b.replace(/^## [^\n]+\n+/, '');
+      body = body.replace(/<!-- paragraph_id:[^>]+-->/g, '');
+      body = body.replace(/้หนา \d+\r?\n/g, '');
+      body = body.replace(/่เลม \d+ ตอนที่ [^\n]+\r?\n/g, '');
+      body = body.replace(/[\t\v\f\r ]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+      if (body.length < 5) continue;
+
+      const plainExcerpt = body.replace(/\n+/g, ' ').slice(0, 220).trim();
+
+      catalog.push({
+        id: `police-act-2565-sec-${secNumArabic}`,
+        actId: 'police-act-2565',
+        actTitle: act2565Title,
+        category: 'วินัย อุทธรณ์ ร้องทุกข์',
+        sectionNum: secNum,
+        sectionNumArabic: secNumArabic,
+        sectionLabel,
+        type: 'section',
+        excerpt: plainExcerpt,
+        content: body,
+        source: 'ราชกิจจานุเบกษา / ก.พ.ค.ตร.',
+        sourceUrl: 'http://www.ratchakitcha.soc.go.th/DATA/PDF/2565/A/064/T_0001.PDF'
+      });
+    }
+  }
+
+  // B. Parse กฎ ก.ตร. ว่าด้วยการแต่งตั้งข้าราชการตำรวจ พ.ศ. ๒๕๖๗ (ออกตาม พ.ร.บ. 2565)
+  const reg2567Title = 'กฎ ก.ตร. ว่าด้วยการแต่งตั้งข้าราชการตำรวจ พ.ศ. 2567 (ฉบับล่าสุด)';
+  actList.push({
+    id: 'ktr-appointment-2567',
+    sysid: 'ktr-app-2567',
+    title: reg2567Title,
+    category: 'วินัย อุทธรณ์ ร้องทุกข์',
+    source: 'ราชกิจจานุเบกษา / ก.ตร. (ออกตามความใน พ.ร.บ.ตำรวจแห่งชาติ ๒๕๖๕)',
+    sourceUrl: 'http://www.ratchakitcha.soc.go.th'
+  });
+
+  const regStart = mdContent.indexOf('## กฎ ก.ตร. ว่าด้วยการแต่งตั้งข้าราชการตำรวจ พ.ศ. ๒๕๖๗');
+  if (regStart !== -1 && actStart !== -1) {
+    const regContent = mdContent.slice(regStart, actStart);
+    const regBlocks = regContent.split(/(?=## (?:ข้อ|บทนำ) )/).slice(1);
+
+    for (const b of regBlocks) {
+      const headerMatch = b.match(/^## (ข้อ|บทนำ)\s*([๐-๙\d]+)?\s*\|\s*หน้า PDF\s*(\d+)?/);
+      if (!headerMatch) continue;
+      const isIntro = headerMatch[1] === 'บทนำ';
+      const secNum = isIntro ? 'บทนำ' : headerMatch[2];
+      const secNumArabic = isIntro ? 'intro' : toArabicNum(secNum);
+      const sectionLabel = isIntro ? 'บทนำ' : 'ข้อ ' + secNum;
+
+      let body = b.replace(/^## [^\n]+\n+/, '');
+      body = body.replace(/<!-- paragraph_id:[^>]+-->/g, '');
+      body = body.replace(/้หนา \d+\r?\n/g, '');
+      body = body.replace(/่เลม \d+ ตอนที่ [^\n]+\r?\n/g, '');
+      body = body.replace(/[\t\v\f\r ]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+      if (body.length < 5) continue;
+
+      const plainExcerpt = body.replace(/\n+/g, ' ').slice(0, 220).trim();
+
+      catalog.push({
+        id: `ktr-app-2567-rule-${secNumArabic}`,
+        actId: 'ktr-appointment-2567',
+        actTitle: reg2567Title,
+        category: 'วินัย อุทธรณ์ ร้องทุกข์',
+        sectionNum: secNum,
+        sectionNumArabic: secNumArabic,
+        sectionLabel,
+        type: 'rule',
+        excerpt: plainExcerpt,
+        content: body,
+        source: 'ราชกิจจานุเบกษา / ก.ตร.',
+        sourceUrl: 'http://www.ratchakitcha.soc.go.th'
+      });
+    }
+  }
+}
+
+// 2. Process Other Acts & Regulations from scratch/raw
 for (const cfg of actsConfig) {
+  if (cfg.id === 'ktr-appointment-2567') continue; // already parsed above
   const file = path.join(RAW_DIR, cfg.sysid + '.json');
   if (!fs.existsSync(file)) continue;
   const d = JSON.parse(fs.readFileSync(file, 'utf8'));
-  const rawTitle = d.title.replace(/\s+/g, ' ').trim();
-  const text = (d.txt || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  let rawTitle = d.title.replace(/\s+/g, ' ').trim();
   
+  // Tag old 2547 Act clearly so users know it is the superseded historical act
+  if (cfg.id === 'police-act-2547') {
+    rawTitle = 'พระราชบัญญัติตำรวจแห่งชาติ พ.ศ. 2547 (ฉบับเดิม - ยกเลิกแล้ว/เทียบเคียงประวัติ)';
+  }
+
   actList.push({
     id: cfg.id,
     sysid: cfg.sysid,
@@ -87,7 +199,7 @@ for (const cfg of actsConfig) {
   
   let match;
   let secIdx = 0;
-  while ((match = regex.exec(text)) !== null) {
+  while ((match = regex.exec((d.txt || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n'))) !== null) {
     const rawHeader = match[1].replace(/\s+/g, ' ').trim();
     let body = match[2].trim();
     
@@ -119,7 +231,7 @@ for (const cfg of actsConfig) {
   }
 }
 
-// 2. Process Criminal Code
+// 3. Process Criminal Code
 if (fs.existsSync(CRIMINAL_FILE)) {
   const crimTitle = 'ประมวลกฎหมายอาญา พ.ศ. ๒๔๙๙ (ฉบับสมบูรณ์)';
   actList.push({
@@ -172,7 +284,7 @@ if (fs.existsSync(CRIMINAL_FILE)) {
 }
 
 const outData = {
-  version: '1.0.0',
+  version: '2.0.0',
   generatedAt: new Date().toISOString(),
   totalSections: catalog.length,
   acts: actList,
