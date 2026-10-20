@@ -19,6 +19,7 @@ import {
 import type { SessionUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
 import { OWNER_PHOTO } from "@/lib/owner";
+import { ThemeToggle } from "./ThemeToggle";
 
 const navigation = [
   { name: "หน้าหลัก (Dashboard)", href: "/dashboard", icon: LayoutDashboard },
@@ -90,6 +91,9 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
         </ul>
       </nav>
       <div className="mt-auto border-t border-white/[0.08] pt-4 text-center text-xs leading-5 text-zinc-500">
+        <div className="mb-3 flex items-center justify-center">
+          <ThemeToggle showLabel className="w-full justify-center" />
+        </div>
         <p className="font-semibold text-white">พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.</p>
         <p className="text-zinc-400">ระบบบริหารสำนวนและวิเคราะห์คำวินิจฉัย</p>
       </div>

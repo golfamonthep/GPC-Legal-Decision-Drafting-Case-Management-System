@@ -7,26 +7,19 @@
 > 4. **ห้าม reset หรือเขียนทับงานค้างใน `C:\APP`**: การทำงาน Git/Push ให้ทำผ่าน clean worktree (`C:\Users\polic\.codex\worktrees\ai-harness\APP`) และซิงก์เฉพาะไฟล์ที่เกี่ยวข้องกลับไปยัง `C:\APP` อย่างระมัดระวัง
 
 ### สรุปสถานะระบบล่าสุด (2026-10-20)
-- **ชื่อระบบและอัตลักษณ์หน้าเว็บ (Branding)**: เปลี่ยนจาก `ก.พ.ค.ตร.` เป็น **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`** ครบทุกจุด (`Sidebar.tsx`, `TopHeader.tsx`, `dashboard/page.tsx`, `analysis/Workbench.jsx`, `login/page.tsx`, `layout.tsx`) โดย **ไม่มีการสร้างแท็บ/หน้า /owner แยก** ตามคำสั่งผู้ใช้
+- **ระบบสลับโหมดสว่าง/มืด (Light/Dark Mode System) พร้อม Light Mode เป็นค่าเริ่มต้น**:
+  - **Light Mode (Default)**: พื้นหลังขาวสว่างนุ่มนวล (`#f8fafc`), การ์ดสีขาวสะอาดตา (`#ffffff`) ขอบสีเทาอ่อน (`#e2e8f0`), ตัวอักษรหัวข้อและคำเน้นเป็น **สีดำสนิทคมชัดสูง (`#09090b` / `#0f172a`)** สบายตา คอนทราสต์สูงระดับ WCAG AAA, ข้อความรองเป็นสีชาร์โคลเข้ม (`#334155`) และสีแดงตำรวจ (`#991b1b` / `#c81e2b`) บนปุ่มคำสั่งหลัก จุดเน้น และแคปซูลเมนู
+  - **Dark Mode**: คงสไตล์ CYBER Dark Charcoal (`#0a0a0c`, `#121215`, ขอบเทาจาง, ตัวอักษรขาวคมชัด `#ffffff` และแดงตำรวจเฉพาะจุดเน้น)
+  - **ปุ่มสลับโหมด (`ThemeToggle.tsx`)**: ติดตั้งที่ TopHeader (มุมขวาบนทุกหน้า), แถบแคปซูลหน้า Dashboard และท้าย Sidebar Drawer สลับได้ทันทีและจดจำค่าใน `localStorage` (`gpc-theme`) โดยมีสคริปต์ก่อน hydrate ป้องกันจอขาวแวบ (FOUC)
+- **ชื่อระบบและอัตลักษณ์หน้าเว็บ (Branding)**: **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`** ครบทุกจุด (`Sidebar.tsx`, `TopHeader.tsx`, `dashboard/page.tsx`, `analysis/Workbench.jsx`, `login/page.tsx`, `layout.tsx`) โดยไม่มีการสร้างแท็บ/หน้า /owner แยก
 - **ภาพบุคคลไดคัทเฉพาะตัวบุคคลบนพื้นหลังสีแดงตำรวจ (`public/owner/wichian-studio-red.jpg` & `public/owner/wichian-cutout.png`)**:
-  - ไดคัทเฉพาะตัวบุคคลของ **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี** (ตัดฉากผนัง ตัวอักษร และตราสัญลักษณ์ด้านหลังออกทั้งหมด) ผสานขอบลาดไหล่และเส้นผมอย่างประณีต วางบนพื้นหลังสีแดงตำรวจทึบสะอาดตา (`#991b1b`) เข้ากับธีมเว็บไซต์ (`src/lib/owner.ts`) แสดงผลเฉพาะใน Avatar วงกลมด้านขวาบน และการ์ดโปรไฟล์ส่วนหัว Sidebar
-- **ธีมเว็บไซต์ CYBER Dark Charcoal แบบเรียบหรู สบายตา (`src/app/theme-bentos.css`)**:
-  - พื้นหลังและตัวการ์ดใช้สีดำเทาด้าน (`#0a0a0c`, `#121215`, `#131317`) ขอบสีเทาจาง (`rgba(255,255,255,0.08)`) ไม่ใช้กรอบสีแดงหรือตัวอักษรสีชมพูรกตา
-  - **Hero Section ถอดแบบจากแท็บเล็ต CYBER อย่างแม่นยำ**: ด้านซ้ายเป็น Typography สะอาดตา (`Data Based on all registries`, `Dashboard Overview`, `พล.ต.อ.วิเชียร พจน์โพธิ์ศรี · กรรมการ ก.พ.ค.ตร.`) ไม่มีการ์ดรูปกล่องสี่เหลี่ยมบดบัง ด้านขวาเป็นการ์ดพัดซ้อน 3 มิติ (`Account Insights`)
-  - **ลำดับชั้นตัวอักษร (Typography Hierarchy)**: คำเน้น/ตัวหนา/หัวข้อ ใช้ **สีขาวคมชัด (`#ffffff`)**, ข้อความรองใช้ **สีขาวจาง/เทาอ่อน (`#a1a1aa` / `text-zinc-300`)**, ข้อความแกนกราฟ/หมายเหตุใช้ **สีเทาหม่น (`#71717a`)** โดยไม่มีการใช้ตัวอักษรสีแดง/ชมพูในเนื้อหา
-  - **การใช้สีแดงตำรวจ (`#991b1b` / `#c81e2b` / `#d62839`) เฉพาะจุดเน้นสำคัญเท่านั้น**:
-    - ปุ่มเมนูแคปซูลที่กำลังเลือก (`Dashboard`) และปุ่มคำสั่งหลัก
-    - แสงเรืองด้านล่างของการ์ดพัดซ้อน 3 มิติ (`Account Insights`) และป้ายผลลัพธ์เปอร์เซ็นต์
-    - **กราฟเกจครึ่งวงกลมพร้อมเข็มชี้**: ส่วนหลักเป็นสีแดงตำรวจ (`#c81e2b`), ส่วนที่สองสีครีมอ่อน (`#e5c7b5`), ส่วนที่สามสีขาวนวล (`#f4f4f5`) พร้อมเข็มสีเงิน
-    - **กราฟคลื่นสองเส้นบาง (`1.75px`)**: เส้นหลักสีแดงตำรวจ (`#d62839`) คู่กับเส้นเปรียบเทียบสีครีมเทาโปร่งแสง (`rgba(229,199,181,0.55)`)
-    - **กราฟแท่งเสา (Operations Pillar Chart)**: แท่งทั่วไปเป็น **สีเทาจางโปร่งแสง (`from-white/[0.16] to-transparent`)** และใช้ **สีแดงตำรวจไล่เฉดจากปลายสีขาว (`from-white via-[#d62839] to-[#450a0a]/40`) เฉพาะแท่งที่ต้องการเน้นเพียงแท่งเดียว**
+  - ไดคัทเฉพาะตัวบุคคลของ **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี** บนพื้นหลังสีแดงตำรวจ (`#991b1b`) ปรากฏเฉพาะใน Avatar วงกลมมุมขวาบนและโปรไฟล์ส่วนหัว Sidebar
 - **AI Harness (`shared/ai-harness.mjs` & `src/lib/ai/*`)**:
   - Provider-neutral รองรับ DeepSeek Responses API (`deepseek-v4-pro`), `store: false`, JSON Schema, ไม่มี tools/web search, ไม่มี automatic fallback
-  - ปิดบังข้อมูลส่วนบุคคล (Pseudonymization: ชื่อบุคคล เลขสำนวน เลขบัตร โทรศัพท์ อีเมล) + ตรวจ Citation Allowlist + ตัด `<think>...</think>` CoT leakage (`stripCotLeakage`)
-  - ตรวจ Stale Revision (`409 Conflict` / `STALE_REVISION`) ทั้งก่อนและหลังเรียก AI ครบทุกเส้นทาง (`draftSection.ts`, `legalWordingReviewer.ts`, `citationCoverageChecker.ts`, `legalQa.ts`, `analysis/service.mjs`) ด้วย `src/lib/ai/revisionGuard.ts`
-  - ค่าเริ่มต้น `AI_ENABLED=false` (โหมดปลอดภัย ปุ่ม AI แสดงสถานะปิดชัดเจน และงานร่างด้วยมือ/ส่งออก Word ทำงานได้ 100%)
+  - ปิดบังข้อมูลส่วนบุคคล (Pseudonymization) + ตรวจ Citation Allowlist + ตัด `<think>...</think>` CoT leakage (`stripCotLeakage`)
+  - ตรวจ Stale Revision (`409 Conflict` / `STALE_REVISION`) ครบทุกเส้นทาง (`revisionGuard.ts`) โดยค่าเริ่มต้น `AI_ENABLED=false`
 - **ระบบวิเคราะห์และร่างคำวินิจฉัย (`/analysis`)**:
-  - ครบ 6 แท็บตาม `docs/ANALYSIS-ONLY-SYSTEM-DESIGN-TH.md` พร้อมแถบสถานะ 6 ขั้นตอน, `KnowledgeRail`, แถบเช็กความพร้อมข้อมูลตั้งต้น, ปุ่มนำเข้าย่อหน้าคำร้อง/คำชี้แจงเป็นข้อกล่าวอ้าง, เครื่องคำนวณโควตาตำแหน่งว่างจริง 50%, ปุ่มแทรกถ้อยคำวินิจฉัยมาตรฐาน (`พิเคราะห์แล้วเห็นว่า`, `พิจารณาแล้วเห็นว่า`), ตัวอย่างหน้ากระดาษ `ร่างคำวินิจฉัยเบื้องต้น` พร้อมส่งออก `.docx` (ตรวจ SHA-256) และค้นหาเลขไทย `๐-๙` <-> `0-9`
+  - ครบ 6 แท็บตาม `docs/ANALYSIS-ONLY-SYSTEM-DESIGN-TH.md` พร้อมแถบสถานะ 6 ขั้นตอน, `KnowledgeRail`, แถบเช็กความพร้อมข้อมูลตั้งต้น, เครื่องคำนวณโควตาตำแหน่งว่างจริง 50%, ปุ่มแทรกถ้อยคำวินิจฉัยมาตรฐาน, ตัวอย่างหน้ากระดาษ `ร่างคำวินิจฉัยเบื้องต้น` พร้อมส่งออก `.docx` (ตรวจ SHA-256) และค้นหาเลขไทย `๐-๙` <-> `0-9`
 - **ผลตรวจสอบล่าสุด**:
   - `npm test`: **ผ่าน 83/83 ข้อ**
   - `analysis-app` tests: **ผ่าน 18/18 ข้อ**
@@ -1070,4 +1063,5 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - **Rule**: After disabling login, verify page content and APIs, not only route access.
 - **Rule**: MVP no-auth mode must use a role that passes dashboard/API permission checks.
 - **Rule**: Dashboard must never spin forever; it must show data, empty state, or error.
+
 

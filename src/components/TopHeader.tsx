@@ -2,6 +2,7 @@ import { Search, Menu, Scale } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { UserMenu } from "./UserMenu";
+import { ThemeToggle } from "./ThemeToggle";
 import type { SessionUser } from "@/lib/auth/currentUser";
 import { OWNER_NAME, OWNER_PHOTO, OWNER_ROLE } from "@/lib/owner";
 
@@ -61,6 +62,7 @@ export function TopHeader({
           />
         </form>
         <div className="flex items-center gap-x-2.5 lg:gap-x-3.5">
+          <ThemeToggle />
           <Link
             href="/analysis"
             className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-gradient-to-b from-[#d62839] to-[#991b1b] px-4 py-1.5 text-xs font-bold text-white shadow-[0_4px_14px_rgba(185,28,28,0.4)] transition hover:brightness-110"

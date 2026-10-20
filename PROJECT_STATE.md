@@ -1,4 +1,24 @@
-﻿## Refined CYBER Tablet Alignment & Cutout Update — 2026-10-20
+﻿## Dual-Theme Support (Light Default with High-Contrast Black & CYBER Dark Mode) — 2026-10-20
+
+- **Theme Toggle Feature (ThemeToggle.tsx)**:
+  - Integrated into TopHeader (accessible across all pages), Dashboard top capsule bar, and Sidebar drawer.
+  - Defaults to **Light Mode** (data-theme="light" on <html>), persists in localStorage (gpc-theme), with zero-flicker pre-hydration script in <head> (src/app/layout.tsx).
+- **High-Contrast Black Typography in Light Mode (	heme-bentos.css)**:
+  - Light canvas (#f8fafc), clean white surfaces (#ffffff), subtle borders (#e2e8f0).
+  - Headings, bold text, and KPIs are rendered in **high-contrast pure black (#09090b / #0f172a)** with WCAG AAA contrast ratio.
+  - Secondary labels in dark charcoal (#334155), tertiary/axis in slate (#64748b).
+  - Police Red (#991b1b / #c81e2b) preserved on primary buttons, active capsule pills, and focal chart points with crisp white text.
+  - Seamless toggle to CYBER Dark Mode (#0a0a0c, #121215, crisp white #ffffff text).
+- **Verification**:
+  - 
+pm test: **83/83 passed**
+  - 
+pm run typecheck & 
+pm run lint: **0 errors**
+  - 
+pm run build: **35/35 routes compiled cleanly**
+
+## Refined CYBER Tablet Alignment & Cutout Update — 2026-10-20
 
 - **System Identity / Branding**: Updated across the entire web application to **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.** (src/components/Sidebar.tsx, src/components/TopHeader.tsx, src/app/dashboard/page.tsx, src/components/analysis/Workbench.jsx, src/app/login/page.tsx, src/app/layout.tsx). Strictly no separate /owner tab or route per user instruction.
 - **Hero Section CYBER Tablet Layout (media_1792477952073_1dbddec9.png)**:
@@ -614,5 +634,6 @@ Objectives:
 - **Cases/Dashboard status**: Blocked.
 - **Initialization method**: Database currently initialized through db push for MVP (Blocked).
 - **Proper migration baseline**: Remains a future production task.
+
 
 

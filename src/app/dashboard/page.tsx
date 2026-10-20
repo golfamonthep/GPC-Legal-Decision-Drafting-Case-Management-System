@@ -9,6 +9,7 @@ import { getUnifiedDashboardData } from "@/lib/dashboard/data";
 import { parseDashboardFilters } from "@/lib/dashboard/metrics";
 import { RegistryOverview } from "@/components/dashboard/RegistryOverview";
 import { DashboardInteractiveHub } from "@/components/dashboard/DashboardInteractiveHub";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   OWNER_NAME,
   OWNER_ORG_TH,
@@ -178,6 +179,7 @@ export default async function DashboardPage({
                   แสดงผล
                 </button>
               </form>
+              <ThemeToggle />
               <Link
                 href={currentHref}
                 title="รีเฟรชข้อมูล"

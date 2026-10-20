@@ -326,7 +326,8 @@ export function DashboardInteractiveHub({
                   <path
                     d="M 30 110 A 80 80 0 0 1 190 110"
                     fill="none"
-                    stroke="rgba(255,255,255,0.06)"
+                    className="cyber-gauge-track"
+                    stroke="currentColor"
                     strokeWidth="20"
                     strokeLinecap="butt"
                   />
@@ -373,7 +374,7 @@ export function DashboardInteractiveHub({
                   </text>
 
                   {/* Center KPI label */}
-                  <text x="128" y="70" fill="#ffffff" fontSize="9" fontWeight="600" textAnchor="middle">
+                  <text x="128" y="70" className="cyber-chart-kpi" fontSize="9" fontWeight="700" textAnchor="middle">
                     +{pctFmt.format(totalCompletionRate)}%
                   </text>
 
@@ -454,13 +455,14 @@ export function DashboardInteractiveHub({
                           y1={y}
                           x2="302"
                           y2={y}
-                          stroke="rgba(255,255,255,0.06)"
+                          className="cyber-chart-grid"
+                          stroke="currentColor"
                           strokeWidth="1"
                         />
                         <text
                           x="20"
                           y={y + 3}
-                          fill="#71717a"
+                          className="cyber-chart-axis"
                           fontSize="8.5"
                           textAnchor="end"
                         >
@@ -494,7 +496,7 @@ export function DashboardInteractiveHub({
                       key={i}
                       x={pt.x}
                       y="114"
-                      fill="#71717a"
+                      className="cyber-chart-axis"
                       fontSize="8.5"
                       textAnchor="middle"
                     >
@@ -577,7 +579,7 @@ export function DashboardInteractiveHub({
                             className={`w-full max-w-[22px] rounded-t-md transition-all duration-300 ${
                               isHighlighted
                                 ? "bg-gradient-to-b from-white via-[#d62839] to-[#450a0a]/40 shadow-[0_0_18px_rgba(214,40,57,0.45)]"
-                                : "bg-gradient-to-b from-white/[0.16] via-white/[0.06] to-transparent group-hover:from-white/[0.25]"
+                                : "cyber-pillar-muted group-hover:opacity-80"
                             }`}
                           />
                         </div>
@@ -681,17 +683,18 @@ export function DashboardInteractiveHub({
                           y1={y}
                           x2="544"
                           y2={y}
-                          stroke="rgba(255,255,255,0.05)"
+                          className="cyber-chart-grid"
+                          stroke="currentColor"
                           strokeWidth="1"
                         />
-                        <text x="24" y={y + 3} fill="#71717a" fontSize="9" textAnchor="end">
+                        <text x="24" y={y + 3} className="cyber-chart-axis" fontSize="9" textAnchor="end">
                           {val}
                         </text>
                       </g>
                     );
                   })}
 
-                  {/* Background Muted Grey Vertical Bars */}
+                  {/* Background Muted Vertical Bars */}
                   {perfSplinePoints.pts.map((pt, i) => (
                     <g key={`bar-${i}`}>
                       <rect
@@ -700,12 +703,12 @@ export function DashboardInteractiveHub({
                         width="20"
                         height={pt.barH}
                         rx="3"
-                        fill="url(#cyberMutedBar)"
+                        className="cyber-perf-bar"
                       />
                       <text
                         x={pt.x}
                         y="134"
-                        fill="#71717a"
+                        className="cyber-chart-axis"
                         fontSize="9"
                         textAnchor="middle"
                       >

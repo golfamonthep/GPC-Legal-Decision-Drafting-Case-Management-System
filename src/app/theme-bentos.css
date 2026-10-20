@@ -1,16 +1,44 @@
 /* ==========================================================================
-   CYBER Executive Dark Theme — Restrained Police Red Focal Accents
-   - Surfaces: Matte dark charcoal (#0a0a0c / #121215 / #17171b)
-   - Borders: Thin neutral grey (rgba(255, 255, 255, 0.08) / #242429)
-   - Typography: Crisp white (#ffffff) primary/bold, light grey (#a1a1aa) secondary,
-     muted grey (#71717a) tertiary
-   - Accent: Deep Police Red (#991b1b / #b91c1c / #dc2626) used ONLY on active pills,
-     primary CTA buttons, and single highlighted chart series/bars
+   GPC Dual-Theme System — Light Mode (Default) & CYBER Dark Mode
+   - Default: Light Mode with High-Contrast Pure Black (#09090b) typography
+   - Dark Mode: Restrained CYBER Charcoal (#0a0a0c / #121215) with Crisp White (#ffffff)
+   - Signature Accent: Police Red (#991b1b / #c81e2b / #d62839) on active focal elements
    ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   1. CSS Custom Properties / Design Tokens
+   -------------------------------------------------------------------------- */
 :root,
+[data-theme="light"],
+html:not([data-theme="dark"]) {
+  --bg-canvas: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-2: #f1f5f9;
+  --bg-muted: #e2e8f0;
+  --bg-elevated: #ffffff;
+
+  --text-primary: #09090b;       /* Pure high-contrast black */
+  --text-secondary: #334155;     /* Slate 700 / Dark Charcoal */
+  --text-muted: #64748b;         /* Slate 500 */
+
+  --border-subtle: #f1f5f9;
+  --border-default: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --accent-primary: #991b1b;
+  --accent-primary-hover: #b91c1c;
+  --accent-soft: rgba(153, 27, 27, 0.08);
+  --accent-glow: rgba(153, 27, 27, 0.16);
+
+  --status-success: #16a34a;
+  --status-warning: #d97706;
+  --status-danger: #dc2626;
+
+  color-scheme: light;
+}
+
 [data-theme="dark"],
-[data-theme="light"] {
+html.dark {
   --bg-canvas: #0a0a0c;
   --bg-surface: #121215;
   --bg-surface-2: #17171b;
@@ -22,7 +50,7 @@
   --text-muted: #71717a;
 
   --border-subtle: #1f1f24;
-  --border-default: #27272d;
+  --border-default: rgba(255, 255, 255, 0.08);
   --border-strong: #3f3f46;
 
   --accent-primary: #b91c1c;
@@ -37,353 +65,423 @@
   color-scheme: dark;
 }
 
-html,
-body {
+/* --------------------------------------------------------------------------
+   2. Light Mode Styles (Default)
+   -------------------------------------------------------------------------- */
+html[data-theme="light"] body,
+html:not([data-theme="dark"]) body {
+  background-color: #f8fafc !important;
+  color: #09090b !important;
+}
+
+/* Light Mode Canvas & Layout Overrides */
+html[data-theme="light"] .bg-\[\#0a0a0c\],
+html:not([data-theme="dark"]) .bg-\[\#0a0a0c\],
+html[data-theme="light"] .bg-\[\#0a0a0c\]\/95,
+html:not([data-theme="dark"]) .bg-\[\#0a0a0c\]\/95 {
+  background-color: #f8fafc !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] header.bg-\[\#0a0a0c\]\/95,
+html:not([data-theme="dark"]) header.bg-\[\#0a0a0c\]\/95 {
+  background-color: rgba(255, 255, 255, 0.94) !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .lg\:fixed .bg-\[\#0a0a0c\],
+html:not([data-theme="dark"]) .lg\:fixed .bg-\[\#0a0a0c\] {
+  background-color: #ffffff !important;
+  border-right-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .gpc-navigation-dialog,
+html:not([data-theme="dark"]) .gpc-navigation-dialog {
+  background-color: #ffffff !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .cyber-card,
+html:not([data-theme="dark"]) .cyber-card,
+html[data-theme="light"] .bg-\[\#121215\],
+html:not([data-theme="dark"]) .bg-\[\#121215\],
+html[data-theme="light"] .bg-\[\#0e0e11\],
+html:not([data-theme="dark"]) .bg-\[\#0e0e11\],
+html[data-theme="light"] .bg-\[\#131317\],
+html:not([data-theme="dark"]) .bg-\[\#131317\],
+html[data-theme="light"] .bg-\[\#17171b\],
+html:not([data-theme="dark"]) .bg-\[\#17171b\],
+html[data-theme="light"] .bg-\[\#18181d\],
+html:not([data-theme="dark"]) .bg-\[\#18181d\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .cyber-card,
+html:not([data-theme="dark"]) .cyber-card {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Light Mode Typography: High-Contrast Pure Black (#09090b) */
+html[data-theme="light"] h1,
+html:not([data-theme="dark"]) h1,
+html[data-theme="light"] h2,
+html:not([data-theme="dark"]) h2,
+html[data-theme="light"] h3,
+html:not([data-theme="dark"]) h3,
+html[data-theme="light"] h4,
+html:not([data-theme="dark"]) h4,
+html[data-theme="light"] strong,
+html:not([data-theme="dark"]) strong,
+html[data-theme="light"] b,
+html:not([data-theme="dark"]) b {
+  color: #09090b !important;
+}
+
+/* Neutral text override in Light Mode */
+html[data-theme="light"] .text-white:not(.text-on-accent),
+html:not([data-theme="dark"]) .text-white:not(.text-on-accent) {
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .text-zinc-300,
+html:not([data-theme="dark"]) .text-zinc-300,
+html[data-theme="light"] .text-zinc-400,
+html:not([data-theme="dark"]) .text-zinc-400,
+html[data-theme="light"] .text-slate-400,
+html:not([data-theme="dark"]) .text-slate-400 {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .text-zinc-500,
+html:not([data-theme="dark"]) .text-zinc-500,
+html[data-theme="light"] .text-slate-500,
+html:not([data-theme="dark"]) .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Light Mode Borders */
+html[data-theme="light"] .border-white\/\[0\.08\],
+html:not([data-theme="dark"]) .border-white\/\[0\.08\],
+html[data-theme="light"] .border-white\/\[0\.06\],
+html:not([data-theme="dark"]) .border-white\/\[0\.06\],
+html[data-theme="light"] .border-white\/10,
+html:not([data-theme="dark"]) .border-white\/10,
+html[data-theme="light"] .border-white\/15,
+html:not([data-theme="dark"]) .border-white\/15,
+html[data-theme="light"] .border-white\/20,
+html:not([data-theme="dark"]) .border-white\/20 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Light Mode Inputs, Selects, Buttons */
+html[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html:not([data-theme="dark"]) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html[data-theme="light"] select,
+html:not([data-theme="dark"]) select,
+html[data-theme="light"] textarea,
+html:not([data-theme="dark"]) textarea {
+  background-color: #ffffff !important;
+  color: #09090b !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] input::placeholder,
+html:not([data-theme="dark"]) input::placeholder,
+html[data-theme="light"] textarea::placeholder,
+html:not([data-theme="dark"]) textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="light"] table thead,
+html:not([data-theme="dark"]) table thead,
+html[data-theme="light"] table thead th,
+html:not([data-theme="dark"]) table thead th {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] table tbody tr,
+html:not([data-theme="dark"]) table tbody tr {
+  background-color: #ffffff !important;
+  border-color: #f1f5f9 !important;
+  color: #09090b !important;
+}
+
+html[data-theme="light"] table tbody tr:hover,
+html:not([data-theme="dark"]) table tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Sidebar navigation in Light Mode */
+html[data-theme="light"] .lg\:fixed a[href="/dashboard"],
+html:not([data-theme="dark"]) .lg\:fixed a[href="/dashboard"] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .lg\:fixed nav a:not([class*="from-[#d62839]"]),
+html:not([data-theme="dark"]) .lg\:fixed nav a:not([class*="from-[#d62839]"]) {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .lg\:fixed nav a:not([class*="from-[#d62839]"]):hover,
+html:not([data-theme="dark"]) .lg\:fixed nav a:not([class*="from-[#d62839]"]):hover {
+  color: #09090b !important;
+  background-color: #f1f5f9 !important;
+}
+
+/* Capsule Nav in Light Mode */
+html[data-theme="light"] nav[aria-label="ไปยังทะเบียน"],
+html:not([data-theme="dark"]) nav[aria-label="ไปยังทะเบียน"],
+html[data-theme="light"] .cyber-pill-nav,
+html:not([data-theme="dark"]) .cyber-pill-nav {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] nav[aria-label="ไปยังทะเบียน"] a:not([class*="from-[#d62839]"]),
+html:not([data-theme="dark"]) nav[aria-label="ไปยังทะเบียน"] a:not([class*="from-[#d62839]"]) {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] nav[aria-label="ไปยังทะเบียน"] a:not([class*="from-[#d62839]"]):hover,
+html:not([data-theme="dark"]) nav[aria-label="ไปยังทะเบียน"] a:not([class*="from-[#d62839]"]):hover {
+  color: #09090b !important;
+  background-color: #f1f5f9 !important;
+}
+
+/* 3D Fanned Cards in Light Mode */
+html[data-theme="light"] .cyber-insight-front,
+html:not([data-theme="dark"]) .cyber-insight-front {
+  background:
+    radial-gradient(65% 55% at 50% 100%, rgba(185, 28, 28, 0.08) 0%, rgba(255, 255, 255, 0) 100%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: -8px 14px 32px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+html[data-theme="light"] .cyber-insight-back,
+html:not([data-theme="dark"]) .cyber-insight-back {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%) !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* SVGs & Charts in Light Mode */
+html[data-theme="light"] .cyber-gauge-track,
+html:not([data-theme="dark"]) .cyber-gauge-track {
+  stroke: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .cyber-chart-kpi,
+html:not([data-theme="dark"]) .cyber-chart-kpi {
+  fill: #09090b !important;
+}
+
+html[data-theme="light"] .cyber-chart-grid,
+html:not([data-theme="dark"]) .cyber-chart-grid {
+  stroke: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .cyber-chart-axis,
+html:not([data-theme="dark"]) .cyber-chart-axis {
+  fill: #64748b !important;
+}
+
+html[data-theme="light"] .cyber-pillar-muted,
+html:not([data-theme="dark"]) .cyber-pillar-muted {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.12) 0%, rgba(15, 23, 42, 0.03) 100%) !important;
+}
+
+html[data-theme="light"] .cyber-perf-bar,
+html:not([data-theme="dark"]) .cyber-perf-bar {
+  fill: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Active Police Red Surfaces MUST ALWAYS keep Crisp White Text in BOTH modes */
+html[data-theme="light"] .cyber-pill-active,
+html:not([data-theme="dark"]) .cyber-pill-active,
+html[data-theme="light"] .bg-\[\#991b1b\],
+html:not([data-theme="dark"]) .bg-\[\#991b1b\],
+html[data-theme="light"] .bg-\[\#c81e2b\],
+html:not([data-theme="dark"]) .bg-\[\#c81e2b\],
+html[data-theme="light"] .bg-\[\#d62839\],
+html:not([data-theme="dark"]) .bg-\[\#d62839\],
+html[data-theme="light"] a[class*="from-\[\#d62839\]"],
+html:not([data-theme="dark"]) a[class*="from-\[\#d62839\]"],
+html[data-theme="light"] button[class*="from-\[\#d62839\]"],
+html:not([data-theme="dark"]) button[class*="from-\[\#d62839\]"] {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .cyber-pill-active *,
+html:not([data-theme="dark"]) .cyber-pill-active *,
+html[data-theme="light"] a[class*="from-\[\#d62839\]"] *,
+html:not([data-theme="dark"]) a[class*="from-\[\#d62839\]"] *,
+html[data-theme="light"] button[class*="from-\[\#d62839\]"] * {
+  color: #ffffff !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. CYBER Dark Mode Styles
+   -------------------------------------------------------------------------- */
+html[data-theme="dark"] body,
+html.dark body {
   background-color: #0a0a0c !important;
   color: #ffffff !important;
 }
 
-/* Neutral Matte Dark Card & Surface Overrides */
-body .bg-white,
-body .bg-white\/95,
-body .bg-white\/90,
-body .bg-white\/85,
-body .bg-white\/80,
-body .bg-white\/75,
-body .bg-white\/70 {
+html[data-theme="dark"] .bg-\[\#0a0a0c\],
+html.dark .bg-\[\#0a0a0c\],
+html[data-theme="dark"] .bg-\[\#0a0a0c\]\/95,
+html.dark .bg-\[\#0a0a0c\]\/95 {
+  background-color: #0a0a0c !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .cyber-card,
+html.dark .cyber-card,
+html[data-theme="dark"] .bg-\[\#121215\],
+html.dark .bg-\[\#121215\],
+html[data-theme="dark"] .bg-\[\#0e0e11\],
+html.dark .bg-\[\#0e0e11\],
+html[data-theme="dark"] .bg-\[\#131317\],
+html.dark .bg-\[\#131317\],
+html[data-theme="dark"] .bg-\[\#17171b\],
+html.dark .bg-\[\#17171b\],
+html[data-theme="dark"] .bg-\[\#18181d\],
+html.dark .bg-\[\#18181d\] {
   background-color: #121215 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
   color: #ffffff !important;
 }
 
-body .bg-slate-50,
-body .bg-slate-50\/90,
-body .bg-slate-50\/80,
-body .bg-slate-50\/70,
-body .bg-slate-50\/60,
-body .bg-slate-50\/50,
-body .bg-slate-50\/40,
-body .bg-gray-50 {
-  background-color: #16161a !important;
-  color: #e4e4e7 !important;
+html[data-theme="dark"] .cyber-card,
+html.dark .cyber-card {
+  box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.05) !important;
 }
 
-body .bg-slate-100,
-body .bg-slate-100\/80,
-body .bg-slate-100\/70,
-body .bg-gray-100 {
-  background-color: #1d1d22 !important;
+html[data-theme="dark"] .text-white,
+html.dark .text-white,
+html[data-theme="dark"] h1,
+html.dark h1,
+html[data-theme="dark"] h2,
+html.dark h2,
+html[data-theme="dark"] h3,
+html.dark h3,
+html[data-theme="dark"] strong,
+html.dark strong {
   color: #ffffff !important;
 }
 
-body .bg-slate-200,
-body .bg-slate-200\/70,
-body .bg-gray-200 {
-  background-color: #27272e !important;
-  color: #ffffff !important;
-}
-
-/* Primary Action / Active Pill Surfaces -> Police Red */
-body .bg-slate-900,
-body .bg-slate-800 {
-  background: linear-gradient(180deg, #c81e2b 0%, #991b1b 100%) !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.14) !important;
-}
-
-body .hover\:bg-slate-800:hover,
-body .hover\:bg-slate-900:hover {
-  background: linear-gradient(180deg, #dc2626 0%, #b91c1c 100%) !important;
-  color: #ffffff !important;
-}
-
-body .hover\:bg-slate-50:hover,
-body .hover\:bg-slate-100:hover,
-body .hover\:bg-gray-50:hover,
-body .hover\:bg-gray-100:hover {
-  background-color: #1c1c22 !important;
-}
-
-/* Soft Tinted Badges — Restrained Neutral/Subtle Dark */
-body .bg-blue-50,
-body .bg-blue-50\/60,
-body .bg-blue-50\/50,
-body .bg-blue-50\/40,
-body .bg-indigo-50,
-body .bg-indigo-50\/60,
-body .bg-sky-50 {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-}
-
-body .bg-blue-100,
-body .bg-indigo-100,
-body .bg-sky-100 {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-body .bg-amber-50,
-body .bg-amber-50\/80,
-body .bg-amber-50\/60,
-body .bg-amber-50\/50,
-body .bg-amber-50\/40,
-body .bg-orange-50,
-body .bg-yellow-50 {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-}
-
-body .bg-amber-100,
-body .bg-orange-100,
-body .bg-yellow-100 {
-  background-color: rgba(185, 28, 28, 0.16) !important;
-}
-
-body .bg-emerald-50,
-body .bg-emerald-50\/60,
-body .bg-emerald-50\/50,
-body .bg-green-50,
-body .bg-teal-50 {
-  background-color: rgba(34, 197, 94, 0.1) !important;
-}
-
-body .bg-emerald-100,
-body .bg-green-100,
-body .bg-teal-100 {
-  background-color: rgba(34, 197, 94, 0.16) !important;
-}
-
-body .bg-rose-50,
-body .bg-rose-50\/60,
-body .bg-red-50,
-body .bg-red-50\/80,
-body .bg-red-50\/60 {
-  background-color: rgba(185, 28, 28, 0.12) !important;
-}
-
-body .bg-rose-100,
-body .bg-red-100 {
-  background-color: rgba(185, 28, 28, 0.2) !important;
-}
-
-body .bg-purple-50,
-body .bg-violet-50 {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-}
-
-/* Primary Blue/Indigo CTA Buttons -> Police Red */
-body .bg-blue-600,
-body .bg-blue-700,
-body .bg-indigo-600,
-body .bg-indigo-700 {
-  background: linear-gradient(180deg, #c81e2b 0%, #991b1b 100%) !important;
-  color: #ffffff !important;
-}
-
-body .hover\:bg-blue-700:hover,
-body .hover\:bg-blue-800:hover,
-body .hover\:bg-indigo-700:hover {
-  background: linear-gradient(180deg, #dc2626 0%, #b91c1c 100%) !important;
-  color: #ffffff !important;
-}
-
-/* Strict CYBER Typography Hierarchy:
-   1) Primary / Bold / Emphasized = Pure White (#ffffff)
-   2) Secondary = Soft White / Light Grey (#a1a1aa)
-   3) Tertiary / Axis / Muted = Muted Grey (#71717a) */
-body .text-slate-950,
-body .text-slate-900,
-body .text-slate-800,
-body .text-gray-900,
-body .text-gray-800 {
-  color: #ffffff !important;
-}
-
-body .text-slate-700,
-body .text-slate-600,
-body .text-gray-700,
-body .text-gray-600 {
+html[data-theme="dark"] .text-zinc-300,
+html.dark .text-zinc-300,
+html[data-theme="dark"] .text-zinc-400,
+html.dark .text-zinc-400 {
   color: #a1a1aa !important;
 }
 
-body .text-slate-500,
-body .text-slate-400,
-body .text-gray-500,
-body .text-gray-400 {
+html[data-theme="dark"] .text-zinc-500,
+html.dark .text-zinc-500 {
   color: #71717a !important;
 }
 
-/* Map legacy colored text to clean white or light grey so the UI is never noisy */
-body .text-blue-950,
-body .text-blue-900,
-body .text-blue-800,
-body .text-blue-700,
-body .text-blue-600,
-body .text-indigo-900,
-body .text-indigo-800,
-body .text-indigo-700,
-body .text-indigo-600,
-body .text-sky-700,
-body .text-sky-600,
-body .text-purple-800,
-body .text-purple-700,
-body .text-purple-600,
-body .text-violet-700 {
-  color: #ffffff !important;
-}
-
-body .text-amber-950,
-body .text-amber-900,
-body .text-amber-800,
-body .text-amber-700,
-body .text-amber-600,
-body .text-orange-800,
-body .text-orange-700,
-body .text-orange-600 {
-  color: #e4e4e7 !important;
-}
-
-body .text-emerald-900,
-body .text-emerald-800,
-body .text-emerald-700,
-body .text-emerald-600,
-body .text-green-800,
-body .text-green-700,
-body .text-green-600,
-body .text-teal-700 {
-  color: #4ade80 !important;
-}
-
-body .text-rose-900,
-body .text-rose-800,
-body .text-rose-700,
-body .text-rose-600,
-body .text-red-900,
-body .text-red-800,
-body .text-red-700,
-body .text-red-600 {
-  color: #ef4444 !important;
-}
-
-/* Borders & Dividers — Subtle Neutral Grey (No red borders everywhere!) */
-body .border-slate-100,
-body .border-slate-200,
-body .border-slate-200\/80,
-body .border-slate-200\/70,
-body .border-slate-200\/60,
-body .border-gray-100,
-body .border-gray-200 {
+html[data-theme="dark"] .border-white\/\[0\.08\],
+html.dark .border-white\/\[0\.08\],
+html[data-theme="dark"] .border-white\/\[0\.06\],
+html.dark .border-white\/\[0\.06\],
+html[data-theme="dark"] .border-white\/10,
+html.dark .border-white\/10 {
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-body .border-slate-300,
-body .border-gray-300,
-body .border-blue-100,
-body .border-blue-200,
-body .border-blue-300,
-body .border-indigo-100,
-body .border-indigo-200,
-body .border-amber-100,
-body .border-amber-200,
-body .border-amber-300 {
-  border-color: rgba(255, 255, 255, 0.12) !important;
-}
-
-body .border-emerald-100,
-body .border-emerald-200,
-body .border-green-200 {
-  border-color: rgba(34, 197, 94, 0.25) !important;
-}
-
-body .border-rose-100,
-body .border-rose-200,
-body .border-red-200,
-body .border-red-300 {
-  border-color: rgba(185, 28, 28, 0.35) !important;
-}
-
-body .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-body .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
-body .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
-body .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
-  border-color: rgba(255, 255, 255, 0.07) !important;
-}
-
-/* Inputs, Selects, Textareas */
-body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-body select,
-body textarea {
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html[data-theme="dark"] select,
+html.dark select,
+html[data-theme="dark"] textarea,
+html.dark textarea {
   background-color: #16161a !important;
   color: #ffffff !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-body input::placeholder,
-body textarea::placeholder {
-  color: #71717a !important;
-}
-
-body input:focus,
-body select:focus,
-body textarea:focus {
-  border-color: rgba(200, 30, 43, 0.7) !important;
-  box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.2) !important;
-  outline: none !important;
-}
-
-/* Tables */
-body thead,
-body thead tr,
-body thead th {
+html[data-theme="dark"] table thead,
+html.dark table thead,
+html[data-theme="dark"] table thead th,
+html.dark table thead th {
   background-color: #16161a !important;
   color: #a1a1aa !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-body tbody tr {
+html[data-theme="dark"] table tbody tr,
+html.dark table tbody tr {
   background-color: #121215 !important;
   border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
-body tbody tr:hover {
+html[data-theme="dark"] table tbody tr:hover,
+html.dark table tbody tr:hover {
   background-color: #18181d !important;
 }
 
-/* Subtle Card Shadow */
-body .shadow-sm,
-body .shadow,
-body .shadow-md {
-  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 0 rgba(255, 255, 255, 0.05) !important;
+html[data-theme="dark"] .cyber-pill-nav,
+html.dark .cyber-pill-nav,
+html[data-theme="dark"] nav[aria-label="ไปยังทะเบียน"],
+html.dark nav[aria-label="ไปยังทะเบียน"] {
+  background-color: #121215 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65) !important;
 }
 
-/* CYBER Template Utility Classes */
-.cyber-card {
-  background-color: #121215;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 1.25rem;
-  box-shadow: 0 16px 36px -14px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-}
-
-.cyber-pill-nav {
-  background-color: #121215;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 9999px;
-}
-
-.cyber-pill-active {
-  background: linear-gradient(180deg, #d62839 0%, #991b1b 100%);
-  color: #ffffff !important;
-  box-shadow: 0 4px 14px rgba(185, 28, 28, 0.4);
-}
-
-.cyber-insight-front {
+html[data-theme="dark"] .cyber-insight-front,
+html.dark .cyber-insight-front {
   background:
     radial-gradient(65% 55% at 50% 100%, rgba(185, 28, 28, 0.34) 0%, rgba(18, 18, 21, 0) 100%),
-    linear-gradient(180deg, #17171b 0%, #111114 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: -12px 18px 38px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    linear-gradient(180deg, #17171b 0%, #111114 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: -12px 18px 38px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
-.cyber-insight-back {
+html[data-theme="dark"] .cyber-insight-back,
+html.dark .cyber-insight-back {
   background:
     radial-gradient(60% 50% at 50% 100%, rgba(185, 28, 28, 0.18) 0%, rgba(18, 18, 21, 0) 100%),
-    linear-gradient(180deg, #141418 0%, #0e0e11 100%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+    linear-gradient(180deg, #141418 0%, #0e0e11 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+html[data-theme="dark"] .cyber-gauge-track,
+html.dark .cyber-gauge-track {
+  stroke: rgba(255, 255, 255, 0.06) !important;
+}
+
+html[data-theme="dark"] .cyber-chart-kpi,
+html.dark .cyber-chart-kpi {
+  fill: #ffffff !important;
+}
+
+html[data-theme="dark"] .cyber-chart-grid,
+html.dark .cyber-chart-grid {
+  stroke: rgba(255, 255, 255, 0.06) !important;
+}
+
+html[data-theme="dark"] .cyber-chart-axis,
+html.dark .cyber-chart-axis {
+  fill: #71717a !important;
+}
+
+html[data-theme="dark"] .cyber-pillar-muted,
+html.dark .cyber-pillar-muted {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 100%) !important;
+}
+
+html[data-theme="dark"] .cyber-perf-bar,
+html.dark .cyber-perf-bar {
+  fill: url(#cyberMutedBar) !important;
 }
