@@ -11,10 +11,7 @@ import {
   Upload,
   Settings,
   Scale,
-  BookOpen,
   Users,
-  Search,
-  AlertTriangle,
 } from "lucide-react";
 import type { SessionUser } from "@/lib/auth/currentUser";
 import { hasPermission } from "@/lib/auth/permissions";
@@ -25,9 +22,6 @@ const navigation = [
   { name: "หน้าหลัก (Dashboard)", href: "/dashboard", icon: LayoutDashboard },
   { name: "รายการคดี", href: "/cases", icon: Files },
   { name: "วิเคราะห์และร่างคำวินิจฉัย", href: "/analysis", icon: Scale, permission: "USE_ANALYSIS" as const },
-  { name: "ค้นหาขั้นสูง", href: "/search", icon: Search, permission: "ADVANCED_CASE_SEARCH" as any },
-  { name: "สารบบ", href: "/registry", icon: BookOpen },
-  { name: "ตรวจคุณภาพข้อมูล", href: "/data-quality", icon: AlertTriangle, permission: "VIEW_DATA_QUALITY" as any },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },
   { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
   { name: "นำเข้าทะเบียนคดี", href: "/upload", icon: Upload, permission: "IMPORT_REGISTRY" as any },
