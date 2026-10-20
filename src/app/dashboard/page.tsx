@@ -11,6 +11,7 @@ import { RegistryOverview } from "@/components/dashboard/RegistryOverview";
 import { DashboardInteractiveHub } from "@/components/dashboard/DashboardInteractiveHub";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
+  OWNER_EMBLEM,
   OWNER_NAME,
   OWNER_ORG_TH,
   OWNER_PHOTO,
@@ -96,20 +97,27 @@ export default async function DashboardPage({
         <header className="space-y-7 pt-1">
           {/* Top Row: Brand Left + Capsule Nav Center + Circular Icons & Cutout Avatar Right */}
           <div className="flex flex-wrap items-center justify-between gap-4">
-            {/* Left Brand */}
-            <div className="flex items-center gap-3">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-[#121215] text-xs font-bold tracking-wider text-white">
-                กพค
-              </span>
+            {/* Left Brand: Official GPC Emblem + Owner Name & Role */}
+            <Link href="/dashboard" className="flex items-center gap-3 group transition-opacity hover:opacity-95">
+              <div className="relative h-11 w-11 shrink-0">
+                <Image
+                  src={OWNER_EMBLEM}
+                  alt="ตราสัญลักษณ์ ก.พ.ค.ตร."
+                  fill
+                  sizes="44px"
+                  className="object-contain"
+                  priority
+                />
+              </div>
               <div>
-                <p className="text-base font-bold tracking-[0.22em] uppercase text-white">
-                  G P C · C Y B E R
+                <p className="text-sm font-bold leading-tight text-white sm:text-base">
+                  {OWNER_NAME}
                 </p>
-                <p className="text-[11px] font-medium text-zinc-400">
-                  {OWNER_NAME} {OWNER_ROLE}
+                <p className="mt-0.5 text-xs font-medium text-zinc-400">
+                  {OWNER_ROLE}
                 </p>
               </div>
-            </div>
+            </Link>
 
             {/* Center Floating Capsule Navigation (Only active pill in Police Red) */}
             <nav

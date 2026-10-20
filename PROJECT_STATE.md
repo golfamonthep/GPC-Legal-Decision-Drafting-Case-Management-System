@@ -1,4 +1,20 @@
-﻿## Dual-Theme Support (Light Default with High-Contrast Black & CYBER Dark Mode) — 2026-10-20
+﻿## Official Transparent GPC Emblem & Removal of "G P C · C Y B E R" — 2026-10-20
+
+- **Removal of "G P C · C Y B E R" & Text Badge "กพค"**:
+  - Removed outdated "G P C · C Y B E R" branding text and temporary circle badge "กพค" from the dashboard top header (src/app/dashboard/page.tsx).
+- **Official GPC Emblem with Transparent Background (public/logo/gpc-emblem.png & src/lib/owner.ts)**:
+  - Digitally processed the official seal of the Police Merit System Protection Commission (ก.พ.ค.ตร.), cleanly removing the white background with edge anti-aliasing while preserving the inner lotus flower and white typography on the maroon ring.
+  - Linked to {OWNER_NAME} and {OWNER_ROLE} with smooth hover feedback.
+- **Verification**:
+  - 
+pm test: **83/83 passed**
+  - 
+pm run typecheck & 
+pm run lint: **0 errors**
+  - 
+pm run build: **35/35 routes compiled cleanly**
+
+## Dual-Theme Support (Light Default with High-Contrast Black & CYBER Dark Mode) — 2026-10-20
 
 - **Theme Toggle Feature (ThemeToggle.tsx)**:
   - Integrated into TopHeader (accessible across all pages), Dashboard top capsule bar, and Sidebar drawer.
@@ -634,6 +650,7 @@ Objectives:
 - **Cases/Dashboard status**: Blocked.
 - **Initialization method**: Database currently initialized through db push for MVP (Blocked).
 - **Proper migration baseline**: Remains a future production task.
+
 
 
 

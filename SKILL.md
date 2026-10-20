@@ -7,6 +7,8 @@
 > 4. **ห้าม reset หรือเขียนทับงานค้างใน `C:\APP`**: การทำงาน Git/Push ให้ทำผ่าน clean worktree (`C:\Users\polic\.codex\worktrees\ai-harness\APP`) และซิงก์เฉพาะไฟล์ที่เกี่ยวข้องกลับไปยัง `C:\APP` อย่างระมัดระวัง
 
 ### สรุปสถานะระบบล่าสุด (2026-10-20)
+- **ตราสัญลักษณ์ทางการ ก.พ.ค.ตร. พื้นหลังโปร่งใส (`public/logo/gpc-emblem.png` & `src/lib/owner.ts`)**:
+  - ลบข้อความ `G P C · C Y B E R` และเปลี่ยนป้ายข้อความ `กพค` เดิม เป็นตราสัญลักษณ์ทางการของ ก.พ.ค.ตร. แบบไดคัทพื้นหลังโปร่งใสคมชัด แสดงผลสวยงามสมบูรณ์ทั้งใน Light Mode และ Dark Mode
 - **ระบบสลับโหมดสว่าง/มืด (Light/Dark Mode System) พร้อม Light Mode เป็นค่าเริ่มต้น**:
   - **Light Mode (Default)**: พื้นหลังขาวสว่างนุ่มนวล (`#f8fafc`), การ์ดสีขาวสะอาดตา (`#ffffff`) ขอบสีเทาอ่อน (`#e2e8f0`), ตัวอักษรหัวข้อและคำเน้นเป็น **สีดำสนิทคมชัดสูง (`#09090b` / `#0f172a`)** สบายตา คอนทราสต์สูงระดับ WCAG AAA, ข้อความรองเป็นสีชาร์โคลเข้ม (`#334155`) และสีแดงตำรวจ (`#991b1b` / `#c81e2b`) บนปุ่มคำสั่งหลัก จุดเน้น และแคปซูลเมนู
   - **Dark Mode**: คงสไตล์ CYBER Dark Charcoal (`#0a0a0c`, `#121215`, ขอบเทาจาง, ตัวอักษรขาวคมชัด `#ffffff` และแดงตำรวจเฉพาะจุดเน้น)
@@ -1063,5 +1065,6 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - **Rule**: After disabling login, verify page content and APIs, not only route access.
 - **Rule**: MVP no-auth mode must use a role that passes dashboard/API permission checks.
 - **Rule**: Dashboard must never spin forever; it must show data, empty state, or error.
+
 
 
