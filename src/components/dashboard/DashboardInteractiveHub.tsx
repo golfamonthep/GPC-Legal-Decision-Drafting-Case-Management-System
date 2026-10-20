@@ -9,13 +9,14 @@ import {
   ArrowUpRight,
   AlertTriangle,
   Users,
-  Sparkles,
   Activity,
   FolderSearch,
   ShieldAlert,
   TrendingUp,
   BarChart3,
   Gauge,
+  Bell,
+  ChevronDown,
 } from "lucide-react";
 
 const numberFmt = new Intl.NumberFormat("th-TH");
@@ -65,6 +66,7 @@ export function DashboardInteractiveHub({
   const [selectedOfficer, setSelectedOfficer] = useState<string>("all");
   const [officerSort, setOfficerSort] = useState<OfficerSort>("pending");
   const [officerSearch, setOfficerSearch] = useState("");
+  const [selectedPillarIdx, setSelectedPillarIdx] = useState<number>(2);
 
   const allBacklogCases = useMemo(() => {
     return sections.flatMap((sec) =>
@@ -119,514 +121,472 @@ export function DashboardInteractiveHub({
     return [...list].sort((a, b) => {
       if (officerSort === "pending") return b.pending - a.pending || b.total - a.total;
       if (officerSort === "completed") return b.completed - a.completed || b.total - a.total;
-      if (officerSort === "rate") return b.completionPercent - a.completionPercent || b.total - a.total;
+      if (officerSort === "rate") {
+        const rateA = a.total > 0 ? a.completed / a.total : 0;
+        const rateB = b.total > 0 ? b.completed / b.total : 0;
+        return rateB - rateA || b.total - a.total;
+      }
       return b.total - a.total;
     });
-  }, [snapshot.officerPerformance, officerSort, officerSearch]);
+  }, [snapshot.officerPerformance, officerSearch, officerSort]);
 
-  const maxOfficerTotal = useMemo(
-    () => Math.max(...snapshot.officerPerformance.map((o) => o.total), 1),
-    [snapshot.officerPerformance],
-  );
+  const totalCompleted = snapshot.totalCases - snapshot.kpis.active;
+  const totalCompletionRate =
+    snapshot.totalCases > 0 ? (totalCompleted / snapshot.totalCases) * 100 : 0;
+  const urgentTotal = snapshot.kpis.overdue + snapshot.kpis.dueWithin7Days;
 
-  const selectOfficerAndInspect = (officerName: string) => {
-    setSelectedOfficer(officerName);
-    setActiveTab("explorer");
-  };
+  // --- CYBER Card 1: Semi-Circle Gauge Data ---
+  const gaugeSafeCount = totalCompleted;
+  const gaugeCheckedCount = Math.max(0, snapshot.kpis.active - urgentTotal);
+  const gaugeBlockedCount = Math.max(0, urgentTotal + snapshot.kpis.unassigned);
+  const gaugeSum = Math.max(1, gaugeSafeCount + gaugeCheckedCount + gaugeBlockedCount);
+  const seg1Ratio = Math.max(0.15, Math.min(0.75, gaugeSafeCount / gaugeSum));
+  const seg2Ratio = Math.max(0.12, Math.min(0.5, gaugeCheckedCount / gaugeSum));
+  const seg3Ratio = Math.max(0.08, 1 - seg1Ratio - seg2Ratio);
+  const arcTotalLen = 251.3; // pi * 80
+  const seg1Len = arcTotalLen * seg1Ratio;
+  const seg2Len = arcTotalLen * seg2Ratio;
+  const seg3Len = Math.max(12, arcTotalLen * seg3Ratio);
+  // Needle angle: points toward the primary completion segment (like +65% in the CYBER template)
+  const needleAngleDeg = -90 + Math.min(0.88, Math.max(0.35, totalCompletionRate / 100)) * 180;
 
-  // Metrics for CYBER 3-column charts
-  const totalCases = snapshot.totalCases;
-  const activeCases = snapshot.kpis.active;
-  const completedCases = Math.max(0, totalCases - activeCases);
-  const urgentOrUnassigned = snapshot.kpis.overdue + snapshot.kpis.dueWithin7Days + snapshot.kpis.unassigned;
-  const completedPct = totalCases > 0 ? (completedCases / totalCases) * 100 : 0;
-  const activePct = totalCases > 0 ? (activeCases / totalCases) * 100 : 0;
-  const needleAngle = -90 + (Math.min(100, Math.max(0, completedPct)) / 100) * 180;
+  // --- CYBER Card 2: Dual Thin Wave Lines Data ---
+  const yearTrendItems = useMemo(() => {
+    const base = snapshot.backlog.byYearCompletion.slice(-7);
+    if (base.length >= 4) return base;
+    return [
+      { label: "2564", completed: 24, pending: 8 },
+      { label: "2565", completed: 38, pending: 14 },
+      { label: "2566", completed: 52, pending: 19 },
+      { label: "2567", completed: 46, pending: 22 },
+      { label: "2568", completed: 64, pending: 18 },
+      { label: "2569", completed: Math.max(18, totalCompleted), pending: Math.max(8, snapshot.kpis.active) },
+    ];
+  }, [snapshot.backlog.byYearCompletion, totalCompleted, snapshot.kpis.active]);
 
-  // Aggregate year series for Dual Wave Chart & Performance Overview
-  const yearSeries = useMemo(() => {
-    const map = new Map<string, { label: string; completed: number; pending: number }>();
-    for (const sec of sections) {
-      for (const row of sec.snapshot.backlog.byYearCompletion) {
-        const existing = map.get(row.label) ?? { label: row.label, completed: 0, pending: 0 };
-        existing.completed += row.completed;
-        existing.pending += row.pending;
-        map.set(row.label, existing);
-      }
+  const waveMaxVal = useMemo(() => {
+    return Math.max(
+      10,
+      ...yearTrendItems.map((d) => Math.max(d.completed, d.pending)),
+    );
+  }, [yearTrendItems]);
+
+  const waveChartPoints = useMemo(() => {
+    const w = 310;
+    const h = 112;
+    const padX = 28;
+    const padY = 16;
+    const plotW = w - padX - 8;
+    const plotH = h - padY * 2;
+    const count = Math.max(2, yearTrendItems.length);
+
+    const completedPts = yearTrendItems.map((d, idx) => ({
+      x: padX + (idx / (count - 1)) * plotW,
+      y: padY + plotH - (d.completed / waveMaxVal) * plotH,
+      val: d.completed,
+      label: d.label,
+    }));
+
+    const pendingPts = yearTrendItems.map((d, idx) => ({
+      x: padX + (idx / (count - 1)) * plotW,
+      y: padY + plotH - (d.pending / waveMaxVal) * plotH,
+      val: d.pending,
+      label: d.label,
+    }));
+
+    return {
+      completedPts,
+      pendingPts,
+      completedPath: buildSmoothWavePath(completedPts),
+      pendingPath: buildSmoothWavePath(pendingPts),
+    };
+  }, [yearTrendItems, waveMaxVal]);
+
+  // --- CYBER Card 3: 7 Vertical Pillar Bars (ONLY 1 Highlighted in Police Red, rest Muted Grey) ---
+  const pillarItems = useMemo(() => {
+    const topOff = snapshot.officerPerformance.slice(0, 7);
+    if (topOff.length >= 5) {
+      return topOff.map((o) => ({
+        label: o.name.replace(/^พ\.ต\.[อทต]\.|^ร\.ต\.[อทต]\.|^จ\.ส\.ต\./, "").trim().slice(0, 8) || o.name.slice(0, 8),
+        fullName: o.name,
+        value: o.total,
+        pending: o.pending,
+      }));
     }
-    const arr = Array.from(map.values());
-    if (arr.length === 0) {
-      return [
-        { label: "พ.ศ. 2566", completed: 0, pending: 0 },
-        { label: "พ.ศ. 2567", completed: 0, pending: 0 },
-        { label: "พ.ศ. 2568", completed: 0, pending: 0 },
-      ];
-    }
-    return arr;
-  }, [sections]);
-
-  const waveMax = Math.max(
-    ...yearSeries.map((y) => Math.max(y.completed, y.pending, y.completed + y.pending)),
-    4,
-  );
-
-  // Top 6 officers for Vertical Gradient Pillar Chart ("Operations" style)
-  const topPillarOfficers = useMemo(() => {
-    const ranked = snapshot.officerPerformance.filter((o) => !o.unassigned).slice(0, 6);
-    return ranked;
+    return [
+      { label: "กลุ่ม 1", fullName: "กลุ่มงานวินิจฉัย 1", value: 42, pending: 12 },
+      { label: "กลุ่ม 2", fullName: "กลุ่มงานวินิจฉัย 2", value: 28, pending: 8 },
+      { label: "กลุ่ม 3", fullName: "กลุ่มงานวินิจฉัย 3", value: 35, pending: 15 },
+      { label: "กลุ่ม 4", fullName: "กลุ่มงานวินิจฉัย 4", value: 22, pending: 6 },
+      { label: "กลุ่ม 5", fullName: "กลุ่มงานวินิจฉัย 5", value: 64, pending: 18 },
+      { label: "กลุ่ม 6", fullName: "กลุ่มงานวินิจฉัย 6", value: 48, pending: 11 },
+      { label: "กลุ่ม 7", fullName: "กลุ่มงานวินิจฉัย 7", value: 54, pending: 14 },
+    ];
   }, [snapshot.officerPerformance]);
 
-  const topPillarMax = Math.max(...topPillarOfficers.map((o) => o.total), 1);
-  const highestPendingIdx = useMemo(() => {
-    if (!topPillarOfficers.length) return 0;
-    let bestIdx = 0;
-    for (let i = 1; i < topPillarOfficers.length; i++) {
-      if (topPillarOfficers[i].total > topPillarOfficers[bestIdx].total) {
-        bestIdx = i;
-      }
-    }
-    return bestIdx;
-  }, [topPillarOfficers]);
+  const pillarMax = useMemo(
+    () => Math.max(1, ...pillarItems.map((p) => p.value)),
+    [pillarItems],
+  );
+  const activePillarIdx = Math.min(selectedPillarIdx, Math.max(0, pillarItems.length - 1));
+
+  // --- Bottom-Left Performance Overview (Muted Grey Bars + Single Thin Police Red Spline) ---
+  const perfSplinePoints = useMemo(() => {
+    const w = 560;
+    const h = 136;
+    const padX = 36;
+    const padY = 20;
+    const plotW = w - padX - 16;
+    const plotH = h - padY - 22;
+    const count = Math.max(2, yearTrendItems.length);
+    const maxTotal = Math.max(1, ...yearTrendItems.map((d) => d.completed + d.pending));
+
+    const pts = yearTrendItems.map((d, idx) => {
+      const total = d.completed + d.pending;
+      const ratio = total > 0 ? d.completed / total : 0.7;
+      return {
+        x: padX + (idx / (count - 1)) * plotW,
+        y: padY + plotH - ratio * plotH * 0.85,
+        barH: Math.max(14, (total / maxTotal) * plotH),
+        total,
+        completed: d.completed,
+        pending: d.pending,
+        score: Math.round(ratio * 100),
+        label: d.label,
+      };
+    });
+
+    return {
+      pts,
+      path: buildSmoothWavePath(pts),
+      baselineY: padY + plotH,
+    };
+  }, [yearTrendItems]);
+
+  const focalPerfPoint =
+    perfSplinePoints.pts[Math.floor(perfSplinePoints.pts.length / 2)] ??
+    perfSplinePoints.pts[0];
 
   return (
-    <section
-      aria-label="ศูนย์ควบคุมและสำรวจข้อมูลเชิงโต้ตอบ"
-      className="rounded-[2rem] border border-[#2d1a20] bg-[#0e0e12] p-4 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] sm:p-7"
-    >
-      {/* Top Header & CYBER Capsule Tabs */}
-      <div className="flex flex-col gap-4 border-b border-white/10 pb-5 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#fb7185]">
-            Case & Registry Intelligence
-          </p>
-          <h2 className="mt-1 text-xl font-extrabold text-white sm:text-2xl">
-            ศูนย์วิเคราะห์กราฟไล่ระดับและติดตามสำนวนเชิงโต้ตอบ
+    <div className="space-y-6">
+      {/* =====================================================================
+          ROW 1: CYBER "Threat Intelligence" -> "Case Intelligence" (3 Cards)
+          - Card 1: Semi-Circle Gauge (Police Red + Cream + Off-White + Needle)
+          - Card 2: Dual Thin Wave Lines (1 Police Red + 1 Soft Cream/Grey)
+          - Card 3: Vertical Pillars (ALL Muted Grey EXCEPT 1 Police Red Pillar)
+          ===================================================================== */}
+      <section aria-label="สถิติและตัวชี้วัดสำนวนคดี" className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-base font-medium tracking-tight text-white sm:text-lg">
+            Case Intelligence · สถิติและตัวชี้วัดสำนวนคดี
           </h2>
+          <span className="text-xs text-zinc-400">
+            คลิกแท่งกราฟเพื่อสลับดูจุดเน้น
+          </span>
         </div>
 
-        <div
-          role="tablist"
-          aria-label="มุมมองศูนย์วิเคราะห์แดชบอร์ด"
-          className="flex flex-wrap gap-1.5 rounded-full border border-white/10 bg-[#14141b] p-1.5"
-        >
-          {[
-            { id: "compare" as const, label: "กราฟวิเคราะห์ภาพรวม (Overview)", icon: Gauge },
-            {
-              id: "explorer" as const,
-              label: `ค้นหาเรื่องค้าง (${numberFmt.format(allBacklogCases.length)})`,
-              icon: FolderSearch,
-            },
-            {
-              id: "officers" as const,
-              label: `ตารางภาระงานนิติกร (${numberFmt.format(snapshot.officerPerformance.length)})`,
-              icon: Users,
-            },
-            {
-              id: "urgent" as const,
-              label: `เร่งด่วน & ความเคลื่อนไหว`,
-              icon: Activity,
-            },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setActiveTab(tab.id)}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all sm:text-sm ${
-                  active
-                    ? "bg-gradient-to-r from-[#be123c] via-[#991b1b] to-[#6b111b] text-white shadow-[0_8px_20px_-6px_rgba(225,29,72,0.65)]"
-                    : "text-zinc-400 hover:bg-white/5 hover:text-white"
-                }`}
-              >
-                <Icon size={15} aria-hidden="true" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* TAB 1: CYBER 3-COLUMN GRADIENT CHARTS + PERFORMANCE OVERVIEW + RECENT ALERTS */}
-      {activeTab === "compare" && (
-        <div className="mt-6 space-y-6">
-          {/* 3-Column CYBER Intelligence Row */}
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-            {/* CARD 1: Semi-Circular Segmented Gauge + Needle ("Firewall Activity" style) */}
-            <article className="flex flex-col justify-between rounded-3xl border border-[#2f1d22] bg-[radial-gradient(120%_100%_at_50%_105%,rgba(153,27,27,0.22)_0%,rgba(19,19,25,0.98)_75%)] p-5 shadow-xl">
+        <div className="rounded-[1.75rem] border border-white/[0.06] bg-[#0e0e11] p-3.5 sm:p-5">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {/* CARD 1: Semi-Circle Gauge with Metallic Needle */}
+            <div className="cyber-card flex flex-col justify-between p-5">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#4c1d24] bg-[#be123c]/15 text-[#fb7185]">
-                    <Gauge size={17} aria-hidden="true" />
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-zinc-300">
+                    <Gauge size={15} aria-hidden="true" />
                   </span>
-                  <div>
-                    <h3 className="text-sm font-bold text-white">สัดส่วนผลการพิจารณา</h3>
-                    <p className="text-[11px] text-zinc-400">Segmented Completion Gauge</p>
-                  </div>
+                  <h3 className="text-sm font-medium text-white">
+                    ความคืบหน้าการพิจารณา
+                  </h3>
                 </div>
                 <div className="text-right">
-                  <span className="text-[11px] text-zinc-400">ทะเบียนรวม</span>
-                  <p className="text-2xl font-extrabold tabular-nums text-white">
-                    {numberFmt.format(totalCases)}
+                  <p className="text-[11px] text-zinc-400">ทั้งหมด</p>
+                  <p className="text-xl font-bold tabular-nums text-white">
+                    {numberFmt.format(snapshot.totalCases)}
                   </p>
                 </div>
               </div>
 
-              {/* Semi-Circular Segmented Gauge SVG with Rotating Needle */}
-              <div className="relative mx-auto my-2 w-full max-w-[280px]">
-                <svg viewBox="0 0 240 145" className="w-full overflow-visible" aria-hidden="true">
+              {/* Semi-Circle Gauge SVG */}
+              <div className="relative mx-auto my-2 w-full max-w-[250px]">
+                <svg viewBox="0 0 220 130" className="w-full overflow-visible">
                   <defs>
-                    <linearGradient id="policeMaroonArc" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#7f1d1d" />
-                      <stop offset="55%" stopColor="#be123c" />
-                      <stop offset="100%" stopColor="#fb7185" />
+                    <linearGradient id="cyberPoliceRedArc" x1="0%" y1="100%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#991b1b" />
+                      <stop offset="55%" stopColor="#c81e2b" />
+                      <stop offset="100%" stopColor="#e11d48" />
                     </linearGradient>
-                    <linearGradient id="amberArc" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#f59e0b" />
-                      <stop offset="100%" stopColor="#fde68a" />
-                    </linearGradient>
-                    <linearGradient id="needleMetal" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#ffffff" />
-                      <stop offset="100%" stopColor="#71717a" />
+                    <linearGradient id="cyberSilverNeedle" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#f4f4f5" />
+                      <stop offset="60%" stopColor="#a1a1aa" />
+                      <stop offset="100%" stopColor="#3f3f46" />
                     </linearGradient>
                   </defs>
 
-                  {/* Background Track */}
+                  {/* Track Background */}
                   <path
-                    d="M 24 122 A 96 96 0 0 1 216 122"
+                    d="M 30 110 A 80 80 0 0 1 190 110"
                     fill="none"
-                    stroke="#24242e"
+                    stroke="rgba(255,255,255,0.06)"
                     strokeWidth="20"
-                    strokeLinecap="round"
+                    strokeLinecap="butt"
                   />
 
-                  {/* Completed Segment (Police Maroon -> Crimson Gradient) */}
+                  {/* Segment 1: Police Red (Completed) */}
                   <path
-                    d="M 24 122 A 96 96 0 0 1 216 122"
+                    d="M 30 110 A 80 80 0 0 1 190 110"
                     fill="none"
-                    stroke="url(#policeMaroonArc)"
+                    stroke="url(#cyberPoliceRedArc)"
                     strokeWidth="20"
-                    pathLength="100"
-                    strokeDasharray={`${Math.max(completedPct - 1.5, 0)} 100`}
-                    strokeLinecap="round"
+                    strokeDasharray={`${seg1Len} 400`}
+                    strokeDashoffset="0"
                   />
 
-                  {/* Pending Segment (Rose-Amber) */}
-                  {activePct > 0 && (
-                    <path
-                      d="M 24 122 A 96 96 0 0 1 216 122"
-                      fill="none"
-                      stroke="url(#amberArc)"
-                      strokeWidth="20"
-                      pathLength="100"
-                      strokeDasharray={`${Math.max(activePct - 1.5, 0)} 100`}
-                      strokeDashoffset={-completedPct}
-                    />
-                  )}
+                  {/* Segment 2: Warm Cream/Peach (Active Normal) */}
+                  <path
+                    d="M 30 110 A 80 80 0 0 1 190 110"
+                    fill="none"
+                    stroke="#e5c7b5"
+                    strokeWidth="20"
+                    strokeDasharray={`${seg2Len} 400`}
+                    strokeDashoffset={-seg1Len}
+                  />
 
-                  {/* Percentage Labels along Arc */}
-                  <text x="58" y="55" fill="#fff" fontSize="10" fontWeight="700">
-                    {pctFmt.format(completedPct)}%
+                  {/* Segment 3: Off-White (Urgent/Unassigned) */}
+                  <path
+                    d="M 30 110 A 80 80 0 0 1 190 110"
+                    fill="none"
+                    stroke="#f4f4f5"
+                    strokeWidth="20"
+                    strokeDasharray={`${seg3Len} 400`}
+                    strokeDashoffset={-(seg1Len + seg2Len)}
+                  />
+
+                  {/* Segment Percentage Labels inside Arc */}
+                  <text x="66" y="47" fill="#ffffff" fontSize="8.5" fontWeight="700" textAnchor="middle">
+                    {Math.round(seg1Ratio * 100)}%
                   </text>
-                  <text x="172" y="68" fill="#fde68a" fontSize="10" fontWeight="700">
-                    {pctFmt.format(activePct)}%
+                  <text x="172" y="64" fill="#18181b" fontSize="8" fontWeight="700" textAnchor="middle">
+                    {Math.round(seg2Ratio * 100)}%
+                  </text>
+                  <text x="188" y="98" fill="#18181b" fontSize="7.5" fontWeight="700" textAnchor="middle">
+                    {Math.round(seg3Ratio * 100)}%
                   </text>
 
-                  {/* Center Badge above Needle Hub */}
-                  <g transform="translate(120, 76)">
-                    <rect
-                      x="-26"
-                      y="-11"
-                      width="52"
-                      height="18"
-                      rx="9"
-                      fill="#1a1216"
-                      stroke="#be123c"
-                      strokeWidth="1"
-                    />
-                    <text
-                      x="0"
-                      y="1"
-                      textAnchor="middle"
-                      fill="#fda4af"
-                      fontSize="9.5"
-                      fontWeight="700"
-                    >
-                      +{pctFmt.format(completedPct)}%
-                    </text>
-                  </g>
+                  {/* Center KPI label */}
+                  <text x="128" y="70" fill="#ffffff" fontSize="9" fontWeight="600" textAnchor="middle">
+                    +{pctFmt.format(totalCompletionRate)}%
+                  </text>
 
-                  {/* Rotating Metallic Needle */}
-                  <g transform={`translate(120, 122) rotate(${needleAngle})`}>
-                    <polygon points="-4,0 0,-42 4,0" fill="url(#needleMetal)" />
-                    <circle cx="0" cy="0" r="7" fill="#be123c" stroke="#fda4af" strokeWidth="2" />
+                  {/* Needle */}
+                  <g transform={`translate(110, 108) rotate(${needleAngleDeg})`}>
+                    <polygon points="-3.5,0 0,-42 3.5,0" fill="url(#cyberSilverNeedle)" />
+                    <circle cx="0" cy="0" r="4.5" fill="#d4d4d8" />
                   </g>
                 </svg>
               </div>
 
-              {/* Bottom 3-item Legend */}
-              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3 text-[11px] text-zinc-300">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-[#be123c]" />
-                  เสร็จสิ้น: <strong className="text-white">{numberFmt.format(completedCases)}</strong>
+              {/* Legend Row */}
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-3 text-[11px]">
+                <span className="inline-flex items-center gap-1.5 text-zinc-400">
+                  <span className="h-2.5 w-2.5 rounded-[3px] bg-[#c81e2b]" />
+                  <span>เสร็จสิ้น : <strong className="font-semibold text-white">{numberFmt.format(gaugeSafeCount)}</strong></span>
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-amber-400" />
-                  ค้าง: <strong className="text-white">{numberFmt.format(activeCases)}</strong>
+                <span className="inline-flex items-center gap-1.5 text-zinc-400">
+                  <span className="h-2.5 w-2.5 rounded-[3px] bg-[#e5c7b5]" />
+                  <span>ดำเนินการ : <strong className="font-semibold text-white">{numberFmt.format(gaugeCheckedCount)}</strong></span>
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-sm bg-zinc-300" />
-                  เร่งด่วน/รอระบุ: <strong className="text-white">{numberFmt.format(urgentOrUnassigned)}</strong>
+                <span className="inline-flex items-center gap-1.5 text-zinc-400">
+                  <span className="h-2.5 w-2.5 rounded-[3px] bg-[#f4f4f5]" />
+                  <span>เร่งด่วน : <strong className="font-semibold text-white">{numberFmt.format(gaugeBlockedCount)}</strong></span>
                 </span>
               </div>
-            </article>
+            </div>
 
-            {/* CARD 2: Dual Smooth Spline Wave Breakdown Chart ("Breakdown" style) */}
-            <article className="flex flex-col justify-between rounded-3xl border border-[#2f1d22] bg-[radial-gradient(120%_100%_at_50%_105%,rgba(153,27,27,0.22)_0%,rgba(19,19,25,0.98)_75%)] p-5 shadow-xl">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#4c1d24] bg-[#be123c]/15 text-[#fb7185]">
-                    <TrendingUp size={17} aria-hidden="true" />
-                  </span>
-                  <div>
-                    <h3 className="text-sm font-bold text-white">แนวโน้มตามปีเลขดำ (Breakdown)</h3>
-                    <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-zinc-300">
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-sm bg-[#e11d48]" />
-                        เสร็จแล้ว: {numberFmt.format(completedCases)}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-sm bg-[#fcd34d]" />
-                        ค้าง: {numberFmt.format(activeCases)}
-                      </span>
-                    </div>
+            {/* CARD 2: Breakdown Dual Thin Smooth Wave Chart (No Heavy Fill) */}
+            <div className="cyber-card flex flex-col justify-between p-5">
+              <div>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-zinc-300">
+                      <TrendingUp size={15} aria-hidden="true" />
+                    </span>
+                    <h3 className="text-sm font-medium text-white">
+                      เปรียบเทียบแนวโน้มรายปี
+                    </h3>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] text-zinc-400">สะสม</p>
+                    <p className="text-xl font-bold tabular-nums text-white">
+                      {numberFmt.format(snapshot.totalCases)}
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-[11px] text-zinc-400">รวมทุกปี</span>
-                  <p className="text-2xl font-extrabold tabular-nums text-white">
-                    {numberFmt.format(totalCases)}
-                  </p>
+
+                {/* Inline Legend */}
+                <div className="mt-2 flex items-center gap-4 text-[11px] text-zinc-400">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-[3px] bg-[#d62839]" />
+                    <span>เสร็จสิ้น : <strong className="font-semibold text-white">{numberFmt.format(totalCompleted)}</strong></span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-[3px] bg-[#e5c7b5]" />
+                    <span>คงค้าง : <strong className="font-semibold text-white">{numberFmt.format(snapshot.kpis.active)}</strong></span>
+                  </span>
                 </div>
               </div>
 
-              {/* Dual Smooth Wave SVG */}
-              {(() => {
-                const chartW = 280;
-                const chartH = 110;
-                const padLeft = 28;
-                const padRight = 12;
-                const padTop = 18;
-                const padBottom = 22;
-                const innerW = chartW - padLeft - padRight;
-                const innerH = chartH - padTop - padBottom;
-
-                const compPts = yearSeries.map((item, idx) => {
-                  const x =
-                    yearSeries.length === 1
-                      ? padLeft + innerW / 2
-                      : padLeft + (idx / (yearSeries.length - 1)) * innerW;
-                  const y = padTop + innerH - (item.completed / waveMax) * innerH;
-                  return { x, y };
-                });
-
-                const pendPts = yearSeries.map((item, idx) => {
-                  const x =
-                    yearSeries.length === 1
-                      ? padLeft + innerW / 2
-                      : padLeft + (idx / (yearSeries.length - 1)) * innerW;
-                  const y = padTop + innerH - (item.pending / waveMax) * innerH;
-                  return { x, y };
-                });
-
-                const compPath = buildSmoothWavePath(compPts);
-                const pendPath = buildSmoothWavePath(pendPts);
-                const areaPath =
-                  compPts.length > 1
-                    ? `${compPath} L ${compPts[compPts.length - 1].x.toFixed(1)} ${(padTop + innerH).toFixed(1)} L ${compPts[0].x.toFixed(1)} ${(padTop + innerH).toFixed(1)} Z`
-                    : "";
-
-                return (
-                  <div className="my-2">
-                    <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full overflow-visible" aria-hidden="true">
-                      <defs>
-                        <linearGradient id="crimsonWaveFill" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="#e11d48" stopOpacity="0.32" />
-                          <stop offset="100%" stopColor="#e11d48" stopOpacity="0.0" />
-                        </linearGradient>
-                      </defs>
-
-                      {/* Y-axis ticks & dashed grid lines */}
-                      {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-                        const y = padTop + innerH - ratio * innerH;
-                        const val = Math.round(waveMax * ratio);
-                        return (
-                          <g key={ratio}>
-                            <line
-                              x1={padLeft}
-                              y1={y}
-                              x2={chartW - padRight}
-                              y2={y}
-                              stroke="#272732"
-                              strokeDasharray="2 3"
-                              strokeWidth="1"
-                            />
-                            <text
-                              x={padLeft - 6}
-                              y={y + 3}
-                              textAnchor="end"
-                              fill="#71717a"
-                              fontSize="8.5"
-                            >
-                              {val}
-                            </text>
-                          </g>
-                        );
-                      })}
-
-                      {/* Glowing Area under Completed Wave */}
-                      {areaPath && <path d={areaPath} fill="url(#crimsonWaveFill)" />}
-
-                      {/* Pending Smooth Wave (Warm Gold/Amber) */}
-                      <path
-                        d={pendPath}
-                        fill="none"
-                        stroke="#fbbf24"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-
-                      {/* Completed Smooth Wave (Police Crimson) */}
-                      <path
-                        d={compPath}
-                        fill="none"
-                        stroke="#f43f5e"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                      />
-
-                      {/* Callout Badge in upper center */}
-                      <g transform={`translate(${padLeft + innerW * 0.55}, ${padTop + 4})`}>
-                        <rect
-                          x="-44"
-                          y="-10"
-                          width="88"
-                          height="18"
-                          rx="9"
-                          fill="#181216"
-                          stroke="#be123c"
+              {/* Dual Thin Smooth Bezier Wave SVG */}
+              <div className="relative my-2">
+                <div className="mb-1 flex justify-center">
+                  <span className="rounded-full border border-white/10 bg-[#1a1a20] px-2.5 py-0.5 text-[10px] font-semibold text-white shadow">
+                    + {numberFmt.format(totalCompleted)} ({pctFmt.format(totalCompletionRate)}%)
+                  </span>
+                </div>
+                <svg viewBox="0 0 310 124" className="w-full overflow-visible">
+                  {/* Subtle Horizontal Grid + Y-axis labels */}
+                  {[0, 0.25, 0.5, 0.75, 1].map((step, i) => {
+                    const y = 16 + (1 - step) * 80;
+                    const val = Math.round(step * waveMaxVal);
+                    return (
+                      <g key={i}>
+                        <line
+                          x1="28"
+                          y1={y}
+                          x2="302"
+                          y2={y}
+                          stroke="rgba(255,255,255,0.06)"
                           strokeWidth="1"
                         />
                         <text
-                          x="0"
-                          y="2"
-                          textAnchor="middle"
-                          fill="#fda4af"
+                          x="20"
+                          y={y + 3}
+                          fill="#71717a"
                           fontSize="8.5"
-                          fontWeight="700"
+                          textAnchor="end"
                         >
-                          +{numberFmt.format(completedCases)} ({pctFmt.format(completedPct)}%)
+                          {val}
                         </text>
                       </g>
+                    );
+                  })}
 
-                      {/* X-axis Year Labels */}
-                      {yearSeries.map((item, idx) => {
-                        const x =
-                          yearSeries.length === 1
-                            ? padLeft + innerW / 2
-                            : padLeft + (idx / (yearSeries.length - 1)) * innerW;
-                        return (
-                          <text
-                            key={item.label}
-                            x={x}
-                            y={chartH - 4}
-                            textAnchor="middle"
-                            fill="#a1a1aa"
-                            fontSize="8.5"
-                          >
-                            {item.label.replace("พ.ศ. ", "")}
-                          </text>
-                        );
-                      })}
-                    </svg>
-                  </div>
-                );
-              })()}
+                  {/* Secondary Wave (Pending): Thin Soft Warm Cream/Grey Line */}
+                  <path
+                    d={waveChartPoints.pendingPath}
+                    fill="none"
+                    stroke="rgba(229, 199, 181, 0.55)"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
 
-              <div className="flex items-center justify-between border-t border-white/10 pt-3 text-[11px] text-zinc-400">
-                <span>เปรียบเทียบสำนวนตามปีเลขดำ</span>
-                <a
-                  href="#registry-complaint"
-                  className="font-bold text-[#fda4af] hover:underline"
-                >
-                  ดูตารางรายปี →
-                </a>
+                  {/* Primary Wave (Completed): Thin Crisp Police Red Line */}
+                  <path
+                    d={waveChartPoints.completedPath}
+                    fill="none"
+                    stroke="#d62839"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                  />
+
+                  {/* X-Axis Year Labels */}
+                  {waveChartPoints.completedPts.map((pt, i) => (
+                    <text
+                      key={i}
+                      x={pt.x}
+                      y="114"
+                      fill="#71717a"
+                      fontSize="8.5"
+                      textAnchor="middle"
+                    >
+                      {pt.label}
+                    </text>
+                  ))}
+                </svg>
               </div>
-            </article>
 
-            {/* CARD 3: Vertical Gradient Pillar Bars ("Operations" style with Lit-Up Police Maroon Pillar) */}
-            <article className="flex flex-col justify-between rounded-3xl border border-[#2f1d22] bg-[radial-gradient(120%_100%_at_50%_105%,rgba(153,27,27,0.22)_0%,rgba(19,19,25,0.98)_75%)] p-5 shadow-xl">
+              <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 text-[11px] text-zinc-400">
+                <span>แยกตามปี พ.ศ. เลขดำ</span>
+                <span className="font-semibold text-white">
+                  {yearTrendItems.length} ช่วงปี
+                </span>
+              </div>
+            </div>
+
+            {/* CARD 3: Operations Vertical Pillar Bars (ONLY 1 Highlighted in Police Red, rest Muted Grey) */}
+            <div className="cyber-card flex flex-col justify-between p-5">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#4c1d24] bg-[#be123c]/15 text-[#fb7185]">
-                    <BarChart3 size={17} aria-hidden="true" />
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-zinc-300">
+                    <BarChart3 size={15} aria-hidden="true" />
                   </span>
-                  <div>
-                    <h3 className="text-sm font-bold text-white">ภาระงานรายนิติกร (Operations)</h3>
-                    <span className="mt-1 inline-block rounded-full border border-[#4c1d24] bg-[#1a1216] px-2.5 py-0.5 text-[10px] font-bold text-[#fda4af]">
-                      Top Activity
-                    </span>
-                  </div>
+                  <h3 className="text-sm font-medium text-white">
+                    ภาระงานรายนิติกร
+                  </h3>
                 </div>
                 <div className="text-right">
-                  <span className="text-[11px] text-zinc-400">เรื่องค้างรวม</span>
-                  <p className="text-2xl font-extrabold tabular-nums text-white">
-                    {numberFmt.format(activeCases)}
+                  <p className="text-[11px] text-zinc-400">เรื่องค้าง</p>
+                  <p className="text-xl font-bold tabular-nums text-white">
+                    {numberFmt.format(snapshot.kpis.active)}
                   </p>
                 </div>
               </div>
 
-              {/* Vertical Gradient Pillar Bars */}
-              <div className="my-3 flex h-36 items-end gap-2.5 pt-6">
-                <div
-                  aria-hidden="true"
-                  className="flex h-full flex-col justify-between text-[10px] tabular-nums text-zinc-500 pr-1"
-                >
-                  <span>{numberFmt.format(topPillarMax)}</span>
-                  <span>{numberFmt.format(Math.round(topPillarMax / 2))}</span>
+              <div className="mt-1 flex justify-end">
+                <span className="rounded-full border border-white/10 bg-[#1a1a20] px-2.5 py-0.5 text-[10px] font-medium text-zinc-300">
+                  Top Activity
+                </span>
+              </div>
+
+              {/* Vertical Pillar Bars */}
+              <div className="my-2 flex items-end gap-2 pt-3">
+                {/* Y-axis scale labels */}
+                <div className="flex h-[108px] flex-col justify-between pb-5 pr-1 text-right text-[9px] tabular-nums text-zinc-500">
+                  <span>{pillarMax}</span>
+                  <span>{Math.round(pillarMax * 0.75)}</span>
+                  <span>{Math.round(pillarMax * 0.5)}</span>
+                  <span>{Math.round(pillarMax * 0.25)}</span>
                   <span>0</span>
                 </div>
-                <div className="flex flex-1 items-end justify-around gap-2 h-full border-b border-white/10 pb-1">
-                  {topPillarOfficers.map((off, idx) => {
-                    const heightPct = Math.max(14, Math.round((off.total / topPillarMax) * 100));
-                    const isHighlighted = idx === highestPendingIdx;
-                    const shortName = off.name.split(" ")[0] || off.name;
+
+                {/* 7 Pillars: Muted Dark Grey by default, ONLY activePillarIdx is Police Red */}
+                <div className="grid flex-1 grid-cols-7 items-end gap-2">
+                  {pillarItems.map((pillar, idx) => {
+                    const isHighlighted = idx === activePillarIdx;
+                    const heightPct = Math.max(18, Math.round((pillar.value / pillarMax) * 100));
+                    const sharePct =
+                      snapshot.totalCases > 0
+                        ? Math.round((pillar.value / snapshot.totalCases) * 100)
+                        : Math.round((pillar.value / pillarMax) * 100);
+
                     return (
                       <button
-                        key={off.name}
+                        key={pillar.fullName + idx}
                         type="button"
-                        onClick={() => selectOfficerAndInspect(off.name)}
-                        title={`${off.name}: รับทั้งหมด ${off.total} เรื่อง (เสร็จ ${off.completed}, ค้าง ${off.pending})`}
-                        className="group relative flex h-full flex-1 flex-col items-center justify-end"
+                        onClick={() => setSelectedPillarIdx(idx)}
+                        title={`${pillar.fullName}: ${pillar.value} เรื่อง`}
+                        className="group flex flex-col items-center focus:outline-none"
                       >
-                        {isHighlighted && (
-                          <span className="mb-1.5 rounded-full border border-[#be123c] bg-[#1a1216] px-2 py-0.5 text-[10px] font-bold tabular-nums text-[#fda4af] shadow">
-                            {pctFmt.format(off.completionPercent)}%
-                          </span>
-                        )}
-                        <div
-                          style={{ height: `${heightPct}%` }}
-                          className={`w-full max-w-[28px] rounded-t-lg transition-all duration-300 ${
-                            isHighlighted
-                              ? "bg-gradient-to-b from-[#fda4af] via-[#e11d48] to-[#4c0519] shadow-[0_0_24px_rgba(225,29,72,0.75)] ring-1 ring-white/30"
-                              : "bg-gradient-to-b from-zinc-600/55 via-zinc-700/30 to-zinc-900/10 group-hover:from-[#be123c]/70 group-hover:to-[#4c0519]/50"
+                        <div className="relative flex h-[88px] w-full items-end justify-center">
+                          {isHighlighted && (
+                            <span className="absolute -top-5 text-[10px] font-bold tabular-nums text-white">
+                              {sharePct}%
+                            </span>
+                          )}
+                          <div
+                            style={{ height: `${heightPct}%` }}
+                            className={`w-full max-w-[22px] rounded-t-md transition-all duration-300 ${
+                              isHighlighted
+                                ? "bg-gradient-to-b from-white via-[#d62839] to-[#450a0a]/40 shadow-[0_0_18px_rgba(214,40,57,0.45)]"
+                                : "bg-gradient-to-b from-white/[0.16] via-white/[0.06] to-transparent group-hover:from-white/[0.25]"
+                            }`}
+                          />
+                        </div>
+                        <span
+                          className={`mt-2 w-full truncate text-center text-[9px] ${
+                            isHighlighted ? "font-semibold text-white" : "text-zinc-500"
                           }`}
-                        />
-                        <span className="mt-1.5 max-w-[54px] truncate text-[10px] font-medium text-zinc-400 group-hover:text-white">
-                          {shortName}
+                        >
+                          {pillar.label}
                         </span>
                       </button>
                     );
@@ -634,640 +594,787 @@ export function DashboardInteractiveHub({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between border-t border-white/10 pt-3 text-[11px]">
-                <span className="text-zinc-400">คลิกแท่งกราฟเพื่อดูสำนวนรายนิติกร</span>
-                <span className="font-extrabold text-emerald-400">
-                  +{pctFmt.format(completedPct)}% สำเร็จ
+              <div className="flex items-center justify-between border-t border-white/[0.06] pt-2.5 text-[11px]">
+                <span className="text-zinc-500">
+                  เลือก: <strong className="font-medium text-zinc-300">{pillarItems[activePillarIdx]?.fullName}</strong>
+                </span>
+                <span className="font-semibold text-[#22c55e]">
+                  +{pctFmt.format(totalCompletionRate)}%
                 </span>
               </div>
-            </article>
+            </div>
           </div>
+        </div>
+      </section>
 
-          {/* Bottom CYBER Row: Performance Overview (Wide Left) + Recent Alerts (Right) */}
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-            {/* Left 7 Cols: Performance Overview & Registry Comparison */}
-            <div className="space-y-4 rounded-3xl border border-[#2f1d22] bg-[#121217] p-5 lg:col-span-7">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+      {/* =====================================================================
+          ROW 2: CYBER "Recent Security Alerts" -> Performance Overview & Recent Alerts
+          - Left (8 cols): Muted Grey Vertical Bars + Single Thin Police Red Spline + Tooltip
+          - Right (4 cols): Clean Dark Alert List with White Titles & Grey Subtitles
+          ===================================================================== */}
+      <section aria-label="ภาพรวมประสิทธิภาพและสำนวนเร่งด่วน" className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-base font-medium tracking-tight text-white sm:text-lg">
+            Recent Case Alerts & Performance · ประสิทธิภาพและสำนวนเร่งด่วน
+          </h2>
+        </div>
+
+        <div className="rounded-[1.75rem] border border-white/[0.06] bg-[#0e0e11] p-3.5 sm:p-5">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+            {/* Left (8 cols): Performance Overview */}
+            <div className="cyber-card flex flex-col justify-between p-5 lg:col-span-8">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-bold text-white">
-                    Performance Overview · เปรียบเทียบทะเบียนเรื่องร้องทุกข์และเรื่องอุทธรณ์
+                  <h3 className="text-sm font-medium text-white">
+                    Performance Overview · ภาพรวมประสิทธิภาพรายปี
                   </h3>
-                  <p className="text-xs text-zinc-400">
-                    สัดส่วนความสำเร็จและจำนวนเรื่องค้างแยกตามประเภททะเบียนคุมสำนวน
+                  <p className="mt-0.5 text-xs text-zinc-400">
+                    เปรียบเทียบปริมาณสำนวนทั้งหมด (แท่งสีเทา) และอัตราการวินิจฉัยแล้วเสร็จ (เส้นสีแดงตำรวจ)
                   </p>
                 </div>
-                <span className="rounded-full border border-[#4c1d24] bg-[#1a1216] px-3 py-1 text-xs font-bold text-[#fda4af]">
+
+                {/* Floating Dark Tooltip Box + Monthly/Yearly Pill (Matches CYBER template) */}
+                <div className="flex items-center gap-3">
+                  {focalPerfPoint && (
+                    <div className="rounded-xl border border-white/10 bg-[#18181d] px-3.5 py-2 text-[11px] shadow-lg">
+                      <p className="font-semibold text-white">ปี พ.ศ. {focalPerfPoint.label}</p>
+                      <div className="mt-1 flex items-center justify-between gap-4 text-zinc-400">
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#d62839]" />
+                          <span>อัตราสำเร็จ</span>
+                        </span>
+                        <strong className="font-bold text-white">{focalPerfPoint.score}%</strong>
+                      </div>
+                      <div className="mt-0.5 flex items-center justify-between gap-4 text-zinc-400">
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-zinc-500" />
+                          <span>จำนวนสำนวน</span>
+                        </span>
+                        <strong className="font-bold text-white">{numberFmt.format(focalPerfPoint.total)}</strong>
+                      </div>
+                    </div>
+                  )}
+                  <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#18181d] px-3 py-1.5 text-xs font-medium text-zinc-300">
+                    <span>รายปี</span>
+                    <ChevronDown size={13} aria-hidden="true" />
+                  </span>
+                </div>
+              </div>
+
+              {/* Muted Grey Vertical Bars + Single Thin Police Red Spline SVG */}
+              <div className="mt-3">
+                <svg viewBox="0 0 560 144" className="w-full overflow-visible">
+                  <defs>
+                    <linearGradient id="cyberMutedBar" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="rgba(255,255,255,0.16)" />
+                      <stop offset="100%" stopColor="rgba(255,255,255,0.01)" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Horizontal grid lines + Y-axis labels */}
+                  {[100, 80, 60].map((val, idx) => {
+                    const y = 24 + idx * 38;
+                    return (
+                      <g key={val}>
+                        <line
+                          x1="34"
+                          y1={y}
+                          x2="544"
+                          y2={y}
+                          stroke="rgba(255,255,255,0.05)"
+                          strokeWidth="1"
+                        />
+                        <text x="24" y={y + 3} fill="#71717a" fontSize="9" textAnchor="end">
+                          {val}
+                        </text>
+                      </g>
+                    );
+                  })}
+
+                  {/* Background Muted Grey Vertical Bars */}
+                  {perfSplinePoints.pts.map((pt, i) => (
+                    <g key={`bar-${i}`}>
+                      <rect
+                        x={pt.x - 10}
+                        y={perfSplinePoints.baselineY - pt.barH}
+                        width="20"
+                        height={pt.barH}
+                        rx="3"
+                        fill="url(#cyberMutedBar)"
+                      />
+                      <text
+                        x={pt.x}
+                        y="134"
+                        fill="#71717a"
+                        fontSize="9"
+                        textAnchor="middle"
+                      >
+                        {pt.label}
+                      </text>
+                    </g>
+                  ))}
+
+                  {/* Single Thin Police Red Spline Line */}
+                  <path
+                    d={perfSplinePoints.path}
+                    fill="none"
+                    stroke="#d62839"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                  />
+
+                  {/* Small Dots along the Police Red Spline */}
+                  {perfSplinePoints.pts.map((pt, i) => {
+                    const isFocal = pt.label === focalPerfPoint?.label;
+                    return (
+                      <g key={`dot-${i}`}>
+                        {isFocal && (
+                          <circle cx={pt.x} cy={pt.y} r="6" fill="rgba(214,40,57,0.28)" />
+                        )}
+                        <circle
+                          cx={pt.x}
+                          cy={pt.y}
+                          r={isFocal ? "3.5" : "2.5"}
+                          fill={isFocal ? "#ffffff" : "#d62839"}
+                          stroke="#d62839"
+                          strokeWidth="1.5"
+                        />
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
+            </div>
+
+            {/* Right (4 cols): Recent Alerts */}
+            <div className="cyber-card flex flex-col justify-between p-5 lg:col-span-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-white">
+                  Recent Alerts · สำนวนเร่งด่วน
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("urgent")}
+                  className="text-xs font-medium text-zinc-400 transition hover:text-white"
+                >
+                  ดูทั้งหมด ({numberFmt.format(snapshot.urgentCases.length)})
+                </button>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {snapshot.urgentCases.slice(0, 3).map((c) => {
+                  const isOverdue = c.daysUntilDue < 0;
+                  return (
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-[#17171c] px-3.5 py-2.5"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#121215] text-zinc-300">
+                          {isOverdue ? (
+                            <AlertTriangle size={15} className="text-[#ef4444]" aria-hidden="true" />
+                          ) : (
+                            <Bell size={15} className="text-zinc-300" aria-hidden="true" />
+                          )}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-semibold text-white">
+                            {c.blackNumber}
+                          </p>
+                          <p className="truncate text-[11px] text-zinc-400">
+                            {c.subject} · {c.legalOfficer}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`shrink-0 text-[11px] font-semibold tabular-nums ${
+                          isOverdue ? "text-[#ef4444]" : "text-[#f59e0b]"
+                        }`}
+                      >
+                        {isOverdue
+                          ? `เกิน ${Math.abs(c.daysUntilDue)} วัน`
+                          : `เหลือ ${c.daysUntilDue} วัน`}
+                      </span>
+                    </div>
+                  );
+                })}
+                {snapshot.urgentCases.length === 0 && (
+                  <p className="py-6 text-center text-xs text-zinc-500">
+                    ไม่มีสำนวนที่เกินกำหนดหรือใกล้ครบกำหนด
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================================
+          ROW 3: Interactive Drill-Down Workbench (4 Tabs)
+          - Clean matte dark charcoal surface, white bold text, light grey secondary text
+          - Police Red used ONLY on the active tab pill and primary action buttons
+          ===================================================================== */}
+      <section
+        aria-label="ศูนย์ควบคุมและสำรวจข้อมูลสำนวนเชิงลึก"
+        className="rounded-[1.75rem] border border-white/[0.08] bg-[#121215] p-4 sm:p-6"
+      >
+        <div className="flex flex-col gap-4 border-b border-white/[0.08] pb-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="text-base font-bold text-white sm:text-lg">
+              ศูนย์สำรวจและบริหารสำนวนเชิงลึก (Interactive Case Explorer)
+            </h2>
+            <p className="mt-0.5 text-xs text-zinc-400">
+              ค้นหาสำนวนคงค้าง เปรียบเทียบทะเบียนเรื่องร้องทุกข์–อุทธรณ์ และตรวจสอบภาระงานรายนิติกร
+            </p>
+          </div>
+
+          {/* 4 Capsule Tabs (Only active tab in Police Red) */}
+          <div
+            role="tablist"
+            aria-label="มุมมองวิเคราะห์แดชบอร์ด"
+            className="flex flex-wrap gap-1.5 rounded-full border border-white/10 bg-[#0d0d10] p-1.5"
+          >
+            {[
+              { id: "compare" as const, label: "เปรียบเทียบทะเบียน & สถานะ", icon: Activity },
+              {
+                id: "explorer" as const,
+                label: `ค้นหาเรื่องค้าง (${numberFmt.format(allBacklogCases.length)})`,
+                icon: FolderSearch,
+              },
+              {
+                id: "officers" as const,
+                label: `ภาระงานนิติกร (${numberFmt.format(snapshot.officerPerformance.length)})`,
+                icon: Users,
+              },
+              {
+                id: "urgent" as const,
+                label: `เร่งด่วน & ความเคลื่อนไหว (${numberFmt.format(urgentTotal)})`,
+                icon: ShieldAlert,
+              },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-all ${
+                    isActive
+                      ? "bg-gradient-to-b from-[#d62839] to-[#991b1b] text-white shadow-[0_4px_14px_rgba(185,28,28,0.45)]"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  <Icon size={14} aria-hidden="true" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* TAB 1: Compare Registries & Pipeline */}
+        {activeTab === "compare" && (
+          <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-12">
+            <div className="space-y-4 lg:col-span-7">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {sections.map((sec, idx) => {
+                  const completed = sec.snapshot.totalCases - sec.snapshot.kpis.active;
+                  const pct =
+                    sec.snapshot.totalCases > 0
+                      ? (completed / sec.snapshot.totalCases) * 100
+                      : 0;
+                  const isPrimary = idx === 0;
+                  return (
+                    <div
+                      key={sec.title}
+                      className="rounded-2xl border border-white/[0.08] bg-[#16161b] p-4"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-zinc-400">
+                          ทะเบียน{sec.title}
+                        </span>
+                        <a
+                          href={sec.accent === "teal" ? "#registry-complaint" : "#registry-appeal"}
+                          className="text-xs font-semibold text-white hover:underline"
+                        >
+                          ดูกราฟละเอียด →
+                        </a>
+                      </div>
+
+                      <div className="mt-3 flex items-baseline justify-between">
+                        <div>
+                          <p className="text-2xl font-bold tabular-nums text-white">
+                            {numberFmt.format(sec.snapshot.totalCases)}
+                          </p>
+                          <p className="text-xs text-zinc-400">สำนวนทั้งหมดในทะเบียน</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xl font-bold tabular-nums text-white">
+                            {pctFmt.format(pct)}%
+                          </p>
+                          <p className="text-[11px] text-zinc-400">อัตราเสร็จสิ้น</p>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar: Police Red for primary registry, muted light grey for secondary */}
+                      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/[0.07]">
+                        <div
+                          className={`h-full rounded-full ${
+                            isPrimary
+                              ? "bg-gradient-to-r from-[#991b1b] to-[#ef4444]"
+                              : "bg-zinc-400"
+                          }`}
+                          style={{ width: `${Math.min(100, Math.max(4, pct))}%` }}
+                        />
+                      </div>
+
+                      <dl className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
+                        <div className="rounded-xl border border-white/[0.06] bg-[#121215] p-2">
+                          <dt className="text-zinc-400">เสร็จสิ้น</dt>
+                          <dd className="mt-0.5 font-bold tabular-nums text-white">
+                            {numberFmt.format(completed)}
+                          </dd>
+                        </div>
+                        <div className="rounded-xl border border-white/[0.06] bg-[#121215] p-2">
+                          <dt className="text-zinc-400">เรื่องค้าง</dt>
+                          <dd className="mt-0.5 font-bold tabular-nums text-white">
+                            {numberFmt.format(sec.snapshot.kpis.active)}
+                          </dd>
+                        </div>
+                        <div className="rounded-xl border border-white/[0.06] bg-[#121215] p-2">
+                          <dt className="text-zinc-400">นิติกร</dt>
+                          <dd className="mt-0.5 font-bold tabular-nums text-white">
+                            {numberFmt.format(sec.snapshot.officerPerformance.length)}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right: Stage Pipeline Breakdown */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#16161b] p-4 lg:col-span-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-white">
+                    สถานะขั้นตอนการดำเนินงาน (Stage Pipeline)
+                  </h3>
+                  <p className="text-xs text-zinc-400">
+                    สัดส่วนสำนวนแยกตามขั้นตอนปัจจุบัน
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-zinc-300">
                   รวม {numberFmt.format(snapshot.totalCases)} เรื่อง
                 </span>
               </div>
 
-              <div className="grid gap-3.5 sm:grid-cols-2">
-                {sections.map((sec) => {
-                  const total = sec.snapshot.totalCases;
-                  const pending = sec.snapshot.kpis.active;
-                  const done = total - pending;
-                  const rate = total > 0 ? (done / total) * 100 : 0;
-                  const isTeal = sec.accent === "teal";
+              <div className="mt-4 space-y-3">
+                {snapshot.statusDistribution.map((st, idx) => {
+                  const pct =
+                    snapshot.totalCases > 0
+                      ? (st.count / snapshot.totalCases) * 100
+                      : 0;
+                  const isFocalStage = idx === 0;
                   return (
-                    <div
-                      key={sec.title}
-                      className="flex flex-col justify-between rounded-2xl border border-[#3a1d24] bg-[radial-gradient(120%_100%_at_50%_105%,rgba(153,27,27,0.28)_0%,rgba(22,22,29,0.96)_75%)] p-4"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="inline-flex items-center rounded-full border border-[#be123c]/40 bg-[#be123c]/15 px-3 py-0.5 text-xs font-bold text-[#fda4af]">
-                            {sec.title}
-                          </span>
-                          <a
-                            href={isTeal ? "#registry-complaint" : "#registry-appeal"}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-300 hover:text-[#fda4af]"
-                          >
-                            ดูกราฟละเอียด <ArrowUpRight size={13} aria-hidden="true" />
-                          </a>
-                        </div>
-
-                        <div className="mt-3 flex items-baseline justify-between">
-                          <div>
-                            <p className="text-xs text-zinc-400">อัตราแล้วเสร็จ</p>
-                            <p className="text-2xl font-extrabold tabular-nums text-white">
-                              {total > 0 ? `${pctFmt.format(rate)}%` : "—"}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-zinc-400">เรื่องค้างปัจจุบัน</p>
-                            <p className="text-xl font-extrabold tabular-nums text-[#fb7185]">
-                              {numberFmt.format(pending)} เรื่อง
-                            </p>
-                          </div>
-                        </div>
-
-                        <div
-                          aria-hidden="true"
-                          className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-zinc-800"
-                        >
-                          <span
-                            className="bg-gradient-to-r from-[#991b1b] via-[#e11d48] to-[#fb7185] transition-all"
-                            style={{ width: `${total > 0 ? (done / total) * 100 : 0}%` }}
-                          />
-                          <span
-                            className="bg-amber-400 transition-all"
-                            style={{ width: `${total > 0 ? (pending / total) * 100 : 0}%` }}
-                          />
-                        </div>
+                    <div key={st.label} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-white">{st.label}</span>
+                        <span className="font-semibold tabular-nums text-zinc-400">
+                          <strong className="text-white">{numberFmt.format(st.count)}</strong> เรื่อง ({pctFmt.format(pct)}%)
+                        </span>
                       </div>
-
-                      <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-xs text-zinc-300">
-                        <span>
-                          ทั้งหมด <strong className="tabular-nums text-white">{numberFmt.format(total)}</strong>
-                        </span>
-                        <span className="text-emerald-400">
-                          เสร็จสิ้น <strong className="tabular-nums">{numberFmt.format(done)}</strong>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedRegistry(isTeal ? "ร้องทุกข์" : "อุทธรณ์");
-                            setActiveTab("explorer");
-                          }}
-                          className="font-bold text-[#fda4af] hover:underline"
-                        >
-                          ค้นหาเรื่องค้าง →
-                        </button>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.07]">
+                        <div
+                          className={`h-full rounded-full ${
+                            isFocalStage
+                              ? "bg-gradient-to-r from-[#991b1b] to-[#ef4444]"
+                              : "bg-white/25"
+                          }`}
+                          style={{ width: `${Math.max(4, Math.min(100, pct))}%` }}
+                        />
                       </div>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Status Distribution Bars */}
-              <div className="rounded-2xl border border-white/10 bg-[#16161d] p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300">
-                    การกระจายตามกลุ่มสถานะสำนวน
-                  </h4>
-                  <span className="text-xs text-zinc-400 tabular-nums">
-                    ฐาน {numberFmt.format(snapshot.totalCases)} เรื่อง
-                  </span>
-                </div>
-                <div className="mt-3 space-y-2.5">
-                  {snapshot.statusDistribution.map((item) => {
-                    const pct = snapshot.totalCases > 0 ? (item.count / snapshot.totalCases) * 100 : 0;
-                    return (
-                      <div key={item.label} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium text-zinc-300">{item.label}</span>
-                          <span className="tabular-nums font-bold text-white">
-                            {numberFmt.format(item.count)} เรื่อง ({pctFmt.format(pct)}%)
-                          </span>
-                        </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#881337] via-[#be123c] to-[#fb7185]"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Right 5 Cols: Recent Alerts & Quick Operations (matching CYBER "Recent Alerts" panel) */}
-            <div className="flex flex-col justify-between gap-4 rounded-3xl border border-[#2f1d22] bg-[#121217] p-5 lg:col-span-5">
-              <div>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-white">
-                    Recent Alerts · แจ้งเตือนและทางลัดปฏิบัติการ
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("urgent")}
-                    className="text-xs font-bold text-[#fda4af] hover:underline"
-                  >
-                    ดูทั้งหมด
-                  </button>
-                </div>
-
-                {/* Alert Items matching CYBER Recent Alerts */}
-                <div className="mt-4 space-y-3">
-                  {snapshot.urgentCases.slice(0, 3).map((u) => (
-                    <Link
-                      key={u.id}
-                      href={`/cases/${u.id}`}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#17171f] p-3.5 transition hover:border-[#be123c]/60"
-                    >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#4c1d24] bg-[#be123c]/15 text-[#fb7185]">
-                          <AlertTriangle size={17} aria-hidden="true" />
-                        </span>
-                        <div className="min-w-0">
-                          <p className="truncate text-xs font-bold text-white">
-                            เรื่องดำ {u.blackNumber} · {u.type}
-                          </p>
-                          <p className="truncate text-[11px] text-zinc-400">
-                            {u.subject} ({u.legalOfficer})
-                          </p>
-                        </div>
-                      </div>
-                      <span className="shrink-0 text-xs font-bold tabular-nums text-[#fb7185]">
-                        {u.daysUntilDue < 0
-                          ? `เกิน ${Math.abs(u.daysUntilDue)} วัน`
-                          : `อีก ${u.daysUntilDue} วัน`}
-                      </span>
-                    </Link>
-                  ))}
-
-                  {snapshot.urgentCases.length === 0 && (
-                    <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#17171f] p-3.5">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#4c1d24] bg-[#be123c]/15 text-[#fb7185]">
-                          <ShieldAlert size={17} aria-hidden="true" />
-                        </span>
-                        <div>
-                          <p className="text-xs font-bold text-white">
-                            สถานะสำนวนค้างรวม {numberFmt.format(activeCases)} เรื่อง
-                          </p>
-                          <p className="text-[11px] text-zinc-400">
-                            รอระบุนิติกร {numberFmt.format(snapshot.kpis.unassigned)} เรื่อง · ตรวจคุณภาพข้อมูล{" "}
-                            {numberFmt.format(snapshot.kpis.criticalDataQuality)} รายการ
-                          </p>
-                        </div>
-                      </div>
-                      <span className="shrink-0 text-xs font-bold text-[#fda4af]">ปัจจุบัน</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Quick Action Grid with Police Maroon Gradient */}
-              <div className="rounded-2xl border border-[#4c1d24] bg-[radial-gradient(125%_115%_at_50%_105%,rgba(185,28,28,0.42)_0%,rgba(20,20,27,0.96)_75%)] p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-bold text-white">ทางลัดเข้าสู่ระบบงานหลัก</p>
-                  <Sparkles size={15} className="text-[#fb7185]" aria-hidden="true" />
-                </div>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {canUseAnalysis && (
-                    <Link
-                      href="/analysis"
-                      className="flex items-center justify-between rounded-xl bg-gradient-to-r from-[#be123c] via-[#991b1b] to-[#6b111b] px-3.5 py-2.5 text-xs font-bold text-white shadow transition hover:brightness-110"
-                    >
-                      <span>ระบบวิเคราะห์สำนวน</span>
-                      <ArrowUpRight size={14} aria-hidden="true" />
-                    </Link>
-                  )}
-                  <Link
-                    href="/owner"
-                    className="flex items-center justify-between rounded-xl border border-[#4c1d24] bg-[#14141b] px-3.5 py-2.5 text-xs font-semibold text-zinc-100 transition hover:border-[#be123c]"
-                  >
-                    <span>หน้าเจ้าของเว็บไซต์</span>
-                    <ArrowUpRight size={14} aria-hidden="true" />
-                  </Link>
-                  <Link
-                    href="/cases"
-                    className="flex items-center justify-between rounded-xl border border-white/10 bg-[#14141b] px-3.5 py-2.5 text-xs font-semibold text-zinc-100 transition hover:border-[#be123c]"
-                  >
-                    <span>รายการคดีทั้งหมด</span>
-                    <ArrowUpRight size={14} aria-hidden="true" />
-                  </Link>
-                  <Link
-                    href="/library"
-                    className="flex items-center justify-between rounded-xl border border-white/10 bg-[#14141b] px-3.5 py-2.5 text-xs font-semibold text-zinc-100 transition hover:border-[#be123c]"
-                  >
-                    <span>คลังความรู้กฎหมาย</span>
-                    <ArrowUpRight size={14} aria-hidden="true" />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: INTERACTIVE PENDING CASE EXPLORER */}
-      {activeTab === "explorer" && (
-        <div className="mt-5 space-y-4">
-          <div className="grid gap-3 rounded-2xl border border-[#3a1d24] bg-[#14141b] p-4 sm:grid-cols-2 lg:grid-cols-12">
-            <div className="lg:col-span-5">
-              <label htmlFor="dashboard-case-search" className="block text-xs font-bold text-zinc-300">
-                ค้นหาด่วน (ชื่อผู้ร้อง / เลขดำ / เรื่อง / การดำเนินการ)
-              </label>
-              <div className="relative mt-1.5">
-                <Search
-                  size={16}
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
-                />
-                <input
-                  id="dashboard-case-search"
-                  type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="พิมพ์ชื่อผู้ร้อง เลขดำ เช่น 123/68 หรือคำค้น..."
-                  className="w-full rounded-xl border border-[#3a1d24] bg-[#0e0e12] py-2 pl-9 pr-3 text-sm text-white focus:border-[#be123c] focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="lg:col-span-2">
-              <label htmlFor="dashboard-registry-filter" className="block text-xs font-bold text-zinc-300">
-                ทะเบียน
-              </label>
-              <select
-                id="dashboard-registry-filter"
-                value={selectedRegistry}
-                onChange={(e) => setSelectedRegistry(e.target.value as "all" | "ร้องทุกข์" | "อุทธรณ์")}
-                className="mt-1.5 w-full rounded-xl border border-[#3a1d24] bg-[#0e0e12] px-3 py-2 text-sm text-white"
-              >
-                <option value="all">ทั้งหมด</option>
-                <option value="ร้องทุกข์">เรื่องร้องทุกข์</option>
-                <option value="อุทธรณ์">เรื่องอุทธรณ์</option>
-              </select>
-            </div>
-
-            <div className="lg:col-span-2">
-              <label htmlFor="dashboard-year-filter" className="block text-xs font-bold text-zinc-300">
-                ปีเลขดำ
-              </label>
-              <select
-                id="dashboard-year-filter"
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                className="mt-1.5 w-full rounded-xl border border-[#3a1d24] bg-[#0e0e12] px-3 py-2 text-sm text-white"
-              >
-                <option value="all">ทุกปี ({availableYears.length})</option>
-                {availableYears.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="lg:col-span-3">
-              <label htmlFor="dashboard-officer-filter" className="block text-xs font-bold text-zinc-300">
-                นิติกรผู้รับผิดชอบ
-              </label>
-              <select
-                id="dashboard-officer-filter"
-                value={selectedOfficer}
-                onChange={(e) => setSelectedOfficer(e.target.value)}
-                className="mt-1.5 w-full rounded-xl border border-[#3a1d24] bg-[#0e0e12] px-3 py-2 text-sm text-white"
-              >
-                <option value="all">ทุกนิติกร ({availableOfficers.length})</option>
-                {availableOfficers.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
-            <p>
-              พบเรื่องค้างที่ตรงเงื่อนไข{" "}
-              <strong className="tabular-nums text-white">
-                {numberFmt.format(filteredCases.length)}
-              </strong>{" "}
-              จากทั้งหมด {numberFmt.format(allBacklogCases.length)} เรื่อง
-            </p>
-            {(query || selectedRegistry !== "all" || selectedYear !== "all" || selectedOfficer !== "all") && (
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery("");
-                  setSelectedRegistry("all");
-                  setSelectedYear("all");
-                  setSelectedOfficer("all");
-                }}
-                className="font-bold text-[#fda4af] hover:underline"
-              >
-                ล้างตัวกรองทั้งหมด
-              </button>
-            )}
-          </div>
-
-          {!canViewDetails ? (
-            <p className="rounded-xl border border-white/10 bg-[#14141b] p-5 text-sm text-zinc-400">
-              บัญชีนี้ไม่มีสิทธิ์ดูรายละเอียดเรื่องรายสำนวน
-            </p>
-          ) : filteredCases.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/15 bg-[#14141b] p-8 text-center">
-              <p className="text-sm font-bold text-white">ไม่พบสำนวนค้างที่ตรงกับตัวกรอง</p>
-              <p className="mt-1 text-xs text-zinc-400">ลองเปลี่ยนคำค้นหาหรือล้างตัวกรองเพื่อดูรายการทั้งหมด</p>
-            </div>
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              {filteredCases.slice(0, 30).map((item) => (
-                <article
-                  key={`${item.registryKind}-${item.id}`}
-                  className="flex flex-col justify-between rounded-2xl border border-[#2f1d22] bg-[#14141b] p-4 transition hover:border-[#be123c]/60"
-                >
+              {canUseAnalysis && (
+                <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-[#121215] p-3">
                   <div>
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <span className="inline-block rounded-full border border-[#be123c]/40 bg-[#be123c]/15 px-2.5 py-0.5 text-[11px] font-bold text-[#fda4af]">
-                          {item.registryKind} · {item.year}
-                        </span>
-                        <h4 className="mt-1.5 break-words text-base font-bold text-white">
-                          {item.petitionerName || "ยังไม่ระบุชื่อผู้ร้อง"}
-                        </h4>
-                      </div>
-                      <Link
-                        href={`/cases/${item.id}`}
-                        className="shrink-0 rounded-full bg-gradient-to-r from-[#be123c] to-[#881337] px-3.5 py-1.5 text-xs font-bold text-white hover:brightness-110"
-                      >
-                        เรื่องดำ {item.blackNumber}
-                      </Link>
-                    </div>
-                    <p className="mt-2 line-clamp-2 break-words text-sm text-zinc-300">
-                      {item.subject}
+                    <p className="text-xs font-bold text-white">
+                      วิเคราะห์สำนวนและร่างคำวินิจฉัยเบื้องต้น
                     </p>
-                    <p className="mt-2 rounded-xl border border-white/10 bg-[#0e0e12] px-3 py-2 text-xs leading-5 text-zinc-300">
-                      <strong className="text-white">การดำเนินการล่าสุด:</strong>{" "}
-                      {item.proceeding}
+                    <p className="text-[11px] text-zinc-400">
+                      ระบบวิเคราะห์ 6 ขั้นตอนพร้อมส่งออกไฟล์ Word (.docx)
                     </p>
                   </div>
-
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2.5 text-xs text-zinc-400">
-                    <span>
-                      นิติกร: <strong className="text-white">{item.officer}</strong>
-                    </span>
-                    <div className="flex items-center gap-3">
-                      {canUseAnalysis && (
-                        <Link
-                          href={`/analysis?case=${encodeURIComponent(item.id)}`}
-                          className="font-bold text-[#fda4af] hover:underline"
-                        >
-                          วิเคราะห์สำนวนนี้ →
-                        </Link>
-                      )}
-                      <Link
-                        href={`/cases/${item.id}`}
-                        className="font-bold text-white hover:underline"
-                      >
-                        เปิดสำนวน
-                      </Link>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB 3: INTERACTIVE OFFICER WORKLOAD MATRIX */}
-      {activeTab === "officers" && (
-        <div className="mt-5 space-y-4">
-          <div className="flex flex-col gap-3 rounded-2xl border border-[#3a1d24] bg-[#14141b] p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative flex-1">
-              <Search
-                size={15}
-                aria-hidden="true"
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
-              />
-              <input
-                type="search"
-                value={officerSearch}
-                onChange={(e) => setOfficerSearch(e.target.value)}
-                placeholder="ค้นหาชื่อนิติกรผู้รับผิดชอบ..."
-                aria-label="ค้นหาชื่อนิติกรผู้รับผิดชอบ"
-                className="w-full rounded-xl border border-[#3a1d24] bg-[#0e0e12] py-2 pl-9 pr-3 text-sm text-white"
-              />
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-semibold text-zinc-400">เรียงตาม:</span>
-              {[
-                { key: "pending" as const, label: "เรื่องค้างมากสุด" },
-                { key: "total" as const, label: "รับทั้งหมดมากสุด" },
-                { key: "completed" as const, label: "เสร็จสิ้นมากสุด" },
-                { key: "rate" as const, label: "% สำเร็จสูงสุด" },
-              ].map((opt) => (
-                <button
-                  key={opt.key}
-                  type="button"
-                  onClick={() => setOfficerSort(opt.key)}
-                  className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
-                    officerSort === opt.key
-                      ? "bg-gradient-to-r from-[#be123c] to-[#881337] text-white"
-                      : "border border-white/10 bg-[#0e0e12] text-zinc-300 hover:border-[#be123c]/50"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="overflow-x-auto rounded-2xl border border-white/10">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-white/10 bg-[#14141b] text-xs font-bold text-zinc-400">
-                <tr>
-                  <th className="px-4 py-3">อันดับ</th>
-                  <th className="px-4 py-3">นิติกรผู้รับผิดชอบ</th>
-                  <th className="px-4 py-3 text-right">รับทั้งหมด</th>
-                  <th className="px-4 py-3 text-right">เสร็จแล้ว</th>
-                  <th className="px-4 py-3 text-right">ค้างดำเนินการ</th>
-                  <th className="px-4 py-3 text-right">% สำเร็จ</th>
-                  <th className="px-4 py-3">สัดส่วนภาระงาน</th>
-                  <th className="px-4 py-3 text-right">สำรวจเรื่องค้าง</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/10 bg-[#0e0e12]">
-                {sortedOfficers.map((item) => (
-                  <tr key={item.name} className="hover:bg-[#16161e]">
-                    <td className="px-4 py-3 tabular-nums text-xs font-semibold text-zinc-500">
-                      {item.rank === null ? "—" : `#${item.rank}`}
-                    </td>
-                    <td className="px-4 py-3 font-bold text-white">{item.name}</td>
-                    <td className="px-4 py-3 text-right font-bold tabular-nums text-white">
-                      {numberFmt.format(item.total)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-semibold tabular-nums text-emerald-400">
-                      {numberFmt.format(item.completed)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-bold tabular-nums text-[#fb7185]">
-                      {numberFmt.format(item.pending)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-bold tabular-nums text-white">
-                      {pctFmt.format(item.completionPercent)}%
-                    </td>
-                    <td className="w-44 px-4 py-3">
-                      <div className="flex h-2.5 overflow-hidden rounded-full bg-zinc-800">
-                        <span
-                          className="bg-gradient-to-r from-[#881337] to-[#e11d48]"
-                          style={{ width: `${(item.completed / maxOfficerTotal) * 100}%` }}
-                        />
-                        <span
-                          className="bg-amber-400"
-                          style={{ width: `${(item.pending / maxOfficerTotal) * 100}%` }}
-                        />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {item.pending > 0 && canViewDetails ? (
-                        <button
-                          type="button"
-                          onClick={() => selectOfficerAndInspect(item.name)}
-                          className="text-xs font-bold text-[#fda4af] hover:underline"
-                        >
-                          ดูเรื่องค้าง ({numberFmt.format(item.pending)}) →
-                        </button>
-                      ) : (
-                        <span className="text-xs text-zinc-500">ไม่มีเรื่องค้าง</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 4: URGENT & RECENT ACTIVITY */}
-      {activeTab === "urgent" && (
-        <div className="mt-5 grid gap-5 lg:grid-cols-2">
-          <div className="rounded-2xl border border-[#3a1d24] bg-[#14141b] p-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white">
-                สำนวนเร่งด่วน / ใกล้ครบกำหนดภายใน 7 วัน
-              </h3>
-              <span className="rounded-full bg-[#be123c]/20 px-2.5 py-0.5 text-xs font-bold text-[#fda4af] tabular-nums">
-                {numberFmt.format(snapshot.urgentCases.length)} เรื่อง
-              </span>
-            </div>
-            {snapshot.urgentCases.length === 0 ? (
-              <p className="mt-4 rounded-xl bg-[#0e0e12] p-5 text-center text-xs text-zinc-400">
-                ไม่มีสำนวนที่เกินกำหนดหรือครบกำหนดภายใน 7 วันในขณะนี้
-              </p>
-            ) : (
-              <div className="mt-3 space-y-2.5">
-                {snapshot.urgentCases.map((u) => (
-                  <div
-                    key={u.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-[#0e0e12] p-3"
+                  <Link
+                    href="/analysis"
+                    className="inline-flex shrink-0 items-center gap-1 rounded-full bg-gradient-to-b from-[#d62839] to-[#991b1b] px-3.5 py-2 text-xs font-bold text-white shadow-[0_4px_12px_rgba(185,28,28,0.4)] transition hover:brightness-110"
                   >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/cases/${u.id}`}
-                          className="text-xs font-bold text-white hover:underline"
-                        >
-                          เรื่องดำ {u.blackNumber}
-                        </Link>
-                        <span className="text-xs text-zinc-400">({u.type})</span>
-                      </div>
-                      <p className="mt-0.5 truncate text-xs text-zinc-300">{u.subject}</p>
-                      <p className="mt-0.5 text-[11px] text-zinc-500">
-                        นิติกร: {u.legalOfficer} · ครบกำหนด {dateFmt.format(new Date(u.dueDate))}
-                      </p>
-                    </div>
-                    <span className="shrink-0 rounded-full bg-[#be123c]/20 px-2.5 py-1 text-xs font-bold tabular-nums text-[#fda4af]">
-                      {u.daysUntilDue < 0
-                        ? `เกิน ${Math.abs(u.daysUntilDue)} วัน`
-                        : `อีก ${u.daysUntilDue} วัน`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="rounded-2xl border border-[#3a1d24] bg-[#14141b] p-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white">
-                ความเคลื่อนไหวและการตรวจสอบคุณภาพข้อมูล
-              </h3>
-              <Link
-                href="/data-quality"
-                className="text-xs font-bold text-[#fda4af] hover:underline"
-              >
-                ตรวจคุณภาพข้อมูล →
-              </Link>
-            </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-2.5">
-              <div className="rounded-xl border border-white/10 bg-[#0e0e12] p-3">
-                <p className="text-xs text-zinc-400">สถานะขัดแย้งกับช่องเรื่องแดง</p>
-                <p className="mt-1 text-lg font-bold tabular-nums text-white">
-                  {numberFmt.format(snapshot.kpis.criticalDataQuality)} เรื่อง
-                </p>
-              </div>
-              <div className="rounded-xl border border-white/10 bg-[#0e0e12] p-3">
-                <p className="text-xs text-zinc-400">ยังไม่ระบุวันรับเรื่อง</p>
-                <p className="mt-1 text-lg font-bold tabular-nums text-white">
-                  {numberFmt.format(snapshot.dataQuality.missingReceivedDate)} เรื่อง
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              <p className="text-xs font-bold text-zinc-300">กิจกรรมล่าสุดในระบบ</p>
-              {snapshot.activities.length === 0 ? (
-                <p className="rounded-xl bg-[#0e0e12] p-4 text-center text-xs text-zinc-500">
-                  ยังไม่มีบันทึกกิจกรรมล่าสุด
-                </p>
-              ) : (
-                snapshot.activities.slice(0, 5).map((act) => (
-                  <div
-                    key={act.id}
-                    className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-[#0e0e12] px-3 py-2 text-xs"
-                  >
-                    <div className="min-w-0">
-                      <span className="font-bold text-[#fda4af]">เรื่องดำ {act.blackNumber}</span>{" "}
-                      <span className="text-zinc-300">· {act.action}</span>
-                    </div>
-                    <span className="shrink-0 text-[11px] text-zinc-500">{act.actor}</span>
-                  </div>
-                ))
+                    <Scale size={13} aria-hidden="true" />
+                    <span>เปิดระบบวิเคราะห์</span>
+                  </Link>
+                </div>
               )}
             </div>
           </div>
-        </div>
-      )}
-    </section>
+        )}
+
+        {/* TAB 2: Interactive Backlog Explorer */}
+        {activeTab === "explorer" && (
+          <div className="mt-5 space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="relative lg:col-span-2">
+                <Search
+                  size={15}
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="ค้นหาเลขดำ, ชื่อผู้ร้อง, มูลกรณี, นิติกร..."
+                  aria-label="ค้นหาเรื่องค้าง"
+                  className="w-full rounded-xl border border-white/10 bg-[#16161b] py-2 pl-9 pr-3 text-xs text-white placeholder:text-zinc-500"
+                />
+              </div>
+
+              <select
+                value={selectedRegistry}
+                onChange={(e) =>
+                  setSelectedRegistry(e.target.value as "all" | "ร้องทุกข์" | "อุทธรณ์")
+                }
+                aria-label="กรองตามประเภททะเบียน"
+                className="rounded-xl border border-white/10 bg-[#16161b] px-3 py-2 text-xs font-medium text-white"
+              >
+                <option value="all">ทุกทะเบียน (ร้องทุกข์ + อุทธรณ์)</option>
+                <option value="ร้องทุกข์">เฉพาะเรื่องร้องทุกข์</option>
+                <option value="อุทธรณ์">เฉพาะเรื่องอุทธรณ์</option>
+              </select>
+
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
+                aria-label="กรองตามปี พ.ศ."
+                className="rounded-xl border border-white/10 bg-[#16161b] px-3 py-2 text-xs font-medium text-white"
+              >
+                <option value="all">ทุกปี พ.ศ. ({availableYears.length} ปี)</option>
+                {availableYears.map((yr) => (
+                  <option key={yr} value={yr}>
+                    ปี {yr}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedOfficer}
+                onChange={(e) => setSelectedOfficer(e.target.value)}
+                aria-label="กรองตามนิติกร"
+                className="rounded-xl border border-white/10 bg-[#16161b] px-3 py-2 text-xs font-medium text-white"
+              >
+                <option value="all">นิติกรทั้งหมด ({availableOfficers.length} คน)</option>
+                {availableOfficers.map((off) => (
+                  <option key={off} value={off}>
+                    {off}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
+              <p>
+                พบสำนวนที่ตรงเงื่อนไข{" "}
+                <strong className="font-bold text-white">
+                  {numberFmt.format(filteredCases.length)}
+                </strong>{" "}
+                เรื่อง จากเรื่องค้างทั้งหมด {numberFmt.format(allBacklogCases.length)} เรื่อง
+              </p>
+              {(query ||
+                selectedRegistry !== "all" ||
+                selectedYear !== "all" ||
+                selectedOfficer !== "all") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setSelectedRegistry("all");
+                    setSelectedYear("all");
+                    setSelectedOfficer("all");
+                  }}
+                  className="font-semibold text-white hover:underline"
+                >
+                  ล้างตัวกรองทั้งหมด
+                </button>
+              )}
+            </div>
+
+            <div className="max-h-[420px] overflow-auto rounded-2xl border border-white/[0.08]">
+              <table className="min-w-full divide-y divide-white/[0.08] text-xs">
+                <thead className="sticky top-0 z-10 bg-[#16161b]">
+                  <tr className="text-left font-semibold text-zinc-400">
+                    <th className="px-3.5 py-2.5">ทะเบียน</th>
+                    <th className="px-3.5 py-2.5">เลขดำ / ปี</th>
+                    <th className="px-3.5 py-2.5">ผู้ร้อง / คู่กรณี</th>
+                    <th className="px-3.5 py-2.5">เรื่อง / การดำเนินการ</th>
+                    <th className="px-3.5 py-2.5">นิติกรเจ้าของสำนวน</th>
+                    {canUseAnalysis && <th className="px-3.5 py-2.5 text-right">ปฏิบัติการ</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.06] bg-[#121215]">
+                  {filteredCases.slice(0, 80).map((item, idx) => (
+                    <tr key={`${item.registryKind}-${item.blackNumber}-${idx}`}>
+                      <td className="whitespace-nowrap px-3.5 py-2.5">
+                        <span className="inline-flex rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                          {item.registryKind}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-3.5 py-2.5 font-bold tabular-nums text-white">
+                        {item.blackNumber}
+                        <span className="ml-1.5 text-[11px] font-normal text-zinc-400">
+                          ({item.year})
+                        </span>
+                      </td>
+                      <td className="px-3.5 py-2.5 font-medium text-white">
+                        {canViewDetails ? item.petitionerName : "ปกปิดตามสิทธิ์"}
+                      </td>
+                      <td className="max-w-md px-3.5 py-2.5 text-zinc-300">
+                        <p className="line-clamp-1 font-medium text-white">{item.subject}</p>
+                        {item.proceeding && (
+                          <p className="mt-0.5 line-clamp-1 text-[11px] text-zinc-400">
+                            สถานะ: {item.proceeding}
+                          </p>
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-3.5 py-2.5 font-medium text-zinc-300">
+                        {item.officer}
+                      </td>
+                      {canUseAnalysis && (
+                        <td className="whitespace-nowrap px-3.5 py-2.5 text-right">
+                          <Link
+                            href="/analysis"
+                            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#18181d] px-2.5 py-1 text-[11px] font-semibold text-white transition hover:border-[#c81e2b]"
+                          >
+                            <span>วิเคราะห์</span>
+                            <ArrowUpRight size={12} aria-hidden="true" />
+                          </Link>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                  {filteredCases.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={canUseAnalysis ? 6 : 5}
+                        className="px-4 py-8 text-center text-zinc-500"
+                      >
+                        ไม่พบสำนวนที่ตรงกับเงื่อนไขการค้นหา
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: Officer Workload Matrix */}
+        {activeTab === "officers" && (
+          <div className="mt-5 space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="relative w-full sm:max-w-xs">
+                <Search
+                  size={15}
+                  className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  value={officerSearch}
+                  onChange={(e) => setOfficerSearch(e.target.value)}
+                  placeholder="ค้นหาชื่อนิติกร..."
+                  aria-label="ค้นหาชื่อนิติกร"
+                  className="w-full rounded-xl border border-white/10 bg-[#16161b] py-2 pl-9 pr-3 text-xs text-white"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                <span className="mr-1 font-medium text-zinc-400">เรียงตาม:</span>
+                {[
+                  { key: "pending" as const, label: "เรื่องค้างมากสุด" },
+                  { key: "total" as const, label: "รับผิดชอบรวม" },
+                  { key: "completed" as const, label: "เสร็จสิ้นมากสุด" },
+                  { key: "rate" as const, label: "% ความสำเร็จ" },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setOfficerSort(opt.key)}
+                    className={`rounded-full px-3 py-1.5 font-semibold transition ${
+                      officerSort === opt.key
+                        ? "bg-gradient-to-b from-[#d62839] to-[#991b1b] text-white"
+                        : "border border-white/10 bg-[#16161b] text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {sortedOfficers.slice(0, 15).map((off, idx) => {
+                const rate = off.total > 0 ? (off.completed / off.total) * 100 : 0;
+                const isTopFocal = idx === 0;
+                return (
+                  <div
+                    key={off.name}
+                    className="flex flex-col justify-between rounded-2xl border border-white/[0.08] bg-[#16161b] p-3.5"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-xs font-bold text-white">{off.name}</p>
+                        <span className="rounded-full border border-white/10 bg-[#121215] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white">
+                          รวม {numberFmt.format(off.total)} เรื่อง
+                        </span>
+                      </div>
+
+                      <div className="mt-2.5 flex items-center justify-between text-[11px] text-zinc-400">
+                        <span>เสร็จ {numberFmt.format(off.completed)} เรื่อง</span>
+                        <span>ค้าง {numberFmt.format(off.pending)} เรื่อง</span>
+                        <span className="font-bold text-white">{pctFmt.format(rate)}%</span>
+                      </div>
+
+                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-white/[0.07]">
+                        <div
+                          className={`h-full rounded-full ${
+                            isTopFocal
+                              ? "bg-gradient-to-r from-[#991b1b] to-[#ef4444]"
+                              : "bg-white/30"
+                          }`}
+                          style={{ width: `${Math.min(100, Math.max(3, rate))}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedOfficer(off.name);
+                          setActiveTab("explorer");
+                        }}
+                        className="text-[11px] font-semibold text-zinc-300 hover:text-white hover:underline"
+                      >
+                        ดูรายการเรื่องค้างของนิติกรท่านนี้ →
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: Urgent Cases & Recent Activity */}
+        {activeTab === "urgent" && (
+          <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#16161b] p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-1.5 text-sm font-bold text-white">
+                  <AlertTriangle size={16} className="text-[#ef4444]" aria-hidden="true" />
+                  <span>สำนวนเร่งด่วน / ใกล้ครบกำหนด ({numberFmt.format(snapshot.urgentCases.length)})</span>
+                </h3>
+                <Link href="/cases" className="text-xs font-semibold text-zinc-300 hover:text-white">
+                  ดูทั้งหมด →
+                </Link>
+              </div>
+
+              <div className="mt-3 max-h-[300px] space-y-2 overflow-auto pr-1">
+                {snapshot.urgentCases.slice(0, 12).map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-[#121215] p-3 text-xs"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white">{c.blackNumber}</span>
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold text-zinc-300">
+                          {c.type}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 truncate text-zinc-300">{c.subject}</p>
+                      <p className="mt-0.5 text-[11px] text-zinc-500">
+                        ผู้รับผิดชอบ: {c.legalOfficer} · สถานะ: {c.status}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <span
+                        className={`inline-block font-bold ${
+                          c.daysUntilDue < 0 ? "text-[#ef4444]" : "text-[#f59e0b]"
+                        }`}
+                      >
+                        {c.daysUntilDue < 0
+                          ? `เกินกำหนด ${Math.abs(c.daysUntilDue)} วัน`
+                          : `เหลือ ${c.daysUntilDue} วัน`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                {snapshot.urgentCases.length === 0 && (
+                  <p className="py-6 text-center text-xs text-zinc-500">
+                    ไม่มีสำนวนที่เกินกำหนดหรือครบกำหนดใน 7 วัน
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/[0.08] bg-[#16161b] p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-1.5 text-sm font-bold text-white">
+                  <Activity size={16} className="text-zinc-300" aria-hidden="true" />
+                  <span>ความเคลื่อนไหวสำนวนล่าสุด</span>
+                </h3>
+                <Link href="/registry" className="text-xs font-semibold text-zinc-300 hover:text-white">
+                  ไปที่สารบบ →
+                </Link>
+              </div>
+
+              <div className="mt-3 max-h-[300px] space-y-2 overflow-auto pr-1">
+                {snapshot.activities.slice(0, 12).map((act) => (
+                  <div
+                    key={act.id}
+                    className="flex items-start justify-between gap-3 rounded-xl border border-white/[0.06] bg-[#121215] p-3 text-xs"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-bold text-white">
+                        {act.blackNumber}{" "}
+                        <span className="font-normal text-zinc-400">· {act.action}</span>
+                      </p>
+                      <p className="mt-0.5 truncate text-zinc-300">{act.type}</p>
+                      <p className="mt-0.5 text-[11px] text-zinc-500">โดย {act.actor}</p>
+                    </div>
+                    <time className="shrink-0 whitespace-nowrap text-[11px] text-zinc-500">
+                      {dateFmt.format(new Date(act.timestamp))}
+                    </time>
+                  </div>
+                ))}
+                {snapshot.activities.length === 0 && (
+                  <p className="py-6 text-center text-xs text-zinc-500">
+                    ยังไม่มีประวัติความเคลื่อนไหวล่าสุด
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+    </div>
   );
 }

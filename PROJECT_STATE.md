@@ -1,24 +1,24 @@
-## CYBER Executive Police Maroon Gradient Theme, Owner Page (`/owner`), AI Harness & Analysis Workbench — 2026-10-19
+## Restrained CYBER Dark Theme, Person-Only Police Red Portrait, AI Harness & Analysis Workbench — 2026-10-19
 
-- **System Identity / Branding**: Updated across the entire web application from `ก.พ.ค.ตร.` to **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`** (`src/components/Sidebar.tsx`, `src/components/TopHeader.tsx`, `src/app/dashboard/page.tsx`, `src/components/analysis/Workbench.jsx`, `src/app/login/page.tsx`, `src/app/layout.tsx`, `src/app/owner/page.tsx`).
-- **CYBER Executive + Royal Thai Police Maroon/Crimson Gradient Theme (`src/app/theme-bentos.css`) & Website Owner Page (`/owner`)**:
-  - Implemented dark obsidian canvas (`#08080a`, `#101014`) with Deep Police Maroon/Crimson gradients (`#7f1d1d` → `#991b1b` → `#be123c` → `#fb7185`), floating capsule navigation, 3D fanned glowing insight cards, and detailed gradient charts (**Semi-Circular Segmented Gauge with Needle**, **Dual Smooth Cubic-Bezier Wave Breakdown Chart**, and **Vertical Gradient Pillar Bars with Lit-Up Top Activity Column**).
-  - Created dedicated Website Owner Page at `/owner` (`src/app/owner/page.tsx`, `src/components/owner/OwnerBentoShowcase.tsx`, `src/lib/owner.ts`) featuring the wide official portrait of **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.** in front of the Royal Thai Police Maroon ก.พ.ค.ตร. emblem wall (`public/owner/wichian-photchanaphosri-wide.jpg` & `public/owner/wichian-photchanaphosri.jpg`).
-  - Excluded `owner/` static image assets in `src/proxy.ts` matcher so `/owner/*.jpg` renders on both authenticated and login screens.
+- **System Identity / Branding**: Updated across the entire web application from `ก.พ.ค.ตร.` to **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`** (`src/components/Sidebar.tsx`, `src/components/TopHeader.tsx`, `src/app/dashboard/page.tsx`, `src/components/analysis/Workbench.jsx`, `src/app/login/page.tsx`, `src/app/layout.tsx`). Per user instruction, no separate `/owner` tab or route is created.
+- **Person-Only Cutout Portrait on Police Red Background (`public/owner/wichian-studio-red.jpg` & `public/owner/wichian-cutout.png`)**:
+  - Segmented only the person silhouette of **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี** (removing the background wall, emblem, and wall lettering) and composited him over a clean studio Police Red background (`#991b1b` → `#4c080d`) matching the website's Police Red accent (`src/lib/owner.ts`).
+- **Restrained CYBER Dark Charcoal Theme (`src/app/theme-bentos.css`, `DashboardInteractiveHub.tsx`, `BacklogCharts.tsx`, `OfficerPerformance.tsx`, `RegistryOverview.tsx`)**:
+  - Calm matte dark charcoal canvas (`#0a0a0c`) and card surfaces (`#121215`, `#131317`) with thin neutral grey borders (`rgba(255,255,255,0.08)`).
+  - **Typography Hierarchy**: Crisp pure white (`#ffffff`, bold) for headings, bold words, and KPI numbers; soft white / light grey (`#a1a1aa`) for secondary descriptions and labels; muted grey (`#71717a`) for axis labels and notes.
+  - **Selective Police Red Accent (`#991b1b` / `#c81e2b` / `#d62839`)**: Used only on active capsule pills, primary CTA buttons, the bottom ambient glow and key metric phrase of the 3D fanned `Account Insights` card, the primary segment of the semi-circle gauge, the primary thin wave line, and the single highlighted pillar bar in the Operations chart (while all non-emphasized bars remain muted translucent grey `from-white/[0.16] to-transparent`).
 - **Provider-Neutral AI Harness (`shared/ai-harness.mjs` & `src/lib/ai/*`)**:
   - Default DeepSeek Responses API (`deepseek-v4-pro`), `store: false`, strict JSON Schema, no tools/web search, no silent model fallback.
   - Thai PII pseudonymization (person names, case numbers, national IDs, phone numbers, emails), citation allowlist verification, and DeepSeek `<think>...</think>` CoT leakage stripping (`stripCotLeakage`).
   - Pre-flight and post-flight stale-revision protection (`409 Conflict` / `STALE_REVISION`) across all AI routes (`src/lib/ai/revisionGuard.ts`, `draftSection.ts`, `legalWordingReviewer.ts`, `citationCoverageChecker.ts`, `legalQa.ts`, `src/lib/analysis/service.mjs`).
   - Default `AI_ENABLED=false` in Production until live provider smoke test is approved by the system owner.
-- **Interactive Dashboard (`/dashboard`)**:
-  - Added Bentos two-card Owner + Command Hero at the top of `/dashboard` alongside `src/components/dashboard/DashboardInteractiveHub.tsx` (4 interactive operational tabs) and `RegistryOverview.tsx`, preserving all 19/19 dashboard/chart tests.
 - **Complete Analysis Workbench (`/analysis`)**:
-  - Upgraded `Workbench.jsx`, `InputForm.jsx`, `Documents.jsx`, `Analysis.jsx`, `Drafts.jsx`, `Knowledge.jsx`, `api.js`, `workbench.css`, `engine.mjs`, `knowledge.mjs`, and `service.mjs` per `docs/ANALYSIS-ONLY-SYSTEM-DESIGN-TH.md` and harmonized `workbench.css` with the Bentos dark charcoal + orange theme.
+  - Upgraded `Workbench.jsx`, `InputForm.jsx`, `Documents.jsx`, `Analysis.jsx`, `Drafts.jsx`, `Knowledge.jsx`, `api.js`, `workbench.css`, `engine.mjs`, `knowledge.mjs`, and `service.mjs` per `docs/ANALYSIS-ONLY-SYSTEM-DESIGN-TH.md`.
 - **Verification**:
   - Main web app `npm test`: **82/82 passed**
   - `analysis-app` tests: **18/18 passed**
   - `npm run typecheck` & `npm run lint`: **0 errors**
-  - `npm run build`: **36/36 routes passed (including `/owner`)**
+  - `npm run build`: **35/35 routes passed**
 - **Mandatory End-of-Task Workflow**:
   - Always update `SKILL.md`, `PROJECT_STATE.md`, and `AGENTS.md`, then commit and push to GitHub (`origin/main` and active branch) so Vercel automatically deploys and updates the live website at the end of every task.
 

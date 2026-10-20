@@ -11,25 +11,16 @@ import { RegistryOverview } from "@/components/dashboard/RegistryOverview";
 import { DashboardInteractiveHub } from "@/components/dashboard/DashboardInteractiveHub";
 import {
   OWNER_NAME,
-  OWNER_ORG_EN,
   OWNER_ORG_TH,
   OWNER_PHOTO,
-  OWNER_PHOTO_WIDE,
   OWNER_ROLE,
 } from "@/lib/owner";
 import {
-  CircleCheck,
-  FolderOpen,
-  Layers3,
   RefreshCw,
-  ChartNoAxesCombined,
   Scale,
-  Clock,
-  UserCheck,
-  ArrowUpRight,
-  UserRound,
   Zap,
   ChevronsRight,
+  Settings,
 } from "lucide-react";
 
 const number = new Intl.NumberFormat("th-TH");
@@ -98,33 +89,34 @@ export default async function DashboardPage({
       : "0";
 
   return (
-    <div className="min-h-full bg-[#08080a] px-3 py-5 text-zinc-100 sm:px-6 sm:py-6 xl:px-8">
-      <div className="mx-auto max-w-[1600px] space-y-6">
-        {/* CYBER Capsule Top Navigation + Hero Overview */}
-        <header className="relative overflow-hidden rounded-[2rem] border border-[#3a1d24] bg-[radial-gradient(125%_100%_at_50%_0%,rgba(153,27,27,0.28)_0%,rgba(14,14,18,0.98)_65%)] p-5 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] sm:p-7">
-          {/* Top Floating Capsule Bar (matching CYBER top nav) */}
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-5">
+    <div className="min-h-full bg-[#0a0a0c] px-3 py-5 text-white sm:px-6 sm:py-6 xl:px-8">
+      <div className="mx-auto max-w-[1560px] space-y-7">
+        {/* CYBER Header: Top Capsule Bar + Clean Hero Row */}
+        <header className="space-y-7 pt-1">
+          {/* Top Row: Brand Left + Capsule Nav Center + Circular Icons & Cutout Avatar Right */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* Left Brand */}
             <div className="flex items-center gap-3">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#e11d48]/40 bg-gradient-to-br from-[#be123c] to-[#6b111b] text-xs font-black tracking-wider text-white shadow-[0_0_24px_rgba(185,28,28,0.6)]">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-[#121215] text-xs font-bold tracking-wider text-white">
                 กพค
               </span>
               <div>
-                <p className="text-sm font-black tracking-[0.14em] uppercase text-white">
-                  G P C · E X E C U T I V E
+                <p className="text-base font-bold tracking-[0.22em] uppercase text-white">
+                  G P C · C Y B E R
                 </p>
-                <p className="text-[11px] text-[#fda4af]">
+                <p className="text-[11px] font-medium text-zinc-400">
                   {OWNER_NAME} {OWNER_ROLE}
                 </p>
               </div>
             </div>
 
-            {/* Center Capsule Navigation */}
+            {/* Center Floating Capsule Navigation (Only active pill in Police Red) */}
             <nav
               aria-label="ไปยังทะเบียน"
-              className="flex flex-wrap items-center gap-1.5 rounded-full border border-white/10 bg-[#0d0d11]/90 p-1.5 shadow-inner"
+              className="flex flex-wrap items-center gap-1 rounded-full border border-white/10 bg-[#121215] p-1.5 shadow-[0_8px_28px_rgba(0,0,0,0.65)]"
             >
               {[
-                { key: "all", label: "ภาพรวมทั้งหมด" },
+                { key: "all", label: "Dashboard" },
                 { key: "complaint", label: "เรื่องร้องทุกข์" },
                 { key: "appeal", label: "เรื่องอุทธรณ์" },
               ].map((pill) => {
@@ -133,9 +125,9 @@ export default async function DashboardPage({
                   <Link
                     key={pill.key}
                     href={`/dashboard?type=${pill.key}`}
-                    className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
+                    className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
                       active
-                        ? "bg-gradient-to-r from-[#be123c] via-[#991b1b] to-[#6b111b] text-white shadow-[0_6px_18px_-4px_rgba(225,29,72,0.65)]"
+                        ? "bg-gradient-to-b from-[#d62839] to-[#991b1b] text-white shadow-[0_4px_14px_rgba(185,28,28,0.45)]"
                         : "text-zinc-400 hover:text-white"
                     }`}
                   >
@@ -147,19 +139,27 @@ export default async function DashboardPage({
                 <a
                   key={section.title}
                   href={section.accent === "teal" ? "#registry-complaint" : "#registry-appeal"}
-                  className="hidden md:inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold text-zinc-300 transition hover:bg-white/5 hover:text-white"
+                  className="hidden md:inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium text-zinc-400 transition hover:text-white"
                 >
-                  <span>กราฟ{section.title}</span>
-                  <span className="rounded-full bg-[#be123c]/25 px-2 py-0.5 text-[10px] font-bold tabular-nums text-[#fda4af]">
-                    {number.format(section.snapshot.kpis.active)}
+                  <span>สารบบ{section.title}</span>
+                  <span className="text-[11px] font-semibold tabular-nums text-zinc-300">
+                    ({number.format(section.snapshot.kpis.active)})
                   </span>
                 </a>
               ))}
+              {canUseAnalysis && (
+                <Link
+                  href="/analysis"
+                  className="hidden lg:inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium text-zinc-400 transition hover:text-white"
+                >
+                  <span>วิเคราะห์สำนวน</span>
+                </Link>
+              )}
             </nav>
 
-            {/* Right Quick Controls & Owner Avatar */}
+            {/* Right: Filter Form + Circular Action Icons + Person-Only Cutout Avatar on Police Red */}
             <div className="flex items-center gap-2.5">
-              <form action="/dashboard" className="flex items-center gap-2">
+              <form action="/dashboard" className="hidden sm:flex items-center gap-1.5">
                 <label className="sr-only" htmlFor="dashboard-type-select">
                   ประเภททะเบียน
                 </label>
@@ -168,165 +168,159 @@ export default async function DashboardPage({
                   name="type"
                   defaultValue={filters.type}
                   aria-label="ประเภททะเบียน"
-                  className="rounded-full border border-[#3a1d24] bg-[#14141b] px-3.5 py-2 text-xs font-semibold text-zinc-200 focus-visible:outline-2 focus-visible:outline-[#be123c]"
+                  className="rounded-full border border-white/10 bg-[#121215] px-3 py-1.5 text-xs font-medium text-zinc-300 focus-visible:outline-2 focus-visible:outline-[#c81e2b]"
                 >
                   <option value="all">ร้องทุกข์และอุทธรณ์</option>
                   <option value="complaint">ร้องทุกข์</option>
                   <option value="appeal">อุทธรณ์</option>
                 </select>
-                <button className="rounded-full bg-gradient-to-r from-[#be123c] to-[#881337] px-4 py-2 text-xs font-bold text-white shadow-[0_6px_16px_-4px_rgba(185,28,28,0.65)] transition hover:brightness-110">
+                <button className="rounded-full border border-white/10 bg-[#18181d] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#222228]">
                   แสดงผล
                 </button>
               </form>
+              <Link
+                href={currentHref}
+                title="รีเฟรชข้อมูล"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#121215] text-zinc-300 transition hover:border-white/20 hover:text-white"
+              >
+                <RefreshCw size={15} aria-hidden="true" />
+              </Link>
               {canUseAnalysis && (
                 <Link
                   href="/analysis"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#4c1d24] bg-[#181216] px-4 py-2 text-xs font-bold text-[#fda4af] transition hover:border-[#be123c] hover:text-white"
+                  title="ระบบวิเคราะห์และร่างคำวินิจฉัย"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#121215] text-zinc-300 transition hover:border-white/20 hover:text-white"
                 >
-                  <span>เปิดระบบวิเคราะห์</span>
-                  <ArrowUpRight size={14} aria-hidden="true" />
+                  <Settings size={15} aria-hidden="true" />
                 </Link>
               )}
-              <Link
-                href="/owner"
-                title="หน้าเจ้าของเว็บไซต์ พล.ต.อ.วิเชียร พจน์โพธิ์ศรี"
-                className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gradient-to-b from-[#be123c] to-[#6b111b] p-0.5 ring-2 ring-[#e11d48]/50 transition hover:scale-105"
+              <div
+                title={`${OWNER_NAME} ${OWNER_ROLE}`}
+                className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#991b1b] ring-1 ring-white/20"
               >
                 <Image
                   src={OWNER_PHOTO}
                   alt={OWNER_NAME}
                   fill
                   sizes="40px"
-                  className="scale-[2.2] rounded-full object-cover object-[50%_30%]"
+                  className="scale-[1.65] rounded-full object-cover object-[50%_18%]"
                 />
-              </Link>
+              </div>
             </div>
           </div>
 
-          {/* CYBER Hero Section: Title Left + Fanned Stacked Police Maroon Insight Cards Center + Official Photo Right */}
-          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12 lg:items-center">
-            {/* Left: Dashboard Overview Title */}
-            <div className="lg:col-span-4 space-y-2.5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#4c1d24] bg-[#be123c]/15 px-3 py-1 text-[11px] font-semibold text-[#fda4af]">
-                <Scale size={13} aria-hidden="true" />
-                <span>{OWNER_ORG_TH}</span>
-              </div>
-              <p className="text-xs font-medium text-zinc-400">
-                Data Based on All Registries · ข้อมูลทะเบียนคุมสำนวนทั้งหมด
-              </p>
-              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                {OWNER_NAME}
-              </h1>
-              <p className="text-base font-bold text-[#fb7185]">
-                {OWNER_ROLE} · Dashboard Overview
-              </p>
-              <p className="text-xs leading-6 text-zinc-400">
-                ติดตามสัดส่วนผลการพิจารณา แนวโน้มตามปีเลขดำ ภาระงานรายนิติกร
-                และวิเคราะห์ร่างคำวินิจฉัยเบื้องต้นภายใต้มาตรฐาน ก.พ.ค.ตร.
-              </p>
-              <div className="pt-1 flex flex-wrap gap-2.5">
-                <Link
-                  href="/owner"
-                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#be123c] via-[#991b1b] to-[#6b111b] px-4 py-2 text-xs font-bold text-white shadow-[0_10px_24px_-6px_rgba(185,28,28,0.7)] transition hover:brightness-110"
-                >
-                  <UserRound size={14} aria-hidden="true" />
-                  <span>หน้าเจ้าของเว็บไซต์</span>
-                </Link>
-                <Link
-                  href={currentHref}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3.5 py-2 text-xs font-semibold text-zinc-300 transition hover:bg-white/10 hover:text-white"
-                >
-                  <RefreshCw size={13} aria-hidden="true" />
-                  <span>รีเฟรชข้อมูล</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Center: Fanned 3D Stacked Police Maroon Insight Cards (Directly matching CYBER "Account Insights" fanned cards) */}
-            <div className="relative py-2 lg:col-span-5">
-              {/* Back Fanned Card 3 */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-y-4 right-2 hidden w-[78%] translate-x-6 rotate-6 rounded-3xl border border-[#4c1d24]/60 bg-[radial-gradient(120%_100%_at_50%_100%,rgba(153,27,27,0.35)_0%,rgba(18,18,24,0.85)_75%)] p-5 opacity-55 sm:block"
-              >
-                <div className="flex justify-end text-[#fb7185]/70">
-                  <ChevronsRight size={16} />
-                </div>
-              </div>
-              {/* Middle Fanned Card 2 */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-y-2 right-6 hidden w-[84%] translate-x-3 rotate-3 rounded-3xl border border-[#5b1d28]/75 bg-[radial-gradient(120%_100%_at_50%_100%,rgba(185,28,28,0.42)_0%,rgba(20,20,26,0.92)_75%)] p-5 opacity-75 sm:block"
-              >
-                <div className="flex justify-end text-[#fb7185]">
-                  <ChevronsRight size={16} />
-                </div>
-              </div>
-              {/* Front Active Insight Card 1 */}
-              <div className="relative z-10 w-full sm:w-[88%] rounded-3xl border border-[#7f1d1d] bg-[radial-gradient(125%_115%_at_50%_105%,rgba(185,28,28,0.68)_0%,rgba(127,29,29,0.28)_48%,rgba(16,16,22,0.97)_100%)] p-6 shadow-[0_24px_50px_-15px_rgba(153,27,27,0.65)]">
-                <div className="flex items-center justify-between text-xs font-bold text-[#fda4af]">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Zap size={14} className="text-[#fb7185]" aria-hidden="true" />
-                    <span>Executive Registry Insights</span>
-                  </span>
-                  <ChevronsRight size={18} className="text-[#fb7185]" aria-hidden="true" />
-                </div>
-                <p className="mt-4 text-lg font-medium leading-relaxed text-zinc-100 sm:text-xl">
-                  ผลการพิจารณาวินิจฉัยสะสมดำเนินการเสร็จสิ้นแล้ว{" "}
-                  <strong className="font-extrabold text-[#fda4af]">
-                    {number.format(completedCount)} / {number.format(snapshot?.totalCases ?? 0)} เรื่อง
-                  </strong>{" "}
-                  คิดเป็นอัตราความสำเร็จ{" "}
-                  <span className="font-extrabold text-[#fb7185] underline decoration-[#be123c] underline-offset-4">
-                    {completionPct}%
-                  </span>
+          {/* Hero Overview Row: Left Title & Cutout Portrait + Right 3D Fanned Account Insights Deck */}
+          <div className="grid grid-cols-1 gap-8 pt-2 lg:grid-cols-12 lg:items-end">
+            {/* Left (5 cols): Dashboard Overview Title + Clean Person-Only Cutout Identity */}
+            <div className="lg:col-span-5 space-y-4">
+              <div>
+                <p className="text-xs font-medium text-zinc-400">
+                  Data Based on all registries · ข้อมูลทะเบียนคุมสำนวนทั้งหมด
                 </p>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3 text-[11px] text-zinc-300">
-                  <span>
-                    คงค้างดำเนินการ{" "}
-                    <strong className="text-white">
-                      {number.format(snapshot?.kpis.active ?? 0)} เรื่อง
-                    </strong>
-                  </span>
-                  <span>
-                    ข้อมูลล่าสุด{" "}
-                    {snapshot?.dataFreshness
-                      ? dateTime.format(new Date(snapshot.dataFreshness))
-                      : "ปัจจุบัน"}
-                  </span>
-                </div>
+                <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                  Dashboard Overview
+                </h1>
               </div>
-            </div>
 
-            {/* Right: Wide Official Police Maroon Portrait Card of พล.ต.อ.วิเชียร พจน์โพธิ์ศรี */}
-            <div className="lg:col-span-3">
-              <Link
-                href="/owner"
-                className="group relative block overflow-hidden rounded-3xl border border-[#5b1d28] bg-[#121217] p-2 shadow-[0_20px_45px_-15px_rgba(153,27,27,0.6)] transition hover:border-[#e11d48]"
-              >
-                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl">
+              {/* Executive Identity Card with Person-Only Cutout on Police Red */}
+              <div className="flex items-center gap-4 rounded-2xl border border-white/[0.08] bg-[#121215] p-3.5">
+                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-[#991b1b] shadow-[0_10px_24px_-8px_rgba(153,27,27,0.7)]">
                   <Image
-                    src={OWNER_PHOTO_WIDE}
+                    src={OWNER_PHOTO}
                     alt={`${OWNER_NAME} ${OWNER_ROLE}`}
                     fill
-                    sizes="(max-width: 1024px) 100vw, 360px"
+                    sizes="96px"
                     priority
-                    className="object-cover object-top transition duration-500 group-hover:scale-105"
+                    className="scale-[1.2] object-cover object-[50%_12%]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
-                  <div className="absolute inset-x-3 bottom-2.5 flex items-end justify-between gap-2">
-                    <div>
-                      <p className="text-xs font-extrabold text-white">{OWNER_NAME}</p>
-                      <p className="text-[10px] font-semibold text-[#fda4af]">
-                        {OWNER_ROLE} · {OWNER_ORG_EN}
-                      </p>
-                    </div>
-                    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#be123c] text-white shadow">
-                      <ArrowUpRight size={14} aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-base font-bold text-white sm:text-lg">
+                    {OWNER_NAME}
+                  </p>
+                  <p className="text-xs font-semibold text-zinc-300">
+                    {OWNER_ROLE}
+                  </p>
+                  <p className="mt-1 flex items-center gap-1.5 text-[11px] text-zinc-400">
+                    <Scale size={12} className="shrink-0 text-[#dc2626]" aria-hidden="true" />
+                    <span className="truncate">{OWNER_ORG_TH}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right (7 cols): 3D Fanned "Account Insights" Cards (Faithful to CYBER Template) */}
+            <div className="relative flex items-center justify-start py-2 lg:col-span-7 lg:pl-6">
+              <div className="relative w-full max-w-[600px]">
+                {/* Far Back Fanned Card 4 */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-y-5 right-0 hidden w-[64%] translate-x-10 rotate-[12deg] rounded-[1.5rem] border border-white/[0.06] bg-[#111114]/70 p-5 sm:block"
+                />
+                {/* Back Fanned Card 3 */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-y-3 right-6 hidden w-[68%] translate-x-6 rotate-[8deg] rounded-[1.5rem] border border-white/[0.08] bg-[radial-gradient(60%_50%_at_50%_100%,rgba(185,28,28,0.16)_0%,rgba(17,17,20,0.92)_100%)] p-5 sm:block"
+                >
+                  <div className="flex justify-end text-zinc-600">
+                    <ChevronsRight size={15} />
+                  </div>
+                  <p className="mt-9 text-right text-sm font-medium text-white/15">
+                    ...สำนวน
+                  </p>
+                  <p className="mt-1 text-right text-sm font-medium text-white/15">
+                    ...วินิจฉัย
+                  </p>
+                </div>
+                {/* Middle Fanned Card 2 */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-y-1.5 right-14 hidden w-[72%] translate-x-3 rotate-[4deg] rounded-[1.5rem] border border-white/10 bg-[radial-gradient(60%_55%_at_50%_100%,rgba(185,28,28,0.24)_0%,rgba(19,19,23,0.96)_100%)] p-5 sm:block"
+                >
+                  <div className="flex justify-end text-[#dc2626]/60">
+                    <ChevronsRight size={16} />
+                  </div>
+                  <p className="mt-8 text-right text-base font-medium text-white/25">
+                    ...ดำเนินการ
+                  </p>
+                  <p className="mt-1 text-right text-base font-medium text-white/25">
+                    ...สำเร็จ
+                  </p>
+                </div>
+
+                {/* Front Active Fanned Card 1 */}
+                <div className="cyber-insight-front relative z-10 w-full sm:w-[76%] sm:-rotate-[2deg] rounded-[1.5rem] p-6 transition-transform duration-300 hover:rotate-0">
+                  <div className="flex items-center justify-between text-xs font-medium text-zinc-400">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Zap size={13} className="text-[#dc2626]" aria-hidden="true" />
+                      <span>Account Insights</span>
+                    </span>
+                    <ChevronsRight size={16} className="text-[#dc2626]" aria-hidden="true" />
+                  </div>
+
+                  <p className="mt-4 text-lg font-medium leading-relaxed text-white sm:text-[21px] sm:leading-[1.45]">
+                    ผลการพิจารณาวินิจฉัยสะสมดำเนินการแล้วเสร็จ{" "}
+                    <span className="font-bold text-[#ef4444]">
+                      {number.format(completedCount)}/{number.format(snapshot?.totalCases ?? 0)} เรื่อง ({completionPct}%).
+                    </span>
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.08] pt-3 text-[11px] text-zinc-400">
+                    <span>
+                      คงค้างดำเนินการ{" "}
+                      <strong className="font-semibold text-white">
+                        {number.format(snapshot?.kpis.active ?? 0)} เรื่อง
+                      </strong>
+                    </span>
+                    <span>
+                      อัปเดต{" "}
+                      {snapshot?.dataFreshness
+                        ? dateTime.format(new Date(snapshot.dataFreshness))
+                        : "ล่าสุด"}
                     </span>
                   </div>
                 </div>
-              </Link>
+              </div>
             </div>
           </div>
         </header>
@@ -334,7 +328,7 @@ export default async function DashboardPage({
         {result.source === "demo" && (
           <div
             role="status"
-            className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-200"
+            className="rounded-xl border border-white/10 bg-[#121215] px-4 py-2 text-xs text-zinc-300"
           >
             ข้อมูลสาธิตนิรนาม — ไม่ใช่จำนวนเรื่องจริง
           </div>
@@ -342,7 +336,7 @@ export default async function DashboardPage({
         {result.state !== "ready" && (
           <div
             role="status"
-            className="rounded-xl border border-[#3a1d24] bg-[#121217] p-4 text-sm text-zinc-200"
+            className="rounded-xl border border-white/10 bg-[#121215] p-4 text-sm text-zinc-300"
           >
             <p>
               {result.message ||
@@ -358,88 +352,6 @@ export default async function DashboardPage({
 
         {snapshot ? (
           <>
-            {/* 6 Gradient Executive KPI Cards */}
-            <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-              {[
-                {
-                  label: "ทะเบียนทั้งหมด",
-                  value: number.format(snapshot.totalCases),
-                  sub: "สำนวนในระบบ",
-                  icon: Layers3,
-                  accentCard: false,
-                },
-                {
-                  label: "เสร็จสิ้น",
-                  value: number.format(snapshot.totalCases - snapshot.kpis.active),
-                  sub: "มีข้อมูลช่องเรื่องแดง",
-                  icon: CircleCheck,
-                  accentCard: false,
-                },
-                {
-                  label: "เรื่องค้างรวม",
-                  value: number.format(snapshot.kpis.active),
-                  sub: "อยู่ระหว่างดำเนินการ",
-                  icon: FolderOpen,
-                  accentCard: true,
-                },
-                {
-                  label: "% สำเร็จรวม",
-                  value: snapshot.totalCases ? `${completionPct}%` : "—",
-                  sub: "เทียบทะเบียนทั้งหมด",
-                  icon: ChartNoAxesCombined,
-                  accentCard: false,
-                },
-                {
-                  label: "เร่งด่วน / ครบใน 7 วัน",
-                  value: number.format(snapshot.kpis.overdue + snapshot.kpis.dueWithin7Days),
-                  sub: `เกินกำหนด ${number.format(snapshot.kpis.overdue)} เรื่อง`,
-                  icon: Clock,
-                  accentCard: false,
-                },
-                {
-                  label: "รอระบุนิติกร",
-                  value: number.format(snapshot.kpis.unassigned),
-                  sub: "เฉพาะสำนวนที่ยังค้าง",
-                  icon: UserCheck,
-                  accentCard: false,
-                },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className={`relative min-w-0 rounded-2xl border px-4 py-3.5 shadow-lg ${
-                    item.accentCard
-                      ? "border-[#be123c] bg-[radial-gradient(125%_115%_at_50%_105%,rgba(225,29,72,0.55)_0%,rgba(136,19,55,0.45)_55%,rgba(24,14,18,0.98)_100%)] text-white shadow-[0_14px_30px_-10px_rgba(185,28,28,0.65)]"
-                      : "border-[#262632] bg-[#101014] text-zinc-100"
-                  }`}
-                >
-                  <dt
-                    className={`pr-6 text-xs font-semibold ${
-                      item.accentCard ? "text-[#fda4af]" : "text-zinc-400"
-                    }`}
-                  >
-                    {item.label}
-                  </dt>
-                  <item.icon
-                    size={18}
-                    aria-hidden="true"
-                    className={`absolute right-4 top-3.5 ${
-                      item.accentCard ? "text-white" : "text-[#fb7185]"
-                    }`}
-                  />
-                  <dd className="mt-2 text-2xl font-extrabold tabular-nums sm:text-3xl">
-                    {item.value}
-                  </dd>
-                  <p
-                    className={`mt-1 text-[11px] ${
-                      item.accentCard ? "text-zinc-200" : "text-zinc-500"
-                    }`}
-                  >
-                    {item.sub}
-                  </p>
-                </div>
-              ))}
-            </dl>
-
             <DashboardInteractiveHub
               snapshot={snapshot}
               sections={sections}
@@ -461,14 +373,14 @@ export default async function DashboardPage({
             </div>
           </>
         ) : (
-          <section className="rounded-3xl border border-dashed border-[#3a1d24] bg-[#101014] p-10 text-center">
+          <section className="rounded-3xl border border-dashed border-white/15 bg-[#121215] p-10 text-center">
             <h2 className="text-lg font-bold text-white">ยังไม่สามารถแสดงยอดเรื่องค้างได้</h2>
             <p className="mt-2 text-sm text-zinc-400">
               กรุณาตรวจสอบการเชื่อมต่อและโครงสร้างฐานข้อมูล ระบบไม่แสดงศูนย์แทนข้อผิดพลาด
             </p>
             <Link
               href={currentHref}
-              className="mt-5 inline-block rounded-full bg-gradient-to-r from-[#be123c] to-[#881337] px-5 py-3 text-sm font-bold text-white"
+              className="mt-5 inline-block rounded-full bg-gradient-to-b from-[#d62839] to-[#991b1b] px-5 py-3 text-sm font-bold text-white"
             >
               ลองใหม่
             </Link>
