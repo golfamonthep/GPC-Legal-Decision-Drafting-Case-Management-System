@@ -41,6 +41,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
    - ชื่อระบบ/อัตลักษณ์หน้าเว็บปัจจุบัน: **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`**
    - โครงสร้างหลักที่พัฒนาเสร็จแล้ว:
 
+- **ปรับแต่งกราฟใน Dark Mode ให้กลมกลืนเนียนตาเหมือนต้นฉบับ (Harmonious Restrained Dark Mode Charts)**:
+  - แก้ไขปัญหาแทร็กรางกราฟและแท่งข้อมูลรองที่สว่างโดดใน Dark Mode โดยเปลี่ยนมาใช้ระบบ CSS Class Tokens เฉพาะ (`.cyber-chart-track`, `.cyber-bar-secondary`, `.cyber-gauge-track`, `.cyber-legend-secondary`)
+  - ใน Dark Mode: รางแท่งกราฟใช้สีมืดโปร่งแสงนุ่มนวล `rgba(255, 255, 255, 0.05)` ขอบบางเบา `rgba(255, 255, 255, 0.04)`, แท่งข้อมูลรองเป็นสีเทาเข้มกลมกลืน `rgba(255, 255, 255, 0.12)`, วงแหวนแทร็กโดนัท `rgba(255, 255, 255, 0.08)` ไม่สว่างจ้าหรือเด่นเกินไป กลมกลืนเนียนตาตามอัตลักษณ์ต้นฉบับ CYBER Dark Mode
+  - ใน Light Mode: รางแท่งกราฟ `#f1f5f9` ขอบ `#e2e8f0`, แถบข้อมูลรองสีเทาอ่อน `#cbd5e1`, วงแหวนโดนัท `#cbd5e1` คมชัด ไม่กลืนหายไปกับพื้นขาว
+  - เพิ่ม `@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));` ใน `globals.css` รองรับ Tailwind CSS v4 สำหรับการสลับธีมอย่างสมบูรณ์
 - **แก้ไขการ์ดสีดำใน Light Mode (Eliminate Dark Cards in Light Mode)**:
   - แก้ไขการ์ดซ้อน 3D Fanned Cards ด้านหลัง Account Insights บนหน้า Dashboard ให้ใช้คลาส `cyber-insight-back` ไล่เฉดสีสว่างนุ่มนวล (`#f8fafc` ถึง `#f1f5f9` ขอบ `#cbd5e1` เงาบางเบา) แทนการใช้ฮาร์ดโค้ด `bg-[#111114]/70` และกราเดียนต์สีดำเดิม ทำให้ใน Light Mode ไม่มีการ์ดสีดำหลงเหลืออยู่อีกต่อไป
 - **อัปเดตภาพโปรไฟล์บุคคลใหม่ (New Police Red Studio Profile Portrait)**:

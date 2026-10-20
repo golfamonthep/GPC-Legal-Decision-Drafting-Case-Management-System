@@ -41,7 +41,7 @@ export function OfficerPerformance({ title, snapshot, accent, scaleMax }: {
     </ol> : <p className="rounded-lg bg-[#16161b] p-4 text-sm text-zinc-500">ยังไม่มีข้อมูลความรับผิดชอบในทะเบียนนี้</p>}
     <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-zinc-400">
       <span className="flex items-center gap-1.5"><span aria-hidden="true" className={`h-2 w-2 ${fills[accent]}`} />เสร็จแล้ว</span>
-      <span className="flex items-center gap-1.5"><span aria-hidden="true" className="h-2 w-2 rounded-sm bg-slate-400 dark:bg-white/30" />ค้าง</span>
+      <span className="flex items-center gap-1.5"><span aria-hidden="true" className="cyber-legend-secondary h-2 w-2 rounded-sm" />ค้าง</span>
       <span>แท่งรวม = จำนวนรับทั้งหมด · เริ่มที่ 0</span>
     </div>
   </figure>;

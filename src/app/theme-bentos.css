@@ -302,6 +302,22 @@ html:not([data-theme="dark"]) .cyber-gauge-track {
   stroke: #cbd5e1 !important;
 }
 
+html[data-theme="light"] .cyber-chart-track,
+html:not([data-theme="dark"]) .cyber-chart-track {
+  background-color: #f1f5f9 !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+html[data-theme="light"] .cyber-bar-secondary,
+html:not([data-theme="dark"]) .cyber-bar-secondary {
+  background-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .cyber-legend-secondary,
+html:not([data-theme="dark"]) .cyber-legend-secondary {
+  background-color: #94a3b8 !important;
+}
+
 html[data-theme="light"] .cyber-chart-kpi,
 html:not([data-theme="dark"]) .cyber-chart-kpi {
   fill: #09090b !important;
@@ -484,7 +500,23 @@ html.dark .cyber-insight-back {
 
 html[data-theme="dark"] .cyber-gauge-track,
 html.dark .cyber-gauge-track {
-  stroke: rgba(255, 255, 255, 0.06) !important;
+  stroke: rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .cyber-chart-track,
+html.dark .cyber-chart-track {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+html[data-theme="dark"] .cyber-bar-secondary,
+html.dark .cyber-bar-secondary {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html[data-theme="dark"] .cyber-legend-secondary,
+html.dark .cyber-legend-secondary {
+  background-color: rgba(255, 255, 255, 0.25) !important;
 }
 
 html[data-theme="dark"] .cyber-chart-kpi,

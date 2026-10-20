@@ -20,7 +20,7 @@ export function CompletionRing({ total, pending, accent, tone = "light" }: { tot
     <figcaption className="w-full text-base font-bold text-white">สัดส่วนของทะเบียนทั้งหมด</figcaption>
     <div className="relative h-36 w-36 shrink-0">
       <svg viewBox="0 0 144 144" className="h-full w-full" aria-hidden="true">
-        <circle cx="72" cy="72" r="59" fill="none" stroke="#cbd5e1" className="cyber-gauge-track stroke-slate-200 dark:stroke-white/10" strokeWidth="14" />
+        <circle cx="72" cy="72" r="59" fill="none" className="cyber-gauge-track" strokeWidth="14" />
         {total > 0 && <circle cx="72" cy="72" r="59" fill="none" stroke={colors[accent]} strokeWidth="14" pathLength="100"
           strokeDasharray={`${share * 100} 100`} transform="rotate(-90 72 72)" />}
       </svg>
@@ -31,7 +31,7 @@ export function CompletionRing({ total, pending, accent, tone = "light" }: { tot
     </div>
     <div className="w-full min-w-0 space-y-2 text-sm">
       <p className="flex flex-wrap items-center gap-2 text-zinc-300"><span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#d62839]" />เสร็จสิ้นแล้ว <strong className="text-white">{number.format(completed)} เรื่อง</strong></p>
-      <p className="flex flex-wrap items-center gap-2 text-zinc-300"><span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-slate-400 dark:bg-zinc-500" />ยังไม่เสร็จสิ้น <strong className="text-white">{number.format(pending)} เรื่อง</strong></p>
+      <p className="flex flex-wrap items-center gap-2 text-zinc-300"><span aria-hidden="true" className="cyber-legend-secondary h-2.5 w-2.5 shrink-0 rounded-full" />ยังไม่เสร็จสิ้น <strong className="text-white">{number.format(pending)} เรื่อง</strong></p>
       <p className="border-t border-white/[0.08] pt-3 text-xs leading-5 text-zinc-400">ฐาน: {number.format(total)} เรื่อง · ไม่ใช่อัตราการทำงานรายเดือน</p>
     </div>
   </figure>;
@@ -46,7 +46,7 @@ export function YearOutcomeBars({ data, scaleMax, type }: { data: Array<{ label:
       const href = (completionStatus: string) => `/cases?${new URLSearchParams({ type, year, completionStatus })}`;
       return <div key={item.label} className="min-w-0">
         <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-2 text-sm"><span className="font-semibold text-white">{item.label}</span><strong className="tabular-nums text-white">{number.format(item.pending + item.completed)} เรื่อง</strong></div>
-        <div aria-hidden="true" className="flex h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-white/[0.06] border border-slate-200/50 dark:border-white/5" style={{ width: `${(item.pending + item.completed) / max * 100}%` }}><span className="bg-[#d62839]" style={{ width: `${item.completed / (item.pending + item.completed) * 100}%` }} /><span className="bg-slate-300 dark:bg-white/30" style={{ width: `${item.pending / (item.pending + item.completed) * 100}%` }} /></div>
+        <div aria-hidden="true" className="cyber-chart-track flex h-2.5 overflow-hidden rounded-full" style={{ width: `${(item.pending + item.completed) / max * 100}%` }}><span className="bg-[#d62839]" style={{ width: `${item.completed / (item.pending + item.completed) * 100}%` }} /><span className="cyber-bar-secondary" style={{ width: `${item.pending / (item.pending + item.completed) * 100}%` }} /></div>
         <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs"><Link href={href('completed')} className="font-semibold text-white underline-offset-2 hover:underline">เสร็จแล้ว {number.format(item.completed)}</Link><Link href={href('open')} className="font-medium text-zinc-400 underline-offset-2 hover:text-white hover:underline">ค้าง {number.format(item.pending)}</Link></div>
       </div>;
     })}</div> : <EmptyChart />}
@@ -66,7 +66,7 @@ export function YearColumns({ data, scaleMax, accent }: { data: Bucket[]; scaleM
             <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-40 border-b border-white/10"><div className="absolute inset-x-0 top-0 border-t border-dashed border-white/[0.06]" /><div className="absolute inset-x-0 top-1/2 border-t border-dashed border-white/[0.06]" /></div>
             {data.map((item, idx) => <div key={item.label} className="relative min-w-12 flex-1 text-center">
               <div className="flex h-40 items-end justify-center">
-                <div className={`relative w-full max-w-12 rounded-t ${idx === data.length - 1 ? barClasses[accent] : "bg-gradient-to-b from-slate-300 to-slate-200 dark:from-white/20 dark:to-white/[0.04]"}`} style={{ height: `${item.count / max * 100}%` }}>
+                <div className={`relative w-full max-w-12 rounded-t ${idx === data.length - 1 ? barClasses[accent] : "cyber-bar-secondary"}`} style={{ height: `${item.count / max * 100}%` }}>
                   <strong className="absolute -top-6 inset-x-0 text-sm tabular-nums text-white">{number.format(item.count)}</strong>
                 </div>
               </div>
@@ -92,7 +92,7 @@ export function RankedBars({ title, note, data, total, scaleMax, accent }: {
           <span className="min-w-0 whitespace-pre-wrap break-words text-sm font-normal leading-6 text-zinc-300 [overflow-wrap:anywhere]">{item.label}</span></div>
         <div className="flex shrink-0 items-baseline gap-2 text-right"><strong className="block text-sm tabular-nums text-white">{number.format(item.count)} เรื่อง</strong><span className="text-[11px] tabular-nums text-zinc-400">{percent.format(total ? item.count / total * 100 : 0)}% ของเรื่องค้าง</span></div>
       </div>
-      <div aria-hidden="true" className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-white/[0.06] border border-slate-200/50 dark:border-transparent"><div className={`h-full rounded-full ${barClasses[accent]}`} style={{ width: `${item.count / max * 100}%` }} /></div>
+      <div aria-hidden="true" className="cyber-chart-track h-2 overflow-hidden rounded-full"><div className={`h-full rounded-full ${barClasses[accent]}`} style={{ width: `${item.count / max * 100}%` }} /></div>
     </li>)}</ol> : <EmptyChart />}
   </figure>;
 }

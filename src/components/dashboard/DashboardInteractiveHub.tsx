@@ -940,12 +940,12 @@ export function DashboardInteractiveHub({
                       </div>
 
                       {/* Progress Bar: Police Red for primary registry, muted light grey for secondary */}
-                      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/[0.07]">
+                      <div className="cyber-chart-track mt-3 h-2 w-full overflow-hidden rounded-full">
                         <div
                           className={`h-full rounded-full ${
                             isPrimary
                               ? "bg-gradient-to-r from-[#991b1b] to-[#ef4444]"
-                              : "bg-zinc-400"
+                              : "cyber-bar-secondary"
                           }`}
                           style={{ width: `${Math.min(100, Math.max(4, pct))}%` }}
                         />
@@ -1008,12 +1008,12 @@ export function DashboardInteractiveHub({
                           <strong className="text-white">{numberFmt.format(st.count)}</strong> เรื่อง ({pctFmt.format(pct)}%)
                         </span>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/[0.07] border border-slate-200/50 dark:border-transparent">
+                      <div className="cyber-chart-track h-2 w-full overflow-hidden rounded-full">
                         <div
                           className={`h-full rounded-full ${
                             isFocalStage
                               ? "bg-gradient-to-r from-[#991b1b] to-[#ef4444]"
-                              : "bg-slate-300 dark:bg-white/25"
+                              : "cyber-bar-secondary"
                           }`}
                           style={{ width: `${Math.max(4, Math.min(100, pct))}%` }}
                         />
@@ -1271,12 +1271,12 @@ export function DashboardInteractiveHub({
                         <span className="font-bold text-white">{pctFmt.format(rate)}%</span>
                       </div>
 
-                      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-white/[0.07]">
+                      <div className="cyber-chart-track mt-1.5 h-2 w-full overflow-hidden rounded-full">
                         <div
                           className={`h-full rounded-full ${
                             isTopFocal
                               ? "bg-gradient-to-r from-[#991b1b] to-[#ef4444]"
-                              : "bg-white/30"
+                              : "cyber-bar-secondary"
                           }`}
                           style={{ width: `${Math.min(100, Math.max(3, rate))}%` }}
                         />
