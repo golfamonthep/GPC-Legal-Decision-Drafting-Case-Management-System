@@ -111,11 +111,29 @@ html[data-theme="light"] .bg-\[\#131317\],
 html:not([data-theme="dark"]) .bg-\[\#131317\],
 html[data-theme="light"] .bg-\[\#17171b\],
 html:not([data-theme="dark"]) .bg-\[\#17171b\],
-html[data-theme="light"] .bg-\[\#18181d\],
-html:not([data-theme="dark"]) .bg-\[\#18181d\] {
+html[data-theme="light"] .bg-\[\#16161b\],
+html:not([data-theme="dark"]) .bg-\[\#16161b\],
+html[data-theme="light"] .bg-\[\#17171c\],
+html:not([data-theme="dark"]) .bg-\[\#17171c\] {
   background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
   color: #09090b !important;
+}
+
+/* Light Mode Badges, Chips, Tags & Small Action Containers (Clean & Harmonious) */
+html[data-theme="light"] .bg-\[\#18181d\],
+html:not([data-theme="dark"]) .bg-\[\#18181d\],
+html[data-theme="light"] .bg-\[\#1a1a20\],
+html:not([data-theme="dark"]) .bg-\[\#1a1a20\],
+html[data-theme="light"] .bg-\[\#0d0d10\],
+html:not([data-theme="dark"]) .bg-\[\#0d0d10\],
+html[data-theme="light"] span[class*="bg-white\/\[0\.0"],
+html:not([data-theme="dark"]) span[class*="bg-white\/\[0\.0"],
+html[data-theme="light"] div[class*="bg-white\/\[0\.0"],
+html:not([data-theme="dark"]) div[class*="bg-white\/\[0\.0"] {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
 }
 
 html[data-theme="light"] .cyber-card,
@@ -139,9 +157,9 @@ html:not([data-theme="dark"]) b {
   color: #09090b !important;
 }
 
-/* Neutral text override in Light Mode */
-html[data-theme="light"] .text-white:not(.text-on-accent),
-html:not([data-theme="dark"]) .text-white:not(.text-on-accent) {
+/* Neutral text override in Light Mode — NEVER target red backgrounds, buttons or pills */
+html[data-theme="light"] .text-white:not([class*="bg-[#991b1b]"]):not([class*="bg-[#c81e2b]"]):not([class*="bg-[#d62839]"]):not([class*="from-[#d62839]"]):not([class*="bg-red-"]):not([class*="bg-rose-"]):not(.cyber-pill-active):not(.badge-police-red):not(.text-on-accent),
+html:not([data-theme="dark"]) .text-white:not([class*="bg-[#991b1b]"]):not([class*="bg-[#c81e2b]"]):not([class*="bg-[#d62839]"]):not([class*="from-[#d62839]"]):not([class*="bg-red-"]):not([class*="bg-rose-"]):not(.cyber-pill-active):not(.badge-police-red):not(.text-on-accent) {
   color: #09090b !important;
 }
 
@@ -484,4 +502,78 @@ html.dark .cyber-pillar-muted {
 html[data-theme="dark"] .cyber-perf-bar,
 html.dark .cyber-perf-bar {
   fill: url(#cyberMutedBar) !important;
+}
+
+/* ==========================================================================
+   4. RED BADGES, BUTTONS & ACTIVE PILLS: MANDATORY PURE WHITE TEXT (#ffffff)
+   - Guaranteed pure crisp white text on all solid Police Red elements
+   - Fixes Light Mode badge text contrast permanently across all components
+   ========================================================================== */
+html[data-theme="light"] [class*="bg-[#991b1b]"],
+html[data-theme="light"] [class*="bg-[#c81e2b]"],
+html[data-theme="light"] [class*="bg-[#d62839]"],
+html[data-theme="light"] [class*="from-[#d62839]"],
+html[data-theme="light"] [class*="bg-red-6"],
+html[data-theme="light"] [class*="bg-red-7"],
+html[data-theme="light"] [class*="bg-red-8"],
+html[data-theme="light"] [class*="bg-rose-6"],
+html[data-theme="light"] [class*="bg-rose-7"],
+html[data-theme="light"] .cyber-pill-active,
+html[data-theme="light"] .badge-police-red,
+html:not([data-theme="dark"]) [class*="bg-[#991b1b]"],
+html:not([data-theme="dark"]) [class*="bg-[#c81e2b]"],
+html:not([data-theme="dark"]) [class*="bg-[#d62839]"],
+html:not([data-theme="dark"]) [class*="from-[#d62839]"],
+html:not([data-theme="dark"]) [class*="bg-red-6"],
+html:not([data-theme="dark"]) [class*="bg-red-7"],
+html:not([data-theme="dark"]) [class*="bg-red-8"],
+html:not([data-theme="dark"]) [class*="bg-rose-6"],
+html:not([data-theme="dark"]) [class*="bg-rose-7"],
+html:not([data-theme="dark"]) .cyber-pill-active,
+html:not([data-theme="dark"]) .badge-police-red,
+html[data-theme="light"] [class*="bg-[#991b1b]"] *,
+html[data-theme="light"] [class*="bg-[#c81e2b]"] *,
+html[data-theme="light"] [class*="bg-[#d62839]"] *,
+html[data-theme="light"] [class*="from-[#d62839]"] *,
+html[data-theme="light"] [class*="bg-red-6"] *,
+html[data-theme="light"] [class*="bg-red-7"] *,
+html[data-theme="light"] [class*="bg-red-8"] *,
+html[data-theme="light"] [class*="bg-rose-6"] *,
+html[data-theme="light"] [class*="bg-rose-7"] *,
+html[data-theme="light"] .cyber-pill-active *,
+html[data-theme="light"] .badge-police-red *,
+html:not([data-theme="dark"]) [class*="bg-[#991b1b]"] *,
+html:not([data-theme="dark"]) [class*="bg-[#c81e2b]"] *,
+html:not([data-theme="dark"]) [class*="bg-[#d62839]"] *,
+html:not([data-theme="dark"]) [class*="from-[#d62839]"] *,
+html:not([data-theme="dark"]) [class*="bg-red-6"] *,
+html:not([data-theme="dark"]) [class*="bg-red-7"] *,
+html:not([data-theme="dark"]) [class*="bg-red-8"] *,
+html:not([data-theme="dark"]) [class*="bg-rose-6"] *,
+html:not([data-theme="dark"]) [class*="bg-rose-7"] *,
+html:not([data-theme="dark"]) .cyber-pill-active *,
+html:not([data-theme="dark"]) .badge-police-red * {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] [class*="bg-[#991b1b]"] svg,
+html[data-theme="light"] [class*="bg-[#c81e2b]"] svg,
+html[data-theme="light"] [class*="bg-[#d62839]"] svg,
+html[data-theme="light"] [class*="from-[#d62839]"] svg,
+html[data-theme="light"] [class*="bg-red-6"] svg,
+html[data-theme="light"] [class*="bg-red-7"] svg,
+html[data-theme="light"] [class*="bg-red-8"] svg,
+html[data-theme="light"] .cyber-pill-active svg,
+html[data-theme="light"] .badge-police-red svg,
+html:not([data-theme="dark"]) [class*="bg-[#991b1b]"] svg,
+html:not([data-theme="dark"]) [class*="bg-[#c81e2b]"] svg,
+html:not([data-theme="dark"]) [class*="bg-[#d62839]"] svg,
+html:not([data-theme="dark"]) [class*="from-[#d62839]"] svg,
+html:not([data-theme="dark"]) [class*="bg-red-6"] svg,
+html:not([data-theme="dark"]) [class*="bg-red-7"] svg,
+html:not([data-theme="dark"]) [class*="bg-red-8"] svg,
+html:not([data-theme="dark"]) .cyber-pill-active svg,
+html:not([data-theme="dark"]) .badge-police-red svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }

@@ -26,11 +26,11 @@ export default async function RootLayout({
     : null;
 
   return (
-    <html lang="th" data-theme="light" suppressHydrationWarning className="h-full antialiased">
+    <html lang="th" data-theme="light" suppressHydrationWarning className="h-full antialiased light">
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('gpc-theme')||'light';document.documentElement.setAttribute('data-theme',t);if(t==='dark'){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('gpc-theme')||'light';if(t!=='dark'){t='light';}document.documentElement.setAttribute('data-theme',t);if(t==='dark'){document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');}else{document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');}}catch(e){}})();`,
           }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

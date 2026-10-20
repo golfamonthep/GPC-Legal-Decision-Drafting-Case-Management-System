@@ -206,13 +206,13 @@ export default async function DashboardPage({
               )}
               <div
                 title={`${OWNER_NAME} ${OWNER_ROLE}`}
-                className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#991b1b] ring-1 ring-white/20"
+                className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#991b1b] ring-2 ring-white/20"
               >
                 <Image
                   src={OWNER_PHOTO}
                   alt={OWNER_NAME}
                   fill
-                  sizes="40px"
+                  sizes="48px"
                   className="rounded-full object-cover object-[50%_15%]"
                 />
               </div>

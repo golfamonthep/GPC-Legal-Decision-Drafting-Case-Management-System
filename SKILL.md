@@ -7,21 +7,21 @@
 > 4. **ห้าม reset หรือเขียนทับงานค้างใน `C:\APP`**: การทำงาน Git/Push ให้ทำผ่าน clean worktree (`C:\Users\polic\.codex\worktrees\ai-harness\APP`) และซิงก์เฉพาะไฟล์ที่เกี่ยวข้องกลับไปยัง `C:\APP` อย่างระมัดระวัง
 
 ### สรุปสถานะระบบล่าสุด (2026-10-20)
-- **ตราสัญลักษณ์ทางการ ก.พ.ค.ตร. พื้นหลังโปร่งใส (`public/logo/gpc-emblem.png` & `src/lib/owner.ts`)**:
-  - ลบข้อความ `G P C · C Y B E R` และเปลี่ยนป้ายข้อความ `กพค` เดิม เป็นตราสัญลักษณ์ทางการของ ก.พ.ค.ตร. แบบไดคัทพื้นหลังโปร่งใสคมชัด แสดงผลสวยงามสมบูรณ์ทั้งใน Light Mode และ Dark Mode
-- **ระบบสลับโหมดสว่าง/มืด (Light/Dark Mode System) พร้อม Light Mode เป็นค่าเริ่มต้น**:
-  - **Light Mode (Default)**: พื้นหลังขาวสว่างนุ่มนวล (`#f8fafc`), การ์ดสีขาวสะอาดตา (`#ffffff`) ขอบสีเทาอ่อน (`#e2e8f0`), ตัวอักษรหัวข้อและคำเน้นเป็น **สีดำสนิทคมชัดสูง (`#09090b` / `#0f172a`)** สบายตา คอนทราสต์สูงระดับ WCAG AAA, ข้อความรองเป็นสีชาร์โคลเข้ม (`#334155`) และสีแดงตำรวจ (`#991b1b` / `#c81e2b`) บนปุ่มคำสั่งหลัก จุดเน้น และแคปซูลเมนู
-  - **Dark Mode**: คงสไตล์ CYBER Dark Charcoal (`#0a0a0c`, `#121215`, ขอบเทาจาง, ตัวอักษรขาวคมชัด `#ffffff` และแดงตำรวจเฉพาะจุดเน้น)
-  - **ปุ่มสลับโหมด (`ThemeToggle.tsx`)**: ติดตั้งที่ TopHeader (มุมขวาบนทุกหน้า), แถบแคปซูลหน้า Dashboard และท้าย Sidebar Drawer สลับได้ทันทีและจดจำค่าใน `localStorage` (`gpc-theme`) โดยมีสคริปต์ก่อน hydrate ป้องกันจอขาวแวบ (FOUC)
-- **ชื่อระบบและอัตลักษณ์หน้าเว็บ (Branding)**: **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`** ครบทุกจุด (`Sidebar.tsx`, `TopHeader.tsx`, `dashboard/page.tsx`, `analysis/Workbench.jsx`, `login/page.tsx`, `layout.tsx`) โดยไม่มีการสร้างแท็บ/หน้า /owner แยก
-- **ภาพบุคคลไดคัทเฉพาะตัวบุคคลบนพื้นหลังสีแดงตำรวจ (`public/owner/wichian-studio-red.jpg` & `public/owner/wichian-cutout.png`)**:
-  - ไดคัทเฉพาะตัวบุคคลของ **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี** บนพื้นหลังสีแดงตำรวจ (`#991b1b`) ปรากฏเฉพาะใน Avatar วงกลมมุมขวาบนและโปรไฟล์ส่วนหัว Sidebar
-- **AI Harness (`shared/ai-harness.mjs` & `src/lib/ai/*`)**:
-  - Provider-neutral รองรับ DeepSeek Responses API (`deepseek-v4-pro`), `store: false`, JSON Schema, ไม่มี tools/web search, ไม่มี automatic fallback
-  - ปิดบังข้อมูลส่วนบุคคล (Pseudonymization) + ตรวจ Citation Allowlist + ตัด `<think>...</think>` CoT leakage (`stripCotLeakage`)
-  - ตรวจ Stale Revision (`409 Conflict` / `STALE_REVISION`) ครบทุกเส้นทาง (`revisionGuard.ts`) โดยค่าเริ่มต้น `AI_ENABLED=false`
-- **ระบบวิเคราะห์และร่างคำวินิจฉัย (`/analysis`)**:
-  - ครบ 6 แท็บตาม `docs/ANALYSIS-ONLY-SYSTEM-DESIGN-TH.md` พร้อมแถบสถานะ 6 ขั้นตอน, `KnowledgeRail`, แถบเช็กความพร้อมข้อมูลตั้งต้น, เครื่องคำนวณโควตาตำแหน่งว่างจริง 50%, ปุ่มแทรกถ้อยคำวินิจฉัยมาตรฐาน, ตัวอย่างหน้ากระดาษ `ร่างคำวินิจฉัยเบื้องต้น` พร้อมส่งออก `.docx` (ตรวจ SHA-256) และค้นหาเลขไทย `๐-๙` <-> `0-9`
+
+- **ปรับปรุง Light Mode และป้ายข้อความสีแดง (Light Mode & Red Badge Contrast Fix)**:
+  - แก้ไขปัญหาป้ายและชิปใน Light Mode ให้แสดงผลเป็นโทนสว่างนุ่มนวลกลมกลืนตา (`#f1f5f9` ขอบ `#cbd5e1` หรือ `#e2e8f0`) ไม่เป็นปื้นสีดำผิดเพี้ยน
+  - กำหนดให้ตัวอักษรและไอคอนทั้งหมดบนป้ายสีแดงตำรวจ ปุ่มสีแดง และแคปซูลเมนูที่แอกทีฟ (`bg-[#991b1b]`, `bg-[#c81e2b]`, `bg-[#d62839]`, `from-[#d62839]`, `bg-red-6*`, `cyber-pill-active`) เป็น **สีขาวสนิท (`#ffffff !important`)** เสมอ
+- **ปุ่มสลับ Dark/Light Mode อยู่ที่มุมขวาบนสุดของเว็บเด่นชัด**:
+  - ย้ายและปรับแต่ง `ThemeToggle` ให้ติดตั้งที่ตำแหน่งขวาสุดของ `TopHeader.tsx` (มุมขวาบนสุดของทุกหน้าจอ) มีป้ายบอกสถานะ `☀️ โหมดสว่าง` / `🌙 โหมดมืด` คมชัดสูง พร้อมขอบและเงาเด่นชัด
+- **กำหนด Light Mode เป็นค่าเริ่มต้นอย่างเคร่งครัด (Strict Default Light Mode)**:
+  - กำหนด `data-theme="light"` และคลาส `light` ตั้งแต่แท็ก `<html>` ใน `layout.tsx` พร้อม pre-hydration inline script บังคับ Light Mode ยกเว้นผู้ใช้จะเลือกสลับเป็น dark ด้วยตนเอง
+- **อัปเดตภาพบุคคลใหม่จากไฟล์แนบและเพิ่มขนาดอวตาร์ 1 ระดับ**:
+  - ไดคัทตัวบุคคล **พล.ต.อ.วิเชียร พจน์โพธิ์ศรี** (ท่ายืนกอดอก) จากภาพถ่ายล่าสุด ลบฉากหลังเดิมออก วางบนพื้นแดงตำรวจ `#991b1b` (`public/owner/wichian-studio-red.jpg` และ `public/owner/wichian-cutout.png`)
+  - เพิ่มขนาดอวตาร์โปรไฟล์ขึ้น 1 ระดับทั่วทั้งระบบ:
+    - `TopHeader.tsx`: ขยายเป็น `h-10 w-10` (40px)
+    - `Sidebar.tsx`: ขยายเป็น `h-14 w-14` (56px)
+    - `dashboard/page.tsx`: ขยายเป็น `h-12 w-12` (48px)
+
 - **ผลตรวจสอบล่าสุด**:
   - `npm test`: **ผ่าน 83/83 ข้อ**
   - `analysis-app` tests: **ผ่าน 18/18 ข้อ**

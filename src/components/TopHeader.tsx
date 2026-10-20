@@ -30,14 +30,14 @@ export function TopHeader({
       <div className="flex min-w-0 flex-1 items-center gap-x-4 self-stretch lg:gap-x-6">
         <Link
           href="/dashboard"
-          className="hidden xl:flex xl:items-center xl:gap-2.5 xl:border-r xl:border-white/[0.08] xl:pr-5 group"
+          className="hidden xl:flex xl:items-center xl:gap-3 xl:border-r xl:border-white/[0.08] xl:pr-5 group"
         >
-          <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full bg-[#991b1b] ring-1 ring-white/20">
+          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#991b1b] ring-2 ring-white/20">
             <Image
               src={OWNER_PHOTO}
               alt={OWNER_NAME}
               fill
-              sizes="32px"
+              sizes="40px"
               className="rounded-full object-cover object-[50%_15%]"
             />
           </span>
@@ -62,7 +62,6 @@ export function TopHeader({
           />
         </form>
         <div className="flex items-center gap-x-2.5 lg:gap-x-3.5">
-          <ThemeToggle />
           <Link
             href="/analysis"
             className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-gradient-to-b from-[#d62839] to-[#991b1b] px-4 py-1.5 text-xs font-bold text-white shadow-[0_4px_14px_rgba(185,28,28,0.4)] transition hover:brightness-110"
@@ -72,6 +71,9 @@ export function TopHeader({
           </Link>
           <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-white/[0.08]" aria-hidden="true" />
           <UserMenu user={user} />
+          <div className="h-6 w-px bg-white/[0.1] dark:bg-white/[0.08]" aria-hidden="true" />
+          {/* Top-Right Corner Prominent Dark/Light Switch */}
+          <ThemeToggle showLabel className="shrink-0" />
         </div>
       </div>
     </header>

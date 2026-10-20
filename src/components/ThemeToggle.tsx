@@ -81,19 +81,19 @@ export function ThemeToggle({ className = "", showLabel = false }: ThemeTogglePr
       title={isLight ? "สลับเป็นโหมดมืด (Dark Mode)" : "สลับเป็นโหมดสว่าง (Light Mode)"}
       className={`theme-toggle-btn inline-flex items-center justify-center gap-1.5 rounded-full border transition-all duration-200 focus-visible:outline-2 focus-visible:outline-[#c81e2b] ${
         isLight
-          ? "border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-100 shadow-sm"
-          : "border-white/10 bg-[#121215] text-zinc-300 hover:border-white/20 hover:text-white shadow-sm"
-      } ${showLabel ? "px-3 py-1.5 text-xs font-semibold" : "h-9 w-9"} ${className}`}
+          ? "border-slate-300 bg-white text-slate-900 font-bold hover:border-slate-400 hover:bg-slate-100 shadow-sm"
+          : "border-white/20 bg-[#16161b] text-white font-bold hover:border-white/30 hover:bg-[#202026] shadow-sm"
+      } ${showLabel ? "px-3 py-1.5 text-xs" : "h-9 w-9"} ${className}`}
     >
       {isLight ? (
         <>
-          <Sun size={16} className="text-amber-600 transition-transform duration-200 hover:rotate-45" aria-hidden="true" />
-          {showLabel && <span>โหมดสว่าง</span>}
+          <Sun size={15} className="text-amber-500 transition-transform duration-200 hover:rotate-45 shrink-0" aria-hidden="true" />
+          {showLabel && <span className="tracking-wide">โหมดสว่าง</span>}
         </>
       ) : (
         <>
-          <Moon size={15} className="text-zinc-300 transition-transform duration-200 hover:-rotate-12" aria-hidden="true" />
-          {showLabel && <span>โหมดมืด</span>}
+          <Moon size={14} className="text-sky-300 transition-transform duration-200 hover:-rotate-12 shrink-0" aria-hidden="true" />
+          {showLabel && <span className="tracking-wide">โหมดมืด</span>}
         </>
       )}
     </button>
