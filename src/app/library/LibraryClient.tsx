@@ -11,15 +11,19 @@ import {
   Trash2, 
   Cpu,
   Scale,
-  Sparkles
+  Sparkles,
+  FileCheck2,
+  ScanText
 } from "lucide-react";
 import LegalSourceForm from "./LegalSourceForm";
 import { ingestLegalSource, deleteChunks } from "./actions";
 import { generateAllMissingEmbeddings } from "./actions/embedding";
 import PoliceLawCatalog from "@/components/library/PoliceLawCatalog";
+import PoliceWorkerRegulations from "@/components/library/PoliceWorkerRegulations";
+import DocumentOcrWorkbench from "@/components/library/DocumentOcrWorkbench";
 
 export default function LibraryClient({ initialResources }: { initialResources: any[] }) {
-  const [activeTab, setActiveTab] = useState<'catalog' | 'archive'>('catalog');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'regulations' | 'ocr' | 'archive'>('catalog');
   const [resources, setResources] = useState(initialResources || []);
   const [editingSource, setEditingSource] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -142,7 +146,7 @@ export default function LibraryClient({ initialResources }: { initialResources: 
       </div>
 
       {/* Main Navigation Tabs */}
-      <div className="mt-6 flex border-b border-slate-200 dark:border-white/10 gap-3">
+      <div className="mt-6 flex flex-wrap border-b border-slate-200 dark:border-white/10 gap-2 md:gap-4">
         <button
           type="button"
           onClick={() => setActiveTab('catalog')}
@@ -156,6 +160,38 @@ export default function LibraryClient({ initialResources }: { initialResources: 
           <span>แคตตาล็อกกฎหมายตำรวจ (พ.ร.บ.ตำรวจ 2565 / กฤษฎีกา)</span>
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold">
             2,337 มาตรา
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('regulations')}
+          className={`pb-3 px-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
+            activeTab === 'regulations'
+              ? 'border-[#d62839] text-[#d62839] dark:text-red-400 dark:border-red-500'
+              : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+          }`}
+        >
+          <FileCheck2 className="h-4 w-4" />
+          <span>ระเบียบ คำสั่ง และนโยบาย ตร. (PoliceWorker.one)</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold">
+            NEW 2569-2570
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('ocr')}
+          className={`pb-3 px-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
+            activeTab === 'ocr'
+              ? 'border-[#d62839] text-[#d62839] dark:text-red-400 dark:border-red-500'
+              : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+          }`}
+        >
+          <ScanText className="h-4 w-4" />
+          <span>ถอดข้อความเอกสาร OCR (Paddle / Typhoon)</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold">
+            AI OCR
           </span>
         </button>
 
@@ -180,6 +216,14 @@ export default function LibraryClient({ initialResources }: { initialResources: 
       {activeTab === 'catalog' ? (
         <div className="mt-6">
           <PoliceLawCatalog />
+        </div>
+      ) : activeTab === 'regulations' ? (
+        <div className="mt-6">
+          <PoliceWorkerRegulations />
+        </div>
+      ) : activeTab === 'ocr' ? (
+        <div className="mt-6">
+          <DocumentOcrWorkbench />
         </div>
       ) : (
         <div className="mt-6 space-y-6">
