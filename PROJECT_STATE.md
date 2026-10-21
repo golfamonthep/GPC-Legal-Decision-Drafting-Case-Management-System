@@ -2,6 +2,27 @@
 
 ## สรุปสถานะระบบล่าสุด (2026-10-21)
 
+- **ปรับแต่งสีธีมโหมดสว่าง/โหมดมืดสมบูรณ์บนหน้า `/library` (No Black Box in Light Mode)**:
+  - แก้ไขส่วนหัวแบนเนอร์ค้นหา (`PoliceLawCatalog.tsx`), แบนเนอร์ระเบียบ ตร. (`PoliceWorkerRegulations.tsx`), และแบนเนอร์ระบบ OCR (`DocumentOcrWorkbench.tsx`) ในโหมดสว่างให้แสดงผลโทนขาวนวลเหลือบแดง/คราม พร้อมตัวอักษรสีเข้มคมชัด (High Contrast Slate-900) ป้ายสถานะสีอ่อนนุ่มนวล และกรอบเส้นบางเบา ไร้กล่องสีดำเพี้ยน
+- **อัปเดต กฎ ก.พ.ค.ตร. อุทธรณ์และร้องทุกข์ พ.ศ. ๒๕๖๗ (ฉบับปัจจุบัน) และยกเลิกกฎ ก.ตร. ๒๕๔๗**:
+  - ตามที่ผู้ใช้ระบุว่า **กฎ ก.ตร. ว่าด้วยการอุทธรณ์ ๒๕๔๗ และ กฎ ก.ตร. ร้องทุกข์ ๒๕๔๗ ยกเลิกแล้ว**:
+    1. นำเข้า **กฎ ก.พ.ค.ตร. ว่าด้วยการอุทธรณ์และการพิจารณาวินิจฉัยอุทธรณ์ พ.ศ. ๒๕๖๗ (ฉบับปัจจุบัน)** (๒๕ ข้อบท) ออกตาม พ.ร.บ.ตำรวจแห่งชาติ ๒๕๖๕ ม.๑๔๑-๑๔๖
+    2. นำเข้า **กฎ ก.พ.ค.ตร. ว่าด้วยการร้องทุกข์และการพิจารณาวินิจฉัยร้องทุกข์ พ.ศ. ๒๕๖๗ (ฉบับปัจจุบัน)** (๑๕ ข้อบท) ออกตาม พ.ร.บ.ตำรวจแห่งชาติ ๒๕๖๕ ม.๑๔๗-๑๕๓
+    3. ปรับสถานะ กฎ ก.ตร. อุทธรณ์/ร้องทุกข์ ๒๕๔๗ เป็น `[ยกเลิกแล้ว - เทียบเคียงประวัติเดิม]`
+    4. แคตตาล็อกเพิ่มเป็น **38 ฉบับ รวม 2,377 มาตรา/ข้อ** พร้อมชิปคำค้นยอดนิยม "กฎ ก.พ.ค.ตร. อุทธรณ์ ๒๕๖๗" และ "กฎ ก.พ.ค.ตร. ร้องทุกข์ ๒๕๖๗"
+- **ติดตั้งชุดสกิลกฎหมายและงานสารบรรณครบถ้วนตามข้อสั่งการ (Anthropic & Thai Saraban Skills)**:
+  - **`claude-for-legal`**: จาก `anthropics/claude-for-legal` ทักษะวิศวกรรมกฎหมาย การตรวจกฎหมายทันสมัย การสกัดประเด็น และการร่างคำวินิจฉัย
+  - **`thai-saraban`**: ทักษะงานสารบรรณรวมศูนย์สำหรับ ก.พ.ค.ตร. และ ตร.
+  - **`thai-government-form`**: จาก `claude-thai-skills` แบบฟอร์มราชการไทยตามระเบียบสำนักนายกรัฐมนตรีว่าด้วยงานสารบรรณ พ.ศ. ๒๕๒๖
+  - **`thai-docx`**: จาก `thai-doc-skills` จัดทำเอกสาร Word ภาษาไทยเต็มบรรทัด (Zero-Width Space) พร้อมฟอนต์ราชการไทย (TH SarabunPSK)
+  - **`thai-pdf`**: จาก `thai-doc-skills` จัดการเอกสาร PDF ทางราชการ
+  - **`thai-date-format`**: รูปแบบวันที่ภาษาไทยทางการ (พุทธศักราช)
+  - **`meeting-minutes-th`**: รายงานการประชุมคณะกรรมการ/ก.พ.ค.ตร.
+  - ผ่านการตรวจความถูกต้อง YAML frontmatter และ BOM รวม 92 สกิล 0 errors
+- **ผลการทดสอบและการตรวจสอบคุณภาพ (Verification & Testing)**:
+  - เพิ่มชุดทดสอบใน `src/lib/thai-law/thai-law.test.ts`
+  - ผลรวมการทดสอบ: `npm test` ผ่าน **91/91 ข้อ** (100% pass), `npm run typecheck` 0 errors, `npm run build` 36/36 routes ผ่านสมบูรณ์
+
 - **ติดตั้ง PaddleOCR และ Typhoon-OCR (SCB 10X) พร้อมระบบถอดข้อความเอกสารราชการฉบับสมบูรณ์**:
   - **Python 3.11 Runtime**: ติดตั้งสภาพแวดล้อม Python 3.11 ณ `C:\Users\polic\AppData\Local\Programs\Python\Python311\python.exe`
   - **PaddleOCR (v2.9.1)**: ทำงานร่วมกับ `paddlepaddle==2.6.2` ทดสอบ Local Inference CPU บนหน้าเอกสารจริงสำเร็จ สกัดตัวอักษรและพิกัดตำแหน่งกล่องข้อความ (Bounding Boxes) พร้อมค่าความเชื่อมั่น (Confidence)
@@ -692,14 +713,22 @@ Objectives:
 - **Remaining Blockers**: Entra ID and Vercel DB configuration.
 - **Pilot Readiness Percentage**: 100% Ready for Limited Staging Pilot Launch (System Stabilization Data Integrity Hardened).
 - **Recommended Next Step**: Prompt 84: Pilot Readiness Review and Controlled Launch Sign-Off.
- 
- # #   1 6 .   P r o m p t   8 4   E v i d e n c e - B a s e d   P i l o t   S t a b i l i z a t i o n   o r   S i g n - O f f   D e c i s i o n  
- -   * * S t a t u s * * :   B๏ฟฝ &   C o m p l e t e d  
- -   * * S e l e c t e d   P a t h * * :   P a t h   F   ( P i l o t   R e a d i n e s s   R e v i e w   a n d   C o n t r o l l e d   L a u n c h   S i g n - O f f )  
- -   * * O u t c o m e * * :   R e v i e w e d   P i l o t   T r i a g e   B o a r d   R o u n d   1 .   S y s t e m   b u i l d s   p a s s ,   n o   P 0 / P 1   b l o c k e r s   r e m a i n .   A u t h o r i z e d   a   C o n d i t i o n a l   G o   f o r   c o n t r o l l e d   p i l o t   l a u n c h .  
- -   * * R e m a i n i n g   B l o c k e r s * * :   V e r c e l   P r e v i e w   D a t a b a s e   c o n f i g u r a t i o n   a n d   M i c r o s o f t   E n t r a   I D   t e s t   u s e r   p r o v i s i o n i n g .   ( E x t e r n a l   P O   A c t i o n s ) .  
- -   * * P i l o t   R e a d i n e s s   P e r c e n t a g e * * :   1 0 0 %   R e a d y   f o r   L i m i t e d   S t a g i n g   P i l o t   L a u n c h .  
- -   * * R e c o m m e n d e d   N e x t   S t e p * * :   P r o m p t   8 5 :   C o n t r o l l e d   P i l o t   L a u n c h   E x e c u t i o n   C h e c k l i s t .  
+
+ 
+ # #   1 6 .   P r o m p t   8 4   E v i d e n c e - B a s e d   P i l o t   S t a b i l i z a t i o n   o r   S i g n - O f f   D e c i s i o n 
+ 
+ -   * * S t a t u s * * :   B๏ฟฝ &   C o m p l e t e d 
+ 
+ -   * * S e l e c t e d   P a t h * * :   P a t h   F   ( P i l o t   R e a d i n e s s   R e v i e w   a n d   C o n t r o l l e d   L a u n c h   S i g n - O f f ) 
+ 
+ -   * * O u t c o m e * * :   R e v i e w e d   P i l o t   T r i a g e   B o a r d   R o u n d   1 .   S y s t e m   b u i l d s   p a s s ,   n o   P 0 / P 1   b l o c k e r s   r e m a i n .   A u t h o r i z e d   a   C o n d i t i o n a l   G o   f o r   c o n t r o l l e d   p i l o t   l a u n c h . 
+ 
+ -   * * R e m a i n i n g   B l o c k e r s * * :   V e r c e l   P r e v i e w   D a t a b a s e   c o n f i g u r a t i o n   a n d   M i c r o s o f t   E n t r a   I D   t e s t   u s e r   p r o v i s i o n i n g .   ( E x t e r n a l   P O   A c t i o n s ) . 
+ 
+ -   * * P i l o t   R e a d i n e s s   P e r c e n t a g e * * :   1 0 0 %   R e a d y   f o r   L i m i t e d   S t a g i n g   P i l o t   L a u n c h . 
+ 
+ -   * * R e c o m m e n d e d   N e x t   S t e p * * :   P r o m p t   8 5 :   C o n t r o l l e d   P i l o t   L a u n c h   E x e c u t i o n   C h e c k l i s t . 
+ 
    
 ## 16. Prompt 85 Controlled Pilot Launch Execution  
 - **Status**: Completed  

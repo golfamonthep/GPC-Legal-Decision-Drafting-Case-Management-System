@@ -98,3 +98,39 @@ test('getSectionById returns full text and sequential navigation for 2565 Act', 
     assert.equal(detail.nextSection.sectionNumArabic, '142');
   }
 });
+
+test('ก.พ.ค.ตร. 2567 appeal and grievance rules are active and 2547 rules are marked repealed', () => {
+  const acts = getLawActs();
+  
+  // 1. Verify 2567 ก.พ.ค.ตร. Appeal rule
+  const appealAct2567 = acts.find(a => a.id === 'kpkt-appeal-2567');
+  assert.ok(appealAct2567, 'ก.พ.ค.ตร. 2567 Appeal rule must exist');
+  assert.ok(appealAct2567?.title.includes('2567 (ฉบับปัจจุบัน)'));
+  assert.ok(appealAct2567?.title.includes('ก.พ.ค.ตร.'));
+
+  // 2. Verify 2567 ก.พ.ค.ตร. Grievance rule
+  const grievanceAct2567 = acts.find(a => a.id === 'kpkt-grievance-2567');
+  assert.ok(grievanceAct2567, 'ก.พ.ค.ตร. 2567 Grievance rule must exist');
+  assert.ok(grievanceAct2567?.title.includes('2567 (ฉบับปัจจุบัน)'));
+
+  // 3. Verify old 2547 rules are marked repealed
+  const oldAppeal = acts.find(a => a.id === 'ktr-appeal-2547');
+  assert.ok(oldAppeal, 'Old 2547 appeal rule must exist for history');
+  assert.ok(oldAppeal?.title.includes('ยกเลิกแล้ว'), 'Old appeal rule must be marked repealed');
+
+  const oldPetition = acts.find(a => a.id === 'ktr-petition-2547');
+  assert.ok(oldPetition, 'Old 2547 petition rule must exist for history');
+  assert.ok(oldPetition?.title.includes('ยกเลิกแล้ว'), 'Old petition rule must be marked repealed');
+
+  // 4. Test searching for ก.พ.ค.ตร. 2567 appeal rule
+  const appealSearch = searchPoliceLaws({ q: 'ก.พ.ค.ตร. อุทธรณ์' });
+  assert.ok(appealSearch.items.length > 0, 'Must find results for ก.พ.ค.ตร. อุทธรณ์');
+  const topAppeal = appealSearch.items.find(i => i.actId === 'kpkt-appeal-2567');
+  assert.ok(topAppeal, 'Must retrieve section from kpkt-appeal-2567');
+
+  // 5. Test searching for ก.พ.ค.ตร. 2567 grievance rule
+  const grievanceSearch = searchPoliceLaws({ q: 'ก.พ.ค.ตร. ร้องทุกข์' });
+  assert.ok(grievanceSearch.items.length > 0, 'Must find results for ก.พ.ค.ตร. ร้องทุกข์');
+  const topGrievance = grievanceSearch.items.find(i => i.actId === 'kpkt-grievance-2567');
+  assert.ok(topGrievance, 'Must retrieve section from kpkt-grievance-2567');
+});

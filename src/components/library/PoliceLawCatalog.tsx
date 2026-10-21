@@ -21,16 +21,16 @@ import { PoliceLawSection, PoliceLawAct } from "@/lib/thai-law/types";
 import LawReaderModal from "./LawReaderModal";
 
 const QUICK_SUGGESTIONS = [
+  { label: "กฎ ก.พ.ค.ตร. อุทธรณ์ ๒๕๖๗", query: "ก.พ.ค.ตร. อุทธรณ์" },
+  { label: "กฎ ก.พ.ค.ตร. ร้องทุกข์ ๒๕๖๗", query: "ก.พ.ค.ตร. ร้องทุกข์" },
   { label: "ม.141 (อุทธรณ์ ก.พ.ค.ตร.)", query: "141" },
   { label: "ม.147 (ร้องทุกข์ ก.พ.ค.ตร.)", query: "147" },
   { label: "ม.33 (จัดตั้ง ก.พ.ค.ตร.)", query: "33" },
   { label: "ม.116 (โทษวินัย 7 สถาน)", query: "116" },
   { label: "ม.125 (สืบสวนข้อเท็จจริง)", query: "125" },
-  { label: "ม.131 (สั่งพัก/สั่งให้ออก)", query: "131" },
   { label: "ก.ตร. แต่งตั้ง 2567", query: "แต่งตั้ง" },
   { label: "ม.157 ป.อาญา", query: "157" },
   { label: "ความรับผิดทางละเมิด", query: "ละเมิด" },
-  { label: "พ.ร.บ.จราจรทางบก", query: "จราจรทางบก" },
 ];
 
 export default function PoliceLawCatalog() {
@@ -130,23 +130,23 @@ export default function PoliceLawCatalog() {
   return (
     <div className="space-y-6">
       {/* Search Header Banner */}
-      <div className="rounded-2xl p-6 sm:p-8 bg-gradient-to-br from-slate-900 via-slate-900 to-red-950 text-white shadow-xl relative overflow-hidden border border-red-900/30">
+      <div className="rounded-2xl p-6 sm:p-8 bg-gradient-to-br from-red-50/70 via-slate-50 to-red-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-red-950 text-slate-900 dark:text-white shadow-md dark:shadow-xl relative overflow-hidden border border-red-200/80 dark:border-red-900/30">
         <div className="absolute -right-12 -bottom-12 w-64 h-64 rounded-full bg-red-600/10 blur-3xl pointer-events-none" />
         <div className="absolute right-10 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none hidden lg:block">
-          <Scale className="w-56 h-56 text-white" />
+          <Scale className="w-56 h-56 text-red-900/20 dark:text-white" />
         </div>
 
         <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-red-600/30 text-red-200 border border-red-500/30">
-            <Sparkles className="h-3.5 w-3.5 text-red-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-600/30 dark:text-red-200 border border-red-200 dark:border-red-500/30">
+            <Sparkles className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
             <span>แคตตาล็อกกฎหมายตำรวจ · พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ (ฉบับปัจจุบัน) & กฤษฎีกา</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             สืบค้นข้อกฎหมายและระเบียบตำรวจ
           </h1>
 
-          <p className="text-sm text-slate-300 leading-relaxed max-w-2xl">
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
             รวบรวมพระราชบัญญัติตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ (ฉบับปัจจุบัน), ก.พ.ค.ตร., กฎ ก.ตร. วินัย อุทธรณ์ ร้องทุกข์ และแต่งตั้ง ๒๕๖๗, ประมวลกฎหมายอาญา, และกฎหมายปกครอง ค้นหารายมาตราและอ่านฉบับเต็มได้ทันที
           </p>
 
@@ -159,13 +159,13 @@ export default function PoliceLawCatalog() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="พิมพ์คีย์เวิร์ด หรือเลขมาตรา เช่น '141' (อุทธรณ์), '147' (ร้องทุกข์), '33' (ก.พ.ค.ตร.), '157'..."
-                className="w-full pl-12 pr-28 py-3.5 rounded-xl bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all shadow-inner"
+                className="w-full pl-12 pr-28 py-3.5 rounded-xl bg-white dark:bg-white/5 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all shadow-sm dark:shadow-inner"
               />
               {query && (
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="absolute right-24 p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors"
+                  className="absolute right-24 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
                   title="ล้างข้อความ"
                 >
                   <X className="h-4 w-4" />
@@ -182,7 +182,7 @@ export default function PoliceLawCatalog() {
 
           {/* Quick Keywords Chips */}
           <div className="pt-1 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-slate-400">คำค้นยอดนิยม:</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">คำค้นยอดนิยม:</span>
             {QUICK_SUGGESTIONS.map((item) => (
               <button
                 key={item.label}
@@ -191,7 +191,7 @@ export default function PoliceLawCatalog() {
                 className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
                   query === item.query
                     ? "bg-red-600 text-white border-red-500 font-semibold"
-                    : "bg-white/10 text-slate-200 border-white/10 hover:bg-white/20 hover:border-white/30"
+                    : "bg-white dark:bg-white/10 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/20 hover:border-slate-300 dark:hover:border-white/30 shadow-xs"
                 }`}
               >
                 {item.label}

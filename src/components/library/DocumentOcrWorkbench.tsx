@@ -106,29 +106,29 @@ export default function DocumentOcrWorkbench() {
   return (
     <div className="space-y-6">
       {/* Engine Status Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-6 text-white border border-slate-700 shadow-lg">
+      <div className="bg-gradient-to-r from-indigo-50/80 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950 rounded-2xl p-6 text-slate-900 dark:text-white border border-indigo-200/80 dark:border-slate-700 shadow-md dark:shadow-lg">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 text-xs font-semibold border border-emerald-200 dark:border-emerald-500/30">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               OCR Engines Installed & Active
             </div>
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               ระบบถอดข้อความเอกสารราชการ (PaddleOCR & Typhoon-OCR)
             </h2>
-            <p className="text-xs md:text-sm text-slate-300">
+            <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300">
               สกัดตัวอักษรภาษาไทยจากเอกสารคดี PDF ที่ฟอนต์เพี้ยน หรือภาพสแกนคำสั่งทางราชการด้วย AI
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="px-3 py-2 rounded-xl bg-white/10 border border-white/10 text-xs">
-              <div className="text-slate-400 text-[10px]">PADDLEOCR</div>
-              <div className="font-bold text-white">v2.9.1 / PP-OCR</div>
+            <div className="px-3 py-2 rounded-xl bg-white dark:bg-white/10 border border-indigo-100 dark:border-white/10 shadow-sm text-xs">
+              <div className="text-slate-500 dark:text-slate-400 text-[10px]">PADDLEOCR</div>
+              <div className="font-bold text-slate-900 dark:text-white">v2.9.1 / PP-OCR</div>
             </div>
-            <div className="px-3 py-2 rounded-xl bg-white/10 border border-white/10 text-xs">
-              <div className="text-slate-400 text-[10px]">TYPHOON-OCR</div>
-              <div className="font-bold text-white">v0.4.1 (SCB 10X)</div>
+            <div className="px-3 py-2 rounded-xl bg-white dark:bg-white/10 border border-indigo-100 dark:border-white/10 shadow-sm text-xs">
+              <div className="text-slate-500 dark:text-slate-400 text-[10px]">TYPHOON-OCR</div>
+              <div className="font-bold text-slate-900 dark:text-white">v0.4.1 (SCB 10X)</div>
             </div>
           </div>
         </div>

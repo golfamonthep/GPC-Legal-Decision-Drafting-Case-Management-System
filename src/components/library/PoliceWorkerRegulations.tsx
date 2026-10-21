@@ -99,35 +99,35 @@ export default function PoliceWorkerRegulations() {
   return (
     <div className="space-y-6">
       {/* Hero Banner with Status Indicators */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 md:p-8 text-white shadow-xl border border-indigo-900/40">
-        <div className="absolute -right-12 -top-12 h-64 w-64 rounded-full bg-indigo-600/10 blur-3xl" />
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-50/70 via-slate-50 to-indigo-50/40 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 p-6 md:p-8 text-slate-900 dark:text-white shadow-md dark:shadow-xl border border-indigo-200/80 dark:border-indigo-900/40">
+        <div className="absolute -right-12 -top-12 h-64 w-64 rounded-full bg-indigo-600/10 blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold tracking-wide">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 text-xs font-semibold tracking-wide">
+              <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               อัปเดตสารระบบกฎหมาย ระเบียบ คำสั่ง ตร. ล่าสุด ๒๕๖๙ - ๒๕๗๐
             </div>
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               คลังระเบียบ คำสั่ง และนโยบายสำนักงานตำรวจแห่งชาติ
             </h2>
-            <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-              เชื่อมโยงฐานข้อมูลสารบรรณและงานนิติการตำรวจจาก <span className="text-indigo-300 font-semibold">PoliceWorker.one</span> ครบถ้วน {items.length} ฉบับ พร้อมระบบสกัดข้อความ OCR ด้วย PaddleOCR และ Typhoon-OCR
+            <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed">
+              เชื่อมโยงฐานข้อมูลสารบรรณและงานนิติการตำรวจจาก <span className="text-indigo-600 dark:text-indigo-300 font-semibold">PoliceWorker.one</span> ครบถ้วน {items.length} ฉบับ พร้อมระบบสกัดข้อความ OCR ด้วย PaddleOCR และ Typhoon-OCR
             </p>
           </div>
 
           <div className="flex flex-wrap md:flex-col gap-3 shrink-0">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 flex items-center gap-3">
-              <Gavel className="h-6 w-6 text-amber-400" />
+            <div className="bg-white dark:bg-white/10 backdrop-blur-md rounded-xl p-3 border border-indigo-100 dark:border-white/10 shadow-sm flex items-center gap-3">
+              <Gavel className="h-6 w-6 text-amber-500 dark:text-amber-400" />
               <div>
-                <div className="text-xs text-slate-300">กฎ ก.ตร. วินัย 2569</div>
-                <div className="text-sm font-bold text-white">ฉบับสมบูรณ์ 91 หน้า</div>
+                <div className="text-xs text-slate-500 dark:text-slate-300">กฎ ก.ตร. วินัย 2569</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">ฉบับสมบูรณ์ 91 หน้า</div>
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10 flex items-center gap-3">
-              <Building className="h-6 w-6 text-cyan-400" />
+            <div className="bg-white dark:bg-white/10 backdrop-blur-md rounded-xl p-3 border border-indigo-100 dark:border-white/10 shadow-sm flex items-center gap-3">
+              <Building className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
               <div>
-                <div className="text-xs text-slate-300">คำสั่ง ตร. ที่ 424/2569</div>
-                <div className="text-sm font-bold text-white">มอบอำนาจ รอง ผบ.ตร.</div>
+                <div className="text-xs text-slate-500 dark:text-slate-300">คำสั่ง ตร. ที่ 424/2569</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-white">มอบอำนาจ รอง ผบ.ตร.</div>
               </div>
             </div>
           </div>
