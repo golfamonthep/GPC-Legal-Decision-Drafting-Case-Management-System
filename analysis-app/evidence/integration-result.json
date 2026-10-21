@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "checks": 19,
+  "job_a": "33f85526-918d-421c-8cbe-dbca21ccc14e",
+  "job_b": "554c9b85-8e3f-4184-a8fa-9dd12f072317",
+  "first_revision": "e994be77-1ad0-45d0-9ad1-d621a317f543",
+  "export_sha256": "932941743fbf0027107841365925ddc716c45ccd55bbf24ac0403a31b9550f67"
+}

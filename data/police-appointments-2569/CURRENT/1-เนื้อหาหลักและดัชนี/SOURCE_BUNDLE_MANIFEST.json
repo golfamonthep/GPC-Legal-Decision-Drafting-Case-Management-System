@@ -1,0 +1,154 @@
+{
+  "bundle_id": "police-current-source-bundle",
+  "version": "2026-10-09",
+  "files": [
+    {
+      "file": "1-เนื้อหาหลักและดัชนี/00-แหล่งที่มาและเมทาดาทา.md",
+      "bytes": 53860,
+      "sha256": "636170bd1a1ee109b814ea118a6ac129936f3d9a10b4f0827e392aaf7dce68ac"
+    },
+    {
+      "file": "1-เนื้อหาหลักและดัชนี/01-กฎหมาย.md",
+      "bytes": 587587,
+      "sha256": "470b1067fdeee0f60cc8dc5233f4f2521eca1e046cc15ab1e5620aea898864f2"
+    },
+    {
+      "file": "1-เนื้อหาหลักและดัชนี/02-ตัวอย่างคำวินิจฉัย.md",
+      "bytes": 829667,
+      "sha256": "9f74f21b1f99374a4feeae9bc54d1d0c8ee5aaca529567e34b387972d37a3087"
+    },
+    {
+      "file": "1-เนื้อหาหลักและดัชนี/03-ข้อมูลอาวุโส.md",
+      "bytes": 254926,
+      "sha256": "22c9b6dfc34c7a408af163c68f191ffe142687a168bf264ae4947c92bdd4e498"
+    },
+    {
+      "file": "1-เนื้อหาหลักและดัชนี/04-ข้อมูลการแต่งตั้ง.md",
+      "bytes": 516106,
+      "sha256": "ff0fa675c48280259aef979e3beac8505d9133dbc68e40e3afad7af0700f7197"
+    },
+    {
+      "file": "1-เนื้อหาหลักและดัชนี/05-ดัชนีค้นหา-กฎหมาย.jsonl",
+      "bytes": 1258372,
+      "sha256": "f6a17eb4bf808e1da4148e5169477583d507941f2f622a19fedb6689f0242a6f"
+    },
+    {
+      "file": "1-เนื้อหาหลักและดัชนี/05-ดัชนีค้นหา-การแต่งตั้ง.jsonl",
+      "bytes": 367692,
+      "sha256": "5815686283b3398ce97363703d2c0ce395daec845315fb41384bbe78c369f9e3"
+    },
+    {
+      "file": "1-เนื้อหาหลักและดัชนี/05-ดัชนีค้นหา-คำวินิจฉัย.jsonl",
+      "bytes": 1704414,
+      "sha256": "cf4c635cdd9aa99bebeca57e63f1bd7874d6d0a7553d01a1d0fa232b79c8c3e3"
+    },
+    {
+      "file": "1-เนื้อหาหลักและดัชนี/05-ดัชนีค้นหา-อาวุโส.jsonl",
+      "bytes": 264028,
+      "sha256": "cd4ce7da33291db6b84bdb112330fcf08f6745d5487f41266aafe65a2e52cef6"
+    },
+    {
+      "file": "2-รายการแก้ไขและต้นฉบับ/06-รายการแก้ไขรวม.csv",
+      "bytes": 1981990,
+      "sha256": "adabc25021c911a971490544e3a523d976302b2a2e61b17a2c5bac8da72b5bc7"
+    },
+    {
+      "file": "2-รายการแก้ไขและต้นฉบับ/appointment_ranks.pdf",
+      "bytes": 65243,
+      "sha256": "702560d8abecf87931d5a288309c62b002ca42fee060cb4c8d8d54558ddf2dc3"
+    },
+    {
+      "file": "2-รายการแก้ไขและต้นฉบับ/appointments_2569.pdf",
+      "bytes": 164974,
+      "sha256": "78959ed38a0972db3b620766b3afbd9a32fccb86f7814793878330cbf3d120c9"
+    },
+    {
+      "file": "2-รายการแก้ไขและต้นฉบับ/law_rule_2567.pdf",
+      "bytes": 8488344,
+      "sha256": "7244819fbe884ac314fe8321c53b70061a5a5e6a1e8f56760cf9fdc2b53bbee2"
+    },
+    {
+      "file": "2-รายการแก้ไขและต้นฉบับ/PDF_SOURCE_MANIFEST.json",
+      "bytes": 1637,
+      "sha256": "3127235b6c69e4e64a12af22adff3d627a11fc4487e034067bfe52919c5a5cca"
+    },
+    {
+      "file": "2-รายการแก้ไขและต้นฉบับ/police_act_2565.pdf",
+      "bytes": 670101,
+      "sha256": "f4b24e41bd801bac697c7fb4d5cfd44a5adaa4b2072dd03de4fc6b5036f0cbbd"
+    },
+    {
+      "file": "2-รายการแก้ไขและต้นฉบับ/precedent_phithak.pdf",
+      "bytes": 3651101,
+      "sha256": "889cca932ab5b4364245cb41325e3524723cd16516871f12eac62242f15f64eb"
+    },
+    {
+      "file": "2-รายการแก้ไขและต้นฉบับ/precedent_wiwat.pdf",
+      "bytes": 2921329,
+      "sha256": "b756c4df8e4b6269c87bd5df62b136cced3258c9e5bf9f64538274405944c826"
+    },
+    {
+      "file": "2-รายการแก้ไขและต้นฉบับ/seniority_2569_round4_2026-08-07_CURRENT.pdf",
+      "bytes": 9401559,
+      "sha256": "9a5938a3ceacf94596bd2e273006fb1f4e665c2b96e38330a5b2a776981abdd9"
+    },
+    {
+      "file": "3-กฎและผลวิเคราะห์ปัจจุบัน/CODEX-HANDOFF-CURRENT.txt",
+      "bytes": 6226,
+      "sha256": "dcc8ff737fc73f44c63650064750c4100bd2b3060076e2d531ba606ec74ff28f"
+    },
+    {
+      "file": "3-กฎและผลวิเคราะห์ปัจจุบัน/SKILL-CURRENT.txt",
+      "bytes": 5790,
+      "sha256": "15a291753acbd4340446e0df89b1f5ae14c3457e1823a1d875354b1a45ffed79"
+    },
+    {
+      "file": "3-กฎและผลวิเคราะห์ปัจจุบัน/วิเคราะห์การเลื่อนตำแหน่งตำรวจ-2569_CURRENT.xlsx",
+      "bytes": 30447,
+      "sha256": "e7ff45f86875a308ab9daf75624f51275280af1492afbf49ee9a1c5d0ec848e9"
+    },
+    {
+      "file": "CHANGELOG.md",
+      "bytes": 1714,
+      "sha256": "92beceb8e721c9e4e54340d3e60d003467cb5137beee4ba4fa0b8b7d745b1c19"
+    },
+    {
+      "file": "PROJECT-INSTRUCTIONS-คัดลอกไปวางในโปรเจกต์.md",
+      "bytes": 3878,
+      "sha256": "84d5c71e63de26f2e0427f4d25b3d158ae837735cce2c8d76f64b7cbd64599d7"
+    },
+    {
+      "file": "QA-REPORT.md",
+      "bytes": 2264,
+      "sha256": "6b99e559e03cbb7181cbf8c6f2097fdc539acf26c8c1afe17634905fda3e4235"
+    },
+    {
+      "file": "QA-SENIORITY-CROSSWALK.csv",
+      "bytes": 50755,
+      "sha256": "037879ecbc1c1b47e5a4247ecf5c103ccd75e2b174bb2a6a120c18f6e6211430"
+    },
+    {
+      "file": "README-เริ่มตรงนี้.md",
+      "bytes": 2376,
+      "sha256": "25e6c15ac59e5bf5952b9901c98e65b96ee43468731dfd38dee1b15675535435"
+    },
+    {
+      "file": "SENIORITY-ACCOUNTS.json",
+      "bytes": 5046,
+      "sha256": "a973576e4ff1475bdd69a528da878dfae420b5b3cade050bf3a2097d5e4c59d4"
+    }
+  ],
+  "bundle_fingerprint": "2fc098056df513a3181e1ab4a59cee6a9fdfd48cd7b066dc9e8826236dabb9fc",
+  "fingerprint_algorithm": "SHA-256 over sorted relative_path NUL bytes NUL file_sha256 rows joined by LF",
+  "exclusive_seniority_source": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+  "superseded_excluded": [
+    "seniority_2569.pdf",
+    "old seniority canonical/index",
+    "old crosswalk fields and promotion_by_seniority index"
+  ],
+  "sqlite_database": "C:\\APP\\data\\police-appointments-2569\\current-database.sqlite3",
+  "sqlite_sha256": "7fc7cdb24311ddeabed192c9c7d4b6ccdec2361f6ce41f87f5fdb01544cea395",
+  "status": "SENIORITY_CROSSWALK_181_VERIFIED_3_SOURCE_SCOPE_GAPS",
+  "verified_seniority_matches": 181,
+  "changed_seniority_orders": 66
+}

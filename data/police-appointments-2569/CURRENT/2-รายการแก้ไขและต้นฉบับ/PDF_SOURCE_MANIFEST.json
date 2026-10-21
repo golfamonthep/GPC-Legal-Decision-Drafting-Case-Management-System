@@ -1,0 +1,54 @@
+{
+  "purpose": "current PDFs for source verification",
+  "files": [
+    {
+      "file": "appointment_ranks.pdf",
+      "sha256": "702560d8abecf87931d5a288309c62b002ca42fee060cb4c8d8d54558ddf2dc3",
+      "bytes": 65243,
+      "page_count": 6,
+      "role": "active_source"
+    },
+    {
+      "file": "appointments_2569.pdf",
+      "sha256": "78959ed38a0972db3b620766b3afbd9a32fccb86f7814793878330cbf3d120c9",
+      "bytes": 164974,
+      "page_count": 21,
+      "role": "active_source"
+    },
+    {
+      "file": "law_rule_2567.pdf",
+      "sha256": "7244819fbe884ac314fe8321c53b70061a5a5e6a1e8f56760cf9fdc2b53bbee2",
+      "bytes": 8488344,
+      "page_count": 21,
+      "role": "active_source"
+    },
+    {
+      "file": "police_act_2565.pdf",
+      "sha256": "f4b24e41bd801bac697c7fb4d5cfd44a5adaa4b2072dd03de4fc6b5036f0cbbd",
+      "bytes": 670101,
+      "page_count": 82,
+      "role": "active_source"
+    },
+    {
+      "file": "precedent_phithak.pdf",
+      "sha256": "889cca932ab5b4364245cb41325e3524723cd16516871f12eac62242f15f64eb",
+      "bytes": 3651101,
+      "page_count": 69,
+      "role": "reference_only"
+    },
+    {
+      "file": "precedent_wiwat.pdf",
+      "sha256": "b756c4df8e4b6269c87bd5df62b136cced3258c9e5bf9f64538274405944c826",
+      "bytes": 2921329,
+      "page_count": 63,
+      "role": "reference_only"
+    },
+    {
+      "file": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+      "sha256": "9a5938a3ceacf94596bd2e273006fb1f4e665c2b96e38330a5b2a776981abdd9",
+      "bytes": 9401559,
+      "page_count": 63,
+      "role": "active_source"
+    }
+  ]
+}

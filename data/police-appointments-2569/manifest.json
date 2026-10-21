@@ -1,0 +1,45 @@
+{
+  "registered_at": "2026-10-09T13:30:03.703290+07:00",
+  "scope": "ข้อมูลดิบการแต่งตั้งตำรวจ วาระ 2569 ที่ผู้ใช้ส่งในแชตนี้",
+  "source_policy": "Strict Source Isolation: เฉพาะข้อมูลที่ผู้ใช้ส่ง; ไม่ใช้แหล่งภายนอก",
+  "exclusive_seniority_source": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+  "verification_scope": "ตรวจชนิด PDF จำนวนหน้า และความตรงกันของสำเนาและ BLOB ด้วย SHA-256; ยังไม่ได้ตรวจข้อเท็จจริงรายบุคคล",
+  "files": [
+    {
+      "source_id": "appointments_2569",
+      "role": "appointment",
+      "original_path": "C:\\Users\\polic\\OneDrive\\00 ธุรการ\\06 ข้อมูลการแต่งตั้งฯ และที่เกี่ยวข้อง\\โปรดเกล้าฯ แต่งตั้งข้าราชการตำรวจให้ดำรง.pdf",
+      "original_name": "โปรดเกล้าฯ แต่งตั้งข้าราชการตำรวจให้ดำรง.pdf",
+      "stored_path": "C:\\APP\\data\\police-appointments-2569\\raw\\appointments_2569.pdf",
+      "sha256": "78959ed38a0972db3b620766b3afbd9a32fccb86f7814793878330cbf3d120c9",
+      "bytes": 164974,
+      "page_count": 21,
+      "status": "ACTIVE_USER_PROVIDED",
+      "content_verification_status": "NOT_YET_VERIFIED"
+    },
+    {
+      "source_id": "appointment_ranks_2569",
+      "role": "rank",
+      "original_path": "C:\\Users\\polic\\OneDrive\\00 ธุรการ\\06 ข้อมูลการแต่งตั้งฯ และที่เกี่ยวข้อง\\โปรดเกล้าฯ พระราชทานยศตำรวจชั้นนายพลให้แ.pdf",
+      "original_name": "โปรดเกล้าฯ พระราชทานยศตำรวจชั้นนายพลให้แ.pdf",
+      "stored_path": "C:\\APP\\data\\police-appointments-2569\\raw\\appointment_ranks.pdf",
+      "sha256": "702560d8abecf87931d5a288309c62b002ca42fee060cb4c8d8d54558ddf2dc3",
+      "bytes": 65243,
+      "page_count": 6,
+      "status": "ACTIVE_USER_PROVIDED",
+      "content_verification_status": "NOT_YET_VERIFIED"
+    },
+    {
+      "source_id": "seniority_2569_round4",
+      "role": "seniority",
+      "original_path": "C:\\Users\\polic\\OneDrive\\00 ธุรการ\\06 ข้อมูลการแต่งตั้งฯ และที่เกี่ยวข้อง\\ประกาศลำดับอาวุโสข้าราชการตำรวจระดับ ผบช. และ จตร. ลงมาถึง รอง ผบก. วาระประจำปี 2569 ครั้งที่ 4 ลง 7 ส.ค.69",
+      "original_name": "ประกาศลำดับอาวุโสข้าราชการตำรวจระดับ ผบช. และ จตร. ลงมาถึง รอง ผบก. วาระประจำปี 2569 ครั้งที่ 4 ลง 7 ส.ค.69",
+      "stored_path": "C:\\APP\\data\\police-appointments-2569\\raw\\seniority_2569_round4_2026-08-07_CURRENT.pdf",
+      "sha256": "9a5938a3ceacf94596bd2e273006fb1f4e665c2b96e38330a5b2a776981abdd9",
+      "bytes": 9401559,
+      "page_count": 63,
+      "status": "ACTIVE_USER_PROVIDED",
+      "content_verification_status": "NOT_YET_VERIFIED"
+    }
+  ]
+}

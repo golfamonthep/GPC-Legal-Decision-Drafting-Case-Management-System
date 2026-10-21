@@ -1,0 +1,6 @@
+export async function api(url,method='GET',data){const r=await fetch('/api'+url,{method,headers:data?{'Content-Type':'application/json'}:undefined,body:data?JSON.stringify(data):undefined});const json=await r.json();if(!r.ok)throw new Error(json.error||'ดำเนินการไม่สำเร็จ');return json;}
+export const sourceUrl=(name,page=1)=>`/api/knowledge/source?name=${encodeURIComponent(name)}#page=${page}`;
+export const emptyInput={title:'',external_case_ref:'',subject_name:'',rank_position:'',level:'',account:'',claim:'',response:'',issues:''};
+export const SECTIONS=['ข้อมูลเรื่องและบุคคล','คำร้องและคำขอ','คำชี้แจง','ข้อเท็จจริงและหลักฐาน','ประเด็นที่พิจารณา','กฎหมายและหลักเกณฑ์','การวิเคราะห์','ข้อเสนอเบื้องต้น'];
+export const blankSections=()=>Object.fromEntries(SECTIONS.map(s=>[s,'']));
+export const statusLabel=x=>({assertion:'ข้อกล่าวอ้าง',established:'ยืนยันจากหลักฐาน',unresolved:'ยังไม่ยืนยัน',HUMAN_REVIEWED:'ตรวจข้อความแล้ว',EXTRACTED_NEEDS_REVIEW:'รอตรวจข้อความ',UNRESOLVED_NEEDS_TRANSCRIPTION:'ต้องถอดข้อความ',INHERITED_OLD_BUNDLE_NOT_REVERIFIED:'รับจากฐานเดิม รอตรวจต้นฉบับ',VISUAL_SENIORITY_PDF_VERIFIED:'ตรวจภาพอาวุโสแล้ว',NEEDS_REVIEW:'มีข้อมูลรอตรวจ',READY_FOR_REVIEW:'พร้อมให้ผู้รับผิดชอบตรวจ'}[x]||x);

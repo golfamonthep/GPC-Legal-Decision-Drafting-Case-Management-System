@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {writeFileSync,mkdirSync} from 'node:fs';
+import {REQUEST_FORMAT,sealRequest,validateResult,hash} from '../../shared/analysis-transfer.mjs';
+import {SECTIONS} from '../src/api.js';
+const base=process.env.TEST_BASE||'http://127.0.0.1:4319';
+async function call(route,data,expected=200){const r=await fetch(base+'/api'+route,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const json=await r.json();assert.equal(r.status,expected,JSON.stringify(json));return json;}
+const packet=sealRequest({format:REQUEST_FORMAT,transfer_id:'qa-bridge-'+Date.now(),created_at:new Date().toISOString(),registry:{case_id:'qa-registry-case',black_number:'QA-BRIDGE-2569',origin:'http://127.0.0.1:3000'},input:{title:'QA · เชื่อมสองระบบ',external_case_ref:'QA-BRIDGE-2569',subject_name:'บุคคลจำลอง QA',rank_position:'',level:'',account:'',claim:'ข้อกล่าวอ้างที่ยังไม่ยืนยัน',response:'',issues:'ตรวจที่มาของหลักฐาน'},documents:[{registry_document_id:'qa-proof',name:'proof.txt',mime:'text/plain',sha256:hash('หลักฐานจำลองจากทะเบียน'),base64:Buffer.from('หลักฐานจำลองจากทะเบียน').toString('base64')}]});
+const preview=await call('/transfers/preview',{packet});assert.equal(preview.registry.case_id,packet.registry.case_id);
+await call('/transfers/import',{packet,confirmed:false},400);
+await call('/transfers/preview',{packet:{...packet,request_hash:hash('tampered')}},400);
+let imported=await call('/transfers/import',{packet,confirmed:true});let job=imported.job;
+assert.equal(job.documents.length,1);assert.equal(job.documents[0].data.reviewed,false);assert.equal(job.data.facts.length,0);
+assert.equal((await call('/transfers/import',{packet,confirmed:true})).job.id,job.id);
+const conflict=sealRequest({...packet,input:{...packet.input,claim:'different'}});await call('/transfers/import',{packet:conflict,confirmed:true},409);
+const changed=await fetch(base+'/api/jobs/'+job.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({version:job.version,external_case_ref:'different-case'})});assert.equal(changed.status,400);
+const sections=Object.fromEntries(SECTIONS.map(s=>[s,s==='คำร้องและคำขอ'?'ข้อความฉบับแรก สำหรับ QA':'']));
+job=await call('/jobs/'+job.id+'/drafts',{version:job.version,sections});const first=job.revisions[0];
+job=await call('/jobs/'+job.id+'/drafts',{version:job.version,sections:{...sections,'คำร้องและคำขอ':'ข้อความฉบับสอง'}});
+const result=await call('/jobs/'+job.id+'/return-package',{revision_id:first.id});validateResult(result,{...packet.registry,request_hash:packet.request_hash,transfer_id:packet.transfer_id});assert.equal(result.draft.sections['คำร้องและคำขอ'],'ข้อความฉบับแรก สำหรับ QA');assert.equal(result.revision_id,first.id);
+const foreign=await call('/jobs',{title:'QA · งานอื่น'},201);await call('/jobs/'+foreign.id+'/return-package',{revision_id:first.id},404);
+mkdirSync(new URL('../.qa',import.meta.url),{recursive:true});writeFileSync(new URL('../.qa/bridge-request.json',import.meta.url),JSON.stringify(packet));writeFileSync(new URL('../.qa/bridge-result.json',import.meta.url),JSON.stringify(result));
+console.log('PASS transfer integration: preview/confirmation, tamper/duplicate conflict, no implicit fact approval, idempotency, immutable case identity, selected revision and foreign revision rejection');

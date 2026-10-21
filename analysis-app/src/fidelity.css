@@ -1,0 +1,11 @@
+/* Native-size concept adjustments; functional field split is intentional. */
+@media(min-width:1251px){
+ h1{font-size:36px}h2{font-size:36px}.brand{font-size:30px}
+ main{padding-right:18px}.work-layout{grid-template-columns:minmax(0,1fr) 344px}
+ .page-title{margin-bottom:20px}.tabs{margin-bottom:24px}.tabs button{font-size:18px}
+ .field>span{font-size:20px}.form-grid{gap:20px 24px}
+ .form-grid>.wide textarea{height:96px;min-height:96px}
+ input,select,textarea,button{font-size:18px}.paired select{font-size:15px}
+ .knowledge-rail dl>div{font-size:20px}.knowledge-rail h3{font-size:26px}
+ .rail-note p,.rail-note p:last-child{font-size:18px}.knowledge-rail .warning{font-size:18px}
+}

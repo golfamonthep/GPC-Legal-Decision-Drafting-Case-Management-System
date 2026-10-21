@@ -1,0 +1,118 @@
+SKILL-CURRENT — GPKT LEGAL DECISION / นายพล 2569
+VERSION: CURRENT OVERRIDE FOR CODEX
+DATE: 2026-10-09
+
+กฎนี้มีอำนาจเหนือข้อความที่ขัดกันใน SKILL รุ่นเก่า
+
+A. STRICT SOURCE ISOLATION
+- ใช้เฉพาะ Approved Source Set ที่ผู้ใช้อัปโหลด
+- ห้ามใช้ model memory, prior chats, project อื่น, web, connector ภายนอก,
+  personal context หรือความรู้ทั่วไปของโมเดลเป็นข้อเท็จจริง/กฎหมาย/หลักฐาน
+- หากฐานไม่พอ: ระบุสิ่งที่ขาด, หยุด, ขออนุญาตก่อนทุกครั้ง
+- สิทธิ์ใช้ภายนอกเป็น case-by-case
+หลัก: MODEL_CAN_KNOW_BUT_MUST_NOT_USE
+
+B. SENIORITY 2569 — EXCLUSIVE SOURCE OVERRIDE
+ใช้เพียง:
+seniority_2569_round4_2026-08-07_CURRENT.pdf
+= ประกาศลำดับอาวุโส วาระ 2569 ครั้งที่ 4 ลง 7 ส.ค. 2569
+
+SUPERSEDED:
+- 03-ข้อมูลอาวุโส.md รุ่นเดิม
+- 05-ดัชนีค้นหา-อาวุโส.jsonl รุ่นเดิม
+- seniority_2569.pdf รุ่นเดิม
+- derived/crosswalk จาก source อาวุโสรุ่นเดิม
+
+ห้าม fallback กลับฐานเดิม
+OCR ไม่ชัด => ตรวจภาพ PDF
+ยังไม่ชัด => UNRESOLVED
+ห้ามเดา
+
+C. ANALYTICAL SENIORITY DATABASE
+ตามนิยามฐานวิเคราะห์ที่ผู้ใช้กำหนด:
+“ผู้มีชื่อในบัญชีอาวุโสปัจจุบัน = ผู้เหมาะสมเลื่อนตำแหน่งสูงขึ้น”
+
+แต่ละระดับ/บัญชีต้องมี:
+- source_level
+- source_account
+- total_suitable_population
+- seniority_order
+- seniority_display = “ลำดับที่ x จากทั้งหมด y”
+- source_pdf_page
+- verification_status
+
+เมื่อมี actual vacancies:
+- destination_level
+- actual_vacancies
+- seniority_quota
+- knowledge_ability_quota
+- analytical_group
+
+สูตร:
+seniority_quota = CEILING(actual_vacancies * 0.50)
+knowledge_ability_quota = actual_vacancies - seniority_quota
+
+ใช้สูตรนี้เฉพาะระดับ/กรณีที่หลักเกณฑ์ 50% ใช้บังคับ
+actual_vacancies ต้องมี source
+ห้ามใช้ number appointed แทน actual vacancies
+ไม่มี source = UNRESOLVED
+
+D. WORKBOOK CONTRACT
+ชื่อ:
+วิเคราะห์การเลื่อนตำแหน่งตำรวจ-2569_CURRENT.xlsx
+
+คง 2 แท็บ:
+1. สรุป
+2. การแต่งตั้งนายพลวาระ 2569
+
+คำศัพท์:
+- ใช้ “กลุ่มอาวุโส”
+- ไม่ใช้ “ช่วงอาวุโส”
+- ไม่ใช้คำ “จำลอง” หรือ “สมมติ”
+- ตำแหน่งว่างต้องเป็น actual vacancies ที่ยืนยันจาก source
+
+เพิ่ม:
+- จำนวนผู้เหมาะสมทั้งหมด
+- ลำดับที่ x จากทั้งหมด y
+- ตำแหน่งว่างจริง
+- จำนวนกลุ่มอาวุโส 50%
+- จำนวนกลุ่มความรู้/ความสามารถ
+- กลุ่มผู้ได้รับเลื่อนรายบุคคลเมื่อข้อมูลครบ
+
+E. SOURCE / VERIFICATION
+material fact ต้องย้อนกลับ source:
+1. current source PDF
+2. canonical source
+3. correction/audit
+4. derived calculation
+
+ดัชนีใช้ recall เท่านั้น ไม่ใช่ authority
+
+ต้อง verify:
+ชื่อ/นามสกุล, ยศ, ตำแหน่งเดิม/ใหม่, ระดับ/บัญชี, ลำดับอาวุโส,
+วันที่, จำนวนตำแหน่งว่าง, เลขมาตรา/ข้อ
+
+resolve ไม่ได้ => UNRESOLVED_SOURCE_GAP
+
+F. CASE FIREWALL
+One chat = one active case
+Case-local facts ห้ามข้ามคดี
+เอกสาร case-specific ที่ไม่มี case_id ชัดเจน => quarantine
+
+G. EVIDENCE STATUS
+pleading/assertion != established fact
+ห้ามใช้ “ข้อเท็จจริงปรากฏว่า” เพียงเพราะฝ่ายหนึ่งกล่าว
+
+H. DRAFTING
+“พิเคราะห์แล้วเห็นว่า” = กฎหมาย/หลักเกณฑ์เท่านั้น
+“พิจารณาแล้วเห็นว่า” = ข้อเท็จจริง การปรับบท การเปรียบเทียบ ดุลยพินิจ
+
+คำวินิจฉัยตัวอย่างใช้หลังฉากเพื่อโครง/เหตุผล/ภาษา
+ห้ามใส่ชื่อคดีตัวอย่างในเนื้อหลักของคดีใหม่
+
+I. ERROR-TO-RULE
+ข้อผิดพลาดที่เกิดซ้ำ:
+root cause -> reusable guardrail -> update conflicting old rule -> regression check
+
+END
+

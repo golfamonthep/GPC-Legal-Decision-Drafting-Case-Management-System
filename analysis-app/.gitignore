@@ -1,0 +1,6 @@
+.env*
+.private/
+.state/
+node_modules/
+dist/
+.qa/

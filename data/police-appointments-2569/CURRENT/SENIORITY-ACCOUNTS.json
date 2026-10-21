@@ -1,0 +1,132 @@
+[
+  {
+    "source_level": "ผบช. / จตร. / เทียบเท่า",
+    "source_account": "ทั่วไป",
+    "total_suitable_population": 27,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 6,
+    "source_page_start": 2,
+    "source_page_end": 3
+  },
+  {
+    "source_level": "รอง ผบช. / รอง จตร. / เทียบเท่า",
+    "source_account": "ทั่วไป",
+    "total_suitable_population": 95,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 20,
+    "source_page_start": 4,
+    "source_page_end": 8
+  },
+  {
+    "source_level": "รอง ผบช. / เทียบเท่า",
+    "source_account": "แพทย์",
+    "total_suitable_population": 8,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 2,
+    "source_page_start": 9,
+    "source_page_end": 9
+  },
+  {
+    "source_level": "ผบก. / เทียบเท่า",
+    "source_account": "ทั่วไป",
+    "total_suitable_population": 79,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 44,
+    "source_page_start": 10,
+    "source_page_end": 13
+  },
+  {
+    "source_level": "ผบก. / เทียบเท่า",
+    "source_account": "นิติวิทยาศาสตร์",
+    "total_suitable_population": 5,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 1,
+    "source_page_start": 16,
+    "source_page_end": 16
+  },
+  {
+    "source_level": "ผบก. / เทียบเท่า",
+    "source_account": "แพทย์",
+    "total_suitable_population": 15,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 2,
+    "source_page_start": 14,
+    "source_page_end": 14
+  },
+  {
+    "source_level": "รอง ผบก. / เทียบเท่า",
+    "source_account": "ตรวจสอบบัญชี",
+    "total_suitable_population": 2,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 2,
+    "source_page_start": 54,
+    "source_page_end": 54
+  },
+  {
+    "source_level": "รอง ผบก. / เทียบเท่า",
+    "source_account": "ทั่วไป",
+    "total_suitable_population": 610,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 95,
+    "source_page_start": 18,
+    "source_page_end": 48
+  },
+  {
+    "source_level": "รอง ผบก. / เทียบเท่า",
+    "source_account": "ทางน้ำ",
+    "total_suitable_population": 1,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 1,
+    "source_page_start": 59,
+    "source_page_end": 59
+  },
+  {
+    "source_level": "รอง ผบก. / เทียบเท่า",
+    "source_account": "พิสูจน์หลักฐาน",
+    "total_suitable_population": 5,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 3,
+    "source_page_start": 57,
+    "source_page_end": 57
+  },
+  {
+    "source_level": "รอง ผบก. / เทียบเท่า",
+    "source_account": "พยาบาล",
+    "total_suitable_population": 6,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 1,
+    "source_page_start": 60,
+    "source_page_end": 60
+  },
+  {
+    "source_level": "รอง ผบก. / เทียบเท่า",
+    "source_account": "แพทย์",
+    "total_suitable_population": 51,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 3,
+    "source_page_start": 49,
+    "source_page_end": 51
+  },
+  {
+    "source_level": "รอง ผบก. / เทียบเท่า",
+    "source_account": "อาจารย์",
+    "total_suitable_population": 11,
+    "source_pdf": "seniority_2569_round4_2026-08-07_CURRENT.pdf",
+    "verification_status": "VISUAL_SENIORITY_PDF_VERIFIED",
+    "matched_promotions": 1,
+    "source_page_start": 61,
+    "source_page_end": 61
+  }
+]

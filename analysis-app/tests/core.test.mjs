@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { loadKnowledge,normalizeName } from '../server/knowledge.mjs';
+import { analyze,validateProposal } from '../server/analysis.mjs';
+const k=loadKnowledge(new URL('../../data/police-appointments-2569',import.meta.url).pathname.replace(/^\/(\w:)/,'$1'));
+test('current source integrity and exclusive seniority',()=>{assert.equal(k.summary.integrity,'VERIFIED');assert.equal(k.seniority.length,181);assert.equal(k.appointments.length,281);assert.equal(k.summary.sources.length,7);assert.ok(k.chunks.length>200);assert.ok(k.seniority.every(r=>r.source_pdf===k.summary.exclusive_seniority_source));assert.ok(!k.summary.sources.some(s=>s.filename==='seniority_2569.pdf'));});
+test('precedents resolve canonical text with reference-only role',()=>{assert.ok(k.search('คำวินิจฉัย','precedent').length>0);assert.ok(k.chunks.filter(c=>c.kind==='precedent').every(c=>c.role==='reference_only'));});
+test('unknown subject is unresolved and no quotas derived from appointed count',()=>{const r=analyze({version:1,data:{subject_name:'ไม่มีรายการยืนยัน',references:[],facts:[],bundle_fingerprint:k.summary.fingerprint}},[],k);assert.equal(r.person,null);assert.equal(r.quota,null);assert.ok(r.gaps.some(g=>g.includes('ไม่พิสูจน์')));});
+test('50 percent only with source and verified applicable law',()=>{const j={version:1,data:{references:[{id:'v',kind:'vacancy',reviewed:true},{id:'l',kind:'law',reviewed:true}],facts:[],vacancies:{value:5,vacancy_reference:'v',rule_reference:'l',applies:true}}};assert.equal(analyze(j,[],k).quota.seniority_quota,3);assert.equal(analyze(j,[],k).quota.knowledge_ability_quota,2);j.data.vacancies.rule_reference='absent';assert.equal(analyze(j,[],k).quota,null);});
+test('citation firewall rejects foreign IDs and unapproved inline IDs',()=>{assert.throws(()=>validateProposal({text:'ข้อความ [other-case]',citations:[],gaps:[]},[{id:'this-case'}]),/ปฏิเสธ/);assert.throws(()=>validateProposal({text:'ข้อความ',citations:['outside'],gaps:[]},[{id:'this-case'}]),/ปฏิเสธ/);assert.equal(validateProposal({text:'ข้อความ [this-case]',citations:['this-case'],gaps:[]},[{id:'this-case'}]).text,'ข้อความ [this-case]');});
+test('exact normalized name supports rank prefix and preserves surname',()=>{assert.equal(normalizeName('พล.ต.ท. วันชัย ชื่อนามสกุล'),normalizeName('วันชัย ชื่อนามสกุล'));assert.notEqual(normalizeName('วันชัย ก'),normalizeName('วันชัย ข'));});
+test.after(()=>k.db.close());

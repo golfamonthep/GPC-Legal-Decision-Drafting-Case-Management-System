@@ -1,9 +1,11 @@
 import {createHash} from 'node:crypto';
+import {readFileSync, writeFileSync, existsSync, mkdirSync} from 'node:fs';
+import path from 'node:path';
 
 const DEFAULTS = Object.freeze({
   provider: 'deepseek',
   baseUrl: 'https://api.deepseek.com',
-  model: 'deepseek-v4-pro',
+  model: 'deepseek-chat',
   timeoutMs: 90000,
   maxOutputTokens: 6000,
   maxInputChars: 300000,
@@ -15,6 +17,7 @@ const SAFE_MESSAGES = Object.freeze({
   AI_INPUT_TOO_LARGE: 'ข้อมูลสำหรับ AI ยาวเกินกำหนด โปรดเลือกเฉพาะส่วนที่เกี่ยวข้อง',
   AI_AUTH: 'API key ของบริการ AI ใช้งานไม่ได้',
   AI_RATE_LIMIT: 'บริการ AI ถึงขีดจำกัดหรือเครดิตไม่เพียงพอ กรุณาตรวจบัญชี',
+  AI_BUDGET_EXCEEDED: 'ค่าใช้จ่าย AI สะสมถึงเพดานงบประมาณที่กำหนดไว้แล้ว',
   AI_TIMEOUT: 'บริการ AI ใช้เวลานานเกินกำหนด กรุณาลองใหม่',
   AI_INCOMPLETE: 'AI ส่งคำตอบไม่ครบ จึงไม่นำผลมาใช้',
   AI_INVALID_RESPONSE: 'AI ส่งผลลัพธ์ไม่ตรงโครงสร้างที่ระบบกำหนด',
@@ -47,17 +50,60 @@ function configFrom(env) {
     model: String(env.AI_MODEL || (provider === 'openai' ? 'gpt-4o-mini' : DEFAULTS.model)).trim(),
     timeoutMs: positiveInt(env.AI_TIMEOUT_MS, DEFAULTS.timeoutMs, 1000, 120000),
     maxOutputTokens: positiveInt(env.AI_MAX_OUTPUT_TOKENS, DEFAULTS.maxOutputTokens, 1, 20000),
+    maxBudgetUsd: Number.parseFloat(String(env.AI_MAX_BUDGET_USD || '0')) || 0,
   };
+}
+
+function getLedgerPath(env = process.env) {
+  const dir = env.ANALYSIS_STATE_DIR || path.join(process.cwd(), '.state');
+  try { if (!existsSync(dir)) mkdirSync(dir, { recursive: true }); } catch {}
+  return path.join(dir, 'ai-spend-ledger.json');
+}
+
+export function getCumulativeSpend(env = process.env) {
+  try {
+    const loc = getLedgerPath(env);
+    if (existsSync(loc)) {
+      const data = JSON.parse(readFileSync(loc, 'utf8'));
+      return Number(data?.totalUsd || 0);
+    }
+  } catch {}
+  return 0;
+}
+
+export function recordSpend(inputTokens, outputTokens, model, env = process.env) {
+  try {
+    const loc = getLedgerPath(env);
+    let current = { totalTokens: 0, totalUsd: 0, calls: 0 };
+    if (existsSync(loc)) {
+      try { current = JSON.parse(readFileSync(loc, 'utf8')); } catch {}
+    }
+    const isReasoner = String(model).includes('reasoner');
+    const inputRate = isReasoner ? 0.00000055 : 0.00000027;
+    const outputRate = isReasoner ? 0.00000219 : 0.00000110;
+    const costUsd = (inputTokens * inputRate) + (outputTokens * outputRate);
+    current.totalTokens = (current.totalTokens || 0) + inputTokens + outputTokens;
+    current.totalUsd = Number(((current.totalUsd || 0) + costUsd).toFixed(6));
+    current.calls = (current.calls || 0) + 1;
+    current.lastUpdated = new Date().toISOString();
+    writeFileSync(loc, JSON.stringify(current, null, 2), 'utf8');
+    return current.totalUsd;
+  } catch {
+    return 0;
+  }
 }
 
 export function getAiHarnessStatus(env = process.env) {
   const config = configFrom(env);
   const configured = Boolean(config.apiKey && config.baseUrl && config.model);
+  const currentSpend = getCumulativeSpend(env);
   return {
     enabled: config.enabled,
     configured,
     provider: config.provider,
     model: config.model,
+    maxBudgetUsd: config.maxBudgetUsd || null,
+    currentSpendUsd: currentSpend,
     reason: !config.enabled ? 'disabled' : configured ? 'ready' : 'missing_key',
   };
 }
@@ -175,20 +221,29 @@ function extractOutputText(payload) {
       }
     }
   }
+  if (Array.isArray(payload?.choices)) {
+    for (const choice of payload.choices) {
+      const msg = choice?.message;
+      const text = msg?.content || msg?.reasoning_content;
+      if (typeof text === 'string' && text.trim()) {
+        return stripCotLeakage(text).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+      }
+    }
+  }
   return '';
 }
 
 function usageFrom(payload) {
   return {
-    inputTokens: Number(payload?.usage?.input_tokens || 0),
-    outputTokens: Number(payload?.usage?.output_tokens || 0),
-    totalTokens: Number(payload?.usage?.total_tokens || 0),
+    inputTokens: Number(payload?.usage?.input_tokens ?? payload?.usage?.prompt_tokens ?? 0),
+    outputTokens: Number(payload?.usage?.output_tokens ?? payload?.usage?.completion_tokens ?? 0),
+    totalTokens: Number(payload?.usage?.total_tokens ?? 0),
   };
 }
 
 function mapHttpError(status) {
   if (status === 401 || status === 403) return new AiHarnessError('AI_AUTH', 502);
-  if (status === 429) return new AiHarnessError('AI_RATE_LIMIT', 503);
+  if (status === 402 || status === 429) return new AiHarnessError('AI_RATE_LIMIT', 503);
   return new AiHarnessError('AI_PROVIDER', 502);
 }
 
@@ -199,6 +254,9 @@ export function createAiHarness({env = process.env, fetchImpl = globalThis.fetch
     async generateStructured(request) {
       if (!config.enabled) throw new AiHarnessError('AI_DISABLED', 503);
       if (!config.apiKey || !config.baseUrl || !config.model) throw new AiHarnessError('AI_NOT_CONFIGURED', 503);
+      if (config.maxBudgetUsd > 0 && getCumulativeSpend(env) >= config.maxBudgetUsd) {
+        throw new AiHarnessError('AI_BUDGET_EXCEEDED', 429);
+      }
       const originalInput = typeof request.input === 'string' ? request.input : JSON.stringify(request.input);
       if (originalInput.length > DEFAULTS.maxInputChars) throw new AiHarnessError('AI_INPUT_TOO_LARGE', 413);
       const originalInstructions = String(request.instructions || '');
@@ -208,12 +266,15 @@ export function createAiHarness({env = process.env, fetchImpl = globalThis.fetch
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), config.timeoutMs);
       let response;
-      try {
-        response = await fetchImpl(`${config.baseUrl}/responses`, {
-          method: 'POST',
-          headers: {Authorization: `Bearer ${config.apiKey}`, 'Content-Type': 'application/json'},
-          signal: controller.signal,
-          body: JSON.stringify({
+      const isResponsesApi = config.baseUrl.endsWith('/responses');
+      const url = isResponsesApi
+        ? config.baseUrl
+        : config.baseUrl.endsWith('/chat/completions')
+          ? config.baseUrl
+          : `${config.baseUrl}/chat/completions`;
+
+      const requestBody = isResponsesApi
+        ? {
             model: config.model,
             store: false,
             max_output_tokens: config.maxOutputTokens,
@@ -222,7 +283,31 @@ export function createAiHarness({env = process.env, fetchImpl = globalThis.fetch
             input: redacted.text,
             text: {format: {type: 'json_schema', name: request.schemaName, strict: true, schema: request.schema}},
             ...(request.userId ? {user: `u_${createHash('sha256').update(String(request.userId)).digest('hex').slice(0, 32)}`} : {}),
-          }),
+          }
+        : {
+            model: config.model,
+            messages: [
+              {
+                role: 'system',
+                content: `${redactedInstructions}\n\nCRITICAL: Return ONLY a valid JSON object matching this schema:\n${JSON.stringify(request.schema)}`
+              },
+              {
+                role: 'user',
+                content: redacted.text
+              }
+            ],
+            response_format: {type: 'json_object'},
+            max_tokens: config.maxOutputTokens,
+            stream: false,
+            ...(request.userId ? {user: `u_${createHash('sha256').update(String(request.userId)).digest('hex').slice(0, 32)}`} : {})
+          };
+
+      try {
+        response = await fetchImpl(url, {
+          method: 'POST',
+          headers: {Authorization: `Bearer ${config.apiKey}`, 'Content-Type': 'application/json'},
+          signal: controller.signal,
+          body: JSON.stringify(requestBody),
         });
       } catch (error) {
         if (error instanceof AiHarnessError) throw error;
@@ -238,7 +323,8 @@ export function createAiHarness({env = process.env, fetchImpl = globalThis.fetch
       } catch (error) {
         throw new AiHarnessError('AI_INVALID_RESPONSE', 502, {cause: error});
       }
-      if (payload.status !== 'completed') throw new AiHarnessError('AI_INCOMPLETE', 502);
+      const isCompleted = payload.status === 'completed' || (Array.isArray(payload?.choices) && payload.choices.length > 0);
+      if (!isCompleted) throw new AiHarnessError('AI_INCOMPLETE', 502);
       const output = extractOutputText(payload);
       let parsed;
       try {
@@ -248,6 +334,10 @@ export function createAiHarness({env = process.env, fetchImpl = globalThis.fetch
       }
       validateSchema(parsed, request.schema);
       validateCitationIds(parsed, new Set(request.approvedSourceIds || []));
+      const usage = usageFrom(payload);
+      if (config.maxBudgetUsd > 0) {
+        recordSpend(usage.inputTokens, usage.outputTokens, config.model, env);
+      }
       const data = restoreValue(parsed, redacted.mapping);
       return {
         data,
@@ -255,7 +345,8 @@ export function createAiHarness({env = process.env, fetchImpl = globalThis.fetch
           provider: config.provider,
           model: payload.model || config.model,
           responseId: payload.id || null,
-          usage: usageFrom(payload),
+          usage,
+          cumulativeSpendUsd: getCumulativeSpend(env),
           inputHash: createHash('sha256').update(originalInput).digest('hex'),
           redactedCount: redacted.mapping.length,
         },
