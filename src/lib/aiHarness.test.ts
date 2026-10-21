@@ -45,7 +45,9 @@ test('disabled or missing-key configuration never becomes callable', async () =>
     enabled: false,
     configured: false,
     provider: 'deepseek',
-    model: 'deepseek-v4-pro',
+    model: 'deepseek-chat',
+    maxBudgetUsd: null,
+    currentSpendUsd: 0,
     reason: 'disabled',
   });
   const harness = createAiHarness({env: {...configuredEnv, AI_API_KEY: ''}});
@@ -93,10 +95,9 @@ test('structured request sends no tools, leaks no identifiers, validates citatio
   });
 
   const body = JSON.parse(String(capturedInit?.body));
-  assert.equal(capturedUrl, 'https://api.deepseek.com/responses');
+  assert.equal(capturedUrl, 'https://api.deepseek.com/chat/completions');
   assert.equal((capturedInit?.headers as Record<string, string>).Authorization, 'Bearer server-secret');
   assert.equal(body.model, 'deepseek-v4-pro');
-  assert.equal(body.store, false);
   assert.equal('tools' in body, false);
   assert.equal(JSON.stringify(body).includes('สมชาย ใจดี'), false);
   assert.equal(JSON.stringify(body).includes('123/68'), false);
