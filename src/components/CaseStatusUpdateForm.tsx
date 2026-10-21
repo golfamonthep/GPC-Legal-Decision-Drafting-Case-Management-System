@@ -138,14 +138,26 @@ export function CaseStatusUpdateForm({
           </div>
 
           {message && (
-            <div className={`rounded-md px-3 py-2 text-sm ${
+            <div className={`rounded-xl p-4 text-sm shadow-sm ${
               message.type === 'success'
-                ? 'border border-green-200 bg-green-50 text-green-700'
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
                 : 'border border-red-200 bg-red-50 text-red-700'
             }`}>
-              <div className="flex items-center gap-2">
-                {message.type === 'success' && <CheckCircle2 className="h-4 w-4" />}
-                {message.text}
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-2.5 font-medium">
+                  {message.type === 'success' && <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />}
+                  <span>{message.text}</span>
+                </div>
+                {message.type === 'success' && (
+                  <button
+                    type="button"
+                    onClick={() => router.push('/cases')}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg shadow-sm transition-colors"
+                  >
+                    <span>กลับสู่หน้ารายการคดี</span>
+                    <span>→</span>
+                  </button>
+                )}
               </div>
             </div>
           )}

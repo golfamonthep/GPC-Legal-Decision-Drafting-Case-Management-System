@@ -1,10 +1,11 @@
-import { notifyCaseChanged } from "@/components/CaseDataRefresh";
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Case } from "@/types";
 import { updateCase } from "@/app/actions/caseActions";
-import { X } from "lucide-react";
+import { notifyCaseChanged } from "@/components/CaseDataRefresh";
+import { X, CheckCircle2, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 
 interface EditCaseModalProps {
@@ -13,7 +14,9 @@ interface EditCaseModalProps {
 }
 
 export function EditCaseModal({ caseData, onClose }: EditCaseModalProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isSuccess, setIsSuccess] = useState(false);
   const [formData, setFormData] = useState({
     type: caseData.type || "",
     blackNumber: caseData.blackNumber || "",
@@ -44,13 +47,58 @@ export function EditCaseModal({ caseData, onClose }: EditCaseModalProps) {
     startTransition(async () => {
       try {
         await updateCase(caseData.id, formData);
-        onClose();
+        notifyCaseChanged();
+        setIsSuccess(true);
       } catch (error) {
         console.error("Failed to update case", error);
         alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
       }
     });
   };
+
+  if (isSuccess) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center transform scale-100 transition-all border border-emerald-100">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 mb-4">
+            <CheckCircle2 className="h-10 w-10 text-emerald-600 animate-in zoom-in-75 duration-300" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900">อัปเดตเสร็จสิ้นเรียบร้อยแล้ว</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            ระบบได้บันทึกการแก้ไขข้อมูลคดีหมายเลข{" "}
+            <span className="font-semibold text-slate-800">
+              {formData.blackNumber || caseData.blackNumber}
+            </span>{" "}
+            และบันทึกประวัติการเปลี่ยนแปลงลงใน Audit Log เรียบร้อยแล้ว
+          </p>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                router.push("/cases");
+                router.refresh();
+              }}
+              className="w-full inline-flex justify-center items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
+            >
+              <span>กลับสู่หน้ารายการคดี</span>
+              <ArrowRight className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                router.refresh();
+              }}
+              className="w-full inline-flex justify-center items-center rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors"
+            >
+              ดูรายละเอียดคดีนี้ต่อ
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 sm:p-0 overflow-y-auto">
