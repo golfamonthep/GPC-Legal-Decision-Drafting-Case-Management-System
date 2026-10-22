@@ -32,11 +32,12 @@ const nextConfig = {
       { source: '/c/:id', destination: '/cases/:id', permanent: false },
       { source: '/a', destination: '/analysis', permanent: false },
       { source: '/l', destination: '/library', permanent: false },
-      { source: '/u', destination: '/upload', permanent: false },
+      { source: '/u', destination: '/registry/import', permanent: false },
+      { source: '/upload', destination: '/registry/import', permanent: false },
     ];
   },
-  eslint: {
-    ignoreDuringBuilds: true,
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'clsx', 'tailwind-merge'],
   },
 };
 

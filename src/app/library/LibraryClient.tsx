@@ -15,12 +15,33 @@ import {
   FileCheck2,
   ScanText
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import LegalSourceForm from "./LegalSourceForm";
 import { ingestLegalSource, deleteChunks } from "./actions";
 import { generateAllMissingEmbeddings } from "./actions/embedding";
 import PoliceLawCatalog from "@/components/library/PoliceLawCatalog";
-import PoliceWorkerRegulations from "@/components/library/PoliceWorkerRegulations";
-import DocumentOcrWorkbench from "@/components/library/DocumentOcrWorkbench";
+
+const PoliceWorkerRegulations = dynamic(
+  () => import("@/components/library/PoliceWorkerRegulations"),
+  {
+    loading: () => (
+      <div className="rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/60 dark:bg-[#121215]/80 p-8 text-center text-slate-500 animate-pulse">
+        กำลังโหลดระเบียบและคำสั่ง ตร....
+      </div>
+    ),
+  }
+);
+
+const DocumentOcrWorkbench = dynamic(
+  () => import("@/components/library/DocumentOcrWorkbench"),
+  {
+    loading: () => (
+      <div className="rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/60 dark:bg-[#121215]/80 p-8 text-center text-slate-500 animate-pulse">
+        กำลังโหลดระบบถอดข้อความ OCR...
+      </div>
+    ),
+  }
+);
 
 export default function LibraryClient({ initialResources }: { initialResources: any[] }) {
   const [activeTab, setActiveTab] = useState<'catalog' | 'regulations' | 'ocr' | 'archive'>('catalog');

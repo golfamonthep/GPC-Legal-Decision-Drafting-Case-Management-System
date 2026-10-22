@@ -30,6 +30,7 @@ export function TopHeader({
       <div className="flex min-w-0 flex-1 items-center gap-x-4 self-stretch lg:gap-x-6">
         <Link
           href="/dashboard"
+          prefetch={true}
           className="hidden xl:flex xl:items-center xl:gap-3 xl:border-r xl:border-white/[0.08] xl:pr-5 group"
         >
           <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#991b1b] ring-2 ring-white/20">

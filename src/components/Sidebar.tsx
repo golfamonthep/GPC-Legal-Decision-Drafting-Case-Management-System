@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "../lib/utils";
 import {
   LayoutDashboard,
@@ -24,17 +24,20 @@ const navigation = [
   { name: "วิเคราะห์และร่างคำวินิจฉัย", href: "/analysis", icon: Scale, permission: "USE_ANALYSIS" as const },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },
   { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
-  { name: "นำเข้าทะเบียนคดี", href: "/upload", icon: Upload, permission: "IMPORT_REGISTRY" as any },
+  { name: "นำเข้าทะเบียนคดี", href: "/registry/import", icon: Upload, permission: "IMPORT_REGISTRY" as any },
   { name: "ผู้ดูแลระบบ", href: "/admin/system", icon: Settings, permission: "VIEW_ADMIN_CONSOLE" as any },
 ];
 
 export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavigate?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-white/[0.08] bg-[#0a0a0c] px-5 pb-4 pt-6 text-white">
       <Link
         href="/dashboard"
+        prefetch={true}
+        onMouseEnter={() => router.prefetch("/dashboard")}
         onClick={onNavigate}
         className="group relative flex shrink-0 items-center gap-3 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#121215] p-3 transition-colors hover:border-white/20"
       >
@@ -63,6 +66,8 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
                   <li key={item.name}>
                     <Link
                       href={item.href}
+                      prefetch={true}
+                      onMouseEnter={() => router.prefetch(item.href)}
                       onClick={onNavigate}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
