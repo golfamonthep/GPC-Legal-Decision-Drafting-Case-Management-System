@@ -20,7 +20,7 @@ export function CaseTable({ cases, caption, canEdit = false }: { cases: Case[]; 
         const note = c.proceedingNote?.trim() ? c.proceedingNote : undefined;
         return <tr key={c.id}>
           <td data-label="เรื่องดำ / เรื่องแดง" className="case-number">
-            <Link href={`/cases/${c.id}`} className="case-number-link">{c.blackNumber}</Link>
+            <Link href={`/cases/${c.id}`} prefetch={false} className="case-number-link">{c.blackNumber}</Link>
             {red && <div className="case-red">เรื่องแดง: {red}</div>}
           </td>
           <td className="case-person">
@@ -43,9 +43,9 @@ export function CaseTable({ cases, caption, canEdit = false }: { cases: Case[]; 
           </td>
           <td className="case-actions">
             <div className="btn-list">
-              {canEdit && <><Link href={`/cases/${c.id}/update`} className="btn btn-sm btn-primary" aria-label={`อัปเดตการดำเนินการ เรื่องดำ ${c.blackNumber}`}><IconNotes aria-hidden="true" className="icon" />อัปเดต</Link>
-                <Link href={`/cases/${c.id}/edit`} className="btn btn-sm" aria-label={`แก้ไขข้อมูล เรื่องดำ ${c.blackNumber}`}><IconEdit aria-hidden="true" className="icon" />แก้ไข</Link></>}
-              <Link href={`/cases/${c.id}`} className="btn btn-sm btn-ghost-secondary" aria-label={`รายละเอียด เรื่องดำ ${c.blackNumber}`}><IconEye aria-hidden="true" className="icon" />รายละเอียด</Link>
+              {canEdit && <><Link href={`/cases/${c.id}/update`} prefetch={false} className="btn btn-sm btn-primary" aria-label={`อัปเดตการดำเนินการ เรื่องดำ ${c.blackNumber}`}><IconNotes aria-hidden="true" className="icon" />อัปเดต</Link>
+                <Link href={`/cases/${c.id}/edit`} prefetch={false} className="btn btn-sm" aria-label={`แก้ไขข้อมูล เรื่องดำ ${c.blackNumber}`}><IconEdit aria-hidden="true" className="icon" />แก้ไข</Link></>}
+              <Link href={`/cases/${c.id}`} prefetch={false} className="btn btn-sm btn-ghost-secondary" aria-label={`รายละเอียด เรื่องดำ ${c.blackNumber}`}><IconEye aria-hidden="true" className="icon" />รายละเอียด</Link>
             </div>
           </td>
         </tr>;

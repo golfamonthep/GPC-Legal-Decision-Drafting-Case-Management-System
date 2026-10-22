@@ -22,7 +22,7 @@ export function CaseListFilters({ years = [] }: { years?: string[] }) {
         <div className="col-md-4"><label htmlFor="case-assignment-filter" className="form-label">การมอบหมาย</label><select id="case-assignment-filter" name="unassigned" className="form-select" defaultValue={params.get('unassigned') || ''}><option value="">ทั้งหมด</option><option value="LEGAL">ยังไม่มีนิติกร</option><option value="COMMITTEE">ยังไม่มีกรรมการ</option></select></div>
         <div className="col-md-4"><label htmlFor="case-qa-filter" className="form-label">คุณภาพข้อมูล</label><select id="case-qa-filter" name="qaMissingFields" className="form-select" defaultValue={params.get('qaMissingFields') || ''}><option value="">ทั้งหมด</option><option value="missing">ข้อมูลไม่ครบถ้วน</option></select></div>
       </div></details>
-      <div className="case-search-actions"><button type="submit" className="btn btn-primary"><IconSearch className="icon" aria-hidden="true" />ค้นหา / แสดงผล</button><Link href="/cases" className="btn">ล้างตัวกรอง</Link></div>
+      <div className="case-search-actions"><button type="submit" className="btn btn-primary"><IconSearch className="icon" aria-hidden="true" />ค้นหา / แสดงผล</button><Link href="/cases" prefetch={false} className="btn">ล้างตัวกรอง</Link></div>
     </form>
   </div>;
 }

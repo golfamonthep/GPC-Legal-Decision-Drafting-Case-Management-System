@@ -12,6 +12,19 @@ import { getBlackNumberYear } from "@/lib/dashboard/metrics";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+interface CasesCacheItem {
+  years: string[];
+  cases: any[];
+  timestamp: number;
+}
+const casesPageCache = new Map<string, CasesCacheItem>();
+const CACHE_TTL_MS = 20_000;
+
+
+
+
+
+
 export default async function CasesPage({
   searchParams,
 }: {
@@ -79,42 +92,91 @@ export default async function CasesPage({
     const and = Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : [];
     where.AND = [...and, caseTextSearch(query)];
   }
-  const dbCases = await prisma.case.findMany({
-    where,
-    orderBy: { updatedAt: 'desc' },
-    include: { legalOfficer: true, owner: true }
+  const cacheKey = JSON.stringify({
+    typeFilter: typeFilter || '',
+    completionStatusFilter: completionStatusFilter || '',
+    redNumberStatusFilter: redNumberStatusFilter || '',
+    qaMissingFieldsFilter: qaMissingFieldsFilter || '',
+    legalOfficerFilter: legalOfficerFilter || '',
+    unassignedFilter: unassignedFilter || '',
+    query: query || '',
+    year: year || ''
   });
 
-  const years = [...new Set(dbCases.map(c => getBlackNumberYear(c.blackNumber).replace('พ.ศ. ', '')))].sort().reverse();
-  const formattedCases = filterCasesByBlackYear(filterCasesByRegistryCompletion(dbCases, completionStatusFilter, redNumberStatusFilter), year).map((c) => {
+  const now = Date.now();
+  const cached = casesPageCache.get(cacheKey);
 
-    return {
-      id: c.id,
-      type: c.type as any,
-      blackNumber: c.blackNumber,
-      redNumber: c.redNumber || undefined,
-      registryRedText: c.registryRedText,
-      petitionerName: c.petitionerName,
-      respondentName: c.respondentName,
-      subject: c.subject,
-      legalCategory: c.legalCategory,
-      ownerCommissioner: c.owner?.name || (c as any).committeeOwnerName || "-",
-      legalOfficer: c.legalOfficerName || c.legalOfficer?.name || "-",
-      receivedDate: c.receivedDate ? c.receivedDate.toISOString().split("T")[0] : "-",
-      dueDates: {
-        days30: c.dueDate30 ? c.dueDate30.toISOString() : "-",
-        days60: c.dueDate60 ? c.dueDate60.toISOString() : "-",
-        days90: c.dueDate90 ? c.dueDate90.toISOString() : "-",
-        days120: c.dueDate120 ? c.dueDate120.toISOString() : "-",
-        days240: c.dueDate240 ? c.dueDate240.toISOString() : "-",
-      },
-      currentStatus: c.currentStatus as CaseStatus,
-      meetingDate: c.meetingDate?.toISOString(),
-      decisionResult: c.decisionResult || undefined,
-      oneDriveUrl: c.oneDriveUrl || undefined,
-      proceedingNote: c.proceedingNote || undefined,
-    };
-  });
+  let years: string[] = [];
+  let formattedCases: any[] = [];
+
+  if (cached && now - cached.timestamp < CACHE_TTL_MS) {
+    years = cached.years;
+    formattedCases = cached.cases;
+  } else {
+    const dbCases = await prisma.case.findMany({
+      where,
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true,
+        type: true,
+        blackNumber: true,
+        redNumber: true,
+        registryRedText: true,
+        petitionerName: true,
+        respondentName: true,
+        subject: true,
+        legalCategory: true,
+        committeeOwnerName: true,
+        legalOfficerName: true,
+        receivedDate: true,
+        dueDate30: true,
+        dueDate60: true,
+        dueDate90: true,
+        dueDate120: true,
+        dueDate240: true,
+        currentStatus: true,
+        meetingDate: true,
+        decisionResult: true,
+        oneDriveUrl: true,
+        proceedingNote: true,
+        owner: { select: { id: true, name: true } },
+        legalOfficer: { select: { id: true, name: true } },
+      }
+    });
+
+    years = [...new Set(dbCases.map(c => getBlackNumberYear(c.blackNumber).replace('พ.ศ. ', '')))].sort().reverse();
+    formattedCases = filterCasesByBlackYear(filterCasesByRegistryCompletion(dbCases, completionStatusFilter, redNumberStatusFilter), year).map((c) => {
+      return {
+        id: c.id,
+        type: c.type as any,
+        blackNumber: c.blackNumber,
+        redNumber: c.redNumber || undefined,
+        registryRedText: c.registryRedText,
+        petitionerName: c.petitionerName,
+        respondentName: c.respondentName,
+        subject: c.subject,
+        legalCategory: c.legalCategory,
+        ownerCommissioner: c.owner?.name || (c as any).committeeOwnerName || '-',
+        legalOfficer: c.legalOfficerName || c.legalOfficer?.name || '-',
+        receivedDate: c.receivedDate ? c.receivedDate.toISOString().split('T')[0] : '-',
+        dueDates: {
+          days30: c.dueDate30 ? c.dueDate30.toISOString() : '-',
+          days60: c.dueDate60 ? c.dueDate60.toISOString() : '-',
+          days90: c.dueDate90 ? c.dueDate90.toISOString() : '-',
+          days120: c.dueDate120 ? c.dueDate120.toISOString() : '-',
+          days240: c.dueDate240 ? c.dueDate240.toISOString() : '-',
+        },
+        currentStatus: c.currentStatus as CaseStatus,
+        meetingDate: c.meetingDate?.toISOString(),
+        decisionResult: c.decisionResult || undefined,
+        oneDriveUrl: c.oneDriveUrl || undefined,
+        proceedingNote: c.proceedingNote || undefined,
+      };
+    });
+
+    if (casesPageCache.size > 50) casesPageCache.clear();
+    casesPageCache.set(cacheKey, { years, cases: formattedCases, timestamp: now });
+  }
 
   return (
     <div className="gpc-tabler min-w-0 py-6 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
