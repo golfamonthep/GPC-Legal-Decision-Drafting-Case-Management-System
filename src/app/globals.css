@@ -34,6 +34,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.gpc-navigation-dialog { margin: 0; padding: 0; border: 0; width: min(20rem, 90vw); max-width: 90vw; height: 100dvh; max-height: 100dvh; background: #0f172a; color: white; }
-.gpc-navigation-dialog[open] { display: flex; }
-.gpc-navigation-dialog::backdrop { background: rgb(15 23 42 / .55); }
+.gpc-navigation-dialog { margin: 0; padding: 0; border: 0; width: min(21rem, 88vw); max-width: 88vw; height: 100dvh; max-height: 100dvh; background: #0a0a0c; color: white; }
+.gpc-navigation-dialog[open] { display: flex; flex-direction: column; overflow: hidden; }
+.gpc-navigation-dialog::backdrop { background: rgb(15 23 42 / .65); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }

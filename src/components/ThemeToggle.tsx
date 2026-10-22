@@ -88,12 +88,12 @@ export function ThemeToggle({ className = "", showLabel = false }: ThemeTogglePr
       {isLight ? (
         <>
           <Sun size={15} className="text-amber-500 transition-transform duration-200 hover:rotate-45 shrink-0" aria-hidden="true" />
-          {showLabel && <span className="tracking-wide">โหมดสว่าง</span>}
+          {showLabel && <span className="hidden sm:inline tracking-wide">โหมดสว่าง</span>}
         </>
       ) : (
         <>
           <Moon size={14} className="text-sky-300 transition-transform duration-200 hover:-rotate-12 shrink-0" aria-hidden="true" />
-          {showLabel && <span className="tracking-wide">โหมดมืด</span>}
+          {showLabel && <span className="hidden sm:inline tracking-wide">โหมดมืด</span>}
         </>
       )}
     </button>

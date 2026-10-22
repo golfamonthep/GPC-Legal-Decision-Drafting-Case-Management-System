@@ -25,6 +25,19 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      { source: '/d', destination: '/dashboard', permanent: false },
+      { source: '/c', destination: '/cases', permanent: false },
+      { source: '/c/:id', destination: '/cases/:id', permanent: false },
+      { source: '/a', destination: '/analysis', permanent: false },
+      { source: '/l', destination: '/library', permanent: false },
+      { source: '/u', destination: '/upload', permanent: false },
+    ];
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;

@@ -160,7 +160,7 @@ export default async function CaseDetailPage({
             </div>
           </div>
         </div>
-        <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
+        <div className="mt-4 flex flex-wrap gap-2.5 md:ml-4 md:mt-0">
           {hasPermission(user.role, 'EDIT_CASE') && <CaseDetailActions caseData={caseData} />}
           {hasPermission(user.role, 'USE_ANALYSIS') && (
             <Link href={'/analysis?case=' + encodeURIComponent(caseId)} className="inline-flex items-center rounded-md border border-teal-700 bg-white px-3 py-2 text-sm font-semibold text-teal-800 hover:bg-teal-50">

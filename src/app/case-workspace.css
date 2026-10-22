@@ -1,4 +1,5 @@
 .gpc-tabler { --tblr-font-sans-serif: 'Sarabun', sans-serif; --tblr-primary: #126b80; --tblr-primary-rgb: 18,107,128; --tblr-body-color: #18334a; font-family: 'Sarabun', sans-serif; color-scheme: light; min-width: 0; }
+.gpc-tabler .case-table-region { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .gpc-tabler .case-workspace-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
 .gpc-tabler .case-workspace-header h1 { font-size: 1.75rem; margin: 0 0 .4rem; color: #102b42; }
 .gpc-tabler .case-workspace-header p { margin: 0; color: #64748b; }

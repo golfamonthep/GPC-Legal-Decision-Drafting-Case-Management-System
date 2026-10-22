@@ -11,7 +11,16 @@ import { getCaseRevision } from "@/lib/caseRevision";
 
 export const metadata: Metadata = {
   title: "พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร. — ระบบบริหารสำนวนและวิเคราะห์คำวินิจฉัย",
-  description: "ระบบบริหารจัดการสำนวน วิเคราะห์ข้อเท็จจริง และร่างคำวินิจฉัย พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.",
+  description: "ระบบบริหารจัดการสำนวน วิเคราะห์ข้อเท็จจริง และร่างคำวินิจฉัย พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการพิทักษ์ระบบคุณธรรมข้าราชการตำรวจ (ก.พ.ค.ตร. / PMSPC)",
+  icons: {
+    icon: [
+      { url: "/logo/gpc-emblem.png?v=2", type: "image/png" },
+      { url: "/favicon.ico?v=2", sizes: "any" },
+      { url: "/icon.png?v=2", type: "image/png", sizes: "512x512" },
+    ],
+    shortcut: "/favicon.ico?v=2",
+    apple: "/apple-icon.png?v=2",
+  },
 };
 
 export default async function RootLayout({
@@ -33,6 +42,10 @@ export default async function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('gpc-theme')||'light';if(t!=='dark'){t='light';}document.documentElement.setAttribute('data-theme',t);if(t==='dark'){document.documentElement.classList.add('dark');document.documentElement.classList.remove('light');}else{document.documentElement.classList.remove('dark');document.documentElement.classList.add('light');}}catch(e){}})();`,
           }}
         />
+        <link rel="icon" type="image/png" sizes="32x32" href="/logo/gpc-emblem.png?v=2" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon.png?v=2" />
+        <link rel="shortcut icon" href="/favicon.ico?v=2" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png?v=2" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />

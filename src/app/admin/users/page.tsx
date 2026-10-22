@@ -69,7 +69,7 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      <div className="bg-white shadow-sm ring-1 ring-slate-200 sm:rounded-lg overflow-hidden">
+      <div className="bg-white shadow-sm ring-1 ring-slate-200 sm:rounded-lg overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>

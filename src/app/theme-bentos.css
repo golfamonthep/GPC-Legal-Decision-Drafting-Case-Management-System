@@ -90,7 +90,9 @@ html:not([data-theme="dark"]) header.bg-\[\#0a0a0c\]\/95 {
 }
 
 html[data-theme="light"] .lg\:fixed .bg-\[\#0a0a0c\],
-html:not([data-theme="dark"]) .lg\:fixed .bg-\[\#0a0a0c\] {
+html:not([data-theme="dark"]) .lg\:fixed .bg-\[\#0a0a0c\],
+html[data-theme="light"] .gpc-navigation-dialog .bg-\[\#0a0a0c\],
+html:not([data-theme="dark"]) .gpc-navigation-dialog .bg-\[\#0a0a0c\] {
   background-color: #ffffff !important;
   border-right-color: #e2e8f0 !important;
 }
@@ -98,6 +100,23 @@ html:not([data-theme="dark"]) .lg\:fixed .bg-\[\#0a0a0c\] {
 html[data-theme="light"] .gpc-navigation-dialog,
 html:not([data-theme="dark"]) .gpc-navigation-dialog {
   background-color: #ffffff !important;
+  color: #09090b !important;
+  border-right: 1px solid #e2e8f0 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] .gpc-navigation-dialog .text-zinc-400,
+html:not([data-theme="dark"]) .gpc-navigation-dialog .text-zinc-400,
+html[data-theme="light"] .lg\:fixed .text-zinc-400,
+html:not([data-theme="dark"]) .lg\:fixed .text-zinc-400 {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .gpc-navigation-dialog .hover\:bg-white\/\[0\.04\]:hover,
+html:not([data-theme="dark"]) .gpc-navigation-dialog .hover\:bg-white\/\[0\.04\]:hover,
+html[data-theme="light"] .lg\:fixed .hover\:bg-white\/\[0\.04\]:hover,
+html:not([data-theme="dark"]) .lg\:fixed .hover\:bg-white\/\[0\.04\]:hover {
+  background-color: #f1f5f9 !important;
   color: #09090b !important;
 }
 

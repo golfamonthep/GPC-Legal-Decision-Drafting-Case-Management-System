@@ -145,20 +145,21 @@ export default function LibraryClient({ initialResources }: { initialResources: 
         )}
       </div>
 
-      {/* Main Navigation Tabs */}
-      <div className="mt-6 flex flex-wrap border-b border-slate-200 dark:border-white/10 gap-2 md:gap-4">
+      {/* Main Navigation Tabs (Horizontally scrollable on mobile without awkward stacking) */}
+      <div className="mt-6 flex overflow-x-auto border-b border-slate-200 dark:border-white/10 gap-2 md:gap-4 pb-0.5 scrollbar-none">
         <button
           type="button"
           onClick={() => setActiveTab('catalog')}
-          className={`pb-3 px-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
+          className={`pb-3 px-2 text-sm font-semibold flex items-center gap-2 border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'catalog'
               ? 'border-[#d62839] text-[#d62839] dark:text-red-400 dark:border-red-500'
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
-          <Scale className="h-4 w-4" />
-          <span>แคตตาล็อกกฎหมายตำรวจ (พ.ร.บ.ตำรวจ 2565 / กฤษฎีกา / ก.พ.ค.ตร. 2567)</span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold">
+          <Scale className="h-4 w-4 shrink-0" />
+          <span className="sm:hidden">แคตตาล็อกกฎหมาย</span>
+          <span className="hidden sm:inline">แคตตาล็อกกฎหมายตำรวจ (พ.ร.บ.ตำรวจ 2565 / กฤษฎีกา / ก.พ.ค.ตร. 2567)</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold shrink-0">
             2,377 มาตรา/ข้อ
           </span>
         </button>
@@ -166,15 +167,16 @@ export default function LibraryClient({ initialResources }: { initialResources: 
         <button
           type="button"
           onClick={() => setActiveTab('regulations')}
-          className={`pb-3 px-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
+          className={`pb-3 px-2 text-sm font-semibold flex items-center gap-2 border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'regulations'
               ? 'border-[#d62839] text-[#d62839] dark:text-red-400 dark:border-red-500'
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
-          <FileCheck2 className="h-4 w-4" />
-          <span>ระเบียบ คำสั่ง และนโยบาย ตร. (PoliceWorker.one)</span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold">
+          <FileCheck2 className="h-4 w-4 shrink-0" />
+          <span className="sm:hidden">ระเบียบ/คำสั่ง ตร.</span>
+          <span className="hidden sm:inline">ระเบียบ คำสั่ง และนโยบาย ตร. (PoliceWorker.one)</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold shrink-0">
             NEW 2569-2570
           </span>
         </button>
@@ -182,15 +184,16 @@ export default function LibraryClient({ initialResources }: { initialResources: 
         <button
           type="button"
           onClick={() => setActiveTab('ocr')}
-          className={`pb-3 px-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
+          className={`pb-3 px-2 text-sm font-semibold flex items-center gap-2 border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'ocr'
               ? 'border-[#d62839] text-[#d62839] dark:text-red-400 dark:border-red-500'
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
-          <ScanText className="h-4 w-4" />
-          <span>ถอดข้อความเอกสาร OCR (Paddle / Typhoon)</span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold">
+          <ScanText className="h-4 w-4 shrink-0" />
+          <span className="sm:hidden">ถอดข้อความ OCR</span>
+          <span className="hidden sm:inline">ถอดข้อความเอกสาร OCR (Paddle / Typhoon)</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold shrink-0">
             AI OCR
           </span>
         </button>
@@ -198,15 +201,16 @@ export default function LibraryClient({ initialResources }: { initialResources: 
         <button
           type="button"
           onClick={() => setActiveTab('archive')}
-          className={`pb-3 px-2 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
+          className={`pb-3 px-2 text-sm font-semibold flex items-center gap-2 border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'archive'
               ? 'border-[#d62839] text-[#d62839] dark:text-red-400 dark:border-red-500'
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
-          <BookOpen className="h-4 w-4" />
-          <span>คลังคำวินิจฉัยและเอกสารอ้างอิง</span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 font-medium">
+          <BookOpen className="h-4 w-4 shrink-0" />
+          <span className="sm:hidden">คลังคำวินิจฉัย</span>
+          <span className="hidden sm:inline">คลังคำวินิจฉัยและเอกสารอ้างอิง</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 font-medium shrink-0">
             {resources.length} รายการ
           </span>
         </button>

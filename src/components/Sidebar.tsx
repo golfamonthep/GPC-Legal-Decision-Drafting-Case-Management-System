@@ -58,7 +58,7 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
                 if (item.permission && (!user || !hasPermission(user.role, item.permission))) {
                   return null;
                 }
-                const isActive = pathname.startsWith(item.href);
+                const isActive = pathname ? (item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href)) : false;
                 return (
                   <li key={item.name}>
                     <Link
