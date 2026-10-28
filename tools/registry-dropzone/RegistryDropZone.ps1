@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     GPC Registry Quick DropZone - Windows Native Desktop App for ก.พ.ค.ตร.
     เพียงลากไฟล์ Excel ทะเบียนคุม (.xlsx, .xlsm) วางลงในแอพ หรือบนไอคอน Desktop ระบบจะอัปเดตและเปิดเวบทันที
@@ -17,6 +17,17 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $appRootDir = Split-Path -Parent (Split-Path -Parent $scriptDir)
 if (-not (Test-Path "$appRootDir\package.json")) {
     $appRootDir = "C:\APP"
+}
+
+$configPath = Join-Path $scriptDir "config.json"
+$global:apiUrl = "http://127.0.0.1:3000/api/registry/sync"
+$global:webUrl = "http://127.0.0.1:3000/cases"
+if (Test-Path $configPath) {
+    try {
+        $cfg = Get-Content $configPath -Raw | ConvertFrom-Json
+        if ($cfg.apiUrl) { $global:apiUrl = $cfg.apiUrl }
+        if ($cfg.webUrl) { $global:webUrl = $cfg.webUrl }
+    } catch {}
 }
 
 # Function to execute sync
@@ -41,7 +52,7 @@ function Invoke-RegistrySync {
             fileName = $fileName
         } | ConvertTo-Json -Compress
 
-        $response = Invoke-RestMethod -Uri "http://127.0.0.1:3000/api/registry/sync" -Method Post -Body $payload -ContentType "application/json; charset=utf-8" -TimeoutSec 15 -ErrorAction Stop
+        $response = Invoke-RestMethod -Uri $global:apiUrl -Method Post -Body $payload -ContentType "application/json; charset=utf-8" -TimeoutSec 15 -ErrorAction Stop
         if ($response.success) {
             return $response
         }
@@ -93,7 +104,7 @@ if ($DroppedFile -and (Test-Path -LiteralPath $DroppedFile)) {
     if ($res.success) {
         $msg = if ($res.summary) { $res.summary } else { "อัปเดตทะเบียนคุมเรียบร้อยแล้ว!" }
         [System.Windows.Forms.MessageBox]::Show("$msg`n`nกด OK เพื่อเปิดดูหน้ารายการคดีบนเว็บ", "ก.พ.ค.ตร. — อัปเดตทะเบียนคุมสำเร็จ", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-        Start-Process "http://127.0.0.1:3000/cases"
+        Start-Process $global:webUrl
     } else {
         [System.Windows.Forms.MessageBox]::Show("เกิดข้อผิดพลาด: $($res.message)", "ข้อผิดพลาด", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
@@ -281,7 +292,7 @@ $btnBrowse.Add_Click({
 })
 
 $btnOpenWeb.Add_Click({
-    Start-Process "http://127.0.0.1:3000/cases"
+    Start-Process $global:webUrl
 })
 
 $btnOpenFolder.Add_Click({

@@ -1,0 +1,5 @@
+{
+  "apiUrl": "http://127.0.0.1:3000/api/registry/sync",
+  "webUrl": "http://127.0.0.1:3000/cases",
+  "oneDriveFolder": "c:\\Users\\polic\\OneDrive\\04 ทะเบียนคุม ร้องทุกข์-อุทธรณ์"
+}
