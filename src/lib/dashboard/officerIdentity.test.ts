@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildOfficerDirectory } from './officerIdentity';
+import { buildOfficerDirectory, CANONICAL_OFFICERS, CANONICAL_OFFICER_RANKS } from './officerIdentity';
 
 test('groups rank, whitespace and one-character spelling changes by full name', () => {
   const directory = buildOfficerDirectory([
@@ -11,17 +11,38 @@ test('groups rank, whitespace and one-character spelling changes by full name', 
   assert.deepEqual(directory.current('กิตติ ศรีธรรม'), ['กิตติ ศรีธรรม']);
 });
 
-test('groups the explicitly confirmed officer name variants', () => {
+test('groups the explicitly confirmed officer name variants to canonical names', () => {
   const directory = buildOfficerDirectory([
     'ชญาณทิพย์ บัวดิษฐ์เดชา',
     'ชญาณ์พิมพ์ บัวดิษฐ์เดชา',
     'ปราโมทย์ พุ่มบรรเทา',
     'ปราโมท พุ่มบรรเทา',
+    'พิจักษ์กร โปตระนันท์',
+    'สุรพัฒน์ วัลลา',
+    'สลิตา ธีระวัฒน์',
+    'ธีรงษ์ มั่นประสาทธิ์',
   ]);
-  assert.deepEqual(directory.current('ชญาณทิพย์ บัวดิษฐ์เดชา'), ['ชญาณทิพย์ บัวดิษฐ์เดชา']);
-  assert.deepEqual(directory.current('ชญาณ์พิมพ์ บัวดิษฐ์เดชา'), ['ชญาณทิพย์ บัวดิษฐ์เดชา']);
+  assert.deepEqual(directory.current('ชญาณทิพย์ บัวดิษฐ์เดชา'), ['ชญาณ์พิมพ์ บัวดิษฐ์เดชา']);
+  assert.deepEqual(directory.current('ชญาณ์พิมพ์ บัวดิษฐ์เดชา'), ['ชญาณ์พิมพ์ บัวดิษฐ์เดชา']);
   assert.deepEqual(directory.current('ปราโมทย์ พุ่มบรรเทา'), ['ปราโมทย์ พุ่มบรรเทา']);
   assert.deepEqual(directory.current('ปราโมท พุ่มบรรเทา'), ['ปราโมทย์ พุ่มบรรเทา']);
+  assert.deepEqual(directory.current('พ.ต.ท. พิจักษ์กร โปตระนันท์'), ['พิจักษณ์กร โปตระนันทน์']);
+  assert.deepEqual(directory.current('พ.ต.ต. สุรพัฒน์ วัลลา'), ['สุรพัตร์ วัลลา']);
+  assert.deepEqual(directory.current('พ.ต.ต.หญิง สลิตา ธีระวัฒน์'), ['สลิลดา ธีระวัฒน์']);
+  assert.deepEqual(directory.current('พ.ต.ต. ธีรงษ์ มั่นประสาทธิ์'), ['ธีรพงษ์ มั่นประสิทธิ์']);
+});
+
+test('primary returns the first responsible officer when multiple officers are listed', () => {
+  const directory = buildOfficerDirectory([]);
+  assert.equal(directory.primary('พ.ต.ท.พิจักษณ์กร โปตระนันทน์ + ร.ต.อ.กรรพี วีระเดช'), 'พิจักษณ์กร โปตระนันทน์');
+  assert.equal(directory.primary(''), null);
+});
+
+test('canonical officers dataset contains verified officers with highest ranks', () => {
+  assert.equal(CANONICAL_OFFICERS.length, 18);
+  assert.equal(CANONICAL_OFFICER_RANKS.get('พิจักษณ์กร โปตระนันทน์'), 'พ.ต.ท.');
+  assert.equal(CANONICAL_OFFICER_RANKS.get('ชญาณ์พิมพ์ บัวดิษฐ์เดชา'), 'พ.ต.ต.หญิง');
+  assert.equal(CANONICAL_OFFICER_RANKS.get('สุรพัตร์ วัลลา'), 'พ.ต.ท.');
 });
 
 test('retains titled and three-part names while matching by given name and surname', () => {

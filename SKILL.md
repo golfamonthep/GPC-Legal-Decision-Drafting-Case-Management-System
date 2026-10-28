@@ -9,6 +9,38 @@
 
 ### สรุปสถานะระบบล่าสุด (2026-10-20)
 
+- **ปรับปรุงและตรวจสอบชื่อนิติกรรับผิดชอบสำนวน ทะเบียนคุมร้องทุกข์-อุทธรณ์ 2 ฉบับ (125 รายการ) และระบบวิเคราะห์ตัวตนนิติกร (2026-10-28)**:
+  - **การจัดการไฟล์ Excel ใน OneDrive (c:\\Users\\polic\\OneDrive\\04 ทะเบียนคุม ร้องทุกข์-อุทธรณ์\\)**:
+    1. **สำรองข้อมูลฉบับสมบูรณ์**: บันทึกสำรองไว้ที่ สำรองข้อมูล_ก่อนแก้นิติกร_25691028\\ และ C:\\APP\\scratch\\excel_backup\\
+    2. **แก้ไขชื่อนิติกรและยศสูงสุด (Highest Canonical Rank)**: ตรวจสอบและแก้ไขตัวสะกดที่ผิด ยศเดิม และฉายา ตามราชกิจจานุเบกษาและทำเนียบ ตร. เช่น:
+       - พ.ต.ท.พิจักษณ์กร โปตระนันทน์ (เดิม: พิจักษ์กร โปตระนันท์)
+       - พ.ต.ท.สุรพัตร์ วัลลา (เดิม: พ.ต.ต., สุรพัฒน์, สุรพัตล์)
+       - พ.ต.ต.หญิง สลิลดา ธีระวัฒน์ (เดิม: สลิตา)
+       - พ.ต.ต.หญิง ชญาณ์พิมพ์ บัวดิษฐ์เดชา (เดิม: ชญาณทิพย์)
+       - พ.ต.ต.ธีรพงษ์ มั่นประสิทธิ์ (เดิม: ธีรงษ์ มั่นประสาทธิ์)
+       - พ.ต.ท.สุพัฒน์ โชติไกรสิทธิ์ (เดิม: ชติไกรสิทธิ์)
+       - ร.ต.อ.กรรพี วีระเดช (เดิม: กรรรพี, วรวีรเดชอาร์ม)
+       - ร.ต.อ.พีระชัย ลือวงศ์ประยูร (เดิม: สือวงศ์ประยูร)
+       - ร.ต.อ.หญิง ธัญสิริ โฆษิตอนันต์ (เดิม: ร.ต.ท.หญิง, ว่าที่ ร.ต.อ.หญิง, หญงิ)
+       - พ.ต.ต.หญิง มัชฌิมา ร่มรุกข์ (เดิม: มัชณิมา)
+       - พ.ต.ท.จิรายุส คำมีศรี (เดิม: จีรายุส)
+       - พ.ต.ท.เกียรติขจร โถวิเชียร (เดิม: เกรียติขจร)
+       - พ.ต.ท.ชรินทร์ พันธชิต, ว่าที่ พ.ต.ท.วัฒนา สุระพัฒน์, ร.ต.ท.ณัฐ ธีระวัฒน์, ว่าที่ ร.ต.ท.พิชญรัช ระวังวงศ์, ว่าที่ ร.ต.ต.หญิง ศิริลักษณ์ กองจักร
+    3. **เกณฑ์นิติกรคนแรกเป็นหลัก**: กรณีระบุชื่อมากกว่า 1 คน กำหนดให้คนแรกเป็นผู้รับผิดชอบสำนวนหลัก
+    4. **คอลัมน์หมายเหตุ (Remarks)**: เพิ่มคอลัมน์ หมายเหตุ ไว้ท้ายสุดของตาราง บันทึกข้อความเดิม เดิม: <ข้อความเดิม>
+    5. **รักษาโครงสร้าง สูตรคำนวณ และมาโคร 100%**:
+       - ทะเบียนคุม ร้องทุกข์ 1-106.xlsm: ปรับปรุง 57 แถว (สูตร 444 เซลล์, VBA 18,944 bytes คงเดิม)
+       - ทะเบียนคุม อุทธรณ์ 1-109.xlsm: ปรับปรุง 68 แถว (สูตร 627 เซลล์, VBA 19,968 bytes คงเดิม)
+       - รวมปรับปรุงทั้งสิ้น **125 รายการ** ผ่านการตรวจสอบ integrity 100%
+  - **การปรับปรุงโมดูลระบบเว็บ (src/lib/dashboard/officerIdentity.ts)**:
+    - เพิ่ม CANONICAL_OFFICERS และ CANONICAL_OFFICER_RANKS 18 รายชื่อพร้อมยศสูงสุด
+    - เพิ่ม Mapping ตรวจสอบชื่อแฝง/คำสะกดผิด (confirmedAliases) ทุกตัวแปร
+    - เพิ่มเมธอด primary(raw) สำหรับดึงนิติกรรับผิดชอบหลักโดยตรง
+    - เพิ่มชุดทดสอบใน src/lib/dashboard/officerIdentity.test.ts
+  - **ผลการทดสอบและการตรวจสอบคุณภาพ**: 
+pm test ผ่าน **93/93 ข้อ** (100%), 	ypecheck 0 errors, uild ผ่านครบถ้วน 38/38 routes
+
+
 - **แก้ปัญหาความล่าช้า 3 วินาทีของหน้ารายการคดี (/cases) ให้ตอบสนองเร็วขึ้น 95% (Sub-100ms Cases Registry)**:
   - **หาสาเหตุและแก้ไขปัญหาความหน่วง 3 วินาที**:
     1. **Prisma Field Projection Optimization (`select` แทน `include`)**: ยกเลิกการดึงคอลัมน์ขนาดใหญ่ที่ไม่จำเป็น เช่น `dispatchData @db.Text` และข้อมูลผู้ใช้ส่วนเกิน ปรับมาใช้ `select` เฉพาะ 21 ฟิลด์ที่ใช้แสดงผลตาราง ช่วยลดขนาด Payload และเวลา Query ลงกว่า 80%
@@ -1120,48 +1152,5 @@ powershell -ExecutionPolicy Bypass -File scripts/check-project-intelligence.ps1
 - **Issue Fixing Rules**: Fix only issues directly scoped in the prompt (e.g., Red Number completion rule). Do not execute sweeping refactors (like fixing 1700 any-type warnings) during a Feature Freeze unless explicitly requested.
 - **Data Integrity Consistency**: If a strict business rule exists (e.g., cases with red numbers must be considered closed), enforce it eagerly at the source (Data Import) AND ensure filter logic (DB Queries) perfectly mirrors memory logic (isClosedOrRedCase) to prevent reporting inflation.
 - **Scope Control Reminder**: Defer large architectural asks (e.g. Graph Live Document Sync) that risk pilot stability.
- 
-  
- # #   P r o m p t   8 4   P i l o t   S i g n - O f f   L e a r n i n g s  
- -   * * S e l e c t e d   P a t h * * :   P a t h   F   ( P i l o t   R e a d i n e s s   R e v i e w   a n d   C o n t r o l l e d   L a u n c h   S i g n - O f f ) .  
- -   * * S t a b i l i z a t i o n   R u l e s * * :   O n l y   t r a n s i t i o n   t o   l a u n c h   s i g n - o f f   i f   b u i l d   p a s s e s ,   t y p e c h e c k   p a s s e s ,   v a l i d a t i o n   p a s s e s ,   a n d   N O   P 0 / P 1   i s s u e s   e x i s t .  
- -   * * C o n t r o l l e d   L a u n c h   L i m i t a t i o n s * * :   M u s t   r e q u i r e   m a n d a t o r y   h u m a n   l e g a l   r e v i e w   f o r   R A G   A I   f e a t u r e s .   D a s h b o a r d   d e p e n d e n c i e s   r e q u i r e   v a l i d a t e d   i m p o r t   m a p p i n g .   D O C X   t e m p l a t e s   a r e   c o n s i d e r e d   u n v e r i f i e d   d r a f t s   u n t i l   w e t - s i g n e d .  
- -   * * K n o w n   R e m a i n i n g   R i s k s * * :   V e r c e l   D B   P r e v i e w   c o n n e c t i v i t y   i s s u e s   ( P R E - 6 ) ,   T y p e S c r i p t   ` a n y `   t e c h   d e b t   ( P R E - 4 ) ,   M i c r o s o f t   G r a p h   l i v e   s y n c   p o s t - p i l o t   s c o p e   l i m i t   ( P R E - 5 ) .  
- -   * * F e a t u r e   F r e e z e   M a i n t e n a n c e * * :   N o   n e w   w o r k f l o w   m o d u l e s   w e r e   i m p l e m e n t e d   d u r i n g   s t a b i l i z a t i o n ,   a d h e r i n g   s t r i c t l y   t o   f r e e z e   p r o t o c o l s .  
-   
-## 12. Prompt 85: Controlled Launch Gate Rules  
-- **Launch is not guaranteed**: Launch gate prompts must verify code build, Prisma validation, and safety rules before approving a launch.  
 
-## 12. Prompt 85: Controlled Launch Gate Rules
-- **Launch is not guaranteed**: Launch gate prompts must verify code build, Prisma validation, and safety rules before approving a launch.
-- **No-Go Criteria**: If `npm run build` fails, or critical data integrity/safety issues exist, the launch must be aborted.
-- **Pilot Scope**: This is a controlled internal pilot, not full production.
-- **Launch Checklist**: Must verify Legal Q&A warning, DOCX restrictions, security, business logic, and actual code build success.
-
-
-## Prompt 88: Day 2 Monitoring Rules & Lessons
-- **Pilot Launch Gate Re-evaluation**: If a pilot is suspended due to a blocker, it must pass all pre-flight checks (build, typecheck, prisma validate) before resuming. Day 2 monitoring only proceeds when the codebase is 100% verified again.
-- **Stop Criteria Enforcement**: Any build/typecheck failure acts as an immediate stop criteria for a pilot.
-- **Scope Discipline**: During pilot stabilization, never add new features. Focus exclusively on the minimum viable changes needed to unblock operations and protect data integrity.
-
-## Prompt 89: Week 1 Review Rules & Lessons
-
-1. **Evidence over Momentum**: If the Pilot was blocked and no operational evidence exists, do not fabricate a positive review. Truth is more important than momentum.
-2. **Relaunch Gate Necessity**: When critical blockers force a Pilot suspension, resuming requires a formal relaunch gate (Path D) to ensure technical stability is re-verified.
-3. **Business Logic Verification**: Core business rules (like mapping red case numbers to Completed/เน€เธชเธฃเนเธเธชเธดเนเธ) must be verified through code evidence, not just assumptions.
-4. **Controlled Pilot Discipline**: Never expand Pilot scope without evidence. If a week passes without usage due to blockers, do not invent new features; resolve the blockers and restart the observation period safely.
-
-### MVP Simple Access Mode
-- **Rule**: Do not remove Microsoft Auth; use AUTH_MODE to switch.
-- **Rule**: Simple access is for controlled MVP only, not full production.
-
-### MVP Authentication Overrides
-- **Rule**: For immediate MVP testing, AUTH_MODE=none disables login.
-- **Rule**: Do not delete Microsoft Auth permanently unless explicitly requested.
-- **Rule**: Removing auth does not mean removing validation or business rules.
-- **Rule**: After disabling login, verify page content and APIs, not only route access.
-- **Rule**: MVP no-auth mode must use a role that passes dashboard/API permission checks.
-- **Rule**: Dashboard must never spin forever; it must show data, empty state, or error.
-
-
-
+਀ഀ਀⌀⌀ 倀爀漀洀瀀琀 㠀㐀 倀椀氀漀琀 匀椀最渀ⴀ伀昀昀 䰀攀愀爀渀椀渀最猀ഀ਀ⴀ ⨀⨀匀攀氀攀挀琀攀搀 倀愀琀栀⨀⨀㨀 倀愀琀栀 䘀 ⠀倀椀氀漀琀 刀攀愀搀椀渀攀猀猀 刀攀瘀椀攀眀 愀渀搀 䌀漀渀琀爀漀氀氀攀搀 䰀愀甀渀挀栀 匀椀最渀ⴀ伀昀昀⤀⸀ഀ਀ⴀ ⨀⨀匀琀愀戀椀氀椀稀愀琀椀漀渀 刀甀氀攀猀⨀⨀㨀 伀渀氀礀 琀爀愀渀猀椀琀椀漀渀 琀漀 氀愀甀渀挀栀 猀椀最渀ⴀ漀昀昀 椀昀 戀甀椀氀搀 瀀愀猀猀攀猀Ⰰ 琀礀瀀攀挀栀攀挀欀 瀀愀猀猀攀猀Ⰰ 瘀愀氀椀搀愀琀椀漀渀 瀀愀猀猀攀猀Ⰰ 愀渀搀 一伀 倀　⼀倀㄀ 椀猀猀甀攀猀 攀砀椀猀琀⸀ഀ਀ⴀ ⨀⨀䌀漀渀琀爀漀氀氀攀搀 䰀愀甀渀挀栀 䰀椀洀椀琀愀琀椀漀渀猀⨀⨀㨀 䴀甀猀琀 爀攀焀甀椀爀攀 洀愀渀搀愀琀漀爀礀 栀甀洀愀渀 氀攀最愀氀 爀攀瘀椀攀眀 昀漀爀 刀䄀䜀 䄀䤀 昀攀愀琀甀爀攀猀⸀ 䐀愀猀栀戀漀愀爀搀 搀攀瀀攀渀搀攀渀挀椀攀猀 爀攀焀甀椀爀攀 瘀愀氀椀搀愀琀攀搀 椀洀瀀漀爀琀 洀愀瀀瀀椀渀最⸀ 䐀伀䌀堀 琀攀洀瀀氀愀琀攀猀 愀爀攀 挀漀渀猀椀搀攀爀攀搀 甀渀瘀攀爀椀昀椀攀搀 搀爀愀昀琀猀 甀渀琀椀氀 眀攀琀ⴀ猀椀最渀攀搀⸀ഀ਀ⴀ ⨀⨀䬀渀漀眀渀 刀攀洀愀椀渀椀渀最 刀椀猀欀猀⨀⨀㨀 嘀攀爀挀攀氀 䐀䈀 倀爀攀瘀椀攀眀 挀漀渀渀攀挀琀椀瘀椀琀礀 椀猀猀甀攀猀 ⠀倀刀䔀ⴀ㘀⤀Ⰰ 吀礀瀀攀匀挀爀椀瀀琀 怀愀渀礀怀 琀攀挀栀 搀攀戀琀 ⠀倀刀䔀ⴀ㐀⤀Ⰰ 䴀椀挀爀漀猀漀昀琀 䜀爀愀瀀栀 氀椀瘀攀 猀礀渀挀 瀀漀猀琀ⴀ瀀椀氀漀琀 猀挀漀瀀攀 氀椀洀椀琀 ⠀倀刀䔀ⴀ㔀⤀⸀ഀ਀ⴀ ⨀⨀䘀攀愀琀甀爀攀 䘀爀攀攀稀攀 䴀愀椀渀琀攀渀愀渀挀攀⨀⨀㨀 一漀 渀攀眀 眀漀爀欀昀氀漀眀 洀漀搀甀氀攀猀 眀攀爀攀 椀洀瀀氀攀洀攀渀琀攀搀 搀甀爀椀渀最 猀琀愀戀椀氀椀稀愀琀椀漀渀Ⰰ 愀搀栀攀爀椀渀最 猀琀爀椀挀琀氀礀 琀漀 昀爀攀攀稀攀 瀀爀漀琀漀挀漀氀猀⸀ഀ਀ ഠ⌊‣㈱‮牐浯瑰㠠㨵䌠湯牴汯敬⁤慌湵档䜠瑡⁥畒敬⁳ഠⴊ⨠䰪畡据⁨獩渠瑯朠慵慲瑮敥⩤㨪䰠畡据⁨慧整瀠潲灭獴洠獵⁴敶楲祦挠摯⁥畢汩Ɽ倠楲浳⁡慶楬慤楴湯‬湡⁤慳敦祴爠汵獥戠晥牯⁥灡牰癯湩⁧⁡慬湵档‮ഠਊ⌣ㄠ⸲倠潲灭⁴㔸›潃瑮潲汬摥䰠畡据⁨慇整删汵獥ⴊ⨠䰪畡据⁨獩渠瑯朠慵慲瑮敥⩤㨪䰠畡据⁨慧整瀠潲灭獴洠獵⁴敶楲祦挠摯⁥畢汩Ɽ倠楲浳⁡慶楬慤楴湯‬湡⁤慳敦祴爠汵獥戠晥牯⁥灡牰癯湩⁧⁡慬湵档ਮ‭⨪潎䜭⁯牃瑩牥慩⨪›晉怠灮⁭畲⁮畢汩恤映楡獬‬牯挠楲楴慣⁬慤慴椠瑮来楲祴猯晡瑥⁹獩畳獥攠楸瑳‬桴⁥慬湵档洠獵⁴敢愠潢瑲摥ਮ‭⨪楐潬⁴捓灯⩥㨪吠楨⁳獩愠挠湯牴汯敬⁤湩整湲污瀠汩瑯‬潮⁴畦汬瀠潲畤瑣潩⹮ⴊ⨠䰪畡据⁨桃捥汫獩⩴㨪䴠獵⁴敶楲祦䰠来污儠䄦眠牡楮杮‬佄塃爠獥牴捩楴湯ⱳ猠捥牵瑩ⱹ戠獵湩獥⁳潬楧Ᵽ愠摮愠瑣慵⁬潣敤戠極摬猠捵散獳ਮ਍⌊‣牐浯瑰㠠㨸䐠祡㈠䴠湯瑩牯湩⁧畒敬⁳…敌獳湯ੳ‭⨪楐潬⁴慌湵档䜠瑡⁥敒攭慶畬瑡潩⩮㨪䤠⁦⁡楰潬⁴獩猠獵数摮摥搠敵琠⁯⁡汢捯敫Ⱳ椠⁴畭瑳瀠獡⁳污⁬牰ⵥ汦杩瑨挠敨正⁳戨極摬‬祴数档捥Ⱬ瀠楲浳⁡慶楬慤整 敢潦敲爠獥浵湩⹧䐠祡㈠洠湯瑩牯湩⁧湯祬瀠潲散摥⁳桷湥琠敨挠摯扥獡⁥獩ㄠ〰‥敶楲楦摥愠慧湩ਮ‭⨪瑓灯䌠楲整楲⁡湅潦捲浥湥⩴㨪䄠祮戠極摬琯灹捥敨正映楡畬敲愠瑣⁳獡愠⁮浩敭楤瑡⁥瑳灯挠楲整楲⁡潦⁲⁡楰潬⹴ⴊ⨠匪潣数䐠獩楣汰湩⩥㨪䐠牵湩⁧楰潬⁴瑳扡汩穩瑡潩Ɱ渠癥牥愠摤渠睥映慥畴敲⹳䘠捯獵攠捸畬楳敶祬漠⁮桴⁥業楮畭⁭楶扡敬挠慨杮獥渠敥敤⁤潴甠扮潬正漠数慲楴湯⁳湡⁤牰瑯捥⁴慤慴椠瑮来楲祴ਮ⌊‣牐浯瑰㠠㨹圠敥⁫‱敒楶睥删汵獥☠䰠獥潳獮ਊ⸱⨠䔪楶敤据⁥癯牥䴠浯湥畴⩭㨪䤠⁦桴⁥楐潬⁴慷⁳汢捯敫⁤湡⁤潮漠数慲楴湯污攠楶敤据⁥硥獩獴‬潤渠瑯映扡楲慣整愠瀠獯瑩癩⁥敲楶睥‮牔瑵⁨獩洠牯⁥浩潰瑲湡⁴桴湡洠浯湥畴⹭㈊‮⨪敒慬湵档䜠瑡⁥敎散獳瑩⩹㨪圠敨⁮牣瑩捩污戠潬正牥⁳潦捲⁥⁡楐潬⁴畳灳湥楳湯‬敲畳業杮爠煥極敲⁳⁡潦浲污爠汥畡据⁨慧整⠠慐桴䐠 潴攠獮牵⁥整档楮慣⁬瑳扡汩瑩⁹獩爠ⵥ敶楲楦摥ਮ⸳⨠䈪獵湩獥⁳潌楧⁣敖楲楦慣楴湯⨪›潃敲戠獵湩獥⁳畲敬⁳氨歩⁥慭灰湩⁧敲⁤慣敳渠浵敢獲琠⁯潃灭敬整⽤맠馸苢肹룠誸맠颸룠肹룠슙肹룠슘肹룠誸맠颸룠肹룠슙肹룠슘⦙洠獵⁴敢瘠牥晩敩⁤桴潲杵⁨潣敤攠楶敤据ⱥ渠瑯樠獵⁴獡畳灭楴湯⹳㐊‮⨪潃瑮潲汬摥倠汩瑯䐠獩楣汰湩⩥㨪丠癥牥攠灸湡⁤楐潬⁴捳灯⁥楷桴畯⁴癥摩湥散‮晉愠眠敥⁫慰獳獥眠瑩潨瑵甠慳敧搠敵琠⁯汢捯敫獲‬潤渠瑯椠癮湥⁴敮⁷敦瑡牵獥※敲潳癬⁥桴⁥汢捯敫獲愠摮爠獥慴瑲琠敨漠獢牥慶楴湯瀠牥潩⁤慳敦祬ਮ⌊⌣䴠偖匠浩汰⁥捁散獳䴠摯੥‭⨪畒敬⨪›潄渠瑯爠浥癯⁥楍牣獯景⁴畁桴※獵⁥啁䡔䵟䑏⁅潴猠楷捴⹨ⴊ⨠刪汵⩥㨪匠浩汰⁥捡散獳椠⁳潦⁲潣瑮潲汬摥䴠偖漠汮ⱹ渠瑯映汵⁬牰摯捵楴湯ਮ⌊⌣䴠偖䄠瑵敨瑮捩瑡潩⁮癏牥楲敤ੳ‭⨪畒敬⨪›潆⁲浩敭楤瑡⁥噍⁐整瑳湩Ⱨ䄠呕彈位䕄渽湯⁥楤慳汢獥氠杯湩ਮ‭⨪畒敬⨪›潄渠瑯搠汥瑥⁥楍牣獯景⁴畁桴瀠牥慭敮瑮祬甠汮獥⁳硥汰捩瑩祬爠煥敵瑳摥ਮ‭⨪畒敬⨪›敒潭楶杮愠瑵⁨潤獥渠瑯洠慥⁮敲潭楶杮瘠污摩瑡潩⁮牯戠獵湩獥⁳畲敬⹳ⴊ⨠刪汵⩥㨪䄠瑦牥搠獩扡楬杮氠杯湩‬敶楲祦瀠条⁥潣瑮湥⁴湡⁤偁獉‬潮⁴湯祬爠畯整愠捣獥⹳ⴊ⨠刪汵⩥㨪䴠偖渠ⵯ畡桴洠摯⁥畭瑳甠敳愠爠汯⁥桴瑡瀠獡敳⁳慤桳潢牡⽤偁⁉数浲獩楳湯挠敨正⹳ⴊ⨠刪汵⩥㨪䐠獡扨慯摲洠獵⁴敮敶⁲灳湩映牯癥牥※瑩洠獵⁴桳睯搠瑡ⱡ攠灭祴猠慴整‬牯攠牲牯ਮ਍਍਍
