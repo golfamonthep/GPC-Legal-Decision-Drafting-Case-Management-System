@@ -9,7 +9,9 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
     position: job.data.rank_position,
     level: job.data.level,
     account: job.data.account,
+    unit_name: job.data.unit_name || '',
     order: '',
+    total_suitable_population: '',
     page: '',
     verified: false,
   });
@@ -33,6 +35,13 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
     ...job.documents.filter((d) => d.data.reviewed).map((d) => ({ id: 'doc-' + d.id, label: d.name })),
   ];
 
+  const selectedManualAccount = (knowledge?.accounts || []).find(
+    (a) => a.source_level === manual.level && a.source_account === manual.account,
+  );
+  const isSubGenManual =
+    selectedManualAccount?.tier === 'sub_general_to_inspector' ||
+    /ผกก\.|สว\.|สับเปลี่ยนหมุนเวียน/.test(String(manual.level || ''));
+
   const saveFacts = () =>
     operate(async () => setJob(await api(`/jobs/${job.id}/facts`, 'POST', { version: job.version, facts })));
   const run = () =>
@@ -49,6 +58,9 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
           ...manual,
           version: job.version,
           order: Number(manual.order),
+          total_suitable_population: isSubGenManual
+            ? Number(manual.total_suitable_population)
+            : Number(selectedManualAccount?.total_suitable_population || 0),
           page: Number(manual.page),
         }),
       ),
@@ -178,13 +190,20 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
       )}
 
       <button className="outline" onClick={() => setShowManual(!showManual)}>
-        {showManual ? 'ปิดแบบตรวจอาวุโส' : 'เพิ่มข้อมูลอาวุโสที่ยังไม่มีใน 181 ราย'}
+        {showManual ? 'ปิดแบบตรวจอาวุโส' : 'เพิ่ม/ยืนยันข้อมูลอาวุโส (ระดับนายพล – สว.)'}
       </button>
       {showManual ? (
         <div className="review-form">
-          <h3>ตรวจภาพบัญชีอาวุโสปัจจุบัน</h3>
-          <SourceLink source={knowledge.exclusive_seniority_source} page={Number(manual.page) || 1} />
-          <p className="muted">ใช้บัญชีครั้งที่ 4 เท่านั้น จำนวนผู้เหมาะสมจะใช้ค่าของระดับและประเภทที่ตรวจแล้ว</p>
+          <h3>ตรวจและยืนยันข้อมูลบัญชีอาวุโส (ระดับนายพลขึ้นไป และระดับ รอง ผบก. ลงมาถึง สว.)</h3>
+          <SourceLink
+            source={isSubGenManual ? 'circular_2456_2569.pdf' : knowledge?.exclusive_seniority_source}
+            page={Number(manual.page) || 1}
+          />
+          <p className="muted">
+            {isSubGenManual
+              ? 'กรณีระดับ รอง ผบก. ลงมาถึง สว. (ตาม ว ๒๔๕๖) ให้ระบุลำดับอาวุโสและจำนวนผู้เหมาะสมทั้งหมดตามประกาศลำดับอาวุโสของหน่วย (ผนวก ก)'
+              : 'กรณีระดับนายพล ใช้บัญชีอาวุโสครั้งที่ 4 เท่านั้น จำนวนผู้เหมาะสมจะใช้ค่าของระดับและประเภทที่ตรวจแล้ว'}
+          </p>
           <div className="form-grid">
             {[
               ['name', 'ชื่อในบัญชี'],
@@ -197,14 +216,16 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
                 />
               </Field>
             ))}
-            <Field label="ระดับบัญชี">
+            <Field label="ระดับบัญชี (นายพล – สว.)">
               <select
                 value={manual.level}
                 onChange={(e) => setManual({ ...manual, level: e.target.value, account: '', verified: false })}
               >
                 <option value="">เลือกระดับ</option>
-                {[...new Set(knowledge.accounts.map((a) => a.source_level))].map((a) => (
-                  <option key={a}>{a}</option>
+                {[...new Set((knowledge?.accounts || []).map((a) => a.source_level))].map((a) => (
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -214,14 +235,16 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
                 onChange={(e) => setManual({ ...manual, account: e.target.value, verified: false })}
               >
                 <option value="">เลือกประเภท</option>
-                {knowledge.accounts
+                {(knowledge?.accounts || [])
                   .filter((a) => a.source_level === manual.level)
                   .map((a) => (
-                    <option key={a.source_account}>{a.source_account}</option>
+                    <option key={a.source_account} value={a.source_account}>
+                      {a.source_account}
+                    </option>
                   ))}
               </select>
             </Field>
-            <Field label="ลำดับอาวุโส">
+            <Field label="ลำดับอาวุโส (x)">
               <input
                 type="number"
                 min="1"
@@ -229,7 +252,29 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
                 onChange={(e) => setManual({ ...manual, order: e.target.value, verified: false })}
               />
             </Field>
-            <Field label="หน้า PDF">
+            {isSubGenManual ? (
+              <>
+                <Field label="จำนวนผู้เหมาะสมทั้งหมดในบัญชีของหน่วย (y)">
+                  <input
+                    type="number"
+                    min="1"
+                    value={manual.total_suitable_population}
+                    placeholder="เช่น 45 (ตามประกาศอาวุโสหน่วย / ผนวก ก)"
+                    onChange={(e) =>
+                      setManual({ ...manual, total_suitable_population: e.target.value, verified: false })
+                    }
+                  />
+                </Field>
+                <Field label="ชื่อหน่วย / สังกัดบัญชีอาวุโส">
+                  <input
+                    value={manual.unit_name}
+                    placeholder="เช่น บช.น., ภ.1, สทส."
+                    onChange={(e) => setManual({ ...manual, unit_name: e.target.value, verified: false })}
+                  />
+                </Field>
+              </>
+            ) : null}
+            <Field label="หน้า PDF อ้างอิง">
               <input
                 type="number"
                 min="1"
@@ -244,7 +289,7 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
               checked={manual.verified}
               onChange={(e) => setManual({ ...manual, verified: e.target.checked })}
             />
-            ตรวจชื่อ ยศ ตำแหน่ง ลำดับ และบัญชีจากภาพแล้ว
+            ตรวจชื่อ ยศ ตำแหน่ง ลำดับ จำนวนผู้เหมาะสม และหน้าเอกสารอ้างอิงแล้ว
           </label>
           <button onClick={saveManual} disabled={!manual.verified}>
             บันทึกผลตรวจอาวุโส
@@ -321,7 +366,7 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
       ) : null}
 
       <details className="review-form">
-        <summary>ตำแหน่งว่างจริงและหลักเกณฑ์ 50%</summary>
+        <summary>ตำแหน่งว่างจริงและหลักเกณฑ์สัดส่วนอาวุโส (เช่น 50%)</summary>
         <p className="muted">เพิ่มเอกสารแหล่งตำแหน่งว่างในแท็บเอกสารและตรวจข้อความก่อน ห้ามใช้จำนวนผู้ได้รับแต่งตั้งแทน</p>
         <div className="form-grid">
           <Field label="เอกสารตำแหน่งว่างจริง">
@@ -404,7 +449,7 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
             checked={quota.applies}
             onChange={(e) => setQuota({ ...quota, applies: e.target.checked })}
           />
-          ตรวจว่าหลักเกณฑ์ 50% ใช้กับระดับ/กรณีนี้ และจำนวนตรงกับแหล่ง
+          ตรวจว่าหลักเกณฑ์สัดส่วนอาวุโสใช้กับระดับ/กรณีนี้ และจำนวนตรงกับแหล่ง
         </label>
         <button className="outline" onClick={saveQuota}>
           บันทึกเงื่อนไขคำนวณ
@@ -418,7 +463,12 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
       {result ? (
         <>
           <p>
-            {statusLabel(result.status)} · รุ่นข้อมูล {result.job_version}
+            {statusLabel(result.status)} · รุ่นข้อมูล {result.job_version} · ขอบเขต:{' '}
+            <strong>
+              {result.is_sub_general
+                ? 'ระดับ รอง ผบก. ลงมาถึง สว. (ตาม ว ๒๔๕๖ ลง ๒๒ ต.ค. ๒๕๖๙)'
+                : 'ระดับนายพลขึ้นไป (ผบช. – ผบก.)'}
+            </strong>
             {result.job_version !== job.version ? (
               <strong className="warning-inline"> · ข้อมูลเปลี่ยนแล้ว กรุณาตรวจใหม่</strong>
             ) : null}
@@ -426,7 +476,9 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
           {result.person ? (
             <p className="verified">
               {result.person.label || result.person.name} · ลำดับที่ {result.person.seniority_order} จากทั้งหมด{' '}
-              {result.person.total_suitable_population} · หน้า {result.person.page || result.person.source_pdf_page}
+              {result.person.total_suitable_population}
+              {result.person.unit_name ? ` (${result.person.unit_name})` : ''} · หน้า{' '}
+              {result.person.page || result.person.source_pdf_page}
             </p>
           ) : null}
           {result.quota ? (
@@ -450,6 +502,18 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
               </ul>
             </div>
           ) : null}
+          {result.rule_checks?.length ? (
+            <div className="review-form" aria-label="ผลการตรวจสอบหลักเกณฑ์ตามระดับตำแหน่ง">
+              <h4>หลักเกณฑ์และประเด็นที่ต้องตรวจสอบตามระดับตำแหน่ง (นายพล – สว.)</h4>
+              <ul>
+                {result.rule_checks.map((rc) => (
+                  <li key={rc.id}>
+                    <strong>[{rc.clause}] {rc.title}:</strong> {rc.detail}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           <ul className="gap-list">
             {result.gaps.map((g, i) => (
               <li key={i}>{g}</li>
@@ -468,4 +532,3 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
     </>
   );
 }
-

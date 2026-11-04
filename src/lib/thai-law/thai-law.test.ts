@@ -133,4 +133,10 @@ test('ก.พ.ค.ตร. 2567 appeal and grievance rules are active and 2547 ru
   assert.ok(grievanceSearch.items.length > 0, 'Must find results for ก.พ.ค.ตร. ร้องทุกข์');
   const topGrievance = grievanceSearch.items.find(i => i.actId === 'kpkt-grievance-2567');
   assert.ok(topGrievance, 'Must retrieve section from kpkt-grievance-2567');
+
+  // 6. Verify Circular ว 2456 (22 ต.ค. 2569) for รอง ผบก. ลงมาถึง สว.
+  const circular2456 = acts.find(a => a.id === 'tr-circular-2456-2569');
+  assert.ok(circular2456, 'Circular ว 2456 (2569) must exist in catalog');
+  const circularSearch = searchPoliceLaws({ q: 'ว ๒๔๕๖' });
+  assert.ok(circularSearch.items.length > 0, 'Must find results for ว ๒๔๕๖');
 });

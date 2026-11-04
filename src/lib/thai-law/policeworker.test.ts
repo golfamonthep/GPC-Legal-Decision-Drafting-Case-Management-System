@@ -33,6 +33,11 @@ test('PoliceWorker regulations dataset loads and contains priority 2569-2570 reg
   const gpcRemuneration = items.find((i: any) => i.id === 'royal-decree-gpc-remuneration-2567');
   assert.ok(gpcRemuneration, 'Must contain พ.ร.ฎ.เงินประจำตำแหน่ง ก.พ.ค.ตร. 2567');
   assert.equal(gpcRemuneration.category, 'ก.พ.ค.ตร. และการพิทักษ์ระบบคุณธรรม');
+
+  const circular2456 = items.find((i: any) => i.id === 'police-circular-2456-2569');
+  assert.ok(circular2456, 'Must contain หนังสือเวียน ตร. ว 2456 (แต่งตั้ง รอง ผบก. - สว. 2569)');
+  assert.equal(circular2456.year, 2569);
+  assert.equal(circular2456.isNew, true);
 });
 
 test('OCR python processor script exists and is executable', async () => {

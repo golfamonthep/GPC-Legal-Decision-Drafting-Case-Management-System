@@ -21,6 +21,7 @@ import { PoliceLawSection, PoliceLawAct } from "@/lib/thai-law/types";
 import LawReaderModal from "./LawReaderModal";
 
 const QUICK_SUGGESTIONS = [
+  { label: "ว ๒๔๕๖ แต่งตั้ง รอง ผบก.-สว.", query: "ว ๒๔๕๖" },
   { label: "กฎ ก.พ.ค.ตร. อุทธรณ์ ๒๕๖๗", query: "ก.พ.ค.ตร. อุทธรณ์" },
   { label: "กฎ ก.พ.ค.ตร. ร้องทุกข์ ๒๕๖๗", query: "ก.พ.ค.ตร. ร้องทุกข์" },
   { label: "ม.141 (อุทธรณ์ ก.พ.ค.ตร.)", query: "141" },

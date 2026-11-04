@@ -3,8 +3,13 @@ import { api, statusLabel } from './api';
 import { Field, SourceLink } from './components';
 
 const QUICK_SEARCHES = [
+  { label: 'ว ๒๔๕๖ (แต่งตั้ง รอง ผบก. - สว.)', q: 'ว ๒๔๕๖', kind: 'law' },
+  { label: 'ผนวก ก - ช (แบบฟอร์มแต่งตั้ง)', q: 'ผนวก', kind: 'law' },
+  { label: 'ข้อ ๑๑ (ห้ามย้าย ผกก. หน.สถานี)', q: 'หัวหน้าสถานีตำรวจ', kind: 'law' },
+  { label: 'ข้อ ๔, ๑๐ (สืบสวนสอบสวนควบปรับระดับ)', q: 'ควบปรับระดับเพิ่มลดได้ในตัวเอง', kind: 'law' },
+  { label: 'ข้อ ๘, ๙ (กำหนดการ บช. / สง.ผบ.ตร.)', q: '๓๐ พ.ย. ๖๙', kind: 'law' },
   { label: 'มาตรา 87 (การร้องทุกข์)', q: 'มาตรา 87', kind: 'law' },
-  { label: 'มาตรา 79 (หลักเกณฑ์แต่งตั้ง)', q: 'มาตรา 79', kind: 'law' },
+  { label: 'มาตรา 79, 80 (หลักเกณฑ์แต่งตั้ง)', q: 'มาตรา 79', kind: 'law' },
   { label: 'สัดส่วนอาวุโส 50%', q: 'ร้อยละห้าสิบ', kind: 'law' },
   { label: 'ตัวอย่างโครงสร้างคำวินิจฉัย', q: 'พิเคราะห์แล้วเห็นว่า', kind: 'precedent' },
 ];
@@ -58,14 +63,14 @@ export default function Knowledge({ knowledge, job, operate, setJob }) {
   return (
     <>
       <div className="page-title">
-        <h2>ฐานข้อมูลอ้างอิง</h2>
+        <h2>ฐานข้อมูลอ้างอิง (ระดับนายพล ลงมาถึง สารวัตร)</h2>
         <span className="muted">
           รุ่น {knowledge?.version} · ตรวจ hash ตรงกับชุดต้นทาง ({knowledge?.sources?.length || 0} ไฟล์ PDF)
         </span>
       </div>
       <p className="muted">
-        ดัชนีใช้ค้นหา (รองรับเลขไทย ๐-๙ และเลขอารบิก 0-9) ข้อความต้องตรวจจาก PDF ก่อนอนุมัติสำหรับงาน
-        คำวินิจฉัยตัวอย่างใช้เป็นโครงและภาษาเท่านั้น
+        ครอบคลุม พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕, กฎ ก.ตร. ว่าด้วยการแต่งตั้งข้าราชการตำรวจ พ.ศ. ๒๕๖๗, บันทึกข้อความ ตร.
+        ที่ ๐๐๐๙.๒๓๑/ว ๒๔๕๖ ลง ๒๒ ต.ค. ๒๕๖๙ (การแต่งตั้งระดับ รอง ผบก. ลงมาถึง สว. พร้อม ผนวก ก – ช), บัญชีอาวุโส และคำวินิจฉัยตัวอย่าง
       </p>
 
       <div className="search-row">
@@ -73,11 +78,11 @@ export default function Knowledge({ knowledge, job, operate, setJob }) {
           aria-label="ค้นฐานอ้างอิง"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="ชื่อบุคคล คำค้น หรือเลขมาตรา (เช่น มาตรา ๘๗ หรือ มาตรา 87)"
+          placeholder="ชื่อบุคคล คำค้น เลขมาตรา หรือข้อกำหนด ว ๒๔๕๖ (เช่น ผนวก ข, ข้อ ๑๑, มาตรา ๘๐)"
           onKeyDown={(e) => e.key === 'Enter' && search()}
         />
         <select aria-label="ชนิดแหล่ง" value={kind} onChange={(e) => setKind(e.target.value)}>
-          <option value="law">กฎหมาย</option>
+          <option value="law">กฎหมายและหนังสือเวียน (พ.ร.บ. ๒๕๖๕ / กฎ ก.ตร. ๒๕๖๗ / ว ๒๔๕๖)</option>
           <option value="seniority">อาวุโสที่ตรวจภาพ</option>
           <option value="appointment">การแต่งตั้ง</option>
           <option value="precedent">คำวินิจฉัยตัวอย่าง</option>
@@ -132,7 +137,7 @@ export default function Knowledge({ knowledge, job, operate, setJob }) {
         <div>
           <h3>ผลค้นหา {results.length} รายการ</h3>
           {results.length === 0 ? (
-            <p className="muted">กรอกคำค้นแล้วกดค้นหา ระบบไม่ใช้แหล่งอาวุโสรุ่นเก่า</p>
+            <p className="muted">กรอกคำค้นหรือกดปุ่มคำค้นด่วนด้านบนเพื่อค้นหาตัวบทกฎหมายและหลักเกณฑ์</p>
           ) : (
             results.map((r) => (
               <button
@@ -217,4 +222,3 @@ export default function Knowledge({ knowledge, job, operate, setJob }) {
     </>
   );
 }
-

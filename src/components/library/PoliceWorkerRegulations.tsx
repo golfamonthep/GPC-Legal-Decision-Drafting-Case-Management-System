@@ -46,6 +46,7 @@ const CATEGORIES = [
 ];
 
 const POPULAR_SEARCHES = [
+  { label: "ว ๒๔๕๖ รอง ผบก.-สว. (NEW)", query: "ว ๒๔๕๖" },
   { label: "วินัย 2569 (NEW)", query: "วินัย 2569" },
   { label: "คำสั่ง ตร. 424-2569 (NEW)", query: "424-2569" },
   { label: "นโยบาย ผบ.ตร. 2570", query: "นโยบาย" },

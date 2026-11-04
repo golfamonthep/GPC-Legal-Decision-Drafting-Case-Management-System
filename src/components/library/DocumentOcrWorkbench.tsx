@@ -19,6 +19,12 @@ import {
 
 const PRESET_FILES = [
   {
+    label: "หนังสือเวียน ตร. ว ๒๔๕๖ (แต่งตั้ง รอง ผบก. - สว. ๒๕๖๙)",
+    path: "scratch/policeworker/circular_2456_2569.pdf",
+    totalPages: 11,
+    desc: "บันทึกข้อความ ตร. ที่ ๐๐๐๙.๒๓๑/ว ๒๔๕๖ ลง ๒๒ ต.ค. ๖๙ (๑๑ หน้า · ข้อ ๑-๑๓ และ ผนวก ก-ช)"
+  },
+  {
     label: "กฎ ก.ตร. วินัย 2569 (ฉบับสมบูรณ์)",
     path: "scratch/policeworker/discipline-2569.pdf",
     totalPages: 91,

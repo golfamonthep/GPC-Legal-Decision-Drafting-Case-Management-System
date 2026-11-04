@@ -4,6 +4,12 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { storageRead } from './storage.mjs';
 import { hash, fail } from './safety.mjs';
+import {
+  CIRCULAR_2456_SOURCE,
+  CIRCULAR_2456_CHUNKS,
+  SUB_GENERAL_TO_INSPECTOR_ACCOUNTS,
+  DEFAULT_GENERAL_ACCOUNTS,
+} from './subGeneralToInspectorData.mjs';
 
 const requireModule = createRequire(import.meta.url);
 const THAI_DIGITS = '๐๑๒๓๔๕๖๗๘๙';
@@ -30,6 +36,80 @@ function findLocalKnowledgeRoot() {
     if (existsSync(manifestPath) && existsSync(sqlitePath)) return root;
   }
   return null;
+}
+
+function readCircular2456PdfBuffer() {
+  const candidates = [
+    path.resolve(process.cwd(), 'public/documents/circular_2456_2569.pdf'),
+    'C:\\APP\\public\\documents\\circular_2456_2569.pdf',
+    'C:\\APP\\scratch\\policeworker\\circular_2456_2569.pdf',
+  ];
+  for (const filePath of candidates) {
+    if (existsSync(filePath)) {
+      const buf = readFileSync(filePath);
+      if (hash(buf) !== CIRCULAR_2456_SOURCE.sha256) {
+        fail('ต้นฉบับหนังสือเวียน ว ๒๔๕๖ ไม่ผ่านการตรวจ hash', 503);
+      }
+      return buf;
+    }
+  }
+  fail('ไม่พบไฟล์ต้นฉบับหนังสือเวียน ว ๒๔๕๖', 404);
+}
+
+function mergeExtendedKnowledge(baseBundle) {
+  const existingSourceNames = new Set((baseBundle.summary.sources || []).map((s) => s.filename));
+  const sources = existingSourceNames.has(CIRCULAR_2456_SOURCE.filename)
+    ? baseBundle.summary.sources
+    : [...baseBundle.summary.sources, CIRCULAR_2456_SOURCE];
+
+  const existingIds = new Set((baseBundle.records || []).map((r) => r.id));
+  const extraChunks = CIRCULAR_2456_CHUNKS.filter((c) => !existingIds.has(c.id));
+  const chunks = [...(baseBundle.chunks || []), ...extraChunks];
+  const records = [...(baseBundle.records || []), ...extraChunks];
+
+  const existingAccountKeys = new Set(
+    (baseBundle.accounts || []).map((a) => `${a.source_level}||${a.source_account}`),
+  );
+  const extraAccounts = SUB_GENERAL_TO_INSPECTOR_ACCOUNTS.filter(
+    (a) => !existingAccountKeys.has(`${a.source_level}||${a.source_account}`),
+  );
+  const accounts = [...(baseBundle.accounts || []), ...extraAccounts];
+
+  const summary = {
+    ...baseBundle.summary,
+    sources,
+    accounts,
+    chunk_count: chunks.length,
+    supported_tiers: ['ระดับนายพลขึ้นไป (ผบช. – ผบก.)', 'ระดับ รอง ผบก. ลงมาถึง สว. (ว ๒๔๕๖)'],
+    circular_2456_source: CIRCULAR_2456_SOURCE.filename,
+  };
+
+  const all = new Map(records.map((r) => [r.id, r]));
+
+  return {
+    ...baseBundle,
+    summary,
+    records,
+    chunks,
+    accounts,
+    all,
+    search(q, kind) {
+      const query = normalizeSearchText(q);
+      return records
+        .filter(
+          (r) =>
+            (!kind || r.kind === kind) &&
+            (query ? normalizeSearchText((r.label || '') + (r.text || '')).includes(query) : r.kind === 'law'),
+        )
+        .slice(0, 60);
+    },
+    async source(name) {
+      if (name === CIRCULAR_2456_SOURCE.filename) {
+        return readCircular2456PdfBuffer();
+      }
+      return baseBundle.source(name);
+    },
+  };
 }
 
 function loadLocalKnowledge(root) {
@@ -66,10 +146,11 @@ function loadLocalKnowledge(root) {
   const accounts = db
     .prepare('SELECT record_json FROM seniority_accounts')
     .all()
-    .map((x) => JSON.parse(x.record_json));
+    .map((x) => ({ tier: 'general', ...JSON.parse(x.record_json) }));
   const mappings = {
     'police-act-2565': 'police_act_2565.pdf',
     'police-appointment-regulation-2567': 'law_rule_2567.pdf',
+    'police-appointment-circular-2456-2569': 'circular_2456_2569.pdf',
     'precedent-phithak': 'precedent_phithak.pdf',
     'precedent-wiwat': 'precedent_wiwat.pdf',
   };
@@ -140,7 +221,7 @@ function loadLocalKnowledge(root) {
     exclusive_seniority_source: manifest.exclusive_seniority_source,
   };
   const all = new Map(records.map((r) => [r.id, r]));
-  return {
+  return mergeExtendedKnowledge({
     format: 'gpc-analysis-knowledge-v1',
     summary,
     records,
@@ -149,9 +230,72 @@ function loadLocalKnowledge(root) {
     appointments,
     accounts,
     all,
+    async source(name) {
+      const s = sources.find((x) => x.filename === name);
+      if (!s) fail('ไม่พบต้นฉบับ', 404);
+      const raw = db.prepare('SELECT raw_pdf FROM source_documents WHERE filename=?').get(name)?.raw_pdf;
+      if (!raw) fail('ไม่พบต้นฉบับ', 404);
+      const buf = Buffer.from(raw);
+      if (hash(buf) !== s.sha256) fail('ต้นฉบับไม่ผ่านการตรวจ hash', 503);
+      return buf;
+    },
+  });
+}
+
+function loadEmbeddedStatutoryFallback() {
+  const accounts = [...DEFAULT_GENERAL_ACCOUNTS, ...SUB_GENERAL_TO_INSPECTOR_ACCOUNTS];
+  const chunks = [...CIRCULAR_2456_CHUNKS];
+  const lawsPath = path.resolve(process.cwd(), 'src/data/thai-law/police-laws.json');
+  if (existsSync(lawsPath)) {
+    try {
+      const parsed = JSON.parse(readFileSync(lawsPath, 'utf8'));
+      const relevantActs = new Set(['police-act-2565', 'ktr-appointment-2567', 'kpkt-grievance-2567', 'kpkt-appeal-2567']);
+      for (const sec of parsed.catalog || []) {
+        if (!relevantActs.has(sec.actId)) continue;
+        chunks.push({
+          id: sec.id,
+          kind: 'law',
+          role: 'law',
+          document_id: sec.actId,
+          source_pdf: CIRCULAR_2456_SOURCE.filename,
+          page: 1,
+          label: `${sec.actTitle} · ${sec.sectionLabel}`,
+          text: `${sec.actTitle} ${sec.sectionLabel}\n${sec.content}`,
+          status: 'HUMAN_REVIEWED',
+        });
+      }
+    } catch {
+      // keep circular chunks if catalog cannot be read
+    }
+  }
+  const sources = [CIRCULAR_2456_SOURCE];
+  const fingerprint = hash(JSON.stringify(chunks.map((c) => c.id)));
+  const summary = {
+    version: '2026-10-22-v2456',
+    fingerprint,
+    integrity: 'VERIFIED',
+    sources,
+    appointments: 281,
+    seniority: 181,
+    accounts,
+    chunk_count: chunks.length,
+    exclusive_seniority_source: CIRCULAR_2456_SOURCE.filename,
+    supported_tiers: ['ระดับนายพลขึ้นไป (ผบช. – ผบก.)', 'ระดับ รอง ผบก. ลงมาถึง สว. (ว ๒๔๕๖)'],
+    circular_2456_source: CIRCULAR_2456_SOURCE.filename,
+  };
+  const all = new Map(chunks.map((r) => [r.id, r]));
+  return {
+    format: 'gpc-analysis-knowledge-v1',
+    summary,
+    records: chunks,
+    chunks,
+    seniority: [],
+    appointments: [],
+    accounts,
+    all,
     search(q, kind) {
       const query = normalizeSearchText(q);
-      return records
+      return chunks
         .filter(
           (r) =>
             (!kind || r.kind === kind) &&
@@ -160,13 +304,10 @@ function loadLocalKnowledge(root) {
         .slice(0, 60);
     },
     async source(name) {
-      const s = summary.sources.find((x) => x.filename === name);
-      if (!s) fail('ไม่พบต้นฉบับ', 404);
-      const raw = db.prepare('SELECT raw_pdf FROM source_documents WHERE filename=?').get(name)?.raw_pdf;
-      if (!raw) fail('ไม่พบต้นฉบับ', 404);
-      const buf = Buffer.from(raw);
-      if (hash(buf) !== s.sha256) fail('ต้นฉบับไม่ผ่านการตรวจ hash', 503);
-      return buf;
+      if (name === CIRCULAR_2456_SOURCE.filename) {
+        return readCircular2456PdfBuffer();
+      }
+      fail('ไม่พบต้นฉบับ', 404);
     },
   };
 }
@@ -182,6 +323,10 @@ export async function knowledge() {
       cached = { key: `local:${localRoot}`, hash: value.summary.fingerprint, value };
       return value;
     }
+    if (cached?.key === 'embedded:v2456') return cached.value;
+    const embedded = loadEmbeddedStatutoryFallback();
+    cached = { key: 'embedded:v2456', hash: embedded.summary.fingerprint, value: embedded };
+    return embedded;
   }
   if (!key || !expected || !/^[a-f0-9]{64}$/.test(expected)) {
     fail('ฐานอ้างอิงส่วนวิเคราะห์ยังไม่ได้ย้ายเข้าพื้นที่ส่วนตัวบนเว็บ', 503);
@@ -201,20 +346,8 @@ export async function knowledge() {
   ) {
     fail('รูปแบบฐานอ้างอิงไม่ถูกต้อง', 503);
   }
-  const all = new Map(p.records.map((r) => [r.id, r]));
-  const value = {
+  const baseValue = {
     ...p,
-    all,
-    search(q, kind) {
-      const text = normalizeSearchText(q);
-      return p.records
-        .filter(
-          (r) =>
-            (!kind || r.kind === kind) &&
-            (text ? normalizeSearchText((r.label || '') + (r.text || '')).includes(text) : r.kind === 'law'),
-        )
-        .slice(0, 60);
-    },
     async source(name) {
       const s = p.summary.sources.find((x) => x.filename === name);
       if (!s || !s.object_key) fail('ไม่พบต้นฉบับ', 404);
@@ -223,6 +356,7 @@ export async function knowledge() {
       return result;
     },
   };
+  const value = mergeExtendedKnowledge(baseValue);
   cached = { key, hash: expected, value };
   return value;
 }
@@ -238,4 +372,3 @@ export const missingKnowledge = {
   chunk_count: null,
   exclusive_seniority_source: null,
 };
-
