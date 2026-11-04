@@ -12,24 +12,14 @@ import './workbench.css';
 
 const TABS = ['ข้อมูลที่ใช้วิเคราะห์', 'เอกสารประกอบ', 'ผลวิเคราะห์', 'ร่างเบื้องต้น', 'ส่งออก', 'ฐานอ้างอิง'];
 
-const TIER_CARDS = [
+const TIER_OPTIONS = [
   {
     id: 'general',
-    badge: 'ระดับที่ ๑ · พระบรมราชโองการโปรดเกล้าฯ / ก.ตร.',
-    title: 'ระดับ ผบก. ขึ้นไป หรือระดับนายพล',
-    positions: 'ผบ.ตร. · รอง ผบ.ตร./จตช. · ผู้ช่วย ผบ.ตร./รอง จตช. · ผบช./จตร. · รอง ผบช./รอง จตร. · ผบก.',
-    statutes: 'พ.ร.บ.ตำรวจแห่งชาติ ๒๕๖๕ ม.๗๗(๑)–(๖), ๗๘, ๘๑(๑)(ก), ๘๒(๑)–(๒) · กฎ ก.ตร.ฯ ๒๕๖๗ ข้อ ๗(๑)(ก)–(ข), ๗(๒), ๑๗(๑)–(๖), ๓๔ วรรคหนึ่ง, ๓๙, ๔๗(๑)–(๒)',
-    quota: 'รอง ผบ.ตร.–ผู้ช่วย ผบ.ตร. ร้อยละ ๑๐๐ · ผบช. ลงมาถึง ผบก. ไม่น้อยกว่าร้อยละ ๕๐ ของตำแหน่งว่างระดับ ตร. (บัญชีอาวุโสครั้งที่ ๔)',
-    timeframe: 'วาระประจำปี ๑ ก.ค. – ๓๑ ส.ค. (ผบ.ตร. ภายใน ๓๑ ก.ค.) · วาระเมษายน ๑ ก.พ. – ๓๑ มี.ค.',
+    title: 'ระดับ ผบก. ขึ้นไป (ระดับนายพล)',
   },
   {
     id: 'sub_general_to_inspector',
-    badge: 'ระดับที่ ๒ · คำสั่ง ผบ.ตร. (สง.ผบ.ตร.) หรือ ผบช. (ภายในหน่วย)',
-    title: 'ระดับ รอง ผบก. ลงมา หรือระดับรองผู้บังคับการ – สารวัตร',
-    positions: 'รอง ผบก. (เลื่อนจาก ผกก.) · ผกก. (เลื่อนจาก รอง ผกก.) · รอง ผกก./สวญ. (เลื่อนจาก สว.) · สว. (เลื่อนจาก รอง สว.) · สับเปลี่ยนหมุนเวียน',
-    statutes: 'พ.ร.บ.ตำรวจแห่งชาติ ๒๕๖๕ ม.๗๗(๗)–(๑๐), ๗๙, ๘๐, ๘๑(๑)(ข), ๘๑(๒), ๘๒(๓)–(๔), ๘๕ · กฎ ก.ตร.ฯ ๒๕๖๗ ข้อ ๗(๑)(ค), ๑๗(๗)–(๑๐), ๒๑, ๒๓, ๓๔ วรรคสอง, ๔๐, ๔๗(๓)–(๔) · ว ๒๔๕๖',
-    quota: 'เลื่อนตำแหน่งสูงขึ้นเฉพาะภายในหน่วย (ม.๘๐) คำนึงถึงอาวุโสไม่น้อยกว่าร้อยละ ๓๓ ของตำแหน่งว่างในแต่ละระดับของหน่วยนั้น (ผนวก ก–ช)',
-    timeframe: 'วาระประจำปี ๑ ต.ค. – ๓๐ พ.ย. (ว ๒๔๕๖: ออกคำสั่งพร้อมกัน ๓๐ พ.ย. ๒๕๖๙ มีผล ๗ ธ.ค. ๒๕๖๙)',
+    title: 'ระดับ รอง ผบก. ลงมา (รอง ผบก. – สว.)',
   },
 ];
 
@@ -238,14 +228,14 @@ export default function Workbench({
   const currentStage = jobStatus(job);
   const currentStageIdx = WORKFLOW_STAGES.indexOf(currentStage);
   const selectedRevision = job?.revisions?.find((r) => r.id === selectedRevisionId) || job?.revisions?.[0] || null;
-  const activeTierCard = TIER_CARDS.find((c) => c.id === activeTier) || TIER_CARDS[0];
+  const activeTierCard = TIER_OPTIONS.find((c) => c.id === activeTier) || TIER_OPTIONS[0];
 
   return (
     <section className="analysis-workbench" aria-busy={busy}>
       <header className="page-title">
         <div>
           <p className="brand-eyebrow">พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร. · ระบบวิเคราะห์และร่างคำวินิจฉัยเบื้องต้น</p>
-          <h1>วิเคราะห์และร่างคำวินิจฉัย (แยก ๒ ระดับตาม พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗)</h1>
+          <h1>วิเคราะห์และร่างคำวินิจฉัยเบื้องต้น</h1>
           <p className="muted">
             โหมดที่เลือก: <strong>{activeTierCard.title}</strong> · ผลทั้งหมดเป็นร่างสำหรับตรวจทาน ·{' '}
             {canAI
@@ -257,41 +247,6 @@ export default function Workbench({
           กลับ Dashboard
         </Link>
       </header>
-
-      <div className="tier-selector-grid" role="region" aria-label="เลือกระดับการวิเคราะห์การแต่งตั้งข้าราชการตำรวจ">
-        {TIER_CARDS.map((card) => {
-          const isSelected = activeTier === card.id;
-          return (
-            <button
-              key={card.id}
-              type="button"
-              onClick={() => selectTier(card.id)}
-              aria-pressed={isSelected}
-              className={'tier-selector-card' + (isSelected ? ' active' : '')}
-            >
-              <div className="tier-card-head">
-                <span className="tier-card-badge">{card.badge}</span>
-                <span className={'tier-card-status' + (isSelected ? ' active' : '')}>
-                  {isSelected ? 'กำลังใช้งานระดับนี้' : 'คลิกเพื่อสลับระดับ'}
-                </span>
-              </div>
-              <strong className="tier-card-title">{card.title}</strong>
-              <p className="tier-card-positions">{card.positions}</p>
-              <div className="tier-card-meta">
-                <span>
-                  <b>กฎหมายหลัก:</b> {card.statutes}
-                </span>
-                <span>
-                  <b>สัดส่วนอาวุโส:</b> {card.quota}
-                </span>
-                <span>
-                  <b>ห้วงเวลา:</b> {card.timeframe}
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
 
       {notice ? (
         <div role="alert" className="notice error">
@@ -343,6 +298,22 @@ export default function Workbench({
             ))}
           </select>
         </label>
+        <div className="tier-inline-toggle" role="group" aria-label="เลือกระดับการวิเคราะห์">
+          {TIER_OPTIONS.map((opt) => {
+            const isSelected = activeTier === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                aria-pressed={isSelected}
+                className={isSelected ? 'active' : 'outline'}
+                onClick={() => selectTier(opt.id)}
+              >
+                {opt.title}
+              </button>
+            );
+          })}
+        </div>
         <div className="workspace-meta">
           {job ? (
             <span className="muted">
@@ -350,9 +321,7 @@ export default function Workbench({
               {job.documents.length} · แหล่งอ้างอิง {(job.data.references || []).length} · ร่างที่บันทึก{' '}
               {job.revisions.length}
             </span>
-          ) : (
-            <span className="muted">กำลังเตรียมงานวิเคราะห์ใหม่ในโหมด {activeTierCard.title}</span>
-          )}
+          ) : null}
           <button
             className="outline"
             disabled={busy}
@@ -372,7 +341,7 @@ export default function Workbench({
               })
             }
           >
-            สร้างงานใหม่ในระดับนี้
+            สร้างงานใหม่
           </button>
         </div>
       </div>

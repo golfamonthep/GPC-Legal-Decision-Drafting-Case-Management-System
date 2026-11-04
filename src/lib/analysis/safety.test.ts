@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {assertOwner,assertAssignment,cleanInput,invalidateDocument,validateCitations,boundedAppend,assertSameOrigin,invalidateSource} from './safety.mjs';
 import {analyze,validateProposal,normalizeName,normalizeSearchText} from './engine.mjs';
-import {CIRCULAR_2456_CHUNKS,STATUTORY_TIER_DEFINITIONS,SUB_GENERAL_TO_INSPECTOR_ACCOUNTS,evaluateCircular2456Rules,resolveJobTier,resolveSeniorityQuotaSpec} from './subGeneralToInspectorData.mjs';
+import {CIRCULAR_2456_CHUNKS,KTR_APPOINTMENT_2567_CHUNKS,STATUTORY_TIER_DEFINITIONS,SUB_GENERAL_TO_INSPECTOR_ACCOUNTS,evaluateCircular2456Rules,resolveJobTier,resolveSeniorityQuotaSpec} from './subGeneralToInspectorData.mjs';
 
 test('workspaces are owner scoped even when identifiers are known',()=>{assert.throws(()=>assertOwner({ownerKey:'a'},{id:'b',role:'LEGAL_OFFICER'}));assert.doesNotThrow(()=>assertOwner({ownerKey:'a'},{id:'a',role:'REGISTRY_OFFICER'}));});
 test('registry role cannot attach and assignments are rechecked',()=>{const c={legalOfficerId:'a',legalOfficerName:null};assert.throws(()=>assertAssignment(c,{id:'a',role:'REGISTRY_OFFICER'}));assert.doesNotThrow(()=>assertAssignment(c,{id:'a',role:'LEGAL_OFFICER'}));assert.throws(()=>assertAssignment(c,{id:'b',role:'LEGAL_OFFICER'}));});
@@ -92,4 +92,19 @@ test('2-tier statutory separation distinguishes Tier 1 (ผบก. ขึ้น�
   assert.equal(res.quota.actual_vacancies, 10);
   assert.equal(res.quota.seniority_quota, 4);
   assert.equal(res.quota.knowledge_ability_quota, 6);
+});
+test('KTR Appointment Regulation 2567 chunks are visually verified across all 48 clauses with full Clause 17 table', () => {
+  assert.equal(KTR_APPOINTMENT_2567_CHUNKS.length, 49);
+  const clause7 = KTR_APPOINTMENT_2567_CHUNKS.find((c) => c.section_num === '๗');
+  assert.ok(clause7 && clause7.text.includes('๓๑ สิงหาคม') && clause7.text.includes('๓๐ พฤศจิกายน'));
+  const clause17 = KTR_APPOINTMENT_2567_CHUNKS.find((c) => c.section_num === '๑๗');
+  assert.ok(
+    clause17 &&
+      clause17.text.includes('รอง ผบก. เลื่อนเป็น ผบก.') &&
+      clause17.text.includes('ไม่น้อยกว่า ๔ ปี') &&
+      clause17.text.includes('รอง สว. เลื่อนเป็น สว.') &&
+      clause17.text.includes('ไม่น้อยกว่า ๗ ปี'),
+  );
+  const clause47 = KTR_APPOINTMENT_2567_CHUNKS.find((c) => c.section_num === '๔๗');
+  assert.ok(clause47 && clause47.text.includes('ไม่น้อยกว่าร้อยละห้าสิบ') && clause47.text.includes('ไม่น้อยกว่าร้อยละสามสิบสาม'));
 });

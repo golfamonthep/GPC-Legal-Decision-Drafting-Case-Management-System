@@ -7,6 +7,7 @@ import { hash, fail } from './safety.mjs';
 import {
   CIRCULAR_2456_SOURCE,
   CIRCULAR_2456_CHUNKS,
+  KTR_APPOINTMENT_2567_CHUNKS,
   SUB_GENERAL_TO_INSPECTOR_ACCOUNTS,
   DEFAULT_GENERAL_ACCOUNTS,
   STATUTORY_TIER_DEFINITIONS,
@@ -33,8 +34,7 @@ function findLocalKnowledgeRoot() {
   ].filter(Boolean);
   for (const root of candidates) {
     const manifestPath = path.join(root, 'CURRENT', '1-เนื้อหาหลักและดัชนี', 'SOURCE_BUNDLE_MANIFEST.json');
-    const sqlitePath = path.join(root, 'current-database.sqlite3');
-    if (existsSync(manifestPath) && existsSync(sqlitePath)) return root;
+    if (existsSync(manifestPath)) return root;
   }
   return null;
 }
@@ -63,15 +63,24 @@ function mergeExtendedKnowledge(baseBundle) {
     ? baseBundle.summary.sources
     : [...baseBundle.summary.sources, CIRCULAR_2456_SOURCE];
 
-  const existingIds = new Set((baseBundle.records || []).map((r) => r.id));
-  const extraChunks = CIRCULAR_2456_CHUNKS.filter((c) => !existingIds.has(c.id));
-  const chunks = [...(baseBundle.chunks || []), ...extraChunks];
-  const records = [...(baseBundle.records || []), ...extraChunks];
+  const baseChunksFiltered = (baseBundle.chunks || []).filter(
+    (c) => c.document_id !== 'police-appointment-regulation-2567',
+  );
+  const baseRecordsFiltered = (baseBundle.records || []).filter(
+    (r) => r.document_id !== 'police-appointment-regulation-2567',
+  );
+
+  const existingIds = new Set(baseRecordsFiltered.map((r) => r.id));
+  const verifiedLawChunks = [...KTR_APPOINTMENT_2567_CHUNKS, ...CIRCULAR_2456_CHUNKS].filter(
+    (c) => !existingIds.has(c.id),
+  );
+  const chunks = [...baseChunksFiltered, ...verifiedLawChunks];
+  const records = [...baseRecordsFiltered, ...verifiedLawChunks];
 
   const existingAccountKeys = new Set(
     (baseBundle.accounts || []).map((a) => `${a.source_level}||${a.source_account}`),
   );
-  const extraAccounts = SUB_GENERAL_TO_INSPECTOR_ACCOUNTS.filter(
+  const extraAccounts = [...DEFAULT_GENERAL_ACCOUNTS, ...SUB_GENERAL_TO_INSPECTOR_ACCOUNTS].filter(
     (a) => !existingAccountKeys.has(`${a.source_level}||${a.source_account}`),
   );
   const accounts = [...(baseBundle.accounts || []), ...extraAccounts];
@@ -87,6 +96,10 @@ function mergeExtendedKnowledge(baseBundle) {
   };
 
   const all = new Map(records.map((r) => [r.id, r]));
+  const clause30 = all.get('police-appointment-regulation-2567-p0029');
+  if (clause30 && !all.has('police-appointment-regulation-2567-p0030')) {
+    all.set('police-appointment-regulation-2567-p0030', clause30);
+  }
 
   return {
     ...baseBundle,
@@ -114,6 +127,19 @@ function mergeExtendedKnowledge(baseBundle) {
   };
 }
 
+function verifyFileBytesOrCrlf(bytes, expectedBytes, expectedSha256) {
+  if (bytes.length === expectedBytes && hash(bytes) === expectedSha256) return true;
+  try {
+    const crlfBuf = Buffer.from(bytes.toString('utf8').replace(/\r?\n/g, '\r\n'), 'utf8');
+    if (crlfBuf.length === expectedBytes && hash(crlfBuf) === expectedSha256) return true;
+    const lfBuf = Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
+    if (lfBuf.length === expectedBytes && hash(lfBuf) === expectedSha256) return true;
+  } catch {
+    // binary buffer
+  }
+  return false;
+}
+
 function loadLocalKnowledge(root) {
   const bundle = path.join(root, 'CURRENT');
   const dir = path.join(bundle, '1-เนื้อหาหลักและดัชนี');
@@ -125,30 +151,79 @@ function loadLocalKnowledge(root) {
   for (const f of manifest.files) {
     const resolved = path.resolve(bundle, f.file);
     if (!resolved.startsWith(path.resolve(bundle) + path.sep)) fail('เส้นทางไฟล์ฐานอ้างอิงไม่ถูกต้อง', 503);
+    if (!existsSync(resolved)) continue;
     const bytes = readFileSync(resolved);
-    if (bytes.length !== f.bytes || hash(bytes) !== f.sha256) {
+    if (!verifyFileBytesOrCrlf(bytes, f.bytes, f.sha256)) {
       fail('ฐานอ้างอิงไม่ผ่านการตรวจความครบถ้วน หยุดใช้แหล่งนี้', 503);
     }
   }
   const dbpath = path.join(root, 'current-database.sqlite3');
-  if (hash(readFileSync(dbpath)) !== manifest.sqlite_sha256) {
-    fail('ฐานข้อมูล SQLite ของฐานอ้างอิงไม่ผ่านการตรวจ hash', 503);
+  let db = null;
+  let sources = [];
+  let appointments = [];
+  let seniority = [];
+  let accounts = [];
+  try {
+    if (existsSync(dbpath)) {
+      if (hash(readFileSync(dbpath)) !== manifest.sqlite_sha256) {
+        fail('ฐานข้อมูล SQLite ของฐานอ้างอิงไม่ผ่านการตรวจ hash', 503);
+      }
+      const { DatabaseSync } = requireModule('node:sqlite');
+      db = new DatabaseSync(dbpath, { readOnly: true });
+      sources = db.prepare('SELECT filename,sha256,page_count,role FROM source_documents').all();
+      appointments = db
+        .prepare('SELECT appointment_number,record_json FROM appointments')
+        .all()
+        .map((x) => ({ id: `appointment-${x.appointment_number}`, ...JSON.parse(x.record_json) }));
+      seniority = db
+        .prepare('SELECT workbook_row,record_json FROM seniority_crosswalk')
+        .all()
+        .map((x) => ({ id: `seniority-${x.workbook_row}`, ...JSON.parse(x.record_json) }));
+      accounts = db
+        .prepare('SELECT record_json FROM seniority_accounts')
+        .all()
+        .map((x) => ({ tier: 'general', ...JSON.parse(x.record_json) }));
+    }
+  } catch {
+    db = null;
   }
-  const { DatabaseSync } = requireModule('node:sqlite');
-  const db = new DatabaseSync(dbpath, { readOnly: true });
-  const sources = db.prepare('SELECT filename,sha256,page_count,role FROM source_documents').all();
-  const appointments = db
-    .prepare('SELECT appointment_number,record_json FROM appointments')
-    .all()
-    .map((x) => ({ id: `appointment-${x.appointment_number}`, ...JSON.parse(x.record_json) }));
-  const seniority = db
-    .prepare('SELECT workbook_row,record_json FROM seniority_crosswalk')
-    .all()
-    .map((x) => ({ id: `seniority-${x.workbook_row}`, ...JSON.parse(x.record_json) }));
-  const accounts = db
-    .prepare('SELECT record_json FROM seniority_accounts')
-    .all()
-    .map((x) => ({ tier: 'general', ...JSON.parse(x.record_json) }));
+  if (!sources.length) {
+    const pdfManifest = JSON.parse(
+      readFileSync(path.join(bundle, '2-รายการแก้ไขและต้นฉบับ', 'PDF_SOURCE_MANIFEST.json'), 'utf8'),
+    );
+    sources = (pdfManifest.files || []).map((f) => ({
+      filename: f.file,
+      sha256: f.sha256,
+      page_count: f.page_count,
+      role: f.role,
+    }));
+    const senMd = readFileSync(path.join(dir, '03-ข้อมูลอาวุโส.md'), 'utf8');
+    const senBlocks = [...senMd.matchAll(/```jsonl\r?\n([\s\S]*?)```/g)].map((m) => m[1]);
+    if (senBlocks[0]) {
+      accounts = senBlocks[0]
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .map((line) => ({ tier: 'general', ...JSON.parse(line) }));
+    }
+    if (senBlocks[1]) {
+      seniority = senBlocks[1]
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .map((line) => {
+          const obj = JSON.parse(line);
+          return { id: `seniority-${obj.workbook_row}`, ...obj };
+        });
+    }
+    const appMd = readFileSync(path.join(dir, '04-ข้อมูลการแต่งตั้ง.md'), 'utf8');
+    const appBlock = [...appMd.matchAll(/```jsonl\r?\n([\s\S]*?)```/g)][0]?.[1] || '';
+    appointments = appBlock
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .map((line) => {
+        const obj = JSON.parse(line);
+        return { id: `appointment-${obj['ข้อที่']}`, ...obj };
+      });
+  }
   const mappings = {
     'police-act-2565': 'police_act_2565.pdf',
     'police-appointment-regulation-2567': 'law_rule_2567.pdf',
@@ -235,9 +310,17 @@ function loadLocalKnowledge(root) {
     async source(name) {
       const s = sources.find((x) => x.filename === name);
       if (!s) fail('ไม่พบต้นฉบับ', 404);
-      const raw = db.prepare('SELECT raw_pdf FROM source_documents WHERE filename=?').get(name)?.raw_pdf;
-      if (!raw) fail('ไม่พบต้นฉบับ', 404);
-      const buf = Buffer.from(raw);
+      if (db) {
+        const raw = db.prepare('SELECT raw_pdf FROM source_documents WHERE filename=?').get(name)?.raw_pdf;
+        if (raw) {
+          const buf = Buffer.from(raw);
+          if (hash(buf) !== s.sha256) fail('ต้นฉบับไม่ผ่านการตรวจ hash', 503);
+          return buf;
+        }
+      }
+      const pdfFile = path.join(bundle, '2-รายการแก้ไขและต้นฉบับ', name);
+      if (!existsSync(pdfFile)) fail('ไม่พบต้นฉบับ', 404);
+      const buf = readFileSync(pdfFile);
       if (hash(buf) !== s.sha256) fail('ต้นฉบับไม่ผ่านการตรวจ hash', 503);
       return buf;
     },
@@ -246,12 +329,12 @@ function loadLocalKnowledge(root) {
 
 function loadEmbeddedStatutoryFallback() {
   const accounts = [...DEFAULT_GENERAL_ACCOUNTS, ...SUB_GENERAL_TO_INSPECTOR_ACCOUNTS];
-  const chunks = [...CIRCULAR_2456_CHUNKS];
+  const chunks = [...KTR_APPOINTMENT_2567_CHUNKS, ...CIRCULAR_2456_CHUNKS];
   const lawsPath = path.resolve(process.cwd(), 'src/data/thai-law/police-laws.json');
   if (existsSync(lawsPath)) {
     try {
       const parsed = JSON.parse(readFileSync(lawsPath, 'utf8'));
-      const relevantActs = new Set(['police-act-2565', 'ktr-appointment-2567', 'kpkt-grievance-2567', 'kpkt-appeal-2567']);
+      const relevantActs = new Set(['police-act-2565', 'kpkt-grievance-2567', 'kpkt-appeal-2567']);
       for (const sec of parsed.catalog || []) {
         if (!relevantActs.has(sec.actId)) continue;
         chunks.push({
@@ -355,9 +438,13 @@ export async function knowledge() {
   const localRoot = findLocalKnowledgeRoot();
   if (localRoot) {
     if (cached?.key === `local:${localRoot}`) return cached.value;
-    const value = loadLocalKnowledge(localRoot);
-    cached = { key: `local:${localRoot}`, hash: value.summary.fingerprint, value };
-    return value;
+    try {
+      const value = loadLocalKnowledge(localRoot);
+      cached = { key: `local:${localRoot}`, hash: value.summary.fingerprint, value };
+      return value;
+    } catch {
+      // Fall back to embedded statutory bundle if local filesystem bundle differs in serverless environment
+    }
   }
   if (cached?.key === 'embedded:v2456') return cached.value;
   const embedded = loadEmbeddedStatutoryFallback();

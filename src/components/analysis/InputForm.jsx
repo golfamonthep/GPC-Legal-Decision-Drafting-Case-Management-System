@@ -2,150 +2,121 @@ import React from 'react';
 import { Field } from './components';
 
 const GENERAL_LEVEL_LABELS = {
-  'รอง ผบช. / รอง จตร.': 'รอง ผบช. / รอง จตร. (เลื่อนเป็น ผบช. / จตร. · ม.๗๗(๔) ครองตำแหน่ง ≥ ๒ ปี)',
-  'ผบก. / เทียบเท่า': 'ผบก. / เทียบเท่า (เลื่อนเป็น รอง ผบช. / รอง จตร. · ม.๗๗(๕) ครองตำแหน่ง ≥ ๓ ปี)',
-  'รอง ผบก. / เทียบเท่า': 'รอง ผบก. / เทียบเท่า (เลื่อนเป็น ผบก. ระดับนายพล · ม.๗๗(๖) ครองตำแหน่ง ≥ ๔ ปี)',
+  'ผู้ช่วย ผบ.ตร. / รอง จตช. / เทียบเท่า': 'ผู้ช่วย ผบ.ตร. / รอง จตช. (เลื่อนเป็น รอง ผบ.ตร. / จตช.)',
+  'ผบช. / จตร. / เทียบเท่า': 'ผบช. / จตร. (เลื่อนเป็น ผู้ช่วย ผบ.ตร. / รอง จตช.)',
+  'รอง ผบช. / รอง จตร. / เทียบเท่า': 'รอง ผบช. / รอง จตร. (เลื่อนเป็น ผบช. / จตร.)',
+  'รอง ผบช. / เทียบเท่า': 'รอง ผบช. / เทียบเท่า (เฉพาะทาง — เลื่อนเป็น ผบช. / เทียบเท่า)',
+  'ผบก. / เทียบเท่า': 'ผบก. / เทียบเท่า (เลื่อนเป็น รอง ผบช. / รอง จตร.)',
+  'รอง ผบก. / เทียบเท่า': 'รอง ผบก. / เทียบเท่า (เลื่อนเป็น ผบก.)',
 };
 
 const GENERAL_MOTION_OPTIONS = [
-  { value: '', label: 'เลือกประเภทการแต่งตั้ง / ประเด็นหลักระดับนายพล (หรือให้ระบบตรวจอัตโนมัติ)' },
+  { value: '', label: 'เลือกประเภทการแต่งตั้ง (หรือให้ระบบตรวจอัตโนมัติ)' },
   {
     value: 'promotion',
-    label: 'เลื่อนตำแหน่งสูงขึ้นระดับ ผบก. ขึ้นไป (พ.ร.บ.ฯ ม.๗๗(๑)–(๖), ๗๘, ๘๒(๑)–(๒) · กฎ ก.ตร.ฯ ข้อ ๑๗(๑)–(๖), ๒๖, ๓๙, ๔๗(๑)–(๒))',
+    label: 'เลื่อนตำแหน่งสูงขึ้น (ระดับ ผบก. ขึ้นไป)',
   },
   {
     value: 'rotation_same_unit',
-    label: 'สับเปลี่ยนหมุนเวียนในระดับตำแหน่งเท่าเดิมระดับ ผบช. – ผบก. (พ.ร.บ.ฯ ม.๗๘ · กฎ ก.ตร.ฯ ข้อ ๒๑, ๓๙)',
+    label: 'สับเปลี่ยนหมุนเวียนในระดับตำแหน่งเท่าเดิม (ระดับ ผบก. ขึ้นไป)',
+  },
+  {
+    value: 'general_bch_nomination_diff',
+    label: 'กรณีความเห็นแตกต่างจากข้อมูลเสนอแต่งตั้งของหัวหน้าส่วนราชการระดับ บช. (ม.๗๘(๔), กฎ ก.ตร.ฯ ข้อ ๔๐(๑))',
   },
   {
     value: 'april_senior_advisor',
-    label: 'วาระเดือนเมษายน: ที่ปรึกษาพิเศษ ตร. / ผู้ทรงคุณวุฒิพิเศษ ตร. / ผู้ทรงคุณวุฒิ ตร. (กฎ ก.ตร.ฯ ข้อ ๗(๒), ๑๘, ๔๗(๕))',
+    label: 'วาระเดือนเมษายน (ที่ปรึกษาพิเศษ ตร. / ผู้ทรงคุณวุฒิพิเศษ ตร. / ผู้ทรงคุณวุฒิ ตร.)',
   },
 ];
 
 const SUB_GENERAL_MOTION_OPTIONS = [
-  { value: '', label: 'เลือกประเภทการแต่งตั้ง / ประเด็นหลักระดับ รอง ผบก. – สว. (หรือให้ระบบตรวจอัตโนมัติ)' },
+  { value: '', label: 'เลือกประเภทการแต่งตั้ง (หรือให้ระบบตรวจอัตโนมัติ)' },
   {
     value: 'promotion',
-    label: 'เลื่อนตำแหน่งสูงขึ้นภายในหน่วย (ม.๗๗(๗)–(๑๐), ๘๐, ๘๒(๓)–(๔) · กฎ ก.ตร.ฯ ข้อ ๑๗(๗)–(๑๐), ๒๖, ๔๐, ๔๗(๓) อาวุโส ≥ ร้อยละ ๓๓ / ผนวก ก–ข, จ)',
+    label: 'เลื่อนตำแหน่งสูงขึ้นภายในหน่วย (ระดับ รอง ผบก. ลงมาถึง สว.)',
   },
   {
     value: 'rotation_same_unit',
-    label: 'สับเปลี่ยนหมุนเวียนภายในหน่วย ระดับตำแหน่งเท่าเดิม (กฎ ก.ตร.ฯ ข้อ ๒๑ ดำรงตำแหน่งเดิม ≥ ๒ ปี หรือเข้าข้อยกเว้น ๖ กรณี)',
+    label: 'สับเปลี่ยนหมุนเวียนภายในหน่วย (ระดับตำแหน่งเท่าเดิม)',
   },
   {
     value: 'rotation_cross_unit',
-    label: 'สับเปลี่ยนหมุนเวียนระหว่างหน่วย / ข้ามหน่วย (พ.ร.บ.ฯ ม.๘๐ · กฎ ก.ตร.ฯ ข้อ ๒๒, ๔๓ · ว ๒๔๕๖ ข้อ ๕ ผบช.ทำความตกลงกัน)',
+    label: 'สับเปลี่ยนหมุนเวียนระหว่างหน่วย / ข้ามหน่วย',
   },
   {
     value: 'investigator_adjustable',
-    label: 'สายงานสืบสวนสอบสวน ตำแหน่งควบปรับระดับเพิ่มลดได้ในตัวเอง (พ.ร.บ.ฯ ม.๖๒ วรรคสาม, ๘๔ วรรคสี่ · ว ๒๔๕๖ ข้อ ๔, ๗, ๑๐)',
+    label: 'สายงานสืบสวนสอบสวน ตำแหน่งควบปรับระดับเพิ่มลดได้ในตัวเอง',
   },
   {
     value: 'station_chief_transfer',
-    label: 'ย้าย ผกก. หัวหน้าสถานีตำรวจ/หัวหน้างาน ไปตำแหน่งที่มิใช่หัวหน้าสถานี/หัวหน้างาน (กฎ ก.ตร.ฯ ข้อ ๒๑ วรรคสอง, ๒๓ · ว ๒๔๕๖ ข้อ ๑๑)',
+    label: 'ย้าย ผกก. หัวหน้าสถานีตำรวจ/หัวหน้างาน ไปตำแหน่งที่มิใช่หัวหน้าสถานี/หัวหน้างาน',
   },
   {
     value: 'first_time_station_chief',
-    label: 'แต่งตั้งดำรงตำแหน่งหัวหน้าสถานีตำรวจระดับ ผกก. เป็นครั้งแรกในสถานีตำรวจระดับกลาง (พ.ร.บ.ฯ ม.๘๕ · ว ๒๔๕๖ ข้อ ๑๒)',
+    label: 'เลื่อนดำรงตำแหน่งหัวหน้าสถานีตำรวจระดับ ผกก. เป็นครั้งแรก',
   },
   {
     value: 'urgent_policy_defect',
-    label: 'สับเปลี่ยนหมุนเวียนเนื่องจากบกพร่องตามนโยบายเร่งด่วนของรัฐบาลและ ตร. (ว ๒๔๕๖ ข้อ ๖)',
+    label: 'สับเปลี่ยนหมุนเวียนเนื่องจากบกพร่องตามนโยบายเร่งด่วนของรัฐบาลและ ตร.',
   },
 ];
 
 const GENERAL_UNIT_TYPE_OPTIONS = [
-  { value: 'tr_hq', label: 'ระดับ ตร. (คณะกรรมการพิจารณาการแต่งตั้งระดับ ตร. ตาม ม.๘๑(๑)(ก) เสนอ ก.ตร. และโปรดเกล้าฯ · ข้อ ๗(๑)(ก)–(ข))' },
+  { value: 'tr_hq', label: 'ระดับ ตร. (คณะกรรมการพิจารณาการแต่งตั้งระดับ ตร. เสนอ ก.ตร.)' },
 ];
 
 const SUB_GENERAL_UNIT_TYPE_OPTIONS = [
-  { value: '', label: 'เลือกกลุ่มสังกัดหน่วยงาน (ระดับ รอง ผบก. ลงมาถึง สว.)' },
+  { value: '', label: 'เลือกกลุ่มสังกัดหน่วยงาน' },
   {
     value: 'non_opb_bch',
-    label: 'บช. หรือเทียบเท่าที่มิได้สังกัด สง.ผบ.ตร. (ผบช. สั่งแต่งตั้งผ่านคณะกรรมการ ม.๘๑(๒) · ว ๒๔๕๖ ข้อ ๘ คำสั่ง ๓๐ พ.ย. ๖๙ / มีผล ๗ ธ.ค. ๖๙)',
+    label: 'บช. หรือเทียบเท่าที่มิได้สังกัด สง.ผบ.ตร. (ผบช. เป็นผู้สั่งแต่งตั้ง)',
   },
   {
     value: 'opb_unit',
-    label: 'หน่วยงานในสังกัด สง.ผบ.ตร. (ผบ.ตร. สั่งแต่งตั้งผ่านคณะกรรมการ ม.๘๑(๑)(ข) · ว ๒๔๕๖ ข้อ ๙ ส่ง ผนวก ก–จ ผ่าน ทพ. ภายใน ๑๒ พ.ย. ๖๙)',
+    label: 'หน่วยงานในสังกัด สง.ผบ.ตร. (ผบ.ตร. เป็นผู้สั่งแต่งตั้ง)',
   },
   {
     value: 'direct_tr_unit',
-    label: 'ข้าราชการตำรวจที่มิได้สังกัดหน่วยงานใดใน สง.ผบ.ตร. ที่ขึ้นตรงต่อ ผบ.ตร. (ว ๒๔๕๖ ข้อ ๙.๓ · สกพ. ประสานงาน)',
+    label: 'ข้าราชการตำรวจที่มิได้สังกัดหน่วยงานใดใน สง.ผบ.ตร. ที่ขึ้นตรงต่อ ผบ.ตร.',
   },
 ];
 
 const GENERAL_STATUS_OPTIONS = [
-  { value: '', label: 'เลือกสถานะในบัญชีผู้เหมาะสม / การคัดเลือกระดับนายพล' },
+  { value: '', label: 'เลือกสถานะในบัญชีผู้เหมาะสม / การคัดเลือก' },
   {
     value: 'suitable_annex_a_b',
-    label: 'อยู่ในบัญชีผู้เหมาะสมเลื่อนตำแหน่งสูงขึ้นระดับนายพล (เรียงตามลำดับอาวุโส กฎ ก.ตร.ฯ ข้อ ๒๖, ๓๓)',
+    label: 'อยู่ในบัญชีผู้เหมาะสมเลื่อนตำแหน่งสูงขึ้น',
   },
   {
     value: 'unsuitable_annex_c_d',
-    label: 'ถูกจัดอยู่ในบัญชีผู้ที่ยังไม่เหมาะสมเลื่อนตำแหน่งสูงขึ้น (กฎ ก.ตร.ฯ ข้อ ๓๔ วรรคหนึ่ง — คณะกรรมการระดับ ตร. พิจารณา)',
+    label: 'ถูกจัดอยู่ในบัญชีผู้ที่ยังไม่เหมาะสมเลื่อนตำแหน่งสูงขึ้น (ข้อ ๓๔ วรรคหนึ่ง)',
   },
   {
     value: 'nominated_annex_e',
-    label: 'ได้รับการเสนอชื่อต่อคณะกรรมการกลั่นกรองระดับ ตร. / ก.ตร. (พ.ร.บ.ฯ ม.๘๑(๑)(ก) · กฎ ก.ตร.ฯ ข้อ ๓๙)',
+    label: 'ได้รับการเสนอชื่อในบัญชีคัดเลือกหรือแต่งตั้ง (ข้อ ๓๙, ๔๐(๑))',
   },
 ];
 
 const SUB_GENERAL_ANNEX_OPTIONS = [
-  { value: '', label: 'เลือกสถานะข้อมูลตามแบบฟอร์ม ว ๒๔๕๖ (ผนวก ก – ช)' },
+  { value: '', label: 'เลือกสถานะตามแบบฟอร์ม ว ๒๔๕๖ (ผนวก ก – ช)' },
   {
     value: 'suitable_annex_a_b',
-    label: 'อยู่ในบัญชีผู้เหมาะสมเลื่อนตำแหน่งสูงขึ้นของหน่วย (ผนวก ก – ผนวก ข · เรียงตาม กฎ ก.ตร.ฯ ข้อ ๒๖(๑), ๓๓)',
+    label: 'อยู่ในบัญชีผู้เหมาะสมเลื่อนตำแหน่งสูงขึ้น (ผนวก ก – ข)',
   },
   {
     value: 'unsuitable_annex_c_d',
-    label: 'ถูกจัดอยู่ในบัญชีผู้ที่ยังไม่เหมาะสมเลื่อนตำแหน่งสูงขึ้น (ผนวก ค – ผนวก ง · กฎ ก.ตร.ฯ ข้อ ๓๔ วรรคสอง ต้องมีหลักฐานเป็นรูปธรรม)',
+    label: 'ถูกจัดอยู่ในบัญชีผู้ที่ยังไม่เหมาะสมเลื่อนตำแหน่งสูงขึ้น (ผนวก ค – ง)',
   },
   {
     value: 'nominated_annex_e',
-    label: 'ได้รับการเสนอชื่อแต่งตั้งในรูปคณะกรรมการพิจารณาการแต่งตั้ง (ผนวก จ · พ.ร.บ.ฯ ม.๘๑(๑)(ข)/(๒) · กฎ ก.ตร.ฯ ข้อ ๔๐)',
+    label: 'ได้รับการเสนอชื่อแต่งตั้งในรูปคณะกรรมการ (ผนวก จ)',
   },
   {
     value: 'missing_performance_annex_f_g',
-    label: 'มีชื่อในบัญชีผู้ไม่ส่งผลการปฏิบัติงาน / บันทึกสรุปผลงาน (ผนวก ฉ – ผนวก ช · กฎ ก.ตร.ฯ ข้อ ๓๓)',
+    label: 'มีชื่อในบัญชีผู้ไม่ส่งผลการปฏิบัติงาน / บันทึกสรุปผลงาน (ผนวก ฉ – ช)',
   },
 ];
-
-const FALLBACK_TIER_INFO = {
-  general: {
-    title: 'ระดับที่ ๑: ระดับ ผบก. ขึ้นไป หรือระดับนายพล',
-    appointing_authority:
-      'ผบ.ตร. คัดเลือกรายชื่อผ่านคณะกรรมการระดับ ตร. (ม.๘๑(๑)(ก) มีผู้แทน ก.พ. ร่วม) เสนอ ก.ตร. ให้ความเห็นชอบ และนำความกราบบังคมทูลเพื่อทรงพระกรุณาโปรดเกล้าฯ แต่งตั้ง (ม.๗๘)',
-    timeframe:
-      'วาระประจำปี: ๑ ก.ค. – ๓๑ ส.ค. (ข้อ ๗(๑)(ข)) · ผบ.ตร. ภายใน ๓๑ ก.ค. (ข้อ ๗(๑)(ก)) · วาระเมษายน: ๑ ก.พ. – ๓๑ มี.ค. (ข้อ ๗(๒))',
-    seniority_quota_rule:
-      'รอง ผบ.ตร./ผู้ช่วย ผบ.ตร. พิจารณาเรียงตามลำดับอาวุโสร้อยละ ๑๐๐ (ม.๘๒(๑), ข้อ ๔๗(๑)) · ผบช./จตร. ลงมาถึง ผบก. คำนึงถึงอาวุโสไม่น้อยกว่าร้อยละ ๕๐ ของจำนวนตำแหน่งว่างในแต่ละระดับในภาพรวม ตร. (ม.๘๒(๒), ข้อ ๔๗(๒))',
-    positions: [
-      { position: 'ผบ.ตร.', target_rank: 'พล.ต.อ.', eligibility: 'รอง ผบ.ตร. หรือ จตช. (ม.๗๗(๑))', seniority_quota: 'ตาม ม.๗๘(๑)' },
-      { position: 'รอง ผบ.ตร. / จตช.', target_rank: 'พล.ต.อ.', eligibility: 'ผู้ช่วย ผบ.ตร. หรือ รอง จตช. ≥ ๑ ปี (ม.๗๗(๒))', seniority_quota: 'อาวุโส ๑๐๐% (ม.๘๒(๑), ข้อ ๔๗(๑))' },
-      { position: 'ผู้ช่วย ผบ.ตร. / รอง จตช.', target_rank: 'พล.ต.ท.', eligibility: 'ผบช. หรือ จตร. ≥ ๑ ปี (ม.๗๗(๓))', seniority_quota: 'อาวุโส ๑๐๐% (ม.๘๒(๑), ข้อ ๔๗(๑))' },
-      { position: 'ผบช. / จตร.', target_rank: 'พล.ต.ท.', eligibility: 'รอง ผบช. หรือ รอง จตร. ≥ ๒ ปี (ม.๗๗(๔), ข้อ ๑๗)', seniority_quota: 'อาวุโส ≥ ๕๐% ของตำแหน่งว่าง ตร. (ม.๘๒(๒), ข้อ ๔๗(๒))' },
-      { position: 'รอง ผบช. / รอง จตร.', target_rank: 'พล.ต.ต.', eligibility: 'ผบก. ≥ ๓ ปี (ม.๗๗(๕), ข้อ ๑๗)', seniority_quota: 'อาวุโส ≥ ๕๐% ของตำแหน่งว่าง ตร. (ม.๘๒(๒), ข้อ ๔๗(๒))' },
-      { position: 'ผบก.', target_rank: 'พ.ต.อ.(พิเศษ) / พล.ต.ต.', eligibility: 'รอง ผบก. ≥ ๔ ปี (ม.๗๗(๖), ข้อ ๑๗)', seniority_quota: 'อาวุโส ≥ ๕๐% ของตำแหน่งว่าง ตร. (ม.๘๒(๒), ข้อ ๔๗(๒))' },
-    ],
-  },
-  sub_general_to_inspector: {
-    title: 'ระดับที่ ๒: ระดับ รอง ผบก. ลงมา หรือระดับรองผู้บังคับการ – สารวัตร',
-    appointing_authority:
-      'ผบ.ตร. (สำหรับสังกัด สง.ผบ.ตร. ผ่านคณะกรรมการ ม.๘๑(๑)(ข)) หรือ ผบช. (สำหรับ บช. ที่มิได้สังกัด สง.ผบ.ตร. ผ่านคณะกรรมการ ม.๘๑(๒)) โดยเลื่อนตำแหน่งสูงขึ้นเฉพาะภายในหน่วย (ม.๗๙, ๘๐)',
-    timeframe:
-      'วาระประจำปี: ๑ ต.ค. – ๓๐ พ.ย. (กฎ ก.ตร.ฯ ข้อ ๗(๑)(ค) · ว ๒๔๕๖ กำหนดออกคำสั่งพร้อมกัน ๓๐ พ.ย. ๒๕๖๙ และมีผลใช้บังคับพร้อมกัน ๗ ธ.ค. ๒๕๖๙)',
-    seniority_quota_rule:
-      'เลื่อนตำแหน่งสูงขึ้นคำนึงถึงอาวุโสไม่น้อยกว่าร้อยละ ๓๓ ของจำนวนตำแหน่งว่างในแต่ละระดับของหน่วยนั้น (ม.๘๒(๓), ข้อ ๔๗(๓)) ส่วนที่เหลือร้อยละ ๖๗ พิจารณาอาวุโสประกอบความรู้ความสามารถ (ม.๘๒(๔), ข้อ ๔๗(๔))',
-    positions: [
-      { position: 'รอง ผบก.', target_rank: 'พ.ต.อ.', eligibility: 'ผกก. ≥ ๔ ปี (ม.๗๗(๗), ข้อ ๑๗)', seniority_quota: 'อาวุโส ≥ ๓๓% ของตำแหน่งว่างในหน่วย (ม.๘๒(๓), ข้อ ๔๗(๓))' },
-      { position: 'ผกก.', target_rank: 'พ.ต.ท. / พ.ต.อ.', eligibility: 'รอง ผกก. หรือ สวญ. ≥ ๔ ปี (ม.๗๗(๘), ข้อ ๑๗ · หน.สภ.ครั้งแรกต้องระดับกลาง ม.๘๕)', seniority_quota: 'อาวุโส ≥ ๓๓% ของตำแหน่งว่างในหน่วย (ม.๘๒(๓), ข้อ ๔๗(๓))' },
-      { position: 'รอง ผกก. / สวญ.', target_rank: 'พ.ต.ท.', eligibility: 'สว. ≥ ๕ ปี (ม.๗๗(๙), ข้อ ๑๗)', seniority_quota: 'อาวุโส ≥ ๓๓% ของตำแหน่งว่างในหน่วย (ม.๘๒(๓), ข้อ ๔๗(๓))' },
-      { position: 'สว.', target_rank: 'ร.ต.อ. – พ.ต.ท.', eligibility: 'รอง สว. ≥ ๗ ปี (ม.๗๗(๑๐), ข้อ ๑๗)', seniority_quota: 'อาวุโส ≥ ๓๓% ของตำแหน่งว่างในหน่วย (ม.๘๒(๓), ข้อ ๔๗(๓))' },
-      { position: 'สับเปลี่ยนหมุนเวียน (รอง ผบก. – สว.)', target_rank: 'ระดับเท่าเดิม', eligibility: 'ดำรงตำแหน่งเดิม ≥ ๒ ปี (ข้อ ๒๑ วรรคหนึ่ง) · ห้ามย้าย ผกก. หน.สภ. ไปมิใช่ หน.สภ. เว้นสมัครใจ/เสียหายราชการ (ข้อ ๒๑ วรรคสอง)', seniority_quota: 'สับเปลี่ยนภายในหน่วย หรือข้ามหน่วยตามข้อตกลง ผบช. (ม.๘๐, ข้อ ๒๒)' },
-    ],
-  },
-};
 
 export default function InputForm({ input, setInput, knowledge, activeTier = 'general' }) {
   const isSubGenTier = activeTier === 'sub_general_to_inspector';
@@ -177,7 +148,6 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
     (a) => a.source_level === input.level && a.source_account === input.account,
   );
 
-  const tierInfo = knowledge?.tier_definitions?.[activeTier] || FALLBACK_TIER_INFO[activeTier] || FALLBACK_TIER_INFO.general;
   const motionOptions = isSubGenTier ? SUB_GENERAL_MOTION_OPTIONS : GENERAL_MOTION_OPTIONS;
   const unitTypeOptions = isSubGenTier ? SUB_GENERAL_UNIT_TYPE_OPTIONS : GENERAL_UNIT_TYPE_OPTIONS;
   const statusOptions = isSubGenTier ? SUB_GENERAL_ANNEX_OPTIONS : GENERAL_STATUS_OPTIONS;
@@ -195,72 +165,15 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
 
   return (
     <div>
-      <details className="review-form statutory-tier-panel" open>
-        <summary>
-          หลักเกณฑ์กฎหมายประจำโหมด: {tierInfo.title} (พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗)
-        </summary>
-        <div className="statutory-summary-grid">
-          <div>
-            <small>ผู้มีอำนาจสั่งแต่งตั้งและคณะกรรมการกลั่นกรอง</small>
-            <p>{tierInfo.appointing_authority}</p>
-          </div>
-          <div>
-            <small>ห้วงเวลาดำเนินการตามกฎ ก.ตร.ฯ ข้อ ๗</small>
-            <p>{tierInfo.timeframe}</p>
-          </div>
-          <div>
-            <small>สัดส่วนการแต่งตั้งตามอาวุโส (พ.ร.บ.ฯ ม.๘๒ / กฎ ก.ตร.ฯ ข้อ ๔๗)</small>
-            <p>{tierInfo.seniority_quota_rule}</p>
-          </div>
-        </div>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>ตำแหน่งที่แต่งตั้ง</th>
-                <th>ยศตามเกณฑ์</th>
-                <th>คุณสมบัติระยะเวลาดำรงตำแหน่งขั้นต่ำ (พ.ร.บ.ฯ ม.๗๗ / กฎ ก.ตร.ฯ ข้อ ๑๗)</th>
-                <th>สัดส่วนอาวุโสและขอบเขตหน่วย</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(tierInfo.positions || []).map((pos) => (
-                <tr key={pos.position}>
-                  <td>
-                    <strong>{pos.position}</strong>
-                  </td>
-                  <td>{pos.target_rank}</td>
-                  <td>{pos.eligibility}</td>
-                  <td>{pos.seniority_quota}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
-
       <div className="intake-readiness" aria-label="ความครบถ้วนของข้อมูลเบื้องต้น">
         <div className="intake-readiness-head">
           <strong>ความพร้อมข้อมูลตั้งต้น ({completedCount}/{checklist.length} รายการ)</strong>
-          {matchedAccount ? (
-            matchedAccount.total_suitable_population ? (
-              <span className="badge-pill verified-pill">
-                บัญชีระดับนายพล (ม.๗๗(๑)–(๖)): ผู้เหมาะสมทั้งหมด {matchedAccount.total_suitable_population} ราย (หน้า PDF{' '}
-                {matchedAccount.source_page_start}–{matchedAccount.source_page_end})
-              </span>
-            ) : (
-              <span className="badge-pill verified-pill">
-                เกณฑ์ระดับ รอง ผบก. ลงมาถึง สว. ({matchedAccount.statutory_ref || 'ม.๗๗(๗)–(๑๐), ข้อ ๑๗'}) · ครองตำแหน่งเดิมไม่น้อยกว่า{' '}
-                {matchedAccount.min_years_in_level || 4} ปี · สัดส่วนอาวุโสภายในหน่วยไม่น้อยกว่าร้อยละ ๓๓
-              </span>
-            )
-          ) : (
-            <span className="muted">
-              {isSubGenTier
-                ? 'โหมดระดับ รอง ผบก. ลงมาถึง สว. · พิจารณาภายในหน่วย (ม.๘๐) · อาวุโส ≥ ร้อยละ ๓๓ (ม.๘๒(๓), ข้อ ๔๗(๓))'
-                : 'โหมดระดับ ผบก. ขึ้นไป (นายพล) · พิจารณาระดับ ตร. เสนอ ก.ตร. และโปรดเกล้าฯ · อาวุโส ≥ ร้อยละ ๕๐ / ๑๐๐ (ม.๘๒(๑)–(๒))'}
+          {matchedAccount && matchedAccount.total_suitable_population ? (
+            <span className="badge-pill verified-pill">
+              ผู้เหมาะสมในบัญชีนี้ {matchedAccount.total_suitable_population} ราย (หน้า PDF{' '}
+              {matchedAccount.source_page_start}–{matchedAccount.source_page_end})
             </span>
-          )}
+          ) : null}
         </div>
         <div className="checklist-pills">
           {checklist.map((item) => (
@@ -314,13 +227,7 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
             }
           />
         </Field>
-        <Field
-          label={
-            isSubGenTier
-              ? 'ระดับ / ประเภทบัญชี (ระดับ รอง ผบก. ลงมาถึง สว. — ม.๗๗(๗)–(๑๐))'
-              : 'ระดับ / ประเภทบัญชี (ระดับ ผบก. ขึ้นไป / นายพล — ม.๗๗(๑)–(๖))'
-          }
-        >
+        <Field label="ระดับ / ประเภทบัญชี">
           <div className="paired">
             <select
               aria-label="ระดับบัญชี"
@@ -333,7 +240,7 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
                   : 'เลือกระดับ (ผบช./จตร. ลงมาถึง ผบก.)'}
               </option>
               {!isSubGenTier && generalLevels.length > 0 ? (
-                <optgroup label="ระดับ ผบก. ขึ้นไป (ระดับนายพล — พ.ร.บ.ฯ ม.๗๗(๔)–(๖), กฎ ก.ตร.ฯ ข้อ ๗(๑)(ข))">
+                <optgroup label="ระดับ ผบก. ขึ้นไป (ระดับนายพล)">
                   {generalLevels.map((l) => (
                     <option key={l} value={l}>
                       {GENERAL_LEVEL_LABELS[l] || l}
@@ -342,7 +249,7 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
                 </optgroup>
               ) : null}
               {isSubGenTier && subGeneralPromotionLevels.length > 0 ? (
-                <optgroup label="๑. เลื่อนตำแหน่งสูงขึ้นระดับ รอง ผบก. ลงมาถึง สว. (ม.๗๗(๗)–(๑๐), ข้อ ๑๗, ผนวก ก–จ)">
+                <optgroup label="๑. เลื่อนตำแหน่งสูงขึ้น (รอง ผบก. ลงมาถึง สว.)">
                   {subGeneralPromotionLevels.map((l) => (
                     <option key={l} value={l}>
                       {l}
@@ -351,7 +258,7 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
                 </optgroup>
               ) : null}
               {isSubGenTier && subGeneralRotationLevels.length > 0 ? (
-                <optgroup label="๒. สับเปลี่ยนหมุนเวียนระดับเท่าเดิม รอง ผบก. – สว. (ข้อ ๒๑, ๒๓, ว ๒๔๕๖ ข้อ ๔–๖, ๑๑)">
+                <optgroup label="๒. สับเปลี่ยนหมุนเวียนระดับเท่าเดิม (รอง ผบก. – สว.)">
                   {subGeneralRotationLevels.map((l) => (
                     <option key={l} value={l}>
                       {l}
@@ -375,13 +282,7 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
           </div>
         </Field>
 
-        <Field
-          label={
-            isSubGenTier
-              ? 'กลุ่มสังกัดหน่วยที่มีอำนาจแต่งตั้ง (ม.๗๙, ๘๑ และ ว ๒๔๕๖ ข้อ ๘–๙)'
-              : 'ขอบเขตคณะกรรมการกลั่นกรอง (ม.๗๘, ๘๑(๑)(ก))'
-          }
-        >
+        <Field label={isSubGenTier ? 'กลุ่มสังกัดหน่วยที่มีอำนาจแต่งตั้ง' : 'ขอบเขตการพิจารณา'}>
           <select
             aria-label="กลุ่มสังกัดหน่วย"
             value={input.unit_type || (isSubGenTier ? '' : 'tr_hq')}
@@ -394,21 +295,11 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
             ))}
           </select>
         </Field>
-        <Field
-          label={
-            isSubGenTier
-              ? 'ชื่อหน่วย / สังกัดบัญชีอาวุโสภายในหน่วย (เช่น บช.น., ภ.1, สทส.)'
-              : 'หน่วยปัจจุบัน / หน่วยที่เสนอแต่งตั้ง (เช่น ภ.1, บช.ก., สพฐ.ตร.)'
-          }
-        >
+        <Field label="หน่วย / สังกัด">
           <input
             value={input.unit_name || ''}
             onChange={(e) => update('unit_name', e.target.value)}
-            placeholder={
-              isSubGenTier
-                ? 'ระบุชื่อ บช. / ภ. / หน่วยงานในสังกัด สง.ผบ.ตร. (การเลื่อนตำแหน่งทำเฉพาะภายในหน่วยตาม ม.๘๐)'
-                : 'ระบุชื่อส่วนราชการ (การแต่งตั้งระดับ ผบก. ขึ้นไป พิจารณาในภาพรวมระดับ ตร.)'
-            }
+            placeholder="เช่น บช.น., ภ.1, บช.ก., สพฐ.ตร., สทส."
           />
         </Field>
 
@@ -425,13 +316,7 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
             ))}
           </select>
         </Field>
-        <Field
-          label={
-            isSubGenTier
-              ? 'สถานะตามแบบฟอร์ม ผนวก ก – ช (ว ๒๔๕๖ / กฎ ก.ตร.ฯ ข้อ ๓๓–๓๔, ๔๐)'
-              : 'สถานะในบัญชีผู้เหมาะสม / การคัดเลือกระดับนายพล (กฎ ก.ตร.ฯ ข้อ ๓๓–๓๔, ๓๙)'
-          }
-        >
+        <Field label={isSubGenTier ? 'สถานะในบัญชี (ผนวก ก – ช)' : 'สถานะในบัญชีผู้เหมาะสม / การคัดเลือก'}>
           <select
             aria-label="สถานะตามแบบฟอร์ม ผนวก ก ถึง ช"
             value={input.annex_status || ''}

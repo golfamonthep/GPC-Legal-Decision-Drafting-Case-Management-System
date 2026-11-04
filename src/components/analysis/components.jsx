@@ -7,24 +7,15 @@ export function KnowledgeRail({knowledge,activeTier='general',onOpen}){
   const isSubGen=activeTier==='sub_general_to_inspector';
   return (
     <aside className="knowledge-rail">
-      <h3>{isSubGen?'ฐานอ้างอิง รอง ผบก. – สว.':'ฐานอ้างอิง ผบก. ขึ้นไป (นายพล)'}</h3>
+      <h3>ฐานอ้างอิงที่เชื่อมโยง</h3>
       <dl>
-        <div><dt>ระดับที่เลือก</dt><dd>{isSubGen?'รอง ผบก. ลงมาถึง สว.':'ผบก. ขึ้นไป (นายพล)'}</dd></div>
-        <div><dt>พ.ร.บ.ตำรวจฯ ๒๕๖๕</dt><dd>{isSubGen?'ม.๗๗(๗)–(๑๐), ๗๙–๘๒':'ม.๗๗(๑)–(๖), ๗๘, ๘๑–๘๒'}</dd></div>
-        <div><dt>กฎ ก.ตร.ฯ ๒๕๖๗</dt><dd>{isSubGen?'ข้อ ๗(๑)(ค), ๑๗, ๒๑, ๔๐, ๔๗':'ข้อ ๗(๑)(ข), ๑๗, ๓๙, ๔๗'}</dd></div>
-        <div><dt>สัดส่วนอาวุโส</dt><dd>{isSubGen?'≥ ร้อยละ ๓๓ (ภายในหน่วย)':'≥ ร้อยละ ๕๐ / ๑๐๐ (ระดับ ตร.)'}</dd></div>
-        <div><dt>แหล่งข้อมูลหลัก</dt><dd>{isSubGen?'ว ๒๔๕๖ (ผนวก ก–ช)':'อาวุโสครั้งที่ ๔ (181 ราย)'}</dd></div>
+        <div><dt>โหมดวิเคราะห์</dt><dd>{isSubGen?'รอง ผบก. ลงมาถึง สว.':'ผบก. ขึ้นไป (นายพล)'}</dd></div>
+        <div><dt>สถานะฐานอ้างอิง</dt><dd>{knowledge?.integrity==='VERIFIED'?'พร้อมใช้งาน (ตรวจ Hash แล้ว)':'กำลังโหลด...'}</dd></div>
+        <div><dt>ต้นฉบับ PDF</dt><dd>{knowledge?.sources?.length||0} ฉบับ</dd></div>
+        <div><dt>ข้อกฎหมาย/คำวินิจฉัย</dt><dd>{knowledge?.chunk_count||0} รายการ</dd></div>
+        <div><dt>ข้อมูลอาวุโส/แต่งตั้ง</dt><dd>{knowledge?.seniority||0} / {knowledge?.appointments||0} รายการ</dd></div>
       </dl>
-      <p className="warning">ตำแหน่งว่างจริง: ต้องอ้างอิงเอกสารที่ตรวจแล้ว</p>
-      <div className="rail-note">
-        <p>{isSubGen?'หลักเกณฑ์ระดับ รอง ผบก. ลงมาถึง สว.':'หลักเกณฑ์ระดับ ผบก. ขึ้นไป (ระดับนายพล)'}</p>
-        <p className="muted">
-          {isSubGen
-            ?'พิจารณาแต่งตั้งเลื่อนตำแหน่งสูงขึ้นเฉพาะภายในหน่วย (ม.๘๐) คำนึงถึงอาวุโสไม่น้อยกว่าร้อยละ ๓๓ ของตำแหน่งว่างในแต่ละระดับของหน่วยนั้น (ม.๘๒(๓), ข้อ ๔๗(๓)) และตรวจตามแนวทาง ว ๒๔๕๖ (ข้อ ๑–๑๓, ผนวก ก–ช)'
-            :'ผบ.ตร. คัดเลือกผ่านคณะกรรมการระดับ ตร. (ม.๘๑(๑)(ก) มีผู้แทน ก.พ. ร่วม) เสนอ ก.ตร. และโปรดเกล้าฯ · รอง ผบ.ตร./ผู้ช่วย ผบ.ตร. อาวุโส ๑๐๐% · ผบช. ลงมาถึง ผบก. อาวุโส ≥ ๕๐% ของตำแหน่งว่างระดับ ตร.'}
-        </p>
-      </div>
-      <button className="outline full" onClick={onOpen}><Icon name="open"/>เปิดฐานอ้างอิง</button>
+      <button className="outline full" onClick={onOpen}><Icon name="open"/>ค้นและแนบฐานอ้างอิง</button>
     </aside>
   );
 }
