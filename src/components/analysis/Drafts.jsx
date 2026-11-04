@@ -10,7 +10,9 @@ const LEGAL_PHRASES = [
 
 export default function Drafts({ job, setJob, operate, onDirty, canAI = true, aiUnavailableReason = null }) {
   const [section, setSection] = useState(SECTIONS[0]);
-  const [text, setText] = useState(job.revisions[0]?.data.sections || blankSections());
+  const [text, setText] = useState(
+    job.revisions[0]?.data.sections || job.runs[0]?.data.auto_draft_sections || blankSections(),
+  );
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
@@ -29,6 +31,15 @@ export default function Drafts({ job, setJob, operate, onDirty, canAI = true, ai
     operate(async () => {
       setJob(await api(`/jobs/${job.id}/drafts`, 'POST', { version: job.version, sections: text }));
       setDirty(false);
+    });
+  const autoDraftAll = () =>
+    operate(async () => {
+      const updated = await api(`/jobs/${job.id}/auto-draft`, 'POST', { version: job.version });
+      setJob(updated);
+      if (updated.revisions?.[0]?.data?.sections) {
+        setText(updated.revisions[0].data.sections);
+        setDirty(false);
+      }
     });
   const propose = () =>
     operate(async () => {
@@ -81,6 +92,9 @@ export default function Drafts({ job, setJob, operate, onDirty, canAI = true, ai
           </p>
         </div>
         <div className="actions">
+          <button className="outline" onClick={autoDraftAll}>
+            สร้างโครงร่างอัตโนมัติทั้ง 8 หมวด (จากข้อมูลที่มี)
+          </button>
           <button className="outline" onClick={fillInputs}>
             เติมข้อความข้อมูลเรื่อง
           </button>
@@ -194,4 +208,3 @@ export default function Drafts({ job, setJob, operate, onDirty, canAI = true, ai
     </>
   );
 }
-

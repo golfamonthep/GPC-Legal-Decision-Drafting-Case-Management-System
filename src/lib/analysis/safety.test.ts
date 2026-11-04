@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {assertOwner,assertAssignment,cleanInput,invalidateDocument,validateCitations,boundedAppend,assertSameOrigin,invalidateSource} from './safety.mjs';
-import {analyze,validateProposal,normalizeName,normalizeSearchText} from './engine.mjs';
+import {analyze,buildAutoDraftSections,validateProposal,normalizeName,normalizeSearchText} from './engine.mjs';
 import {CIRCULAR_2456_CHUNKS,KTR_APPOINTMENT_2567_CHUNKS,STATUTORY_TIER_DEFINITIONS,SUB_GENERAL_TO_INSPECTOR_ACCOUNTS,evaluateCircular2456Rules,resolveJobTier,resolveSeniorityQuotaSpec} from './subGeneralToInspectorData.mjs';
 
 test('workspaces are owner scoped even when identifiers are known',()=>{assert.throws(()=>assertOwner({ownerKey:'a'},{id:'b',role:'LEGAL_OFFICER'}));assert.doesNotThrow(()=>assertOwner({ownerKey:'a'},{id:'a',role:'REGISTRY_OFFICER'}));});
@@ -107,4 +107,29 @@ test('KTR Appointment Regulation 2567 chunks are visually verified across all 48
   );
   const clause47 = KTR_APPOINTMENT_2567_CHUNKS.find((c) => c.section_num === '๔๗');
   assert.ok(clause47 && clause47.text.includes('ไม่น้อยกว่าร้อยละห้าสิบ') && clause47.text.includes('ไม่น้อยกว่าร้อยละสามสิบสาม'));
+});
+
+test('incomplete user input auto-infers title, tier, level, motion, unit type, and builds all 8 auto-draft sections', () => {
+  const cleaned = cleanInput(
+    {
+      subject_name: 'พ.ต.ท. สมชาย ใจดี',
+      rank_position: 'รอง ผกก.ป. สภ.เมืองนนทบุรี ภ.1',
+      claim: 'ขอความเป็นธรรมกรณีไม่ได้รับการเลื่อนตำแหน่งเป็น ผกก.',
+    },
+    { references: [], facts: [] },
+  );
+  assert.ok(cleaned.title.includes('พ.ต.ท. สมชาย ใจดี'));
+  assert.equal(cleaned.analysis_tier, 'sub_general_to_inspector');
+  assert.equal(cleaned.level, 'ผกก. (เลื่อนจาก รอง ผกก.)');
+  assert.equal(cleaned.appointment_motion, 'promotion');
+  assert.equal(cleaned.unit_type, 'non_opb_bch');
+
+  const draft = buildAutoDraftSections(
+    { version: 1, data: { ...cleaned, bundle_fingerprint: 'fp1' } },
+    [],
+    { seniority: [], appointments: [], summary: { fingerprint: 'fp1' } },
+  );
+  assert.ok(draft['ข้อมูลเรื่องและบุคคล'].includes('พ.ต.ท. สมชาย ใจดี'));
+  assert.ok(draft['กฎหมายและหลักเกณฑ์'].includes('พิเคราะห์แล้วเห็นว่า'));
+  assert.ok(draft['การวิเคราะห์'].includes('พิจารณาแล้วเห็นว่า'));
 });

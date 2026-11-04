@@ -167,7 +167,9 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
     <div>
       <div className="intake-readiness" aria-label="ความครบถ้วนของข้อมูลเบื้องต้น">
         <div className="intake-readiness-head">
-          <strong>ความพร้อมข้อมูลตั้งต้น ({completedCount}/{checklist.length} รายการ)</strong>
+          <strong>
+            ความพร้อมข้อมูลตั้งต้น ({completedCount}/{checklist.length} รายการ) · กรอกเท่าที่มีข้อมูลได้ทันที ระบบช่วยจับคู่ทะเบียนและข้อกฎหมายให้อัตโนมัติ
+          </strong>
           {matchedAccount && matchedAccount.total_suitable_population ? (
             <span className="badge-pill verified-pill">
               ผู้เหมาะสมในบัญชีนี้ {matchedAccount.total_suitable_population} ราย (หน้า PDF{' '}
@@ -186,7 +188,7 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
       </div>
 
       <div className="form-grid">
-        <Field label="ชื่อเรื่อง">
+        <Field label="ชื่อเรื่อง (เว้นว่างให้ระบบตั้งชื่ออัตโนมัติได้)">
           <input
             value={input.title}
             onChange={(e) => update('title', e.target.value)}
@@ -195,7 +197,6 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
                 ? 'เช่น ร้องทุกข์การแต่งตั้งข้าราชการตำรวจ ระดับ รอง ผบก. ลงมาถึง สว. วาระประจำปี 2569'
                 : 'เช่น ร้องทุกข์การแต่งตั้งข้าราชการตำรวจ ระดับ ผบก. ขึ้นไป วาระประจำปี 2569'
             }
-            required
           />
         </Field>
         <Field label="เลขอ้างอิงจากภายนอก">

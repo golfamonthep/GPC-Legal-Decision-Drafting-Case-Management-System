@@ -97,6 +97,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'VIEW_CASE_DETAIL',
     'VIEW_DOCUMENTS',
     'VIEW_DRAFT',
+    'EDIT_DRAFT',
+    'USE_AI_DRAFT',
     'USE_AI_REVIEW',
     'EXPORT_DOCX',
     'VIEW_AUDIT_LOGS',

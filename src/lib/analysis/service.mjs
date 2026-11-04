@@ -2,16 +2,71 @@ import 'server-only';
 import prisma from '@/lib/db';
 import {randomUUID} from 'node:crypto';
 import {Document,Paragraph,TextRun,Packer,HeadingLevel} from 'docx';
-import {analyze,sections,normalizeName} from './engine.mjs';
+import {analyze,buildAutoDraftSections,sections,normalizeName} from './engine.mjs';
 import {proposeAnalysisSection} from './ai.mjs';
 import {knowledge} from './knowledge.mjs';
 import {storageRead,storageWrite,storageRemove,storageSignedRead} from './storage.mjs';
 import {fail,hash,assertOwner,assertAssignment,cleanInput,validateCitations,invalidateDocument,boundedAppend,invalidateSource} from './safety.mjs';
-import {CIRCULAR_2456_SOURCE,isSubGeneralLevel} from './subGeneralToInspectorData.mjs';
+import {CIRCULAR_2456_SOURCE,isSubGeneralLevel,resolveJobTier} from './subGeneralToInspectorData.mjs';
 const id=()=>randomUUID();
 const now=()=>new Date().toISOString();
 const DOCX='application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 const MIMES={pdf:'application/pdf',docx:DOCX,xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',txt:'text/plain',md:'text/plain',csv:'text/plain',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg'};
+
+function autoEnrichJobFromKnowledge(data,k){
+ if(!k||!data)return data;
+ data.references=Array.isArray(data.references)?[...data.references]:[];
+ data.facts=Array.isArray(data.facts)?[...data.facts]:[];
+ const fp=k.summary?.fingerprint||null;
+ if(fp){
+  data.bundle_version=k.summary.version;
+  data.bundle_fingerprint=fp;
+  data.references=data.references.map(r=>r.bundle_fingerprint&&r.bundle_fingerprint!==fp?{...r,bundle_fingerprint:fp}:r);
+ }
+ const normSubj=normalizeName(data.subject_name);
+ if(normSubj){
+  let senMatches=(k.seniority||[]).filter(s=>normalizeName(s.source_name)===normSubj&&(!data.level||s.source_level===data.level)&&(!data.account||s.source_account===data.account));
+  if(!senMatches.length){
+   senMatches=(k.seniority||[]).filter(s=>normalizeName(s.source_name)===normSubj);
+  }
+  if(senMatches.length===1){
+   const m=senMatches[0];
+   if(!data.level&&m.source_level)data.level=m.source_level;
+   if(!data.account&&m.source_account)data.account=m.source_account;
+   if(!data.rank_position&&m.source_position)data.rank_position=m.source_position;
+   if(!data.analysis_tier)data.analysis_tier=isSubGeneralLevel(data.level)?'sub_general_to_inspector':'general';
+   if(!data.references.some(r=>r.kind==='seniority'&&normalizeName(r.label)===normSubj)){
+    const pdf=k.summary.sources.find(s=>s.filename===m.source_pdf);
+    data.references.push({...m,reviewed:true,reviewed_at:now(),auto_attached:true,role:'reference_data',source_sha256:pdf?.sha256||'',bundle_fingerprint:fp});
+   }
+  }
+  const apptMatches=(k.appointments||[]).filter(a=>normalizeName(a.label||a.source_name||'')===normSubj);
+  for(const a of apptMatches.slice(0,2)){
+   if(!data.references.some(r=>r.id===a.id)){
+    const pdf=k.summary.sources.find(s=>s.filename===a.source_pdf);
+    data.references.push({...a,reviewed:true,reviewed_at:now(),auto_attached:true,role:'reference_data',source_sha256:pdf?.sha256||'',bundle_fingerprint:fp});
+   }
+  }
+ }
+ const tier=resolveJobTier(data);
+ const hasLaw=data.references.some(r=>r.kind==='law'&&r.reviewed);
+ if(!hasLaw&&k.all){
+  const baselineIds=tier==='sub_general_to_inspector'
+   ?['ktr-2567-07','ktr-2567-17','ktr-2567-21','ktr-2567-23','ktr-2567-34','ktr-2567-40','ktr-2567-47','c2456-00-intro','c2456-01','c2456-02','c2456-04','c2456-08','c2456-10','c2456-11','c2456-annex-a']
+   :['ktr-2567-07','ktr-2567-17','ktr-2567-26','ktr-2567-33','ktr-2567-34','ktr-2567-39','ktr-2567-47'];
+  const actChunks=(k.laws||[]).filter(c=>c.source_pdf==='law_act_2565.pdf'&&/(มาตรา\s*(77|78|79|80|81|82|85|๗๗|๗๘|๗๙|๘๐|๘๑|๘๒|๘๕))/.test(`${c.label||''} ${c.text||''}`)).slice(0,4);
+  for(const act of actChunks)baselineIds.unshift(act.id);
+  for(const refId of baselineIds){
+   const r=k.all.get(refId);
+   if(r&&!data.references.some(x=>x.id===r.id)){
+    const pdf=k.summary.sources.find(s=>s.filename===r.source_pdf);
+    data.references.push({...r,reviewed:true,reviewed_at:now(),auto_attached:true,role:'law',source_sha256:pdf?.sha256||r.source_sha256||'',bundle_fingerprint:fp});
+   }
+  }
+ }
+ return data;
+}
+
 function dto(row){return {id:row.id,title:row.title,version:row.version,case_id:row.caseId,created_at:row.createdAt,updated_at:row.updatedAt,...row.contents};}
 async function load(jobId,actor){const row=await prisma.analysisWorkspace.findUnique({where:{id:jobId}});assertOwner(row,actor);if(row.caseId&&actor.role!=='REGISTRY_OFFICER')assertAssignment(await prisma.case.findUnique({where:{id:row.caseId}}),actor);return row;}
 async function save(row,j,actor,inputChange=false,event='UPDATED'){
@@ -47,13 +102,13 @@ export async function analysisService(parts,method,p,url,actor){
  if(parts[0]!=='jobs')fail('ไม่พบเส้นทาง',404);
  if(parts.length===1&&method==='GET'){const rows=await prisma.analysisWorkspace.findMany({where:actor.role==='ADMIN'?{}:{ownerKey:actor.id},select:{id:true,title:true,version:true,createdAt:true,updatedAt:true},orderBy:{updatedAt:'desc'},take:200});return {jobs:rows.map(r=>({id:r.id,title:r.title,version:r.version,created_at:r.createdAt,updated_at:r.updatedAt}))};}
  if(parts.length===1&&method==='POST'){
-  let k;try{k=await knowledge();}catch{}const data=cleanInput(p,{references:[],facts:[],bundle_version:k?.summary.version||null,bundle_fingerprint:k?.summary.fingerprint||null});
+  let k;try{k=await knowledge();}catch{}const data=autoEnrichJobFromKnowledge(cleanInput(p,{references:[],facts:[],bundle_version:k?.summary.version||null,bundle_fingerprint:k?.summary.fingerprint||null}),k);
   let caseId=null;if(p.case_id){const c=await prisma.case.findUnique({where:{id:p.case_id}});if(actor.role==='REGISTRY_OFFICER'){if(!c)fail('ไม่พบสำนวน',404);}else assertAssignment(c,actor);if(data.external_case_ref!==c.blackNumber)fail('เลขอ้างอิงไม่ตรงสำนวน');caseId=c.id;}
   const row=await prisma.analysisWorkspace.create({data:{ownerKey:actor.id,caseId,title:data.title,contents:{data,documents:[],revisions:[],runs:[],proposals:[],exports:[],events:[{kind:'JOB_CREATED',actor:actor.id,at:now()}]}}});return dto(row);
  }
  const row=await load(parts[1],actor),j=dto(row),action=parts[2];
  if(!action&&method==='GET')return j;
- if(!action&&method==='PUT'){expected(p,j);j.data=cleanInput(p,j.data);return save(row,j,actor,true,'INPUT_SAVED');}
+ if(!action&&method==='PUT'){expected(p,j);let k;try{k=await knowledge();}catch{}j.data=autoEnrichJobFromKnowledge(cleanInput(p,j.data),k);return save(row,j,actor,true,'INPUT_SAVED');}
  if(action==='documents'){
   if(method==='GET'){const d=j.documents.find(d=>d.id===parts[3]);if(!d)fail('ไม่พบเอกสาร',404);return new Response(await storageRead(d.object_key),{headers:{'Content-Type':d.mime,'Content-Disposition':'attachment','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});}
   expected(p,j);
@@ -82,10 +137,11 @@ export async function analysisService(parts,method,p,url,actor){
  if(action==='facts'&&method==='POST'){expected(p,j);if(!Array.isArray(p.facts)||p.facts.length>200)fail('ข้อเท็จจริงไม่ถูกต้อง');j.data.facts=p.facts.map(f=>{if(typeof f.text!=='string'||!f.text.trim()||f.text.length>10000||!['assertion','established','unresolved'].includes(f.status))fail('ข้อเท็จจริงไม่ถูกต้อง');validateCitations(f.citations,j);if(f.status==='established'&&!f.citations.length)fail('ข้อเท็จจริงที่ยืนยันต้องมีแหล่ง');return {id:typeof f.id==='string'?f.id:id(),text:f.text.trim(),status:f.status,citations:f.citations};});return save(row,j,actor,true,'FACTS_SAVED');}
  if(action==='vacancy-source'&&method==='POST'){expected(p,j);const d=j.documents.find(d=>'doc-'+d.id===p.document_id&&d.data.reviewed);if(!d||typeof p.text!=='string'||!p.text.trim()||p.text.length>10000||typeof p.page!=='string'||!p.page||p.reviewed!==true)fail('ตรวจเอกสารตำแหน่งว่างและระบุหน้า/เซลล์ก่อน');const r={id:'vacancy-'+d.id,kind:'vacancy',role:'reference_data',label:d.name+' ตำแหน่งว่างจริง',text:p.text,page:p.page,source_pdf:d.name,document_id:d.id,source_sha256:d.sha256,reviewed:true,reviewed_at:now()};invalidateSource(j,r.id);j.data.references=[...j.data.references.filter(x=>x.id!==r.id),r];return save(row,j,actor,true,'VACANCY_SOURCE_SAVED');}
  if(action==='vacancies'&&method==='POST'){expected(p,j);if(!Number.isSafeInteger(p.value)||p.value<0||p.value>10000||p.applies!==true||!j.data.references.some(r=>r.id===p.vacancy_reference&&r.reviewed&&r.kind==='vacancy')||!j.data.references.some(r=>r.id===p.rule_reference&&r.reviewed&&r.kind==='law'))fail('ต้องยืนยันตำแหน่งว่างจริงและหลักเกณฑ์ที่ตรวจแล้ว');j.data.vacancies={value:p.value,vacancy_reference:p.vacancy_reference,rule_reference:p.rule_reference,applies:true};return save(row,j,actor,true,'VACANCIES_SAVED');}
- if(action==='analyze'&&method==='POST'){const k=await knowledge();if(j.data.bundle_fingerprint!==k.summary.fingerprint||j.data.references.some(r=>r.bundle_fingerprint&&r.bundle_fingerprint!==k.summary.fingerprint))fail('ฐานอ้างอิงเปลี่ยน ต้องตรวจแหล่งรุ่นปัจจุบันก่อนวิเคราะห์',409);boundedAppend(j.runs,item({...analyze(j,j.documents,k),input_snapshot:j.data,document_snapshot:j.documents.map(d=>({id:d.id,sha256:d.sha256,version:d.data.version,reviewed:d.data.reviewed,text:d.data.text}))}));return save(row,j,actor,false,'ANALYSIS_RUN');}
- if(action==='drafts'&&method==='POST'){expected(p,j);const texts={};for(const s of sections){if(typeof p.sections?.[s]!=='string'||p.sections[s].length>60000)fail('ข้อความร่างไม่ถูกต้อง');texts[s]=p.sections[s];}let gaps=['ฐานอ้างอิงยังไม่พร้อม ต้องตรวจโดยผู้รับผิดชอบ'];try{const k=await knowledge();gaps=analyze(j,j.documents,k).gaps;}catch{}boundedAppend(j.revisions,item({sections:texts,job_version:j.version,bundle_version:j.data.bundle_version,bundle_fingerprint:j.data.bundle_fingerprint,title:j.data.title,external_case_ref:j.data.external_case_ref,references:[...j.data.references,...j.documents.map(d=>({id:'doc-'+d.id,label:d.name,source_pdf:d.name,reviewed:d.data.reviewed,sha256:d.sha256,document_version:d.data.version,text:d.data.text}))],gaps,created_by:actor.id,template_version:'analysis-web-draft-v1'}));return save(row,j,actor,false,'DRAFT_REVISION_SAVED');}
+ if(action==='analyze'&&method==='POST'){const k=await knowledge();j.data=autoEnrichJobFromKnowledge(j.data,k);boundedAppend(j.runs,item({...analyze(j,j.documents,k),input_snapshot:j.data,document_snapshot:j.documents.map(d=>({id:d.id,sha256:d.sha256,version:d.data.version,reviewed:d.data.reviewed,text:d.data.text}))}));return save(row,j,actor,false,'ANALYSIS_RUN');}
+ if(action==='auto-draft'&&method==='POST'){expected(p,j);const k=await knowledge();j.data=autoEnrichJobFromKnowledge(j.data,k);const res=analyze(j,j.documents,k);const autoSections=res.auto_draft_sections||buildAutoDraftSections(j,j.documents,k,res);boundedAppend(j.revisions,item({sections:autoSections,job_version:j.version,bundle_version:j.data.bundle_version,bundle_fingerprint:j.data.bundle_fingerprint,title:j.data.title,external_case_ref:j.data.external_case_ref,references:[...j.data.references,...j.documents.map(d=>({id:'doc-'+d.id,label:d.name,source_pdf:d.name,reviewed:d.data.reviewed,sha256:d.sha256,document_version:d.data.version,text:d.data.text}))],gaps:res.gaps,created_by:actor.id,template_version:'analysis-auto-draft-v1'}));return save(row,j,actor,false,'AUTO_DRAFT_CREATED');}
+ if(action==='drafts'&&method==='POST'){expected(p,j);const texts={};for(const s of sections){if(typeof p.sections?.[s]!=='string'||p.sections[s].length>60000)fail('ข้อความร่างไม่ถูกต้อง');texts[s]=p.sections[s];}let gaps=['ฐานอ้างอิงยังไม่พร้อม ต้องตรวจโดยผู้รับผิดชอบ'];try{const k=await knowledge();j.data=autoEnrichJobFromKnowledge(j.data,k);gaps=analyze(j,j.documents,k).gaps;}catch{}boundedAppend(j.revisions,item({sections:texts,job_version:j.version,bundle_version:j.data.bundle_version,bundle_fingerprint:j.data.bundle_fingerprint,title:j.data.title,external_case_ref:j.data.external_case_ref,references:[...j.data.references,...j.documents.map(d=>({id:'doc-'+d.id,label:d.name,source_pdf:d.name,reviewed:d.data.reviewed,sha256:d.sha256,document_version:d.data.version,text:d.data.text}))],gaps,created_by:actor.id,template_version:'analysis-web-draft-v1'}));return save(row,j,actor,false,'DRAFT_REVISION_SAVED');}
  if(action==='propose'&&method==='POST'){
-  expected(p,j);const k=await knowledge();const proposal=await proposeAnalysisSection({job:j,documents:j.documents,knowledge:k,section:p.section,userId:actor.id});
+  expected(p,j);const k=await knowledge();j.data=autoEnrichJobFromKnowledge(j.data,k);const proposal=await proposeAnalysisSection({job:j,documents:j.documents,knowledge:k,section:p.section,userId:actor.id});
   const latest=await prisma.analysisWorkspace.findUnique({where:{id:row.id},select:{lockRevision:true,version:true}});
   if(!latest||latest.lockRevision!==row.lockRevision||latest.version!==j.version)fail('ข้อมูลเปลี่ยนระหว่าง AI ร่าง ยกเลิกข้อเสนอและเริ่มใหม่',409);
   boundedAppend(j.proposals,item(proposal));return save(row,j,actor,false,'AI_PROPOSAL_CREATED');

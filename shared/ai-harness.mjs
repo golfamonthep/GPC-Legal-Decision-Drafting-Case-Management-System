@@ -42,10 +42,13 @@ function positiveInt(value, fallback, min, max) {
 
 function configFrom(env) {
   const provider = String(env.AI_PROVIDER || DEFAULTS.provider).trim().toLowerCase();
+  const rawKey = Object.prototype.hasOwnProperty.call(env, 'AI_API_KEY')
+    ? env.AI_API_KEY
+    : (env.DEEPSEEK_API_KEY || env.OPENAI_API_KEY || '');
   return {
     enabled: String(env.AI_ENABLED || '').toLowerCase() === 'true',
     provider,
-    apiKey: String(env.AI_API_KEY || '').trim(),
+    apiKey: String(rawKey || '').trim(),
     baseUrl: String(env.AI_BASE_URL || (provider === 'openai' ? 'https://api.openai.com/v1' : DEFAULTS.baseUrl)).trim().replace(/\/+$/, ''),
     model: String(env.AI_MODEL || (provider === 'openai' ? 'gpt-4o-mini' : DEFAULTS.model)).trim(),
     timeoutMs: positiveInt(env.AI_TIMEOUT_MS, DEFAULTS.timeoutMs, 1000, 120000),
@@ -203,10 +206,25 @@ function validateSchema(value, schema, path = '$') {
 }
 
 const CITATION_KEYS = new Set(['citations', 'sourceIds', 'sourceChunkIds', 'supportingSourceChunkIds']);
+function normalizeSingleCitationId(raw, approved) {
+  if (typeof raw !== 'string') return null;
+  const trimmed = raw.trim();
+  if (approved.has(trimmed)) return trimmed;
+  const stripped = trimmed.replace(/^\[+|\]+$/g, '').trim();
+  if (approved.has(stripped)) return stripped;
+  const bracketMatch = trimmed.match(/^\[([^\]]+)\]/);
+  if (bracketMatch && approved.has(bracketMatch[1].trim())) return bracketMatch[1].trim();
+  return null;
+}
 function validateCitationIds(value, approved, key = '') {
   if (CITATION_KEYS.has(key)) {
-    if (!Array.isArray(value) || value.some(id => typeof id !== 'string' || !approved.has(id))) {
+    if (!Array.isArray(value)) {
       throw new AiHarnessError('AI_UNAPPROVED_CITATION', 502);
+    }
+    for (let i = 0; i < value.length; i++) {
+      const normalized = normalizeSingleCitationId(value[i], approved);
+      if (!normalized) throw new AiHarnessError('AI_UNAPPROVED_CITATION', 502);
+      value[i] = normalized;
     }
   }
   if (Array.isArray(value)) for (const item of value) validateCitationIds(item, approved);
@@ -289,7 +307,7 @@ export function createAiHarness({env = process.env, fetchImpl = globalThis.fetch
             messages: [
               {
                 role: 'system',
-                content: `${redactedInstructions}\n\nCRITICAL: Return ONLY a valid JSON object matching this schema:\n${JSON.stringify(request.schema)}`
+                content: `${redactedInstructions}${Array.isArray(request.approvedSourceIds) && request.approvedSourceIds.length ? `\n\nApproved citation IDs (in "citations" array, return ONLY exact ID strings from this list without brackets): ${JSON.stringify(request.approvedSourceIds)}` : ''}\n\nCRITICAL: Return ONLY a valid JSON object matching this schema:\n${JSON.stringify(request.schema)}`
               },
               {
                 role: 'user',

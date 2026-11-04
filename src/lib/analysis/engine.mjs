@@ -28,7 +28,116 @@ export const sections = [
   'ข้อเสนอเบื้องต้น',
 ];
 
-export function analyze(job, documents, knowledge) {
+export function buildAutoDraftSections(job, documents, knowledge, analysisResult = null) {
+  const j = job.data || {};
+  const res = analysisResult || analyze(job, documents, knowledge, false);
+  const isSubGen = res.is_sub_general;
+  const person = res.person || (res.person_candidates?.length === 1 ? res.person_candidates[0] : null);
+  const apptMatches = res.appointment_matches || [];
+  const subj = [j.rank_position, j.subject_name].filter(Boolean).join(' ').trim() || '(ยังไม่ระบุชื่อ-สกุลผู้ร้องทุกข์)';
+  const tierLabel = isSubGen
+    ? 'ระดับ รอง ผบก. ลงมาถึง สว. (คำสั่ง ผบ.ตร. สำหรับสังกัด สง.ผบ.ตร. หรือ คำสั่ง ผบช. สำหรับสังกัด บช. ที่มิได้สังกัด สง.ผบ.ตร.)'
+    : 'ระดับ ผบก. ขึ้นไป หรือระดับนายพล (คัดเลือกโดย ผบ.ตร. ผ่านคณะกรรมการระดับ ตร. เสนอ ก.ตร. ให้ความเห็นชอบ และทรงพระกรุณาโปรดเกล้าฯ แต่งตั้ง)';
+
+  const lawRefs = (j.references || []).filter((r) => r.kind === 'law' && r.reviewed);
+  const lawCiteTag = lawRefs.length ? ` [${lawRefs[0].id}]` : '';
+  const seniorityLine = person
+    ? `ปรากฏข้อมูลลำดับอาวุโสในบัญชี "${person.source_level || j.level || '-'}" (${person.source_account || j.account || '-'}) ลำดับที่ ${person.seniority_order || '-'} จากจำนวนผู้เหมาะสมทั้งหมด ${person.total_suitable_population || '-'} ราย (อ้างอิง ${person.source_pdf || '-'} หน้า ${person.page || '-'})${person.id ? ` [${person.id}]` : ''}`
+    : '(ยังไม่ได้แนบรายการยืนยันลำดับอาวุโสเฉพาะราย — อยู่ระหว่างตรวจสอบบัญชีอาวุโสต้นฉบับ)';
+  const apptLine = apptMatches.length
+    ? `ปรากฏข้อมูลในบัญชีแต่งตั้ง: ${apptMatches.map((a) => `${a.label || ''} (${a.text || ''})`).join(' ; ')}`
+    : '';
+
+  const establishedFacts = (j.facts || []).filter((f) => f.status === 'established');
+  const reviewedDocs = (documents || []).filter((d) => d.data?.reviewed);
+
+  const ruleSummaryLines = (res.rule_checks || []).map(
+    (c, idx) => `${idx + 1}. ${c.title}: ${c.detail}`,
+  );
+
+  const quotaText = res.quota
+    ? `เมื่อคำนวณจากจำนวนตำแหน่งว่างจริง ${res.quota.actual_vacancies} ตำแหน่ง ตามหลักเกณฑ์สัดส่วนอาวุโส (${res.quota.quota_pct_label}) คิดเป็นกลุ่มอาวุโสจำนวน ${res.quota.seniority_quota} ตำแหน่ง และกลุ่มความรู้ความสามารถประกอบอาวุโสจำนวน ${res.quota.knowledge_ability_quota} ตำแหน่ง`
+    : isSubGen
+      ? '(อยู่ระหว่างตรวจสอบจำนวนตำแหน่งว่างจริงของหน่วย เพื่อคำนวณสัดส่วนอาวุโสไม่น้อยกว่าร้อยละ ๓๓ ตามมาตรา ๘๒ (๓) และกฎ ก.ตร.ฯ ข้อ ๔๗ (๓))'
+      : '(อยู่ระหว่างตรวจสอบจำนวนตำแหน่งว่างจริงระดับ ตร. เพื่อคำนวณสัดส่วนอาวุโสตามมาตรา ๘๒ (๑)–(๒) และกฎ ก.ตร.ฯ ข้อ ๔๗ (๑)–(๒))';
+
+  return {
+    'ข้อมูลเรื่องและบุคคล': [
+      `เรื่อง: ${j.title || 'วิเคราะห์การแต่งตั้งข้าราชการตำรวจ'}`,
+      `เลขสำนวน/อ้างอิง: ${j.external_case_ref || '(ยังไม่ระบุเลขสำนวน)'}`,
+      `ผู้ร้องทุกข์: ${subj}`,
+      `กรอบการวิเคราะห์: ${tierLabel}`,
+      `ระดับการแต่งตั้งที่พิจารณา: ${j.level || '(ระบบประมวลผลตามกรอบตำแหน่งเบื้องต้น — โปรดระบุระดับการแต่งตั้งเพิ่มเติมหากมี)'}`,
+      `กลุ่มสายงาน/บัญชี/หน่วย: ${[j.account, j.unit_name].filter(Boolean).join(' · ') || '(ยังไม่ระบุกลุ่มสายงานหรือหน่วย)'}`,
+      `ข้อมูลลำดับอาวุโส: ${seniorityLine}`,
+      apptLine,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+
+    'คำร้องและคำขอ': j.claim
+      ? `ผู้ร้องทุกข์ (${subj}) ยื่นหนังสือร้องทุกข์สรุปสาระสำคัญได้ว่า ${j.claim} [input-claim]`
+      : `ผู้ร้องทุกข์ (${subj}) ยื่นหนังสือร้องทุกข์เกี่ยวกับการแต่งตั้งข้าราชการตำรวจในกรอบ${isSubGen ? 'ระดับ รอง ผบก. ลงมาถึง สว.' : 'ระดับ ผบก. ขึ้นไป หรือระดับนายพล'} (ข้อมูลคำร้องและคำขอยังระบุไม่ครบถ้วน — โปรดระบุสาระคำร้องและคำขอท้ายคำร้องทุกข์เพิ่มเติม)`,
+
+    'คำชี้แจง': j.response
+      ? `คู่กรณีในร้องทุกข์ / หน่วยผู้มีอำนาจสั่งแต่งตั้งชี้แจงสรุปสาระสำคัญได้ว่า ${j.response} [input-response]`
+      : `(ยังไม่มีข้อมูลคำชี้แจงของคู่กรณีในร้องทุกข์หรือรายงานการประชุมคณะกรรมการกลั่นกรองการแต่งตั้ง — อยู่ระหว่างรวบรวมคำชี้แจงและเอกสารประกอบ)`,
+
+    'ข้อเท็จจริงและหลักฐาน': [
+      person ? `๑. ข้อมูลลำดับอาวุโส: ${seniorityLine}` : '',
+      apptLine ? `๒. ข้อมูลคำสั่ง/บัญชีแต่งตั้ง: ${apptLine}` : '',
+      ...establishedFacts.map(
+        (f, idx) =>
+          `${idx + (person ? 2 : 1) + (apptLine ? 1 : 0)}. ${f.text} ${
+            (f.citations || []).map((c) => `[${c}]`).join(' ')
+          }`.trim(),
+      ),
+      ...reviewedDocs.map((d) => `- เอกสารประกอบที่ตรวจแล้ว: ${d.name} [doc-${d.id}]`),
+      !person && !establishedFacts.length && !reviewedDocs.length
+        ? `(อยู่ระหว่างรวบรวมข้อเท็จจริงที่ยืนยันจากต้นฉบับบัญชีอาวุโส ตารางตำแหน่งว่าง และรายงานการประชุมคณะกรรมการแต่งตั้ง)`
+        : '',
+    ]
+      .filter(Boolean)
+      .join('\n'),
+
+    'ประเด็นที่พิจารณา': j.issues
+      ? j.issues
+      : isSubGen
+        ? `การแต่งตั้งข้าราชการตำรวจระดับ รอง ผบก. ลงมาถึง สว. ในส่วนที่เกี่ยวกับผู้ร้องทุกข์ (${subj}) ชอบด้วยพระราชบัญญัติตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗ (๗)–(๑๐), มาตรา ๗๙, มาตรา ๘๐, มาตรา ๘๑ (๑)(ข)/(๒), มาตรา ๘๒ (๓)–(๔), มาตรา ๘๕, กฎ ก.ตร. ว่าด้วยการแต่งตั้งข้าราชการตำรวจ พ.ศ. ๒๕๖๗ ข้อ ๗ (๑)(ค), ข้อ ๑๗, ข้อ ๒๑, ข้อ ๓๔ วรรคสอง, ข้อ ๔๐, ข้อ ๔๗ (๓)–(๔) และแนวทางตามหนังสือ ตร. ที่ ๐๐๐๙.๒๓๑/ว ๒๔๕๖ หรือไม่`
+        : `การคัดเลือกหรือแต่งตั้งข้าราชการตำรวจระดับ ผบก. ขึ้นไป (ระดับนายพล) ในส่วนที่เกี่ยวกับผู้ร้องทุกข์ (${subj}) ชอบด้วยพระราชบัญญัติตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗ (๑)–(๖), มาตรา ๗๘, มาตรา ๘๑ (๑)(ก), มาตรา ๘๒ (๑)–(๒),(๔) และกฎ ก.ตร. ว่าด้วยการแต่งตั้งข้าราชการตำรวจ พ.ศ. ๒๕๖๗ ข้อ ๗ (๑)(ข), ข้อ ๑๗, ข้อ ๒๖, ข้อ ๓๔ วรรคหนึ่ง, ข้อ ๓๙ และข้อ ๔๗ (๑)–(๒),(๔) หรือไม่`,
+
+    'กฎหมายและหลักเกณฑ์': [
+      `พิเคราะห์แล้วเห็นว่า หลักกฎหมายและหลักเกณฑ์ที่เกี่ยวข้องกับการแต่งตั้งข้าราชการตำรวจในเรื่องนี้${lawCiteTag} มีสาระสำคัญดังนี้`,
+      ...ruleSummaryLines,
+      ...lawRefs.slice(0, 6).map((r) => `- ${r.label} (หน้า ${r.page}): ${String(r.text || '').slice(0, 320)} [${r.id}]`),
+    ]
+      .filter(Boolean)
+      .join('\n'),
+
+    'การวิเคราะห์': [
+      `พิจารณาแล้วเห็นว่า จากข้อมูลเท่าที่ปรากฏในชั้นนี้ ผู้ร้องทุกข์ (${subj}) อยู่ในกรอบการพิจารณา${tierLabel}`,
+      person ? `- ด้านลำดับอาวุโสและคุณสมบัติ: ${seniorityLine}` : `- ด้านลำดับอาวุโสและคุณสมบัติ: ${seniorityLine}`,
+      `- ด้านสัดส่วนโควตาอาวุโสและตำแหน่งว่าง: ${quotaText}`,
+      j.claim
+        ? `- ด้านข้อโต้แย้งตามคำร้องทุกข์: ผู้ร้องทุกข์อ้างว่า ${j.claim} [input-claim]`
+        : `- ด้านข้อโต้แย้งตามคำร้องทุกข์: (รอระบุรายละเอียดข้อโต้แย้งของผู้ร้องทุกข์เพิ่มเติม)`,
+      j.response
+        ? `- ด้านเหตุผลและดุลพินิจของหน่วย: ผู้มีอำนาจชี้แจงว่า ${j.response} [input-response]`
+        : `- ด้านเหตุผลและดุลพินิจของหน่วย: (รอตรวจสอบคำชี้แจงและรายงานการประชุมคณะกรรมการแต่งตั้งตาม${isSubGen ? 'มาตรา ๘๑ (๑)(ข)/(๒) และข้อ ๔๐' : 'มาตรา ๘๑ (๑)(ก) และข้อ ๓๙'})`,
+      res.gaps?.length
+        ? `- ข้อมูลที่ต้องตรวจสอบเพิ่มเติมเพื่อให้การวินิจฉัยครบถ้วนสมบูรณ์:\n${res.gaps.map((g) => `  • ${g}`).join('\n')}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join('\n'),
+
+    'ข้อเสนอเบื้องต้น': res.gaps?.length
+      ? `เห็นควรรวบรวมและตรวจสอบพยานหลักฐานเพิ่มเติมในประเด็นที่ยังขาด (${res.gaps.length} รายการ ได้แก่ ${res.gaps.slice(0, 3).join(' / ')}) เพื่อประกอบการพิจารณาวินิจฉัยว่าการใช้ดุลพินิจแต่งตั้งเป็นไปตามหลักเกณฑ์ที่กฎหมายและกฎ ก.ตร. กำหนดหรือไม่ (ร่างเบื้องต้นสำหรับตรวจทาน)`
+      : `ข้อมูลหลักฐานและหลักเกณฑ์ครบถ้วนเบื้องต้น เห็นควรนำเสนอผู้รับผิดชอบสำนวนตรวจทานร่างคำวินิจฉัยตามกรอบ${isSubGen ? 'ระดับ รอง ผบก. ลงมาถึง สว.' : 'ระดับ ผบก. ขึ้นไป'}ต่อไป`,
+  };
+}
+
+export function analyze(job, documents, knowledge, includeAutoDraft = true) {
   const j = job.data;
   const refs = j.references || [];
   const facts = j.facts || [];
@@ -41,6 +150,11 @@ export function analyze(job, documents, knowledge) {
       (!j.level || s.source_level === j.level) &&
       (!j.account || s.source_account === j.account),
   );
+  const appointment_matches = j.subject_name
+    ? (knowledge.appointments || []).filter(
+        (a) => normalizeName(a.label || a.source_name || '') === normalizeName(j.subject_name),
+      )
+    : [];
   const selected = refs.filter(
     (r) =>
       r.kind === 'seniority' &&
@@ -106,7 +220,7 @@ export function analyze(job, documents, knowledge) {
     );
   }
 
-  return {
+  const baseResult = {
     status: gaps.length ? 'NEEDS_REVIEW' : 'READY_FOR_REVIEW',
     job_version: job.version,
     bundle_fingerprint: j.bundle_fingerprint,
@@ -122,6 +236,7 @@ export function analyze(job, documents, knowledge) {
     facts,
     person,
     person_candidates: matches,
+    appointment_matches,
     quota,
     gaps,
     references: refs.map(({ id, kind, label, source_pdf, page, reviewed, role }) => ({
@@ -134,6 +249,10 @@ export function analyze(job, documents, knowledge) {
       role,
     })),
   };
+  if (includeAutoDraft) {
+    baseResult.auto_draft_sections = buildAutoDraftSections(job, documents, knowledge, baseResult);
+  }
+  return baseResult;
 }
 
 export function allowedSources(job, docs) {
@@ -166,9 +285,28 @@ export function validateProposal(p, allowed) {
   if (typeof p.text !== 'string' || !p.text.trim() || !Array.isArray(p.citations))
     throw new Error('AI ส่งโครงสร้างร่างไม่ถูกต้อง');
   const ids = new Set(allowed.map((s) => s.id));
-  for (const id of p.citations) if (!ids.has(id)) throw new Error('ปฏิเสธการอ้างแหล่งที่ไม่ได้อนุมัติ: ' + id);
-  for (const m of p.text.matchAll(/\[([^\[\]\n]+)\]/g))
-    if (!ids.has(m[1])) throw new Error('ปฏิเสธรหัสอ้างอิงที่ไม่อยู่ในงาน: ' + m[1]);
+  p.citations = p.citations.map((raw) => {
+    const s = String(raw || '')
+      .replace(/^\[+|\]+$/g, '')
+      .trim();
+    if (!ids.has(s)) throw new Error('ปฏิเสธการอ้างแหล่งที่ไม่ได้อนุมัติ: ' + raw);
+    return s;
+  });
+  p.text = p.text.replace(/\[([^\[\]\n]+)\]/g, (full, inner) => {
+    const trimmed = inner.trim();
+    if (ids.has(trimmed)) return `[${trimmed}]`;
+    const parts = trimmed
+      .split(/\s*[,;]\s*/)
+      .map((x) => x.replace(/^\[+|\]+$/g, '').trim())
+      .filter(Boolean);
+    if (parts.length > 1 && parts.every((pt) => ids.has(pt))) {
+      return parts.map((pt) => `[${pt}]`).join(' ');
+    }
+    if (/[\u0E00-\u0E7F]/.test(trimmed) && !/^[a-zA-Z0-9_.-]+$/.test(trimmed)) {
+      return `(${trimmed})`;
+    }
+    throw new Error('ปฏิเสธรหัสอ้างอิงที่ไม่อยู่ในงาน: ' + trimmed);
+  });
   if (!Array.isArray(p.gaps)) p.gaps = [];
   return p;
 }
