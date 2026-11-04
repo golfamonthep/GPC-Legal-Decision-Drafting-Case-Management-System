@@ -9,6 +9,7 @@ import {
   CIRCULAR_2456_CHUNKS,
   SUB_GENERAL_TO_INSPECTOR_ACCOUNTS,
   DEFAULT_GENERAL_ACCOUNTS,
+  STATUTORY_TIER_DEFINITIONS,
 } from './subGeneralToInspectorData.mjs';
 
 const requireModule = createRequire(import.meta.url);
@@ -80,7 +81,8 @@ function mergeExtendedKnowledge(baseBundle) {
     sources,
     accounts,
     chunk_count: chunks.length,
-    supported_tiers: ['ระดับนายพลขึ้นไป (ผบช. – ผบก.)', 'ระดับ รอง ผบก. ลงมาถึง สว. (ว ๒๔๕๖)'],
+    supported_tiers: ['๑. ระดับ ผบก. ขึ้นไป (ระดับนายพล)', '๒. ระดับ รอง ผบก. ลงมา (รอง ผบก. – สว.)'],
+    tier_definitions: STATUTORY_TIER_DEFINITIONS,
     circular_2456_source: CIRCULAR_2456_SOURCE.filename,
   };
 
@@ -280,7 +282,8 @@ function loadEmbeddedStatutoryFallback() {
     accounts,
     chunk_count: chunks.length,
     exclusive_seniority_source: CIRCULAR_2456_SOURCE.filename,
-    supported_tiers: ['ระดับนายพลขึ้นไป (ผบช. – ผบก.)', 'ระดับ รอง ผบก. ลงมาถึง สว. (ว ๒๔๕๖)'],
+    supported_tiers: ['๑. ระดับ ผบก. ขึ้นไป (ระดับนายพล)', '๒. ระดับ รอง ผบก. ลงมา (รอง ผบก. – สว.)'],
+    tier_definitions: STATUTORY_TIER_DEFINITIONS,
     circular_2456_source: CIRCULAR_2456_SOURCE.filename,
   };
   const all = new Map(chunks.map((r) => [r.id, r]));

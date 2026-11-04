@@ -1,4 +1,4 @@
-import { evaluateCircular2456Rules } from './subGeneralToInspectorData.mjs';
+import { evaluateCircular2456Rules, resolveSeniorityQuotaSpec } from './subGeneralToInspectorData.mjs';
 
 const THAI_DIGITS = '๐๑๒๓๔๕๖๗๘๙';
 export const normalizeSearchText = (x) =>
@@ -77,6 +77,7 @@ export function analyze(job, documents, knowledge) {
 
   let quota = null;
   const v = j.vacancies;
+  const quotaSpec = resolveSeniorityQuotaSpec(j);
   if (
     v?.value !== undefined &&
     v?.value !== null &&
@@ -88,15 +89,21 @@ export function analyze(job, documents, knowledge) {
     refs.some((r) => r.id === v.rule_reference && r.reviewed && r.kind === 'law') &&
     v.applies === true
   ) {
+    const senioritySeats = Math.ceil(v.value * quotaSpec.ratio);
     quota = {
       actual_vacancies: v.value,
-      seniority_quota: Math.ceil(v.value * 0.5),
-      knowledge_ability_quota: v.value - Math.ceil(v.value * 0.5),
-      formula: 'CEILING(actual_vacancies × 0.50)',
+      seniority_quota: senioritySeats,
+      knowledge_ability_quota: Math.max(0, v.value - senioritySeats),
+      quota_pct_label: quotaSpec.pctLabel,
+      formula: quotaSpec.formula,
       citations: [v.vacancy_reference, v.rule_reference],
     };
   } else {
-    gaps.push('ตำแหน่งว่างจริงหรือหลักเกณฑ์ 50% ยังไม่มีแหล่งยืนยันครบ จึงไม่คำนวณโควตาและกลุ่ม');
+    gaps.push(
+      ruleAnalysis.is_sub_general
+        ? 'ตำแหน่งว่างจริงของหน่วยหรือหลักเกณฑ์สัดส่วนอาวุโสร้อยละ 33 (ม.82(3) / กฎ ก.ตร.ฯ ข้อ 47(3)) ยังไม่มีแหล่งยืนยันครบ จึงไม่คำนวณโควตาและกลุ่ม'
+        : 'ตำแหน่งว่างจริงหรือหลักเกณฑ์ 50% ยังไม่มีแหล่งยืนยันครบ จึงไม่คำนวณโควตาและกลุ่ม',
+    );
   }
 
   return {

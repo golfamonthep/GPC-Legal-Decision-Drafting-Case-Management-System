@@ -2,19 +2,29 @@ import React, { useState } from 'react';
 import { api, statusLabel } from './api';
 import { Field, SourceLink } from './components';
 
-const QUICK_SEARCHES = [
-  { label: 'ว ๒๔๕๖ (แต่งตั้ง รอง ผบก. - สว.)', q: 'ว ๒๔๕๖', kind: 'law' },
-  { label: 'ผนวก ก - ช (แบบฟอร์มแต่งตั้ง)', q: 'ผนวก', kind: 'law' },
-  { label: 'ข้อ ๑๑ (ห้ามย้าย ผกก. หน.สถานี)', q: 'หัวหน้าสถานีตำรวจ', kind: 'law' },
-  { label: 'ข้อ ๔, ๑๐ (สืบสวนสอบสวนควบปรับระดับ)', q: 'ควบปรับระดับเพิ่มลดได้ในตัวเอง', kind: 'law' },
-  { label: 'ข้อ ๘, ๙ (กำหนดการ บช. / สง.ผบ.ตร.)', q: '๓๐ พ.ย. ๖๙', kind: 'law' },
-  { label: 'มาตรา 87 (การร้องทุกข์)', q: 'มาตรา 87', kind: 'law' },
-  { label: 'มาตรา 79, 80 (หลักเกณฑ์แต่งตั้ง)', q: 'มาตรา 79', kind: 'law' },
-  { label: 'สัดส่วนอาวุโส 50%', q: 'ร้อยละห้าสิบ', kind: 'law' },
+const GENERAL_QUICK_SEARCHES = [
+  { label: 'มาตรา 77 (1)–(6) (คุณสมบัติ ผบ.ตร.–ผบก.)', q: 'มาตรา 77', kind: 'law' },
+  { label: 'มาตรา 78 (อำนาจแต่งตั้งระดับ ผบก. ขึ้นไป)', q: 'มาตรา 78', kind: 'law' },
+  { label: 'มาตรา 81 (1) (ก) (คณะกรรมการระดับ ตร.)', q: 'มาตรา 81', kind: 'law' },
+  { label: 'มาตรา 82 (1)–(2) (สัดส่วนอาวุโส 100% / 50%)', q: 'ร้อยละห้าสิบ', kind: 'law' },
+  { label: 'ข้อ 7 (1) (ข) (วาระประจำปี ผบก. ขึ้นไป)', q: '31 สิงหาคม', kind: 'law' },
+  { label: 'มาตรา 87 (การร้องทุกข์ต่อ ก.พ.ค.ตร.)', q: 'มาตรา 87', kind: 'law' },
   { label: 'ตัวอย่างโครงสร้างคำวินิจฉัย', q: 'พิเคราะห์แล้วเห็นว่า', kind: 'precedent' },
 ];
 
-export default function Knowledge({ knowledge, job, operate, setJob }) {
+const SUB_GENERAL_QUICK_SEARCHES = [
+  { label: 'มาตรา 77 (7)–(10) (คุณสมบัติ รอง ผบก.–สว.)', q: 'มาตรา 77', kind: 'law' },
+  { label: 'มาตรา 79, 80 (แต่งตั้งภายในหน่วย รอง ผบก.–สว.)', q: 'มาตรา 79', kind: 'law' },
+  { label: 'มาตรา 82 (3) (สัดส่วนอาวุโส 33% ในหน่วย)', q: 'ร้อยละสามสิบสาม', kind: 'law' },
+  { label: 'ว ๒๔๕๖ (แนวทางแต่งตั้ง รอง ผบก. - สว.)', q: 'ว ๒๔๕๖', kind: 'law' },
+  { label: 'ผนวก ก - ช (แบบฟอร์มแต่งตั้ง)', q: 'ผนวก', kind: 'law' },
+  { label: 'ข้อ ๑๑ / ข้อ 21 (ห้ามย้าย ผกก. หน.สถานี)', q: 'หัวหน้าสถานีตำรวจ', kind: 'law' },
+  { label: 'ข้อ ๔, ๑๐ (สืบสวนสอบสวนควบปรับระดับ)', q: 'ควบปรับระดับเพิ่มลดได้ในตัวเอง', kind: 'law' },
+  { label: 'มาตรา 85 / ข้อ ๑๒ (ผกก. หน.สถานีระดับกลาง)', q: 'สถานีตำรวจระดับกลาง', kind: 'law' },
+  { label: 'ตัวอย่างโครงสร้างคำวินิจฉัย', q: 'พิเคราะห์แล้วเห็นว่า', kind: 'precedent' },
+];
+
+export default function Knowledge({ knowledge, job, operate, setJob, activeTier = 'general' }) {
   const [q, setQ] = useState('');
   const [kind, setKind] = useState('law');
   const [results, setResults] = useState([]);
@@ -23,6 +33,9 @@ export default function Knowledge({ knowledge, job, operate, setJob }) {
   const [reviewed, setReviewed] = useState(false);
   const [page, setPage] = useState(1);
   const [comparison, setComparison] = useState(false);
+
+  const isSubGenTier = activeTier === 'sub_general_to_inspector';
+  const quickSearches = isSubGenTier ? SUB_GENERAL_QUICK_SEARCHES : GENERAL_QUICK_SEARCHES;
 
   const runSearch = (queryValue, kindValue) =>
     operate(async () => {
@@ -63,7 +76,9 @@ export default function Knowledge({ knowledge, job, operate, setJob }) {
   return (
     <>
       <div className="page-title">
-        <h2>ฐานข้อมูลอ้างอิง (ระดับนายพล ลงมาถึง สารวัตร)</h2>
+        <h2>
+          ฐานข้อมูลอ้างอิง ({isSubGenTier ? 'โหมดระดับ รอง ผบก. ลงมาถึง สว.' : 'โหมดระดับ ผบก. ขึ้นไป / นายพล'})
+        </h2>
         <span className="muted">
           รุ่น {knowledge?.version} · ตรวจ hash ตรงกับชุดต้นทาง ({knowledge?.sources?.length || 0} ไฟล์ PDF)
         </span>
@@ -78,7 +93,7 @@ export default function Knowledge({ knowledge, job, operate, setJob }) {
           aria-label="ค้นฐานอ้างอิง"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="ชื่อบุคคล คำค้น เลขมาตรา หรือข้อกำหนด ว ๒๔๕๖ (เช่น ผนวก ข, ข้อ ๑๑, มาตรา ๘๐)"
+          placeholder="ชื่อบุคคล คำค้น เลขมาตรา หรือข้อกำหนด ว ๒๔๕๖ (เช่น มาตรา 77, ข้อ 47, ผนวก ข, ข้อ ๑๑)"
           onKeyDown={(e) => e.key === 'Enter' && search()}
         />
         <select aria-label="ชนิดแหล่ง" value={kind} onChange={(e) => setKind(e.target.value)}>
@@ -117,7 +132,7 @@ export default function Knowledge({ knowledge, job, operate, setJob }) {
             </button>
           </>
         ) : null}
-        {QUICK_SEARCHES.map((item) => (
+        {quickSearches.map((item) => (
           <button
             key={item.label}
             type="button"

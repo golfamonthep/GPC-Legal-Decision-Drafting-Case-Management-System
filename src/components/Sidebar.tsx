@@ -21,7 +21,16 @@ import { ThemeToggle } from "./ThemeToggle";
 const navigation = [
   { name: "หน้าหลัก (Dashboard)", href: "/dashboard", icon: LayoutDashboard },
   { name: "รายการคดี", href: "/cases", icon: Files },
-  { name: "วิเคราะห์และร่างคำวินิจฉัย", href: "/analysis", icon: Scale, permission: "USE_ANALYSIS" as const },
+  {
+    name: "วิเคราะห์และร่างคำวินิจฉัย",
+    href: "/analysis",
+    icon: Scale,
+    permission: "USE_ANALYSIS" as const,
+    subItems: [
+      { name: "๑. ระดับ ผบก. ขึ้นไป (นายพล)", href: "/analysis?tier=general" },
+      { name: "๒. ระดับ รอง ผบก. ลงมา (รอง ผบก.–สว.)", href: "/analysis?tier=sub_general" },
+    ],
+  },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },
   { name: "ผู้ใช้งานระบบ", href: "/admin/users", icon: Users, permission: "MANAGE_USERS" as any },
   { name: "นำเข้าทะเบียนคดี", href: "/registry/import", icon: Upload, permission: "IMPORT_REGISTRY" as any },
@@ -86,6 +95,23 @@ export function Sidebar({ user, onNavigate }: { user: SessionUser | null; onNavi
                       />
                       {item.name}
                     </Link>
+                    {"subItems" in item && Array.isArray(item.subItems) ? (
+                      <ul role="list" className="mt-1 ml-7 space-y-0.5 border-l border-white/[0.12] pl-2.5">
+                        {item.subItems.map((sub) => (
+                          <li key={sub.href}>
+                            <Link
+                              href={sub.href}
+                              prefetch={true}
+                              onMouseEnter={() => router.prefetch(sub.href)}
+                              onClick={onNavigate}
+                              className="block rounded-lg px-2.5 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-white"
+                            >
+                              {sub.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </li>
                 );
               })}

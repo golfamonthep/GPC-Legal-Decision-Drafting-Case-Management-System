@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {assertOwner,assertAssignment,cleanInput,invalidateDocument,validateCitations,boundedAppend,assertSameOrigin,invalidateSource} from './safety.mjs';
 import {analyze,validateProposal,normalizeName,normalizeSearchText} from './engine.mjs';
-import {CIRCULAR_2456_CHUNKS,SUB_GENERAL_TO_INSPECTOR_ACCOUNTS,evaluateCircular2456Rules} from './subGeneralToInspectorData.mjs';
+import {CIRCULAR_2456_CHUNKS,STATUTORY_TIER_DEFINITIONS,SUB_GENERAL_TO_INSPECTOR_ACCOUNTS,evaluateCircular2456Rules,resolveJobTier,resolveSeniorityQuotaSpec} from './subGeneralToInspectorData.mjs';
 
 test('workspaces are owner scoped even when identifiers are known',()=>{assert.throws(()=>assertOwner({ownerKey:'a'},{id:'b',role:'LEGAL_OFFICER'}));assert.doesNotThrow(()=>assertOwner({ownerKey:'a'},{id:'a',role:'REGISTRY_OFFICER'}));});
 test('registry role cannot attach and assignments are rechecked',()=>{const c={legalOfficerId:'a',legalOfficerName:null};assert.throws(()=>assertAssignment(c,{id:'a',role:'REGISTRY_OFFICER'}));assert.doesNotThrow(()=>assertAssignment(c,{id:'a',role:'LEGAL_OFFICER'}));assert.throws(()=>assertAssignment(c,{id:'b',role:'LEGAL_OFFICER'}));});
@@ -39,4 +39,57 @@ test('Circular 2456 dataset and sub-general-to-inspector analysis rules cover al
   assert.ok(evalResult.checks.some(c => c.id === 'circular-2456-clause-11'));
   assert.ok(evalResult.checks.some(c => c.id === 'circular-2456-clause-04-10'));
   assert.ok(evalResult.checks.some(c => c.id === 'circular-2456-annex-c-d'));
+});
+
+test('2-tier statutory separation distinguishes Tier 1 (ผบก. ขึ้นไป / นายพล) and Tier 2 (รอง ผบก. ลงมาถึง สว.) with exact seniority ratios (100%, 50%, 33%)',()=>{
+  assert.ok(STATUTORY_TIER_DEFINITIONS.general);
+  assert.ok(STATUTORY_TIER_DEFINITIONS.sub_general_to_inspector);
+  assert.equal(resolveJobTier({ analysis_tier: 'general', level: 'รอง ผบก. / เทียบเท่า' }), 'general');
+  assert.equal(resolveJobTier({ analysis_tier: 'sub_general_to_inspector', level: 'รอง ผบก. (เลื่อนจาก ผกก.)' }), 'sub_general_to_inspector');
+
+  const topSpec = resolveSeniorityQuotaSpec({ analysis_tier: 'general', level: 'ผู้ช่วย ผบ.ตร. เลื่อนเป็น รอง ผบ.ตร.' });
+  assert.equal(topSpec.ratio, 1.0);
+
+  const genSpec = resolveSeniorityQuotaSpec({ analysis_tier: 'general', level: 'รอง ผบก. / เทียบเท่า' });
+  assert.equal(genSpec.ratio, 0.5);
+
+  const subGenSpec = resolveSeniorityQuotaSpec({ analysis_tier: 'sub_general_to_inspector', level: 'ผกก. (เลื่อนจาก รอง ผกก.)' });
+  assert.equal(subGenSpec.ratio, 0.33);
+
+  const subGenJob = {
+    version: 1,
+    data: {
+      analysis_tier: 'sub_general_to_inspector',
+      level: 'ผกก. (เลื่อนจาก รอง ผกก.)',
+      account: 'สถานีตำรวจ / นครบาลและภูธร',
+      subject_name: 'พ.ต.ท. สมชาย ใจดี',
+      bundle_fingerprint: 'fp1',
+      references: [
+        { id: 'vac-1', kind: 'vacancy', reviewed: true, role: 'reference_data', label: 'ว่าง 10' },
+        { id: 'law-1', kind: 'law', reviewed: true, role: 'law', label: 'ม.82(3)' },
+      ],
+      facts: [{ id: 'f1', text: 'ข้อเท็จจริง 1', status: 'established', citations: ['law-1'] }],
+      manual_seniority: {
+        id: 'ms-1',
+        name: 'พ.ต.ท. สมชาย ใจดี',
+        seniority_order: 2,
+        total_suitable_population: 30,
+        page: 5,
+        verified: true,
+        bundle_fingerprint: 'fp1',
+      },
+      vacancies: {
+        value: 10,
+        applies: true,
+        vacancy_reference: 'vac-1',
+        rule_reference: 'law-1',
+      },
+    },
+  };
+  const res = analyze(subGenJob, [], { seniority: [], summary: { fingerprint: 'fp1' } });
+  assert.equal(res.is_sub_general, true);
+  assert.ok(res.quota);
+  assert.equal(res.quota.actual_vacancies, 10);
+  assert.equal(res.quota.seniority_quota, 4);
+  assert.equal(res.quota.knowledge_ability_quota, 6);
 });

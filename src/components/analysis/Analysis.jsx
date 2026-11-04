@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { api, statusLabel } from './api';
+import { api, inferJobTier, statusLabel } from './api';
 import { Field, SourceLink } from './components';
 
-export default function Analysis({ job, setJob, operate, knowledge, onSources }) {
+export default function Analysis({ job, setJob, operate, knowledge, activeTier, onSources }) {
+  const effectiveTier = activeTier || inferJobTier(job.data || {});
+  const isSubGenJob = effectiveTier === 'sub_general_to_inspector';
+
   const [facts, setFacts] = useState(job.data.facts || []);
   const [manual, setManual] = useState({
     name: job.data.subject_name,
@@ -35,12 +38,19 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
     ...job.documents.filter((d) => d.data.reviewed).map((d) => ({ id: 'doc-' + d.id, label: d.name })),
   ];
 
-  const selectedManualAccount = (knowledge?.accounts || []).find(
+  const allAccounts = knowledge?.accounts || [];
+  const tierAccounts = allAccounts.filter((a) =>
+    isSubGenJob ? a.tier === 'sub_general_to_inspector' : a.tier !== 'sub_general_to_inspector',
+  );
+  const manualLevels = [...new Set((tierAccounts.length ? tierAccounts : allAccounts).map((a) => a.source_level))];
+
+  const selectedManualAccount = allAccounts.find(
     (a) => a.source_level === manual.level && a.source_account === manual.account,
   );
   const isSubGenManual =
     selectedManualAccount?.tier === 'sub_general_to_inspector' ||
-    /ผกก\.|สว\.|สับเปลี่ยนหมุนเวียน/.test(String(manual.level || ''));
+    isSubGenJob ||
+    /\(เลื่อนจาก|สับเปลี่ยนหมุนเวียน/.test(String(manual.level || ''));
 
   const saveFacts = () =>
     operate(async () => setJob(await api(`/jobs/${job.id}/facts`, 'POST', { version: job.version, facts })));
@@ -190,19 +200,27 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
       )}
 
       <button className="outline" onClick={() => setShowManual(!showManual)}>
-        {showManual ? 'ปิดแบบตรวจอาวุโส' : 'เพิ่ม/ยืนยันข้อมูลอาวุโส (ระดับนายพล – สว.)'}
+        {showManual
+          ? 'ปิดแบบตรวจอาวุโส'
+          : isSubGenJob
+            ? 'เพิ่ม/ยืนยันข้อมูลอาวุโสภายในหน่วย (ระดับ รอง ผบก. ลงมาถึง สว. · ผนวก ก)'
+            : 'เพิ่ม/ยืนยันข้อมูลอาวุโสระดับนายพล (ระดับ ผบก. ขึ้นไป · บัญชีอาวุโสครั้งที่ ๔)'}
       </button>
       {showManual ? (
         <div className="review-form">
-          <h3>ตรวจและยืนยันข้อมูลบัญชีอาวุโส (ระดับนายพลขึ้นไป และระดับ รอง ผบก. ลงมาถึง สว.)</h3>
+          <h3>
+            {isSubGenManual
+              ? 'ตรวจและยืนยันข้อมูลบัญชีอาวุโสภายในหน่วย (ระดับ รอง ผบก. ลงมาถึง สว. ตาม ม.๘๐, ข้อ ๓๓ และ ว ๒๔๕๖ ผนวก ก)'
+              : 'ตรวจและยืนยันข้อมูลบัญชีอาวุโสระดับนายพล (ระดับ ผบก. ขึ้นไป ตาม ม.๗๘, ข้อ ๓๓ บัญชีอาวุโสครั้งที่ ๔)'}
+          </h3>
           <SourceLink
             source={isSubGenManual ? 'circular_2456_2569.pdf' : knowledge?.exclusive_seniority_source}
             page={Number(manual.page) || 1}
           />
           <p className="muted">
             {isSubGenManual
-              ? 'กรณีระดับ รอง ผบก. ลงมาถึง สว. (ตาม ว ๒๔๕๖) ให้ระบุลำดับอาวุโสและจำนวนผู้เหมาะสมทั้งหมดตามประกาศลำดับอาวุโสของหน่วย (ผนวก ก)'
-              : 'กรณีระดับนายพล ใช้บัญชีอาวุโสครั้งที่ 4 เท่านั้น จำนวนผู้เหมาะสมจะใช้ค่าของระดับและประเภทที่ตรวจแล้ว'}
+              ? 'กรณีระดับ รอง ผบก. ลงมาถึง สว. การเลื่อนตำแหน่งสูงขึ้นทำเฉพาะภายในหน่วย (ม.๘๐) ให้ระบุลำดับอาวุโสและจำนวนผู้เหมาะสมทั้งหมดตามประกาศลำดับอาวุโสของหน่วย (ผนวก ก)'
+              : 'กรณีระดับ ผบก. ขึ้นไป (นายพล) ใช้บัญชีอาวุโสครั้งที่ 4 ระดับ ตร. เท่านั้น จำนวนผู้เหมาะสมจะใช้ค่าของระดับและประเภทที่ตรวจแล้ว'}
           </p>
           <div className="form-grid">
             {[
@@ -216,13 +234,13 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
                 />
               </Field>
             ))}
-            <Field label="ระดับบัญชี (นายพล – สว.)">
+            <Field label={isSubGenManual ? 'ระดับบัญชี (รอง ผบก. ลงมาถึง สว.)' : 'ระดับบัญชี (ระดับ ผบก. ขึ้นไป)'}>
               <select
                 value={manual.level}
                 onChange={(e) => setManual({ ...manual, level: e.target.value, account: '', verified: false })}
               >
                 <option value="">เลือกระดับ</option>
-                {[...new Set((knowledge?.accounts || []).map((a) => a.source_level))].map((a) => (
+                {manualLevels.map((a) => (
                   <option key={a} value={a}>
                     {a}
                   </option>
@@ -235,7 +253,7 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
                 onChange={(e) => setManual({ ...manual, account: e.target.value, verified: false })}
               >
                 <option value="">เลือกประเภท</option>
-                {(knowledge?.accounts || [])
+                {allAccounts
                   .filter((a) => a.source_level === manual.level)
                   .map((a) => (
                     <option key={a.source_account} value={a.source_account}>
@@ -366,8 +384,16 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
       ) : null}
 
       <details className="review-form">
-        <summary>ตำแหน่งว่างจริงและหลักเกณฑ์สัดส่วนอาวุโส (เช่น 50%)</summary>
-        <p className="muted">เพิ่มเอกสารแหล่งตำแหน่งว่างในแท็บเอกสารและตรวจข้อความก่อน ห้ามใช้จำนวนผู้ได้รับแต่งตั้งแทน</p>
+        <summary>
+          {isSubGenJob
+            ? 'ตำแหน่งว่างจริงภายในหน่วย และหลักเกณฑ์สัดส่วนอาวุโสระดับ รอง ผบก. ลงมาถึง สว. (ร้อยละ ๓๓ ตาม ม.๘๒(๓), ข้อ ๔๗(๓))'
+            : 'ตำแหน่งว่างจริงระดับ ตร. และหลักเกณฑ์สัดส่วนอาวุโสระดับ ผบก. ขึ้นไป (ร้อยละ ๕๐ ตาม ม.๘๒(๒), ข้อ ๔๗(๒) / ร้อยละ ๑๐๐ ตาม ม.๘๒(๑))'}
+        </summary>
+        <p className="muted">
+          {isSubGenJob
+            ? 'ระดับ รอง ผบก. ลงมาถึง สว. ใช้จำนวนตำแหน่งว่างในแต่ละระดับของหน่วยนั้น คำนวณกลุ่มอาวุโสไม่น้อยกว่าร้อยละ ๓๓ (x × 0.33) และกลุ่มความรู้ความสามารถร้อยละ ๖๗ — ต้องอ้างอิงเอกสารตำแหน่งว่างที่ตรวจแล้ว'
+            : 'ระดับ ผบก. ขึ้นไป (ผบช. ลงมาถึง ผบก.) ใช้จำนวนตำแหน่งว่างในแต่ละระดับในภาพรวม ตร. คำนวณกลุ่มอาวุโสไม่น้อยกว่าร้อยละ ๕๐ (x × 0.50) (ส่วน รอง ผบ.ตร. และ ผู้ช่วย ผบ.ตร. ใช้ร้อยละ ๑๐๐) — ต้องอ้างอิงเอกสารตำแหน่งว่างที่ตรวจแล้ว'}
+        </p>
         <div className="form-grid">
           <Field label="เอกสารตำแหน่งว่างจริง">
             <select
@@ -466,8 +492,8 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
             {statusLabel(result.status)} · รุ่นข้อมูล {result.job_version} · ขอบเขต:{' '}
             <strong>
               {result.is_sub_general
-                ? 'ระดับ รอง ผบก. ลงมาถึง สว. (ตาม ว ๒๔๕๖ ลง ๒๒ ต.ค. ๒๕๖๙)'
-                : 'ระดับนายพลขึ้นไป (ผบช. – ผบก.)'}
+                ? 'ระดับที่ ๒: ระดับ รอง ผบก. ลงมาถึง สว. (พ.ร.บ.ฯ ม.๗๗(๗)–(๑๐), ๗๙, ๘๐, ๘๒(๓) · กฎ ก.ตร.ฯ ข้อ ๔๗(๓) · ว ๒๔๕๖)'
+                : 'ระดับที่ ๑: ระดับ ผบก. ขึ้นไป หรือระดับนายพล (พ.ร.บ.ฯ ม.๗๗(๑)–(๖), ๗๘, ๘๑(๑)(ก), ๘๒(๑)–(๒) · กฎ ก.ตร.ฯ ข้อ ๔๗(๑)–(๒))'}
             </strong>
             {result.job_version !== job.version ? (
               <strong className="warning-inline"> · ข้อมูลเปลี่ยนแล้ว กรุณาตรวจใหม่</strong>
@@ -485,7 +511,10 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
             <p className="verified">
               ตำแหน่งว่างจริง {result.quota.actual_vacancies} · กลุ่มอาวุโส {result.quota.seniority_quota} ·
               กลุ่มความรู้/ความสามารถ {result.quota.knowledge_ability_quota}
-              <small>สูตร {result.quota.formula}</small>
+              <small>
+                สูตร {result.quota.formula}
+                {result.quota.statutory_ref ? ` · อ้างอิง ${result.quota.statutory_ref}` : ''}
+              </small>
             </p>
           ) : null}
           {(result.person_candidates || result.candidates || []).length > 1 && !result.person ? (
@@ -504,7 +533,10 @@ export default function Analysis({ job, setJob, operate, knowledge, onSources })
           ) : null}
           {result.rule_checks?.length ? (
             <div className="review-form" aria-label="ผลการตรวจสอบหลักเกณฑ์ตามระดับตำแหน่ง">
-              <h4>หลักเกณฑ์และประเด็นที่ต้องตรวจสอบตามระดับตำแหน่ง (นายพล – สว.)</h4>
+              <h4>
+                หลักเกณฑ์และประเด็นที่ต้องตรวจสอบตามระดับตำแหน่ง (
+                {result.is_sub_general ? 'ระดับ รอง ผบก. ลงมาถึง สว.' : 'ระดับ ผบก. ขึ้นไป / นายพล'})
+              </h4>
               <ul>
                 {result.rule_checks.map((rc) => (
                   <li key={rc.id}>

@@ -58,5 +58,24 @@
 .sec-dot{display:inline-block;font-size:12px;color:var(--muted);}
 .sec-dot.filled{color:#d62839;font-weight:700;}
 .proposal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.tier-selector-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:22px;}
+.tier-selector-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:left;gap:8px;padding:18px 20px;border-radius:16px;background:#121215;border:1.5px solid var(--line);color:var(--navy);cursor:pointer;transition:border-color .15s,background-color .15s,box-shadow .15s;}
+.tier-selector-card:hover{border-color:#ef4444;background:#171417;}
+.tier-selector-card.active{background:linear-gradient(180deg,rgba(214,40,57,0.18) 0%,rgba(18,18,21,0.96) 100%);border-color:#d62839;box-shadow:0 6px 22px rgba(200,30,43,0.22);}
+.tier-card-head{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.tier-card-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:#1d1d22;color:#e4e4e7;border:1px solid var(--line);}
+.tier-selector-card.active .tier-card-badge{background:#991b1b;color:#ffffff;border-color:#ef4444;}
+.tier-card-status{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:#17171b;color:var(--muted);}
+.tier-card-status.active{background:#0f2e24;color:#6ee7b7;border:1px solid #10b98160;}
+.tier-card-title{font-size:19px;line-height:1.4;color:#ffffff;}
+.tier-card-positions{font-size:14px;line-height:1.6;color:#e4e4e7;margin:0;}
+.tier-card-meta{display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:1.55;color:var(--muted);width:100%;padding-top:6px;border-top:1px solid var(--line);}
+.tier-card-meta b{color:#f4f4f5;}
+.statutory-tier-panel{margin-top:0;margin-bottom:22px;}
+.statutory-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px;margin-bottom:14px;}
+.statutory-summary-grid>div{background:#17171b;border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+.statutory-summary-grid small{font-weight:700;color:#fca5a5;margin-bottom:4px;}
+.statutory-summary-grid p{font-size:14px;line-height:1.65;margin:0;color:#f4f4f5;}
+@media(max-width:900px){.tier-selector-grid,.statutory-summary-grid{grid-template-columns:1fr;}}
 @media(max-width:640px){.form-grid,.draft-layout,.reference-layout,.work-layout{display:block;} .form-grid>*{margin-bottom:16px;} .fact-row{display:flex;flex-direction:column;} .table-wrap{overflow-x:auto;} .analysis-kpi-strip{grid-template-columns:1fr 1fr;} }
 }

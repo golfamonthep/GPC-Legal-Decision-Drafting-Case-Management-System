@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { api, emptyInput, jobStatus, WORKFLOW_STAGES } from './api';
+import { api, emptyInput, inferJobTier, jobStatus, normalizeTierParam, WORKFLOW_STAGES } from './api';
 import InputForm from './InputForm';
 import Documents from './Documents';
 import Analysis from './Analysis';
@@ -12,16 +12,49 @@ import './workbench.css';
 
 const TABS = ['ข้อมูลที่ใช้วิเคราะห์', 'เอกสารประกอบ', 'ผลวิเคราะห์', 'ร่างเบื้องต้น', 'ส่งออก', 'ฐานอ้างอิง'];
 
+const TIER_CARDS = [
+  {
+    id: 'general',
+    badge: 'ระดับที่ ๑ · พระบรมราชโองการโปรดเกล้าฯ / ก.ตร.',
+    title: 'ระดับ ผบก. ขึ้นไป หรือระดับนายพล',
+    positions: 'ผบ.ตร. · รอง ผบ.ตร./จตช. · ผู้ช่วย ผบ.ตร./รอง จตช. · ผบช./จตร. · รอง ผบช./รอง จตร. · ผบก.',
+    statutes: 'พ.ร.บ.ตำรวจแห่งชาติ ๒๕๖๕ ม.๗๗(๑)–(๖), ๗๘, ๘๑(๑)(ก), ๘๒(๑)–(๒) · กฎ ก.ตร.ฯ ๒๕๖๗ ข้อ ๗(๑)(ก)–(ข), ๗(๒), ๑๗(๑)–(๖), ๓๔ วรรคหนึ่ง, ๓๙, ๔๗(๑)–(๒)',
+    quota: 'สัดส่วนอาวุโส: รอง ผบ.ตร.–ผู้ช่วย ผบ.ตร. ร้อยละ ๑๐๐ · ผบช. ลงมาถึง ผบก. ไม่น้อยกว่าร้อยละ ๕๐ ของตำแหน่งว่างระดับ ตร. (บัญชีอาวุโสครั้งที่ ๔)',
+    timeframe: 'วาระประจำปี ๑ ก.ค. – ๓๑ ส.ค. (ผบ.ตร. ภายใน ๓๑ ก.ค.) · วาระเมษายน ๑ ก.พ. – ๓๑ มี.ค.',
+  },
+  {
+    id: 'sub_general_to_inspector',
+    badge: 'ระดับที่ ๒ · คำสั่ง ผบ.ตร. (สง.ผบ.ตร.) หรือ ผบช. (ภายในหน่วย)',
+    title: 'ระดับ รอง ผบก. ลงมา หรือระดับรองผู้บังคับการ – สารวัตร',
+    positions: 'รอง ผบก. (เลื่อนจาก ผกก.) · ผกก. (เลื่อนจาก รอง ผกก.) · รอง ผกก./สวญ. (เลื่อนจาก สว.) · สว. (เลื่อนจาก รอง สว.) · สับเปลี่ยนหมุนเวียน',
+    statutes: 'พ.ร.บ.ตำรวจแห่งชาติ ๒๕๖๕ ม.๗๗(๗)–(๑๐), ๗๙, ๘๐, ๘๑(๑)(ข), ๘๑(๒), ๘๒(๓)–(๔), ๘๕ · กฎ ก.ตร.ฯ ๒๕๖๗ ข้อ ๗(๑)(ค), ๑๗(๗)–(๑๐), ๒๑, ๒๓, ๓๔ วรรคสอง, ๔๐, ๔๗(๓)–(๔) · ว ๒๔๕๖',
+    quota: 'สัดส่วนอาวุโส: เลื่อนตำแหน่งสูงขึ้นเฉพาะภายในหน่วย (ม.๘๐) คำนึงถึงอาวุโสไม่น้อยกว่าร้อยละ ๓๓ ของตำแหน่งว่างในแต่ละระดับของหน่วยนั้น (ผนวก ก–ช)',
+    timeframe: 'วาระประจำปี ๑ ต.ค. – ๓๐ พ.ย. (ว ๒๔๕๖: ออกคำสั่งพร้อมกัน ๓๐ พ.ย. ๒๕๖๙ มีผล ๗ ธ.ค. ๒๕๖๙)',
+  },
+];
+
+function normalizeInputFromJob(jobData) {
+  const base = Object.fromEntries(Object.keys(emptyInput).map((k) => [k, jobData?.[k] || '']));
+  base.analysis_tier = inferJobTier(jobData || {});
+  return base;
+}
+
 export default function Workbench({
   initialJobId = null,
   caseId = null,
+  initialTier = null,
   canAI = false,
   aiUnavailableReason = null,
   canAttach = false,
 }) {
+  const defaultTier = normalizeTierParam(initialTier) || 'general';
   const [jobs, setJobs] = useState([]);
   const [job, setJob] = useState(null);
-  const [input, setInput] = useState({ ...emptyInput });
+  const [input, setInput] = useState({
+    ...emptyInput,
+    analysis_tier: defaultTier,
+    unit_type: defaultTier === 'general' ? 'tr_hq' : '',
+  });
   const [knowledge, setKnowledge] = useState(null);
   const [knowledgeError, setKnowledgeError] = useState(null);
   const [tab, setTab] = useState(0);
@@ -31,10 +64,29 @@ export default function Workbench({
   const [exported, setExported] = useState(null);
   const [selectedRevisionId, setSelectedRevisionId] = useState('');
 
-  const dirty =
-    JSON.stringify(input) !==
-    JSON.stringify(Object.fromEntries(Object.keys(emptyInput).map((k) => [k, job?.data[k] || ''])));
+  const activeTier = input.analysis_tier || inferJobTier(job?.data || input);
+  const baselineInput = job
+    ? normalizeInputFromJob(job.data)
+    : {
+        ...emptyInput,
+        analysis_tier: activeTier,
+        unit_type: activeTier === 'general' ? input.unit_type : input.unit_type,
+      };
+  const dirty = JSON.stringify(input) !== JSON.stringify(baselineInput);
   const [activeCaseId, setActiveCaseId] = useState(caseId);
+
+  useEffect(() => {
+    const nextTier = normalizeTierParam(initialTier);
+    if (nextTier && !job) {
+      setInput((prev) => ({
+        ...prev,
+        analysis_tier: nextTier,
+        level: '',
+        account: '',
+        unit_type: nextTier === 'general' ? 'tr_hq' : prev.unit_type === 'tr_hq' ? '' : prev.unit_type,
+      }));
+    }
+  }, [initialTier, job]);
 
   useEffect(() => {
     const guard = (e) => {
@@ -55,7 +107,7 @@ export default function Workbench({
   function loaded(j) {
     setActiveCaseId(j.case_id || null);
     setJob(j);
-    setInput(Object.fromEntries(Object.keys(emptyInput).map((k) => [k, j.data[k] || ''])));
+    setInput(normalizeInputFromJob(j.data));
     setTab(0);
     setExported(null);
     setSelectedRevisionId(j.revisions?.[0]?.id || '');
@@ -104,6 +156,8 @@ export default function Workbench({
           live &&
           setInput({
             ...emptyInput,
+            analysis_tier: defaultTier,
+            unit_type: defaultTier === 'general' ? 'tr_hq' : '',
             title: c.subject,
             external_case_ref: c.blackNumber,
             subject_name: c.petitionerName,
@@ -113,7 +167,7 @@ export default function Workbench({
     return () => {
       live = false;
     };
-  }, [initialJobId, caseId]);
+  }, [initialJobId, caseId, defaultTier]);
 
   useEffect(() => {
     const warn = (e) => {
@@ -133,6 +187,28 @@ export default function Workbench({
       return;
     }
     fn();
+  }
+
+  function selectTier(nextTier) {
+    if (busy || nextTier === activeTier) return;
+    const allAccounts = knowledge?.accounts || [];
+    const currentAccountObj = allAccounts.find((a) => a.source_level === input.level);
+    const currentLevelTier =
+      currentAccountObj?.tier === 'sub_general_to_inspector' ? 'sub_general_to_inspector' : 'general';
+    const shouldResetLevel = Boolean(input.level && currentLevelTier !== nextTier);
+
+    setInput({
+      ...input,
+      analysis_tier: nextTier,
+      level: shouldResetLevel ? '' : input.level,
+      account: shouldResetLevel ? '' : input.account,
+      unit_type: nextTier === 'general' ? 'tr_hq' : input.unit_type === 'tr_hq' ? '' : input.unit_type,
+      annex_status: nextTier === 'general' ? '' : input.annex_status,
+    });
+    if (!job) {
+      const qs = nextTier === 'sub_general_to_inspector' ? '?tier=sub_general' : '?tier=general';
+      window.history.replaceState(null, '', '/analysis' + qs);
+    }
   }
 
   const save = () =>
@@ -162,15 +238,16 @@ export default function Workbench({
   const currentStage = jobStatus(job);
   const currentStageIdx = WORKFLOW_STAGES.indexOf(currentStage);
   const selectedRevision = job?.revisions?.find((r) => r.id === selectedRevisionId) || job?.revisions?.[0] || null;
+  const activeTierCard = TIER_CARDS.find((c) => c.id === activeTier) || TIER_CARDS[0];
 
   return (
     <section className="analysis-workbench" aria-busy={busy}>
       <header className="page-title">
         <div>
           <p className="brand-eyebrow">พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร. · ระบบวิเคราะห์และร่างคำวินิจฉัยเบื้องต้น</p>
-          <h1>วิเคราะห์และร่างคำวินิจฉัย</h1>
+          <h1>วิเคราะห์และร่างคำวินิจฉัย (แยก ๒ ระดับตาม พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗)</h1>
           <p className="muted">
-            ทำงานภายในระบบ GPC เดิม · ผลทั้งหมดเป็นร่างสำหรับตรวจทาน ·{' '}
+            โหมดที่เลือก: <strong>{activeTierCard.title}</strong> · ผลทั้งหมดเป็นร่างสำหรับตรวจทาน ·{' '}
             {canAI
               ? 'AI Harness พร้อมใช้งาน (Pseudonymization + Citation Allowlist)'
               : `โหมดร่างด้วยมือ (${aiUnavailableReason || 'AI ปิดใช้งาน'})`}
@@ -180,6 +257,41 @@ export default function Workbench({
           กลับ Dashboard
         </Link>
       </header>
+
+      <div className="tier-selector-grid" role="region" aria-label="เลือกระดับการวิเคราะห์การแต่งตั้งข้าราชการตำรวจ">
+        {TIER_CARDS.map((card) => {
+          const isSelected = activeTier === card.id;
+          return (
+            <button
+              key={card.id}
+              type="button"
+              onClick={() => selectTier(card.id)}
+              aria-pressed={isSelected}
+              className={'tier-selector-card' + (isSelected ? ' active' : '')}
+            >
+              <div className="tier-card-head">
+                <span className="tier-card-badge">{card.badge}</span>
+                <span className={'tier-card-status' + (isSelected ? ' active' : '')}>
+                  {isSelected ? 'กำลังใช้งานระดับนี้' : 'คลิกเพื่อสลับระดับ'}
+                </span>
+              </div>
+              <strong className="tier-card-title">{card.title}</strong>
+              <p className="tier-card-positions">{card.positions}</p>
+              <div className="tier-card-meta">
+                <span>
+                  <b>กฎหมายหลัก:</b> {card.statutes}
+                </span>
+                <span>
+                  <b>สัดส่วนอาวุโส:</b> {card.quota}
+                </span>
+                <span>
+                  <b>ห้วงเวลา:</b> {card.timeframe}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
 
       {notice ? (
         <div role="alert" className="notice error">
@@ -239,7 +351,7 @@ export default function Workbench({
               {job.revisions.length}
             </span>
           ) : (
-            <span className="muted">กำลังเตรียมงานวิเคราะห์ใหม่ หรือเลือกงานเดิมจากรายการ</span>
+            <span className="muted">กำลังเตรียมงานวิเคราะห์ใหม่ในโหมด {activeTierCard.title}</span>
           )}
           <button
             className="outline"
@@ -248,14 +360,19 @@ export default function Workbench({
               safeSwitch(() => {
                 setActiveCaseId(null);
                 setJob(null);
-                setInput({ ...emptyInput });
+                setInput({
+                  ...emptyInput,
+                  analysis_tier: activeTier,
+                  unit_type: activeTier === 'general' ? 'tr_hq' : '',
+                });
                 setTab(0);
                 setExported(null);
-                window.history.replaceState(null, '', '/analysis');
+                const qs = activeTier === 'sub_general_to_inspector' ? '?tier=sub_general' : '?tier=general';
+                window.history.replaceState(null, '', '/analysis' + qs);
               })
             }
           >
-            สร้างงานใหม่
+            สร้างงานใหม่ในระดับนี้
           </button>
         </div>
       </div>
@@ -285,14 +402,26 @@ export default function Workbench({
         <div className="work-layout">
           <div>
             <div className="section-title">
-              <h2>{job ? job.title : 'ข้อมูลสำหรับงานใหม่'}</h2>
+              <h2>
+                {job ? job.title : `ข้อมูลสำหรับงานใหม่ (${activeTierCard.title})`}
+              </h2>
               <button disabled={busy} onClick={save}>
                 บันทึกข้อมูล
               </button>
             </div>
-            <InputForm input={input} setInput={setInput} knowledge={knowledge} />
+            <InputForm
+              input={input}
+              setInput={setInput}
+              knowledge={knowledge}
+              activeTier={activeTier}
+              onSelectTier={selectTier}
+            />
           </div>
-          <KnowledgeRail knowledge={knowledge} onOpen={() => safeSwitch(() => setTab(5))} />
+          <KnowledgeRail
+            knowledge={knowledge}
+            activeTier={activeTier}
+            onOpen={() => safeSwitch(() => setTab(5))}
+          />
         </div>
       </div>
 
@@ -308,6 +437,7 @@ export default function Workbench({
                 setJob={setJob}
                 operate={operate}
                 knowledge={knowledge}
+                activeTier={activeTier}
                 onSources={() => safeSwitch(() => setTab(5))}
               />
             ) : (
@@ -418,7 +548,13 @@ export default function Workbench({
 
       <div hidden={tab !== 5}>
         {knowledge ? (
-          <Knowledge knowledge={knowledge} job={job} setJob={setJob} operate={operate} />
+          <Knowledge
+            knowledge={knowledge}
+            job={job}
+            setJob={setJob}
+            operate={operate}
+            activeTier={activeTier}
+          />
         ) : (
           <p>ยังไม่มีฐานอ้างอิงบนเว็บที่ผ่านการตรวจความครบถ้วน</p>
         )}
@@ -426,4 +562,3 @@ export default function Workbench({
     </section>
   );
 }
-
