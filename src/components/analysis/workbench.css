@@ -58,24 +58,24 @@
 .sec-dot{display:inline-block;font-size:12px;color:var(--muted);}
 .sec-dot.filled{color:#d62839;font-weight:700;}
 .proposal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
-.tier-selector-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:22px;}
-.tier-selector-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:left;gap:8px;padding:18px 20px;border-radius:16px;background:#121215;border:1.5px solid var(--line);color:var(--navy);cursor:pointer;transition:border-color .15s,background-color .15s,box-shadow .15s;}
-.tier-selector-card:hover{border-color:#ef4444;background:#171417;}
-.tier-selector-card.active{background:linear-gradient(180deg,rgba(214,40,57,0.18) 0%,rgba(18,18,21,0.96) 100%);border-color:#d62839;box-shadow:0 6px 22px rgba(200,30,43,0.22);}
+.tier-selector-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:24px;}
+.tier-selector-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:left;gap:10px;padding:20px 22px;border-radius:16px;background:#141418;border:2px solid #2e2e36;color:#ffffff;cursor:pointer;transition:border-color .15s,background-color .15s,box-shadow .15s;}
+.tier-selector-card:hover{border-color:#c81e2b;filter:none;}
+.tier-selector-card.active{background:linear-gradient(180deg,#261216 0%,#141418 100%);border-color:#ef4444;box-shadow:0 8px 24px rgba(200,30,43,0.22);}
 .tier-card-head{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
-.tier-card-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:#1d1d22;color:#e4e4e7;border:1px solid var(--line);}
-.tier-selector-card.active .tier-card-badge{background:#991b1b;color:#ffffff;border-color:#ef4444;}
-.tier-card-status{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:#17171b;color:var(--muted);}
-.tier-card-status.active{background:#0f2e24;color:#6ee7b7;border:1px solid #10b98160;}
-.tier-card-title{font-size:19px;line-height:1.4;color:#ffffff;}
-.tier-card-positions{font-size:14px;line-height:1.6;color:#e4e4e7;margin:0;}
-.tier-card-meta{display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:1.55;color:var(--muted);width:100%;padding-top:6px;border-top:1px solid var(--line);}
-.tier-card-meta b{color:#f4f4f5;}
+.tier-card-badge{font-size:13px;font-weight:700;padding:4px 12px;border-radius:999px;background:#22222a;color:#f4f4f5;border:1px solid #3f3f46;}
+.tier-selector-card.active .tier-card-badge{background:#991b1b;color:#ffffff;border-color:#dc2626;}
+.tier-card-status{font-size:13px;font-weight:700;padding:4px 12px;border-radius:999px;background:#22222a;color:#d4d4d8;border:1px solid #3f3f46;}
+.tier-card-status.active{background:#065f46;color:#ecfdf5;border:1px solid #10b981;}
+.tier-card-title{font-size:21px;font-weight:700;line-height:1.4;color:#ffffff;margin-top:2px;}
+.tier-card-positions{font-size:15px;font-weight:600;line-height:1.65;color:#f4f4f5;margin:0;width:100%;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);}
+.tier-card-meta{display:flex;flex-direction:column;gap:6px;font-size:14.5px;line-height:1.65;color:#e4e4e7;width:100%;padding-top:8px;border-top:1px solid rgba(255,255,255,0.12);}
+.tier-card-meta b{color:#fca5a5;font-weight:700;}
 .statutory-tier-panel{margin-top:0;margin-bottom:22px;}
 .statutory-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px;margin-bottom:14px;}
-.statutory-summary-grid>div{background:#17171b;border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
-.statutory-summary-grid small{font-weight:700;color:#fca5a5;margin-bottom:4px;}
-.statutory-summary-grid p{font-size:14px;line-height:1.65;margin:0;color:#f4f4f5;}
+.statutory-summary-grid>div{background:#18181f;border:1px solid #2e2e36;border-radius:12px;padding:14px 16px;}
+.statutory-summary-grid small{font-size:13.5px;font-weight:700;color:#fca5a5;margin-bottom:6px;}
+.statutory-summary-grid p{font-size:14.5px;line-height:1.7;margin:0;color:#f4f4f5;}
 @media(max-width:900px){.tier-selector-grid,.statutory-summary-grid{grid-template-columns:1fr;}}
 @media(max-width:640px){.form-grid,.draft-layout,.reference-layout,.work-layout{display:block;} .form-grid>*{margin-bottom:16px;} .fact-row{display:flex;flex-direction:column;} .table-wrap{overflow-x:auto;} .analysis-kpi-strip{grid-template-columns:1fr 1fr;} }
 }

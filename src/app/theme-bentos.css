@@ -882,6 +882,155 @@ html:not([data-theme="dark"]) .analysis-workbench table td {
   color: #09090b !important;
 }
 
+/* Light Mode 2-Tier Selector Cards & Statutory Summary Panel in /analysis */
+html[data-theme="light"] .analysis-workbench .tier-selector-card,
+html:not([data-theme="dark"]) .analysis-workbench .tier-selector-card {
+  background: #ffffff !important;
+  border: 2px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-selector-card:hover,
+html:not([data-theme="dark"]) .analysis-workbench .tier-selector-card:hover {
+  background: #fffafb !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 6px 18px rgba(185, 28, 28, 0.1) !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-selector-card.active,
+html:not([data-theme="dark"]) .analysis-workbench .tier-selector-card.active {
+  background: linear-gradient(180deg, #fff1f2 0%, #ffffff 55%) !important;
+  border: 2px solid #c81e2b !important;
+  color: #0f172a !important;
+  box-shadow: 0 8px 24px -4px rgba(200, 30, 43, 0.16) !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-card-badge,
+html:not([data-theme="dark"]) .analysis-workbench .tier-card-badge {
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-selector-card.active .tier-card-badge,
+html:not([data-theme="dark"]) .analysis-workbench .tier-selector-card.active .tier-card-badge {
+  background: #991b1b !important;
+  color: #ffffff !important;
+  border-color: #991b1b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-card-status,
+html:not([data-theme="dark"]) .analysis-workbench .tier-card-status {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-card-status.active,
+html:not([data-theme="dark"]) .analysis-workbench .tier-card-status.active {
+  background: #047857 !important;
+  color: #ffffff !important;
+  border-color: #047857 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-card-title,
+html:not([data-theme="dark"]) .analysis-workbench .tier-card-title {
+  color: #09090b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-card-positions,
+html:not([data-theme="dark"]) .analysis-workbench .tier-card-positions {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-selector-card.active .tier-card-positions,
+html:not([data-theme="dark"]) .analysis-workbench .tier-selector-card.active .tier-card-positions {
+  background: #ffffff !important;
+  border-color: #fecdd3 !important;
+  color: #881337 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-card-meta,
+html:not([data-theme="dark"]) .analysis-workbench .tier-card-meta {
+  border-top-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-card-meta span,
+html:not([data-theme="dark"]) .analysis-workbench .tier-card-meta span {
+  color: #1e293b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .tier-card-meta b,
+html:not([data-theme="dark"]) .analysis-workbench .tier-card-meta b {
+  color: #991b1b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .statutory-summary-grid > div,
+html:not([data-theme="dark"]) .analysis-workbench .statutory-summary-grid > div {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .analysis-workbench .statutory-summary-grid small,
+html:not([data-theme="dark"]) .analysis-workbench .statutory-summary-grid small {
+  color: #991b1b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .statutory-summary-grid p,
+html:not([data-theme="dark"]) .analysis-workbench .statutory-summary-grid p {
+  color: #0f172a !important;
+}
+
+/* Dark Mode 2-Tier Selector Cards & Statutory Summary Panel in /analysis */
+html[data-theme="dark"] .analysis-workbench .tier-selector-card,
+html.dark .analysis-workbench .tier-selector-card {
+  background: #141418 !important;
+  border: 2px solid #2e2e36 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .tier-selector-card.active,
+html.dark .analysis-workbench .tier-selector-card.active {
+  background: linear-gradient(180deg, #2a1216 0%, #141418 100%) !important;
+  border: 2px solid #ef4444 !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .tier-card-title,
+html.dark .analysis-workbench .tier-card-title,
+html[data-theme="dark"] .analysis-workbench .tier-card-positions,
+html.dark .analysis-workbench .tier-card-positions,
+html[data-theme="dark"] .analysis-workbench .tier-card-meta,
+html.dark .analysis-workbench .tier-card-meta,
+html[data-theme="dark"] .analysis-workbench .tier-card-meta span,
+html.dark .analysis-workbench .tier-card-meta span {
+  color: #f4f4f5 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .tier-card-meta b,
+html.dark .analysis-workbench .tier-card-meta b,
+html[data-theme="dark"] .analysis-workbench .statutory-summary-grid small,
+html.dark .analysis-workbench .statutory-summary-grid small {
+  color: #fca5a5 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .statutory-summary-grid > div,
+html.dark .analysis-workbench .statutory-summary-grid > div {
+  background: #18181f !important;
+  border: 1px solid #2e2e36 !important;
+  color: #f4f4f5 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .statutory-summary-grid p,
+html.dark .analysis-workbench .statutory-summary-grid p {
+  color: #f4f4f5 !important;
+}
+
 /* ==========================================================================
    6. GLOBAL DARK MODE STYLES ACROSS ALL TABS (/search, /library, /data-quality, /cases/[id], etc.)
    ========================================================================== */

@@ -318,50 +318,51 @@ function loadEmbeddedStatutoryFallback() {
 export async function knowledge() {
   const key = process.env.ANALYSIS_KNOWLEDGE_OBJECT;
   const expected = process.env.ANALYSIS_KNOWLEDGE_SHA256;
-  if (!key && !expected) {
-    const localRoot = findLocalKnowledgeRoot();
-    if (localRoot) {
-      if (cached?.key === `local:${localRoot}`) return cached.value;
-      const value = loadLocalKnowledge(localRoot);
-      cached = { key: `local:${localRoot}`, hash: value.summary.fingerprint, value };
+  if (key && expected && /^[a-f0-9]{64}$/.test(expected)) {
+    if (cached?.key === key && cached?.hash === expected) return cached.value;
+    try {
+      const bytes = await storageRead(key);
+      if (bytes.length > 30 * 1024 * 1024 || hash(bytes) !== expected) {
+        fail('ฐานอ้างอิงไม่ผ่านการตรวจความครบถ้วน หยุดใช้แหล่งนี้', 503);
+      }
+      const p = JSON.parse(bytes.toString('utf8'));
+      if (
+        p.format !== 'gpc-analysis-knowledge-v1' ||
+        p.summary.integrity !== 'VERIFIED' ||
+        !Array.isArray(p.records) ||
+        !Array.isArray(p.seniority) ||
+        !Array.isArray(p.accounts)
+      ) {
+        fail('รูปแบบฐานอ้างอิงไม่ถูกต้อง', 503);
+      }
+      const baseValue = {
+        ...p,
+        async source(name) {
+          const s = p.summary.sources.find((x) => x.filename === name);
+          if (!s || !s.object_key) fail('ไม่พบต้นฉบับ', 404);
+          const result = await storageRead(s.object_key);
+          if (hash(result) !== s.sha256) fail('ต้นฉบับไม่ผ่านการตรวจ hash', 503);
+          return result;
+        },
+      };
+      const value = mergeExtendedKnowledge(baseValue);
+      cached = { key, hash: expected, value };
       return value;
+    } catch {
+      // Fall back to local bundle or embedded statutory bundle when private cloud storage is unreachable
     }
-    if (cached?.key === 'embedded:v2456') return cached.value;
-    const embedded = loadEmbeddedStatutoryFallback();
-    cached = { key: 'embedded:v2456', hash: embedded.summary.fingerprint, value: embedded };
-    return embedded;
   }
-  if (!key || !expected || !/^[a-f0-9]{64}$/.test(expected)) {
-    fail('ฐานอ้างอิงส่วนวิเคราะห์ยังไม่ได้ย้ายเข้าพื้นที่ส่วนตัวบนเว็บ', 503);
+  const localRoot = findLocalKnowledgeRoot();
+  if (localRoot) {
+    if (cached?.key === `local:${localRoot}`) return cached.value;
+    const value = loadLocalKnowledge(localRoot);
+    cached = { key: `local:${localRoot}`, hash: value.summary.fingerprint, value };
+    return value;
   }
-  if (cached?.key === key && cached?.hash === expected) return cached.value;
-  const bytes = await storageRead(key);
-  if (bytes.length > 30 * 1024 * 1024 || hash(bytes) !== expected) {
-    fail('ฐานอ้างอิงไม่ผ่านการตรวจความครบถ้วน หยุดใช้แหล่งนี้', 503);
-  }
-  const p = JSON.parse(bytes.toString('utf8'));
-  if (
-    p.format !== 'gpc-analysis-knowledge-v1' ||
-    p.summary.integrity !== 'VERIFIED' ||
-    !Array.isArray(p.records) ||
-    !Array.isArray(p.seniority) ||
-    !Array.isArray(p.accounts)
-  ) {
-    fail('รูปแบบฐานอ้างอิงไม่ถูกต้อง', 503);
-  }
-  const baseValue = {
-    ...p,
-    async source(name) {
-      const s = p.summary.sources.find((x) => x.filename === name);
-      if (!s || !s.object_key) fail('ไม่พบต้นฉบับ', 404);
-      const result = await storageRead(s.object_key);
-      if (hash(result) !== s.sha256) fail('ต้นฉบับไม่ผ่านการตรวจ hash', 503);
-      return result;
-    },
-  };
-  const value = mergeExtendedKnowledge(baseValue);
-  cached = { key, hash: expected, value };
-  return value;
+  if (cached?.key === 'embedded:v2456') return cached.value;
+  const embedded = loadEmbeddedStatutoryFallback();
+  cached = { key: 'embedded:v2456', hash: embedded.summary.fingerprint, value: embedded };
+  return embedded;
 }
 
 export const missingKnowledge = {
