@@ -29,6 +29,7 @@ const navigation = [
     subItems: [
       { name: "๑. ระดับ ผบก. ขึ้นไป (นายพล)", href: "/analysis?tier=general" },
       { name: "๒. ระดับ รอง ผบก. ลงมา (รอง ผบก.–สว.)", href: "/analysis?tier=sub_general" },
+      { name: "๓. ค้นหาและเปรียบเทียบอาวุโส (0 API)", href: "/analysis?tab=search" },
     ],
   },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },

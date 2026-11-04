@@ -7,10 +7,19 @@ import Documents from './Documents';
 import Analysis from './Analysis';
 import Drafts from './Drafts';
 import Knowledge from './Knowledge';
+import PersonSearch from './PersonSearch';
 import { KnowledgeRail } from './components';
 import './workbench.css';
 
-const TABS = ['ข้อมูลที่ใช้วิเคราะห์', 'เอกสารประกอบ', 'ผลวิเคราะห์', 'ร่างเบื้องต้น', 'ส่งออก', 'ฐานอ้างอิง'];
+const TABS = [
+  'ข้อมูลที่ใช้วิเคราะห์',
+  'เอกสารประกอบ',
+  'ผลวิเคราะห์',
+  'ร่างเบื้องต้น',
+  'ส่งออก',
+  'ฐานอ้างอิง',
+  'ค้นหาอาวุโสและเปรียบเทียบ (0 API)',
+];
 
 const TIER_OPTIONS = [
   {
@@ -33,6 +42,7 @@ export default function Workbench({
   initialJobId = null,
   caseId = null,
   initialTier = null,
+  initialTab = null,
   canAI = false,
   aiUnavailableReason = null,
   canAttach = false,
@@ -47,7 +57,7 @@ export default function Workbench({
   });
   const [knowledge, setKnowledge] = useState(null);
   const [knowledgeError, setKnowledgeError] = useState(null);
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(initialTab === 'search' ? 6 : 0);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState(null);
   const [draftDirty, setDraftDirty] = useState(false);
@@ -66,6 +76,10 @@ export default function Workbench({
   const [activeCaseId, setActiveCaseId] = useState(caseId);
 
   useEffect(() => {
+    if (initialTab === 'search') {
+      setTab(6);
+      return;
+    }
     const nextTier = normalizeTierParam(initialTier);
     if (nextTier && !job) {
       setInput((prev) => ({
@@ -75,8 +89,9 @@ export default function Workbench({
         account: '',
         unit_type: nextTier === 'general' ? 'tr_hq' : prev.unit_type === 'tr_hq' ? '' : prev.unit_type,
       }));
+      setTab(0);
     }
-  }, [initialTier, job]);
+  }, [initialTier, initialTab, job]);
 
   useEffect(() => {
     const guard = (e) => {
@@ -527,6 +542,43 @@ export default function Workbench({
         ) : (
           <p>ยังไม่มีฐานอ้างอิงบนเว็บที่ผ่านการตรวจความครบถ้วน</p>
         )}
+      </div>
+
+      <div hidden={tab !== 6}>
+        <PersonSearch
+          onApplyToAnalysis={(profile) => {
+            const comp = profile.comparison || {};
+            const juniors = comp.juniorPromotedOfficers || [];
+            const juniorNames = juniors
+              .slice(0, 15)
+              .map((j) => `${j.fullNameWithRank} (อาวุโสลำดับที่ ${j.seniorityOrder})`)
+              .join(', ');
+            const summaryLine = [
+              `ผู้ร้อง/ผู้รับการตรวจสอบ: ${profile.fullNameWithRank}`,
+              `ตำแหน่งปัจจุบัน: ${profile.currentPosition || '-'} (ดำรงตำแหน่ง ${profile.tenure?.tenureDisplay || '-'})`,
+              `การครบเกณฑ์เลื่อนตำแหน่งสูงขึ้น: ${profile.tenure?.eligibilityDisplay || '-'}`,
+              `ลำดับอาวุโส: ${profile.seniorityDisplay || '-'}`,
+              profile.retirement
+                ? `วันเกิด: ${profile.retirement.birthDateThai} · ครบเกษียณ พ.ศ. ${profile.retirement.retirementYearBE}${profile.retirement.bornAfterSep30 ? ' (เกิดหลัง 30 ก.ย. +1 ปี)' : ''}`
+                : '',
+              `ผลเปรียบเทียบ: มีผู้อาวุโสน้อยกว่าได้รับเลื่อนตำแหน่งสูงขึ้นจำนวน ${comp.juniorPromotedCount || 0} คน${juniorNames ? ` ได้แก่ ${juniorNames}${juniors.length > 15 ? ' เป็นต้น' : ''}` : ''}`,
+            ]
+              .filter(Boolean)
+              .join('\n');
+
+            setInput((prev) => ({
+              ...prev,
+              title: prev.title || `วิเคราะห์การแต่งตั้งและเปรียบเทียบอาวุโส ${profile.fullNameWithRank}`,
+              subject_name: profile.name,
+              rank_position: profile.currentPosition || prev.rank_position,
+              level: profile.sourceLevel || prev.level,
+              account: profile.sourceAccount || prev.account,
+              case_summary: prev.case_summary ? `${prev.case_summary}\n\n${summaryLine}` : summaryLine,
+            }));
+            setTab(0);
+            setNotice(`ดึงข้อมูลของ ${profile.fullNameWithRank} เข้าสู่ฟอร์มวิเคราะห์เรียบร้อยแล้ว — กด "บันทึกข้อมูล" เพื่อเริ่มงานวิเคราะห์`);
+          }}
+        />
       </div>
     </section>
   );

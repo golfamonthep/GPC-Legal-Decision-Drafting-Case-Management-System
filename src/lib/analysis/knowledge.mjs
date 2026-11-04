@@ -58,6 +58,21 @@ function readCircular2456PdfBuffer() {
 }
 
 function mergeExtendedKnowledge(baseBundle) {
+  const snapshot = loadSnapshotData();
+  const snapshotSeniorityMap = new Map((snapshot.seniority || []).map((s) => [s.id, s]));
+  const enrichedSeniority = (baseBundle.seniority || []).map((s) => {
+    const snap = snapshotSeniorityMap.get(s.id);
+    return snap
+      ? {
+          ...s,
+          current_position_date: snap.current_position_date || s.current_position_date || null,
+          previous_position_date: snap.previous_position_date || s.previous_position_date || null,
+          birth_date: snap.birth_date || s.birth_date || null,
+          rank_dates: snap.rank_dates || s.rank_dates || [],
+        }
+      : s;
+  });
+
   const existingSourceNames = new Set((baseBundle.summary.sources || []).map((s) => s.filename));
   const sources = existingSourceNames.has(CIRCULAR_2456_SOURCE.filename)
     ? baseBundle.summary.sources
@@ -106,6 +121,8 @@ function mergeExtendedKnowledge(baseBundle) {
     summary,
     records,
     chunks,
+    seniority: enrichedSeniority,
+    pageRowDates: snapshot.pageRowDates || baseBundle.pageRowDates || {},
     accounts,
     all,
     search(q, kind) {
@@ -327,7 +344,25 @@ function loadLocalKnowledge(root) {
   });
 }
 
+function loadSnapshotData() {
+  const candidates = [
+    path.resolve(process.cwd(), 'src/data/analysis/appointments-2569-snapshot.json'),
+    'C:\\APP\\src\\data\\analysis\\appointments-2569-snapshot.json',
+  ];
+  for (const filePath of candidates) {
+    if (existsSync(filePath)) {
+      try {
+        return JSON.parse(readFileSync(filePath, 'utf8'));
+      } catch {
+        // ignore parse error
+      }
+    }
+  }
+  return { accounts: [], seniority: [], appointments: [], pageRowDates: {} };
+}
+
 function loadEmbeddedStatutoryFallback() {
+  const snapshot = loadSnapshotData();
   const accounts = [...DEFAULT_GENERAL_ACCOUNTS, ...SUB_GENERAL_TO_INSPECTOR_ACCOUNTS];
   const chunks = [...KTR_APPOINTMENT_2567_CHUNKS, ...CIRCULAR_2456_CHUNKS];
   const lawsPath = path.resolve(process.cwd(), 'src/data/thai-law/police-laws.json');
@@ -353,6 +388,27 @@ function loadEmbeddedStatutoryFallback() {
       // keep circular chunks if catalog cannot be read
     }
   }
+  const seniority = snapshot.seniority || [];
+  const appointments = snapshot.appointments || [];
+  const records = [
+    ...chunks,
+    ...seniority.map((s) => ({
+      ...s,
+      kind: 'seniority',
+      page: s.source_pdf_page,
+      text: JSON.stringify(s),
+      status: s.verification_status,
+      label: s.source_name,
+    })),
+    ...appointments.map((a) => ({
+      ...a,
+      kind: 'appointment',
+      page: a['หน้า PDF'],
+      text: JSON.stringify(a),
+      status: a.appointment_verification_status,
+      label: a['ชื่อ–นามสกุล'] || a['ชื่อ-นามสกุล'] || Object.values(a)[5],
+    })),
+  ];
   const sources = [CIRCULAR_2456_SOURCE];
   const fingerprint = hash(JSON.stringify(chunks.map((c) => c.id)));
   const summary = {
@@ -360,8 +416,8 @@ function loadEmbeddedStatutoryFallback() {
     fingerprint,
     integrity: 'VERIFIED',
     sources,
-    appointments: 281,
-    seniority: 181,
+    appointments: appointments.length || 281,
+    seniority: seniority.length || 181,
     accounts,
     chunk_count: chunks.length,
     exclusive_seniority_source: CIRCULAR_2456_SOURCE.filename,
@@ -369,19 +425,20 @@ function loadEmbeddedStatutoryFallback() {
     tier_definitions: STATUTORY_TIER_DEFINITIONS,
     circular_2456_source: CIRCULAR_2456_SOURCE.filename,
   };
-  const all = new Map(chunks.map((r) => [r.id, r]));
+  const all = new Map(records.map((r) => [r.id, r]));
   return {
     format: 'gpc-analysis-knowledge-v1',
     summary,
-    records: chunks,
+    records,
     chunks,
-    seniority: [],
-    appointments: [],
+    seniority,
+    appointments,
     accounts,
+    pageRowDates: snapshot.pageRowDates || {},
     all,
     search(q, kind) {
       const query = normalizeSearchText(q);
-      return chunks
+      return records
         .filter(
           (r) =>
             (!kind || r.kind === kind) &&

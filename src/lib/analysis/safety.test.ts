@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import {assertOwner,assertAssignment,cleanInput,invalidateDocument,validateCitations,boundedAppend,assertSameOrigin,invalidateSource} from './safety.mjs';
 import {analyze,buildAutoDraftSections,validateProposal,normalizeName,normalizeSearchText} from './engine.mjs';
 import {CIRCULAR_2456_CHUNKS,KTR_APPOINTMENT_2567_CHUNKS,STATUTORY_TIER_DEFINITIONS,SUB_GENERAL_TO_INSPECTOR_ACCOUNTS,evaluateCircular2456Rules,resolveJobTier,resolveSeniorityQuotaSpec} from './subGeneralToInspectorData.mjs';
+import {calculateRetirementInfo,calculateTenureAndEligibility,searchAndComparePerson} from './personSearch.mjs';
+import fs from 'node:fs';
+import path from 'node:path';
 
 test('workspaces are owner scoped even when identifiers are known',()=>{assert.throws(()=>assertOwner({ownerKey:'a'},{id:'b',role:'LEGAL_OFFICER'}));assert.doesNotThrow(()=>assertOwner({ownerKey:'a'},{id:'a',role:'REGISTRY_OFFICER'}));});
 test('registry role cannot attach and assignments are rechecked',()=>{const c={legalOfficerId:'a',legalOfficerName:null};assert.throws(()=>assertAssignment(c,{id:'a',role:'REGISTRY_OFFICER'}));assert.doesNotThrow(()=>assertAssignment(c,{id:'a',role:'LEGAL_OFFICER'}));assert.throws(()=>assertAssignment(c,{id:'b',role:'LEGAL_OFFICER'}));});
@@ -132,4 +135,41 @@ test('incomplete user input auto-infers title, tier, level, motion, unit type, a
   assert.ok(draft['ข้อมูลเรื่องและบุคคล'].includes('พ.ต.ท. สมชาย ใจดี'));
   assert.ok(draft['กฎหมายและหลักเกณฑ์'].includes('พิเคราะห์แล้วเห็นว่า'));
   assert.ok(draft['การวิเคราะห์'].includes('พิจารณาแล้วเห็นว่า'));
+});
+
+test('Zero-API database person search calculates retirement (+1 year after 30 Sep), tenure, eligibility, and junior promoted officers', () => {
+  // 1. Born on or before 30 Sep -> +60 years
+  const retBefore = calculateRetirementInfo('22/09/2515');
+  assert.ok(retBefore);
+  assert.equal(retBefore.bornAfterSep30, false);
+  assert.equal(retBefore.retirementYearBE, 2575);
+
+  // 2. Born after 30 Sep (e.g. 7/10/2513) -> +61 years (+1 bonus year)
+  const retAfter = calculateRetirementInfo('7/10/2513');
+  assert.ok(retAfter);
+  assert.equal(retAfter.bornAfterSep30, true);
+  assert.equal(retAfter.retirementYearBE, 2574);
+
+  // 3. Tenure & eligibility calculation for รอง ผบก. (requires >= 4 years)
+  const ten = calculateTenureAndEligibility('15/03/2561', 'รอง ผบก. / เทียบเท่า', '1/10/2569');
+  assert.equal(ten.requiredYears, 4);
+  assert.equal(ten.isEligible, true);
+  assert.equal(ten.tenureYears, 8);
+  assert.equal(ten.yearsPastEligibility, 4);
+
+  // 4. Full person search and junior promoted officers comparison from snapshot
+  const snapshotPath = path.resolve(process.cwd(), 'src/data/analysis/appointments-2569-snapshot.json');
+  const snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
+  const res = searchAndComparePerson(snapshot, { q: 'อาชยน ไกรทอง' });
+  assert.equal(res.zeroApiCost, true);
+  assert.ok(res.profile);
+  assert.equal(res.profile.name, 'อาชยน ไกรทอง');
+  assert.equal(res.profile.seniorityOrder, 3);
+  assert.equal(res.profile.retirement?.bornAfterSep30, true);
+  assert.equal(res.profile.retirement?.retirementYearBE, 2574);
+  assert.equal(res.profile.comparison.juniorPromotedCount, 3);
+  assert.deepEqual(
+    res.profile.comparison.juniorPromotedOfficers.map((j: { name: string }) => j.name),
+    ['กฤษกร พลีธัญญวงศ์', 'พิสิฐ ตันประเสริฐ', 'กฤตธาพล ยี่สาคร'],
+  );
 });
