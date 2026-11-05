@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
     ติดตั้งทางลัดเริ่มต้นอัตโนมัติ (Windows Startup & Desktop Shortcut)
@@ -60,11 +60,11 @@ if (Test-Path -LiteralPath $oneDriveDir) {
     $sc3.Save()
     Write-Host "✅ สร้างทางลัดในโฟลเดอร์ OneDrive: $oneDriveLnk"
 
-    # Also place a .cmd launcher in OneDrive for 1-click execution
-    $cmdInOneDrive = Join-Path $oneDriveDir "เริ่มทำงานระบบออโต้อัปเดตทะเบียนคุม.cmd"
-    $cmdContent = "@echo off`r`nstart """" wscript.exe `"$vbsLauncher`"`r`n"
-    Set-Content -LiteralPath $cmdInOneDrive -Value $cmdContent -Encoding ASCII
-    Write-Host "✅ สร้างไฟล์เปิดทำงานในโฟลเดอร์ OneDrive: $cmdInOneDrive"
+    # Clean up any legacy .cmd files in OneDrive so only 1 single .lnk icon remains
+    $legacyCmd1 = Join-Path $oneDriveDir "เริ่มทำงานระบบออโต้อัปเดตทะเบียนคุม.cmd"
+    $legacyCmd2 = Join-Path $oneDriveDir "⚡ เริ่มทำงานระบบออโต้อัปเดตทะเบียนคุม.cmd"
+    if (Test-Path -LiteralPath $legacyCmd1) { Remove-Item -LiteralPath $legacyCmd1 -Force -ErrorAction SilentlyContinue }
+    if (Test-Path -LiteralPath $legacyCmd2) { Remove-Item -LiteralPath $legacyCmd2 -Force -ErrorAction SilentlyContinue }
 }
 
 Write-Host "`r`nการติดตั้งเสร็จสมบูรณ์ 100%! ระบบจะเริ่มทำงานอัตโนมัติเมื่อเปิดเครื่องคอมพิวเตอร์"

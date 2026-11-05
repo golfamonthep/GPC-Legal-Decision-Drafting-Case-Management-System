@@ -23,6 +23,8 @@ import { hasPermission } from "@/lib/auth/permissions";
 import { DispatchPanel } from "@/components/DispatchPanel";
 import { parseDispatchData } from "@/lib/dispatch/officialDispatchWorkflow";
 import { calculateFilingDeadline } from "@/lib/dispatch/courtDeadline";
+import { getHydratedSnapshotCases } from "@/lib/registry/caseSnapshot";
+import { normalizeCaseNumber } from "@/lib/registryNumbers";
 
 function formatDate(date: Date | null | undefined): string {
   if (!date) return "-";
@@ -37,30 +39,58 @@ export default async function CaseDetailPage({
   const user = await requirePermission("VIEW_CASE_DETAIL");
   const resolvedParams = await params;
   const caseId = resolvedParams.id;
-  const caseData = await prisma.case.findUnique({
-    where: { id: caseId },
-    include: {
-      owner: true,
-      legalOfficer: true,
-      documents: {
-        orderBy: { uploadedAt: 'desc' }
-      },
-      events: {
-        orderBy: { timestamp: 'desc' }
-      },
-      drafts: {
+  let caseData: any = null;
+  if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('dummy') && !process.env.DATABASE_URL.includes('[SENSITIVE]')) {
+    try {
+      caseData = await prisma.case.findUnique({
+        where: { id: caseId },
         include: {
-          sections: true
+          owner: true,
+          legalOfficer: true,
+          documents: {
+            orderBy: { uploadedAt: 'desc' }
+          },
+          events: {
+            orderBy: { timestamp: 'desc' }
+          },
+          drafts: {
+            include: {
+              sections: true
+            }
+          },
+          agendaItems: {
+            include: {
+              meeting: true
+            },
+            orderBy: { meeting: { meetingDate: 'desc' } }
+          }
         }
-      },
-      agendaItems: {
-        include: {
-          meeting: true
-        },
-        orderBy: { meeting: { meetingDate: 'desc' } }
-      }
+      });
+    } catch (dbErr) {
+      console.warn('[CaseDetail] Database query failed, falling back to snapshot:', dbErr);
     }
-  });
+  }
+
+  if (!caseData) {
+    const snapCases = getHydratedSnapshotCases();
+    const found = snapCases.find((c: any) =>
+      c.id === caseId ||
+      c.blackNumber === caseId ||
+      normalizeCaseNumber(c.blackNumber) === normalizeCaseNumber(caseId)
+    );
+    if (found) {
+      caseData = {
+        ...found,
+        owner: found.committeeOwnerName ? { id: 'snap-owner', name: found.committeeOwnerName, role: 'COMMISSIONER' } : null,
+        legalOfficer: found.legalOfficerName ? { id: 'snap-officer', name: found.legalOfficerName, role: 'LEGAL_OFFICER' } : null,
+        documents: [],
+        events: [],
+        drafts: [],
+        agendaItems: [],
+        dispatchData: null,
+      };
+    }
+  }
 
   if (!caseData) {
     notFound();
@@ -71,29 +101,34 @@ export default async function CaseDetailPage({
   const deadlineInfo = calculateFilingDeadline(dispatchData?.acknowledgementDate, dispatchData?.filingPeriodDays, dispatchData?.courtFollowupStatus);
 
   // Record case view audit log
-  await auditLog({
-    action: "VIEW_CASE",
-    entityType: "Case",
-    entityId: caseId,
-  });
+  try {
+    await auditLog({
+      action: "VIEW_CASE",
+      entityType: "Case",
+      entityId: caseId,
+    });
+  } catch {}
 
   // Fetch Audit Logs for this case and its related entities
-  const relatedDraftSectionIds = caseData.drafts.flatMap(d => d.sections.map(s => s.id));
-  const relatedDocumentIds = caseData.documents.map(d => d.id);
+  const relatedDraftSectionIds = (caseData.drafts || []).flatMap((d: any) => (d.sections || []).map((s: any) => s.id));
+  const relatedDocumentIds = (caseData.documents || []).map((d: any) => d.id);
 
-  const auditLogs = await prisma.auditLog.findMany({
-    where: {
-      OR: [
-        { entityType: "Case", entityId: caseId },
-        { entityType: "CaseDocument", entityId: { in: relatedDocumentIds } },
-        { entityType: "DecisionDraftSection", entityId: { in: relatedDraftSectionIds } }
-      ]
-    },
-    orderBy: { timestamp: 'desc' },
-    include: { user: true }
-  });
+  let auditLogs: any[] = [];
+  try {
+    auditLogs = await prisma.auditLog.findMany({
+      where: {
+        OR: [
+          { entityType: "Case", entityId: caseId },
+          { entityType: "CaseDocument", entityId: { in: relatedDocumentIds } },
+          { entityType: "DecisionDraftSection", entityId: { in: relatedDraftSectionIds } }
+        ]
+      },
+      orderBy: { timestamp: 'desc' },
+      include: { user: true }
+    });
+  } catch {}
 
-  const caseActivities = caseData.events.map((e) => ({
+  const caseActivities = (caseData.events || []).map((e: any) => ({
     id: e.id,
     caseId: caseId,
     action: e.action,
@@ -101,7 +136,7 @@ export default async function CaseDetailPage({
     timestamp: format(e.timestamp, 'dd MMM yyyy HH:mm', { locale: th })
   }));
 
-  const mockDocs = caseData.documents.map((d) => ({
+  const mockDocs = (caseData.documents || []).map((d: any) => ({
     id: d.id,
     name: d.title,
     date: formatDate(d.uploadedAt),

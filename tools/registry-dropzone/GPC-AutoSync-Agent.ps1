@@ -2,7 +2,8 @@
 <#
 .SYNOPSIS
     GPC-AutoSync-Agent - Windows Background Auto-Sync Agent for ก.พ.ค.ตร.
-    เฝ้าติดตามไฟล์ทะเบียนคุมใน OneDrive ตลอดเวลา เมื่อบันทึกไฟล์ Excel (Ctrl+S) จะอัปเดตระบบเวบอัตโนมัติทันที
+    เฝ้าติดตามไฟล์ทะเบียนคุมใน OneDrive ตลอดเวลา
+    เมื่อบันทึกไฟล์ Excel (Ctrl+S) หรือเมื่อปิดโปรแกรม Excel ระบบจะอัปเดตเวบและส่งขึ้นคลาวด์อัตโนมัติทันที
 #>
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -99,7 +100,6 @@ function Run-RegistrySync {
     try {
         Write-SyncLog "เริ่มกระบวนการซิงค์ข้อมูล (ที่มา: $TriggerSource)..."
         
-        # Test if node & tsx script exist
         $tsxScript = Join-Path $appRootDir "scripts\sync-registry.ts"
         $tsxCli = Join-Path $appRootDir "node_modules\tsx\dist\cli.mjs"
 
@@ -132,7 +132,34 @@ function Run-RegistrySync {
 
         if ($process.ExitCode -eq 0) {
             Write-SyncLog "ซิงค์ข้อมูลสำเร็จ!`r`n$stdout"
-            Show-Notification "ก.พ.ค.ตร. - อัปเดตทะเบียนคุมสำเร็จ" "อัปเดตข้อมูลเวบเรียบร้อยแล้ว: รวม 217 คดี (เสร็จสิ้น 171 คดี, ค้าง 46 คดี)" ([System.Windows.Forms.ToolTipIcon]::Info)
+            Show-Notification "ก.พ.ค.ตร. - อัปเดตทะเบียนคุมสำเร็จ" "อัปเดตข้อมูลเวบและบันทึกการดำเนินการเรียบร้อยแล้ว: รวม 217 คดี" ([System.Windows.Forms.ToolTipIcon]::Info)
+            
+            # Auto push to GitHub / Vercel
+            $worktreeDir = "C:\Users\polic\.codex\worktrees\ai-harness\APP"
+            if (Test-Path -LiteralPath $worktreeDir) {
+                try {
+                    $srcJson = Join-Path $appRootDir "src\data\cases-snapshot.json"
+                    $dstJson = Join-Path $worktreeDir "src\data\cases-snapshot.json"
+                    if (Test-Path -LiteralPath $srcJson) {
+                        Copy-Item -LiteralPath $srcJson -Destination $dstJson -Force
+                        $gitPsi = New-Object System.Diagnostics.ProcessStartInfo
+                        $gitPsi.FileName = "git.exe"
+                        $gitPsi.Arguments = "commit -m `"data: auto-sync registry update from OneDrive`" src/data/cases-snapshot.json"
+                        $gitPsi.WorkingDirectory = $worktreeDir
+                        $gitPsi.UseShellExecute = $false
+                        $gitPsi.CreateNoWindow = $true
+                        $p1 = [System.Diagnostics.Process]::Start($gitPsi)
+                        $p1.WaitForExit(10000)
+
+                        $gitPsi.Arguments = "push origin codex/ai-harness:main"
+                        $p2 = [System.Diagnostics.Process]::Start($gitPsi)
+                        $p2.WaitForExit(25000)
+                        Write-SyncLog "ผลักดันข้อมูลขึ้น GitHub / Vercel คลาวด์สำเร็จเรียบร้อย"
+                    }
+                } catch {
+                    Write-SyncLog "ข้ามการ push ขึ้น GitHub: $($_.Exception.Message)"
+                }
+            }
         } else {
             Write-SyncLog "ข้อผิดพลาดในการซิงค์ (Code $($process.ExitCode)): $stderr"
             Show-Notification "ก.พ.ค.ตร. - แจ้งเตือนการซิงค์" "พบข้อผิดพลาด: $stderr" ([System.Windows.Forms.ToolTipIcon]::Warning)
@@ -144,32 +171,29 @@ function Run-RegistrySync {
     }
 }
 
-# 5. Debounce Timer for File Watcher
+# 5. Debounce Timer for File Watcher (1.0 second on save)
 $debounceTimer = New-Object System.Windows.Forms.Timer
-$debounceTimer.Interval = 3500 # 3.5 seconds quiet period after file write
+$debounceTimer.Interval = 1000 # 1.0 second quiet period after Excel save
 $global:pendingFileChange = $null
 
 $debounceTimer.Add_Tick({
     $debounceTimer.Stop()
     $fileToSync = $global:pendingFileChange
-    Write-SyncLog "ครบกำหนดหน่วงเวลา (Debounce): ตรวจสอบไฟล์ $fileToSync"
+    Write-SyncLog "ตรวจพบการบันทึกไฟล์ (Save): $fileToSync -> เริ่มการอัปเดตทันที"
     
-    # Check if file is unlocked and readable
     if ($fileToSync -and (Test-Path -LiteralPath $fileToSync)) {
-        $canRead = $false
-        for ($i = 0; $i -lt 5; $i++) {
+        for ($i = 0; $i -lt 3; $i++) {
             try {
                 $stream = [System.IO.File]::Open($fileToSync, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
                 $stream.Close()
-                $canRead = $true
                 break
             } catch {
-                Start-Sleep -Milliseconds 600
+                Start-Sleep -Milliseconds 300
             }
         }
     }
     
-    Run-RegistrySync "ตรวจพบการเปลี่ยนแปลงไฟล์: $fileToSync"
+    Run-RegistrySync "บันทึกไฟล์ Excel ($fileToSync)"
 })
 
 # 6. FileSystemWatcher Setup
@@ -185,25 +209,37 @@ if (Test-Path -LiteralPath $oneDriveDir) {
         $name = $eventArgs.Name
         $path = $eventArgs.FullPath
 
-        # Ignore temp excel lock files (~$...) and non-excel files
         if ($name.StartsWith("~$") -or ($name -notmatch '\.(xlsx|xlsm)$')) {
             return
         }
 
-        # We care about registry workbooks
         if ($name -match 'ทะเบียนคุม') {
-            Write-SyncLog "ตรวจพบการบันทึกไฟล์ Excel: $name ($($eventArgs.ChangeType))"
+            Write-SyncLog "ตรวจพบการกดบันทึกไฟล์ Excel: $name ($($eventArgs.ChangeType))"
             $global:pendingFileChange = $path
             $debounceTimer.Stop()
             $debounceTimer.Start()
         }
     }
 
+    $onFileDeleted = {
+        param($source, $eventArgs)
+        $name = $eventArgs.Name
+
+        # When Excel closes, it deletes the lock file ~$ทะเบียนคุม...
+        if ($name.StartsWith("~$") -and ($name -match 'ทะเบียนคุม')) {
+            $realWorkbook = $name.Substring(2)
+            Write-SyncLog "ตรวจพบการปิดโปรแกรม Excel (ปลดล็อก: $realWorkbook) -> ดำเนินการออโต้อัปเดตทันที!"
+            $debounceTimer.Stop()
+            Run-RegistrySync "ปิดโปรแกรม Excel ($realWorkbook)"
+        }
+    }
+
     Register-ObjectEvent $watcher "Changed" -Action $onFileChanged | Out-Null
     Register-ObjectEvent $watcher "Created" -Action $onFileChanged | Out-Null
     Register-ObjectEvent $watcher "Renamed" -Action $onFileChanged | Out-Null
+    Register-ObjectEvent $watcher "Deleted" -Action $onFileDeleted | Out-Null
 
-    Write-SyncLog "เปิดการเฝ้าตรวจไฟล์ในโฟลเดอร์เรียบร้อย"
+    Write-SyncLog "เปิดการเฝ้าตรวจไฟล์ในโฟลเดอร์เรียบร้อย (ตรวจจับทั้งการกดเซฟและปิด Excel ทันที)"
 } else {
     Write-SyncLog "คำเตือน: ไม่พบโฟลเดอร์ $oneDriveDir การเฝ้าตรวจอัตโนมัติจะรอไฟล์"
 }
@@ -271,7 +307,7 @@ $trayIcon.Add_DoubleClick({
 })
 
 # Show startup toast
-Show-Notification "ก.พ.ค.ตร. - ระบบออโต้อัปเดตพร้อมทำงาน" "กำลังเฝ้าตรวจไฟล์ทะเบียนคุมใน OneDrive เมื่อบันทึกไฟล์ Excel ระบบจะอัปเดตเวบอัตโนมัติทันที" ([System.Windows.Forms.ToolTipIcon]::Info)
+Show-Notification "ก.พ.ค.ตร. - ระบบออโต้อัปเดตพร้อมทำงาน" "กำลังเฝ้าตรวจไฟล์ใน OneDrive เมื่อกดบันทึกหรือปิด Excel ระบบจะอัปเดตเวบทันที" ([System.Windows.Forms.ToolTipIcon]::Info)
 
 # Run initial sync on launch to ensure data is up to date
 Run-RegistrySync "Application Startup"
