@@ -166,18 +166,51 @@ async function syncDirect(filePath: string) {
 }
 
 // Execution
-const targetFile = process.argv[2];
-if (!targetFile) {
-  console.log('Usage: npx tsx scripts/sync-registry.ts "<path-to-excel-file>"');
-  process.exit(1);
+async function main() {
+  const arg = process.argv[2];
+  if (arg && arg !== '--all' && arg !== '--auto') {
+    const res = await syncDirect(path.resolve(arg));
+    console.log(JSON.stringify(res, null, 2));
+    return;
+  }
+
+  // Auto discovery from OneDrive
+  const candidateDirs = [
+    'C:\\Users\\polic\\OneDrive\\04 ทะเบียนคุม ร้องทุกข์-อุทธรณ์',
+    path.join(process.env.USERPROFILE || '', 'OneDrive', '04 ทะเบียนคุม ร้องทุกข์-อุทธรณ์'),
+    path.join(process.cwd(), 'scratch', 'excel_backup'),
+  ];
+
+  let foundFiles: string[] = [];
+  for (const dir of candidateDirs) {
+    if (fs.existsSync(dir)) {
+      try {
+        const files = fs.readdirSync(dir)
+          .filter(f => (f.endsWith('.xlsm') || f.endsWith('.xlsx')) && !f.startsWith('~$'))
+          .map(f => path.join(dir, f));
+        if (files.length > 0) {
+          foundFiles = files;
+          console.log(`[Auto-Sync] พบโฟลเดอร์ทะเบียนคุม: ${dir} (${files.length} ไฟล์)`);
+          break;
+        }
+      } catch (e) {}
+    }
+  }
+
+  if (foundFiles.length === 0) {
+    throw new Error('ไม่พบไฟล์ทะเบียนคุมในโฟลเดอร์ OneDrive หรือแคชสำรอง');
+  }
+
+  const results = [];
+  for (const file of foundFiles) {
+    const res = await syncDirect(file);
+    results.push(res);
+  }
+
+  console.log(`[Auto-Sync Complete] ซิงค์ไฟล์ทะเบียนคุมครบทั้งหมด ${results.length} ไฟล์เรียบร้อย`);
 }
 
-syncDirect(path.resolve(targetFile))
-  .then((res) => {
-    console.log(JSON.stringify(res, null, 2));
-    process.exit(0);
-  })
-  .catch((err) => {
-    console.error('SYNC_ERROR:', err.message);
-    process.exit(1);
-  });
+main().catch((err) => {
+  console.error('SYNC_ERROR:', err.message);
+  process.exit(1);
+});

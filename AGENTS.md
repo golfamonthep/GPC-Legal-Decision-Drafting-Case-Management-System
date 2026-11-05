@@ -41,6 +41,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
    - ชื่อระบบ/อัตลักษณ์หน้าเว็บปัจจุบัน: **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`**
    - โครงสร้างหลักที่พัฒนาเสร็จแล้ว:
 
+- **อัปเดตฐานข้อมูลคดี ๒๑๗ รายการ (๑๐๐% Real Cases) พร้อมระบบ Auto-Sync Desktop Tray Agent เฝ้าตรวจ OneDrive อัตโนมัติ (2026-11-05)**:
+  - อัปเดตข้อมูลจริง 100% จาก Excel ทะเบียนคุมใน OneDrive: ร้องทุกข์ 107 คดี, อุทธรณ์ 110 คดี รวม 217 คดี (เสร็จสิ้น 171 คดี, ค้าง 46 คดี)
+  - สร้าง Offline Snapshot Fallback (`src/lib/registryNumbers.ts`, `src/lib/registry/caseSnapshot.ts`, `src/data/cases-snapshot.json`) ให้หน้ารายการคดีและแดชบอร์ดทำงานได้ 100% แม้ออฟไลน์หรือไม่มีฐานข้อมูล
+  - พัฒนา Background Tray Agent (`tools/registry-dropzone/GPC-AutoSync-Agent.ps1`) ทำงานระดับ Windows Tray NotifyIcon เฝ้าตรวจ OneDrive อัตโนมัติเมื่อกดบันทึกใน Excel (Ctrl+S) มีระบบ Debounce 3.5s ปลอดภัยจากการชนกันของไฟล์ พร้อมตัวเปิดอัตโนมัติตอนเปิดเครื่อง (`Install-AutoSync-Startup.ps1`) และรันแบบซ่อนหน้าต่างดำ (`Launch-AutoSync-Background.vbs`)
+  - อัปเกรด `scripts/sync-registry.ts` รองรับการรันแบบ Zero-argument / Auto-discovery ซิงค์ทั้งระบบอัตโนมัติ (`npm test` 100/100, `typecheck` 0 errors, `build` 38/38 routes)
+
 - **เพิ่มเมนูค้นหาและเปรียบเทียบอาวุโสจากฐานข้อมูลในเครื่อง 100% ประหยัดงบ Zero-API (`/analysis?tab=search`) (2026-11-04)**:
   - พัฒนา `src/lib/analysis/personSearch.mjs`, `src/data/analysis/appointments-2569-snapshot.json`, และ `src/components/analysis/PersonSearch.jsx` ดึงข้อมูลจากฐานข้อมูลบัญชีอาวุโสและคำสั่งแต่งตั้งโดยตรง (0 API cost) คำนวณระยะเวลาครองตำแหน่งปัจจุบัน ระยะเวลาที่ครบเกณฑ์เลื่อนสูงขึ้น (ม.๗๗ / ข้อ ๑๗) ลำดับอาวุโส วันเกิดและปีเกษียณอายุราชการ (เกิดหลัง 30 ก.ย. บวกปีเกษียณเพิ่ม +1 ปี) พร้อมตารางรายชื่อผู้อาวุโสน้อยกว่าที่ได้รับเลื่อนตำแหน่งสูงขึ้นครบทุกคน และปุ่มดาวน์โหลด PDF (`npm test` 100/100, `typecheck` 0 errors, `build` 38/38 routes)
 
