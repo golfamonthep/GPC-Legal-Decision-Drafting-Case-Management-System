@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
-import { normalizeCaseNumber, extractStoredRedNumber } from '@/lib/registryNumbers';
-import { parseThaiDate } from '@/lib/dateUtils';
-import { getRegistryCaseStatus } from '@/lib/caseStatus';
+import { normalizeCaseNumber, extractStoredRedNumber } from '../registryNumbers';
+import { parseThaiDate } from '../dateUtils';
+import { getRegistryCaseStatus } from '../caseStatus';
 
 export interface ParsedRegistryCaseRow {
   index: number;

@@ -3,6 +3,7 @@ import "server-only";
 import prisma from "@/lib/db";
 import { DemoDashboardDataSource } from "./demo";
 import { loadDashboardFromSource } from "./loader";
+import { getHydratedSnapshotCases } from "@/lib/registry/caseSnapshot";
 import type {
   DashboardDataSource,
   DashboardFilters,
@@ -66,7 +67,9 @@ class DatabaseDashboardDataSource implements DashboardDataSource {
       }),
     ]);
 
-    if (queries[0].status === "rejected") throw queries[0].reason;
+    const cases = queries[0].status === "fulfilled" && queries[0].value?.length
+      ? queries[0].value
+      : getHydratedSnapshotCases();
     const partialReasons: string[] = [];
     if (queries[1].status === "rejected") partialReasons.push("กิจกรรมล่าสุด");
     if (queries[2].status === "rejected") partialReasons.push("การประชุม");
@@ -74,7 +77,7 @@ class DatabaseDashboardDataSource implements DashboardDataSource {
     const events = queries[1].status === "fulfilled" ? queries[1].value : [];
     const meetings = queries[2].status === "fulfilled" ? queries[2].value : [];
     return {
-      cases: queries[0].value,
+      cases,
       activities: events.map((event) => ({
         id: event.id,
         blackNumber: event.case.blackNumber,

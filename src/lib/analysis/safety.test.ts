@@ -172,4 +172,11 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
     res.profile.comparison.juniorPromotedOfficers.map((j: { name: string }) => j.name),
     ['กฤษกร พลีธัญญวงศ์', 'พิสิฐ ตันประเสริฐ', 'กฤตธาพล ยี่สาคร'],
   );
+  // 5. Verification of complete database appointments pull: promotions & rotations
+  assert.equal(res.profile.comparison.totalPromotedInAccount, 6);
+  assert.equal(res.profile.comparison.allPromotedInAccount.length, 6);
+  assert.equal(res.profile.comparison.totalAppointedInLevel, 17);
+  assert.equal(res.profile.comparison.allAppointedInLevel.length, 17);
+  assert.ok(res.totalMatches > 0);
+  assert.ok(res.suggestions.length > 0);
 });

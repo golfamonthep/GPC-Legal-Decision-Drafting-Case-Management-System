@@ -8,6 +8,7 @@ import { Prisma } from "@/generated/prisma";
 import { filterCasesByRegistryCompletion, filterCasesByBlackYear, caseTextSearch } from "@/lib/caseList";
 import { hasPermission } from "@/lib/auth/permissions";
 import { getBlackNumberYear } from "@/lib/dashboard/metrics";
+import { getHydratedSnapshotCases } from "@/lib/registry/caseSnapshot";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -113,39 +114,79 @@ export default async function CasesPage({
     years = cached.years;
     formattedCases = cached.cases;
   } else {
-    const dbCases = await prisma.case.findMany({
-      where,
-      orderBy: { updatedAt: 'desc' },
-      select: {
-        id: true,
-        type: true,
-        blackNumber: true,
-        redNumber: true,
-        registryRedText: true,
-        petitionerName: true,
-        respondentName: true,
-        subject: true,
-        legalCategory: true,
-        committeeOwnerName: true,
-        legalOfficerName: true,
-        receivedDate: true,
-        dueDate30: true,
-        dueDate60: true,
-        dueDate90: true,
-        dueDate120: true,
-        dueDate240: true,
-        currentStatus: true,
-        meetingDate: true,
-        decisionResult: true,
-        oneDriveUrl: true,
-        proceedingNote: true,
-        owner: { select: { id: true, name: true } },
-        legalOfficer: { select: { id: true, name: true } },
+    let dbCases: any[] = [];
+    if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('dummy') && !process.env.DATABASE_URL.includes('[SENSITIVE]')) {
+      try {
+        dbCases = await prisma.case.findMany({
+          where,
+          orderBy: { updatedAt: 'desc' },
+          select: {
+            id: true,
+            type: true,
+            blackNumber: true,
+            redNumber: true,
+            registryRedText: true,
+            petitionerName: true,
+            respondentName: true,
+            subject: true,
+            legalCategory: true,
+            committeeOwnerName: true,
+            legalOfficerName: true,
+            receivedDate: true,
+            dueDate30: true,
+            dueDate60: true,
+            dueDate90: true,
+            dueDate120: true,
+            dueDate240: true,
+            currentStatus: true,
+            meetingDate: true,
+            decisionResult: true,
+            oneDriveUrl: true,
+            proceedingNote: true,
+            owner: { select: { id: true, name: true } },
+            legalOfficer: { select: { id: true, name: true } },
+          }
+        });
+      } catch (dbErr) {
+        console.warn('[CasesPage] Database query failed, using local registry snapshot:', dbErr);
+        dbCases = [];
       }
-    });
+    }
 
-    years = [...new Set(dbCases.map(c => getBlackNumberYear(c.blackNumber).replace('พ.ศ. ', '')))].sort().reverse();
-    formattedCases = filterCasesByBlackYear(filterCasesByRegistryCompletion(dbCases, completionStatusFilter, redNumberStatusFilter), year).map((c) => {
+    if (!dbCases || dbCases.length === 0) {
+      let snapCases = getHydratedSnapshotCases();
+      if (typeFilter) {
+        snapCases = snapCases.filter(c => c.type === typeFilter);
+      }
+      if (legalOfficerFilter) {
+        const offNorm = legalOfficerFilter.toLowerCase();
+        snapCases = snapCases.filter(c => c.legalOfficerName?.toLowerCase().includes(offNorm));
+      }
+      if (unassignedFilter === "LEGAL") {
+        snapCases = snapCases.filter(c => !c.legalOfficerName || c.legalOfficerName === "-" || c.legalOfficerName === "");
+      } else if (unassignedFilter === "COMMITTEE") {
+        snapCases = snapCases.filter(c => !c.committeeOwnerName || c.committeeOwnerName === "-" || c.committeeOwnerName === "");
+      }
+      if (qaMissingFieldsFilter === "missing") {
+        snapCases = snapCases.filter(c => !c.petitionerName || c.petitionerName === "-" || !c.subject || c.subject === "-" || !c.currentStatus || c.currentStatus === "-" || !c.receivedDate);
+      }
+      if (query) {
+        const q = query.toLowerCase();
+        snapCases = snapCases.filter(c =>
+          c.blackNumber?.toLowerCase().includes(q) ||
+          c.redNumber?.toLowerCase().includes(q) ||
+          c.petitionerName?.toLowerCase().includes(q) ||
+          c.respondentName?.toLowerCase().includes(q) ||
+          c.subject?.toLowerCase().includes(q) ||
+          c.proceedingNote?.toLowerCase().includes(q) ||
+          c.legalOfficerName?.toLowerCase().includes(q)
+        );
+      }
+      dbCases = snapCases;
+    }
+
+    years = [...new Set(dbCases.map((c: any) => getBlackNumberYear(c.blackNumber).replace('พ.ศ. ', '')))].sort().reverse();
+    formattedCases = filterCasesByBlackYear(filterCasesByRegistryCompletion(dbCases, completionStatusFilter, redNumberStatusFilter), year).map((c: any) => {
       return {
         id: c.id,
         type: c.type as any,

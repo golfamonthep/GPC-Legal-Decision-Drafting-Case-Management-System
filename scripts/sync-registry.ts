@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseRegistryWorkbook } from '../src/lib/registry/parseRegistryFile';
-import prisma from '../src/lib/db';
 import { normalizeCaseNumber } from '../src/lib/registryNumbers';
+import { upsertRowsToSnapshot, loadCasesSnapshot } from '../src/lib/registry/caseSnapshot';
 
 async function syncDirect(filePath: string) {
   console.log(`[Sync] Reading file: ${filePath}`);
@@ -20,7 +20,11 @@ async function syncDirect(filePath: string) {
 
   console.log(`[Sync] พบ ${parsed.totalRows} รายการ (ประเภท: ${parsed.caseType})`);
 
-  // Try calling local Next.js API first if server is running
+  // 1. Always update local snapshot in machine/repo first
+  const snapshotResult = upsertRowsToSnapshot(parsed.rows, parsed.caseType);
+  console.log(`[Sync Snapshot] บันทึกลง snapshot ในเครื่องสำเร็จ: ปรับปรุง ${snapshotResult.updatedCount} คดี, เพิ่มใหม่ ${snapshotResult.insertedCount} คดี`);
+
+  // 2. Try calling local Next.js API if server is running
   try {
     const fileBase64 = buffer.toString('base64');
     const apiRes = await fetch('http://127.0.0.1:3000/api/registry/sync', {
@@ -38,99 +42,113 @@ async function syncDirect(filePath: string) {
       return data;
     }
   } catch (netErr: any) {
-    console.log(`[Sync] เว็บเซิร์ฟเวอร์ไม่ได้เปิดอยู่ (${netErr.message}) -> ดำเนินการอัปเดตลงฐานข้อมูลโดยตรง`);
+    console.log(`[Sync] เว็บเซิร์ฟเวอร์ไม่ได้เปิดอยู่ (${netErr.message}) -> ดำเนินการอัปเดตลงฐานข้อมูล/สแน็ปช็อต`);
   }
 
-  // Fallback: Direct Prisma DB Upsert
-  const blackNumbersToCheck = Array.from(new Set(parsed.rows.map(r => r.blackNumber).filter(Boolean)));
-  const existingCases = await prisma.case.findMany({
-    where: {
-      type: parsed.caseType,
-      blackNumber: { in: blackNumbersToCheck },
-    },
-    select: {
-      id: true,
-      type: true,
-      blackNumber: true,
-      redNumber: true,
-      currentStatus: true,
-      receivedDate: true,
-      meetingDate: true,
-      dueDate30: true,
-      dueDate60: true,
-      dueDate90: true,
-      dueDate120: true,
-      dueDate240: true,
-    },
-  });
+  // 3. Fallback: Direct Prisma DB Upsert if database connection is available
+  let dbUpdated = snapshotResult.updatedCount;
+  let dbInserted = snapshotResult.insertedCount;
 
-  const existingMap = new Map<string, typeof existingCases[number]>();
-  existingCases.forEach(c => {
-    existingMap.set(normalizeCaseNumber(c.blackNumber), c);
-  });
+  if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('dummy') && !process.env.DATABASE_URL.includes('[SENSITIVE]')) {
+    try {
+      const { default: prisma } = await import('../src/lib/db');
+      const blackNumbersToCheck = Array.from(new Set(parsed.rows.map(r => r.blackNumber).filter(Boolean)));
+      const existingCases = await prisma.case.findMany({
+        where: {
+          type: parsed.caseType,
+          blackNumber: { in: blackNumbersToCheck },
+        },
+        select: {
+          id: true,
+          type: true,
+          blackNumber: true,
+          redNumber: true,
+          currentStatus: true,
+          receivedDate: true,
+          meetingDate: true,
+          dueDate30: true,
+          dueDate60: true,
+          dueDate90: true,
+          dueDate120: true,
+          dueDate240: true,
+        },
+      });
 
-  let insertedCount = 0;
-  let updatedCount = 0;
+      const existingMap = new Map<string, typeof existingCases[number]>();
+      existingCases.forEach(c => {
+        existingMap.set(normalizeCaseNumber(c.blackNumber), c);
+      });
 
-  const CHUNK_SIZE = 25;
-  for (let i = 0; i < parsed.rows.length; i += CHUNK_SIZE) {
-    const chunk = parsed.rows.slice(i, i + CHUNK_SIZE);
+      let insertedCount = 0;
+      let updatedCount = 0;
 
-    await prisma.$transaction(async (tx) => {
-      for (const row of chunk) {
-        const existing = existingMap.get(row.blackNumber);
+      const CHUNK_SIZE = 25;
+      for (let i = 0; i < parsed.rows.length; i += CHUNK_SIZE) {
+        const chunk = parsed.rows.slice(i, i + CHUNK_SIZE);
 
-        const caseData: Record<string, any> = {
-          type: row.type,
-          blackNumber: row.blackNumber,
-          redNumber: row.redNumber,
-          registryRedText: row.registryRedText,
-          petitionerName: row.petitionerName,
-          respondentName: row.respondentName,
-          subject: row.subject,
-          legalCategory: row.legalCategory,
-          legalOfficerName: row.legalOfficerName,
-          committeeOwnerName: row.committeeOwnerName,
-          proceedingNote: row.proceedingNote,
-          receivedDate: row.receivedDate ?? existing?.receivedDate ?? null,
-          dueDate30: row.dueDate30 ?? existing?.dueDate30 ?? null,
-          dueDate60: row.dueDate60 ?? existing?.dueDate60 ?? null,
-          dueDate90: row.dueDate90 ?? existing?.dueDate90 ?? null,
-          dueDate120: row.dueDate120 ?? existing?.dueDate120 ?? null,
-          dueDate240: row.dueDate240 ?? existing?.dueDate240 ?? null,
-          meetingDate: row.meetingDate ?? existing?.meetingDate ?? null,
-          currentStatus: row.currentStatus,
-          decisionResult: row.decisionResult,
-          oneDriveUrl: row.oneDriveUrl,
-        };
+        await prisma.$transaction(async (tx) => {
+          for (const row of chunk) {
+            const existing = existingMap.get(normalizeCaseNumber(row.blackNumber));
 
-        let caseId = existing?.id;
-        if (existing) {
-          await tx.case.update({
-            where: { id: existing.id },
-            data: caseData,
-          });
-          updatedCount++;
-        } else {
-          const newCase = await tx.case.create({
-            data: caseData as any,
-          });
-          caseId = newCase.id;
-          existingMap.set(row.blackNumber, newCase as any);
-          insertedCount++;
-        }
+            const caseData: Record<string, any> = {
+              type: row.type,
+              blackNumber: row.blackNumber,
+              redNumber: row.redNumber,
+              registryRedText: row.registryRedText,
+              petitionerName: row.petitionerName,
+              respondentName: row.respondentName,
+              subject: row.subject,
+              legalCategory: row.legalCategory,
+              legalOfficerName: row.legalOfficerName,
+              committeeOwnerName: row.committeeOwnerName,
+              proceedingNote: row.proceedingNote,
+              receivedDate: row.receivedDate ?? existing?.receivedDate ?? null,
+              dueDate30: row.dueDate30 ?? existing?.dueDate30 ?? null,
+              dueDate60: row.dueDate60 ?? existing?.dueDate60 ?? null,
+              dueDate90: row.dueDate90 ?? existing?.dueDate90 ?? null,
+              dueDate120: row.dueDate120 ?? existing?.dueDate120 ?? null,
+              dueDate240: row.dueDate240 ?? existing?.dueDate240 ?? null,
+              meetingDate: row.meetingDate ?? existing?.meetingDate ?? null,
+              currentStatus: row.currentStatus,
+              decisionResult: row.decisionResult,
+              oneDriveUrl: row.oneDriveUrl,
+            };
 
-        if (caseId) {
-          await tx.caseEvent.create({
-            data: {
-              caseId,
-              action: existing ? 'sync_latest_registry_update' : 'import_case',
-              actorName: 'Desktop DropZone Tool',
-            },
-          });
-        }
+            let caseId = existing?.id;
+            if (existing) {
+              await tx.case.update({
+                where: { id: existing.id },
+                data: caseData,
+              });
+              updatedCount++;
+            } else {
+              const newCase = await tx.case.create({
+                data: caseData as any,
+              });
+              caseId = newCase.id;
+              existingMap.set(normalizeCaseNumber(row.blackNumber), newCase as any);
+              insertedCount++;
+            }
+
+            if (caseId) {
+              await tx.caseEvent.create({
+                data: {
+                  caseId,
+                  action: existing ? 'sync_latest_registry_update' : 'import_case',
+                  actorName: 'Desktop DropZone Tool',
+                },
+              });
+            }
+          }
+        }, { timeout: 30000, maxWait: 10000 });
       }
-    }, { timeout: 30000, maxWait: 10000 });
+
+      dbUpdated = updatedCount;
+      dbInserted = insertedCount;
+      console.log(`[Sync DB Direct] อัปเดตฐานข้อมูลสำเร็จ: ปรับปรุง ${updatedCount} คดี, เพิ่มใหม่ ${insertedCount} คดี`);
+    } catch (dbErr: any) {
+      console.warn(`[Sync DB] ข้ามการเชื่อมต่อ Prisma DB: ${dbErr.message}`);
+    }
   }
 
   const result = {
@@ -138,12 +156,12 @@ async function syncDirect(filePath: string) {
     fileName,
     caseType: parsed.caseType,
     totalRows: parsed.totalRows,
-    updatedCount,
-    insertedCount,
-    summary: `อัปเดตทะเบียนคุม${parsed.caseType}สำเร็จ: ปรับปรุง ${updatedCount} คดี, เพิ่มใหม่ ${insertedCount} คดี (รวม ${parsed.totalRows} คดี)`,
+    updatedCount: dbUpdated,
+    insertedCount: dbInserted,
+    summary: `อัปเดตทะเบียนคุม${parsed.caseType}สำเร็จ: ปรับปรุง ${dbUpdated} คดี, เพิ่มใหม่ ${dbInserted} คดี (รวม ${parsed.totalRows} คดี)`,
   };
 
-  console.log(`[Sync DB Direct] ${result.summary}`);
+  console.log(`[Sync Complete] ${result.summary}`);
   return result;
 }
 

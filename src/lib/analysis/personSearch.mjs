@@ -281,6 +281,32 @@ export function buildRankHistoryTimeline(rankDates, sourceLevel) {
 }
 
 /**
+ * Standardize source level names to match canonical seniority accounts
+ */
+export function canonicalLevel(rawLevel) {
+  if (!rawLevel) return '';
+  const s = String(rawLevel).trim();
+  if (s.includes('ผู้ช่วย ผบ.ตร') || s.includes('รอง จตช')) return 'ผู้ช่วย ผบ.ตร. / รอง จตช.';
+  if (s.includes('ผบช') || s.includes('จตร')) {
+    if (s.includes('รอง')) return s.includes('แพทย์') ? 'รอง ผบช. / เทียบเท่า' : 'รอง ผบช. / รอง จตร. / เทียบเท่า';
+    return 'ผบช. / จตร. / เทียบเท่า';
+  }
+  if (s.includes('ผบก')) {
+    if (s.includes('รอง')) return 'รอง ผบก. / เทียบเท่า';
+    return 'ผบก. / เทียบเท่า';
+  }
+  if (s.includes('ผกก')) {
+    if (s.includes('รอง')) return 'รอง ผกก. / สวญ. (เลื่อนเป็น ผกก.)';
+    return 'ผกก. (เลื่อนเป็น รอง ผบก.)';
+  }
+  if (s.includes('สว.')) {
+    if (s.includes('รอง')) return 'รอง สว. (เลื่อนเป็น สว.)';
+    return 'สว. (เลื่อนเป็น รอง ผกก. / สวญ.)';
+  }
+  return s;
+}
+
+/**
  * ค้นหาและเปรียบเทียบข้อมูลข้าราชการตำรวจจากฐานข้อมูลในเครื่อง 100% (Zero-API-Cost)
  */
 export function searchAndComparePerson(knowledgeBundle, params = {}) {
@@ -305,6 +331,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     const fullName = String(appt['ชื่อ–นามสกุล'] || appt['ชื่อ-นามสกุล'] || appt.label || '').trim();
     const norm = normalizeName(fullName);
     if (!norm) continue;
+    const stdLevel = canonicalLevel(appt.source_level || appt['ระดับเดิม'] || '');
     officerMap.set(norm, {
       key: norm,
       name: fullName,
@@ -316,7 +343,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       newLevel: appt['ระดับใหม่'] || '',
       appointmentType: appt['ลักษณะการแต่งตั้ง'] || '',
       appointmentPdfPage: appt['หน้า PDF'] || null,
-      sourceLevel: appt.source_level || appt['ระดับเดิม'] || '',
+      sourceLevel: stdLevel,
       sourceAccount: appt.source_account || 'ทั่วไป',
       seniorityOrder: Number.isInteger(appt.seniority_order) ? appt.seniority_order : null,
       previousOrder: null,
@@ -348,6 +375,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       inAppointmentOrder: false,
     };
 
+    const stdLevel = canonicalLevel(sen.source_level || existing.sourceLevel);
     const pageLookup = lookupDatesByAccountAndOrder(
       knowledgeBundle,
       sen.source_level,
@@ -361,7 +389,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
 
     officerMap.set(norm, {
       ...existing,
-      sourceLevel: sen.source_level || existing.sourceLevel,
+      sourceLevel: stdLevel,
       sourceAccount: sen.source_account || existing.sourceAccount,
       seniorityOrder: Number.isInteger(sen.seniority_order) ? sen.seniority_order : existing.seniorityOrder,
       previousOrder: sen.previous_order ?? existing.previousOrder,
@@ -376,24 +404,52 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
 
   const allOfficers = [...officerMap.values()];
 
-  // Find matching candidates by name query
-  const matches = qNorm
-    ? allOfficers.filter((o) => o.key.includes(qNorm) || normalizeName(`${o.rank}${o.name}`).includes(qNorm))
-    : allOfficers.slice(0, 30);
+  // Multi-criteria filter: query keyword, level, account, or seniority order
+  let matches = allOfficers;
+  if (qNorm) {
+    matches = matches.filter(
+      (o) =>
+        o.key.includes(qNorm) ||
+        normalizeName(`${o.rank}${o.name}`).includes(qNorm) ||
+        (o.currentPosition && normalizeName(o.currentPosition).includes(qNorm)) ||
+        (o.newPosition && normalizeName(o.newPosition).includes(qNorm)) ||
+        (o.appointmentNumber && String(o.appointmentNumber) === qRaw),
+    );
+  }
+  if (manualLevel) {
+    const cLevel = canonicalLevel(manualLevel);
+    matches = matches.filter(
+      (o) => canonicalLevel(o.sourceLevel) === cLevel || canonicalLevel(o.currentLevel) === cLevel,
+    );
+  }
+  if (manualAccount) {
+    matches = matches.filter((o) => !o.sourceAccount || o.sourceAccount === manualAccount);
+  }
+  if (Number.isInteger(manualOrder) && manualOrder > 0) {
+    const orderMatches = matches.filter((o) => o.seniorityOrder === manualOrder);
+    if (orderMatches.length > 0) matches = orderMatches;
+  }
 
-  // Pick primary target officer (exact match first, then first partial match, or custom simulated officer)
-  let target =
-    (qNorm && allOfficers.find((o) => o.key === qNorm || normalizeName(`${o.rank}${o.name}`) === qNorm)) ||
-    (qNorm && matches.length > 0 ? matches[0] : null);
+  // Pick primary target officer
+  let target = null;
+  if (qNorm) {
+    target =
+      allOfficers.find((o) => o.key === qNorm || normalizeName(`${o.rank}${o.name}`) === qNorm) ||
+      (matches.length > 0 ? matches[0] : null);
+  } else if (Number.isInteger(manualOrder) && manualOrder > 0) {
+    target = matches.find((o) => o.seniorityOrder === manualOrder) || null;
+  } else if (matches.length > 0 && manualLevel) {
+    target = matches[0];
+  }
 
-  // If user specified manual overrides (or searched a complainant not in the 281 promoted order)
-  const effectiveLevel = manualLevel || target?.sourceLevel || target?.currentLevel || 'รอง ผบก. / เทียบเท่า';
+  // Determine effective level, account and seniority order
+  const effectiveLevel = canonicalLevel(manualLevel || target?.sourceLevel || target?.currentLevel || 'รอง ผบก. / เทียบเท่า');
   const effectiveAccount = manualAccount || target?.sourceAccount || 'ทั่วไป';
   const effectiveOrder =
     Number.isInteger(manualOrder) && manualOrder > 0 ? manualOrder : target?.seniorityOrder || null;
 
   const accountMeta = accountsList.find(
-    (a) => a.source_level === effectiveLevel && a.source_account === effectiveAccount,
+    (a) => canonicalLevel(a.source_level) === effectiveLevel && a.source_account === effectiveAccount,
   );
   const totalPopulation = accountMeta?.total_suitable_population || target?.totalSuitablePopulation || null;
 
@@ -425,12 +481,12 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       ? `ดำรงตำแหน่งระดับ ${prevLevelLabel} เมื่อวันที่ ${prevPosDateParsed.formattedThai}`
       : `ระดับ ${prevLevelLabel} (ตรวจสอบจากตารางประวัติการดำรงตำแหน่ง)`;
 
-  // Compare against all promoted officers in the same level & account
+  // 1. All promoted officers in this level & account (sorted by seniorityOrder)
   const promotedInSameAccount = allOfficers
     .filter(
       (o) =>
-        o.sourceLevel === effectiveLevel &&
-        o.sourceAccount === effectiveAccount &&
+        canonicalLevel(o.sourceLevel) === effectiveLevel &&
+        (!manualAccount || o.sourceAccount === effectiveAccount) &&
         Number.isInteger(o.seniorityOrder) &&
         o.appointmentType === 'เลื่อนระดับ',
     )
@@ -438,6 +494,9 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     .map((o) => {
       const oTenure = calculateTenureAndEligibility(o.currentPositionDate, o.sourceLevel);
       const oRetire = calculateRetirementInfo(o.birthDate);
+      const isTarget = Boolean(target && (o.key === target.key || o.name === target.name));
+      const isJunior = Boolean(effectiveOrder && o.seniorityOrder > effectiveOrder);
+      const isSenior = Boolean(effectiveOrder && o.seniorityOrder < effectiveOrder);
       return {
         name: o.name,
         rank: o.rank,
@@ -448,6 +507,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
         totalSuitablePopulation: o.totalSuitablePopulation || totalPopulation,
         currentPosition: o.currentPosition,
         newPosition: o.newPosition,
+        appointmentType: o.appointmentType || 'เลื่อนระดับ',
         currentPositionDate: o.currentPositionDate,
         currentPositionDateThai: oTenure.currentPositionDateThai,
         tenureDisplay: oTenure.tenureDisplay,
@@ -457,22 +517,74 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
         bornAfterSep30: oRetire?.bornAfterSep30 || false,
         seniorityPdfPage: o.seniorityPdfPage,
         appointmentPdfPage: o.appointmentPdfPage,
-        orderGap: effectiveOrder ? o.seniorityOrder - effectiveOrder : null,
+        orderGap: effectiveOrder ? Math.abs(o.seniorityOrder - effectiveOrder) : null,
+        isTarget,
+        isJunior,
+        isSenior,
+        relationTag: isTarget ? 'target' : isJunior ? 'junior' : isSenior ? 'senior' : 'same',
       };
     });
 
-  // Junior promoted officers: those with seniorityOrder > effectiveOrder (ตัวเลขลำดับอาวุโสมากกว่า = อาวุโสน้อยกว่า)
+  // 2. All appointed officers in this level (promotions + rotations, sorted by appointmentNumber)
+  const allAppointedInLevel = allOfficers
+    .filter(
+      (o) =>
+        canonicalLevel(o.sourceLevel) === effectiveLevel ||
+        canonicalLevel(o.currentLevel) === effectiveLevel,
+    )
+    .sort((a, b) => {
+      if (a.appointmentNumber && b.appointmentNumber) return a.appointmentNumber - b.appointmentNumber;
+      if (a.seniorityOrder && b.seniorityOrder) return a.seniorityOrder - b.seniorityOrder;
+      return 0;
+    })
+    .map((o) => {
+      const oTenure = calculateTenureAndEligibility(o.currentPositionDate, o.sourceLevel);
+      const oRetire = calculateRetirementInfo(o.birthDate);
+      const isTarget = Boolean(target && (o.key === target.key || o.name === target.name));
+      const isJunior = Boolean(effectiveOrder && Number.isInteger(o.seniorityOrder) && o.seniorityOrder > effectiveOrder);
+      const isSenior = Boolean(effectiveOrder && Number.isInteger(o.seniorityOrder) && o.seniorityOrder < effectiveOrder);
+      const isRotation = o.appointmentType !== 'เลื่อนระดับ';
+      return {
+        name: o.name,
+        rank: o.rank,
+        fullNameWithRank: `${o.rank ? `${o.rank} ` : ''}${o.name}`.trim(),
+        appointmentNumber: o.appointmentNumber,
+        seniorityOrder: o.seniorityOrder,
+        previousOrder: o.previousOrder,
+        totalSuitablePopulation: o.totalSuitablePopulation || totalPopulation,
+        currentPosition: o.currentPosition,
+        newPosition: o.newPosition,
+        appointmentType: o.appointmentType || 'ระดับเดิม',
+        currentPositionDate: o.currentPositionDate,
+        currentPositionDateThai: oTenure.currentPositionDateThai,
+        tenureDisplay: oTenure.tenureDisplay,
+        birthDate: o.birthDate,
+        birthDateThai: oRetire?.birthDateThai || null,
+        retirementYearBE: oRetire?.retirementYearBE || null,
+        bornAfterSep30: oRetire?.bornAfterSep30 || false,
+        seniorityPdfPage: o.seniorityPdfPage,
+        appointmentPdfPage: o.appointmentPdfPage,
+        orderGap: effectiveOrder && Number.isInteger(o.seniorityOrder) ? Math.abs(o.seniorityOrder - effectiveOrder) : null,
+        isTarget,
+        isJunior,
+        isSenior,
+        isRotation,
+        relationTag: isTarget ? 'target' : isRotation ? 'rotation' : isJunior ? 'junior' : isSenior ? 'senior' : 'same',
+      };
+    });
+
+  // Junior promoted officers: those with seniorityOrder > effectiveOrder
   const juniorPromotedOfficers = effectiveOrder
     ? promotedInSameAccount.filter((o) => o.seniorityOrder > effectiveOrder)
     : [];
 
-  // Senior promoted officers: those with seniorityOrder < effectiveOrder (อาวุโสสูงกว่า)
+  // Senior promoted officers: those with seniorityOrder < effectiveOrder
   const seniorPromotedOfficers = effectiveOrder
     ? promotedInSameAccount.filter((o) => o.seniorityOrder < effectiveOrder)
     : [];
 
   const profile =
-    target || qRaw || effectiveOrder
+    target || qRaw || effectiveOrder || manualLevel
       ? {
           foundInDatabase: Boolean(target),
           isPromotedInOrder2569: Boolean(target && target.appointmentType === 'เลื่อนระดับ'),
@@ -509,17 +621,19 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
             sourceAccount: effectiveAccount,
             totalSuitablePopulation: totalPopulation,
             totalPromotedInAccount: promotedInSameAccount.length,
+            totalAppointedInLevel: allAppointedInLevel.length,
             targetSeniorityOrder: effectiveOrder,
             juniorPromotedCount: juniorPromotedOfficers.length,
             juniorPromotedOfficers,
             seniorPromotedCount: seniorPromotedOfficers.length,
             seniorPromotedOfficers,
             allPromotedInAccount: promotedInSameAccount,
+            allAppointedInLevel,
             summaryText: effectiveOrder
               ? juniorPromotedOfficers.length > 0
                 ? `เมื่อเทียบกับคำสั่งแต่งตั้งเลื่อนตำแหน่งสูงขึ้นในระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) ซึ่งมีผู้ได้รับเลื่อนตำแหน่งรวม ${promotedInSameAccount.length} ราย พบว่ามีผู้ที่อาวุโสน้อยกว่า (ลำดับอาวุโสหลังลำดับที่ ${effectiveOrder}) ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้นจำนวน ${juniorPromotedOfficers.length} คน (ตั้งแต่ลำดับอาวุโสที่ ${juniorPromotedOfficers[0].seniorityOrder} ถึงลำดับที่ ${juniorPromotedOfficers[juniorPromotedOfficers.length - 1].seniorityOrder})`
-                : `ในระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) ไม่ปรากฏผู้ที่อาวุโสน้อยกว่าลำดับที่ ${effectiveOrder} ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้น`
-              : `กรุณาเลือกชื่อจากฐานข้อมูล หรือระบุลำดับอาวุโสเพื่อคำนวณจำนวนผู้อาวุโสน้อยกว่าที่ได้รับการเลื่อนตำแหน่งสูงขึ้น`,
+                : `ในระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) มีผู้ได้รับเลื่อนตำแหน่งรวม ${promotedInSameAccount.length} ราย โดยไม่ปรากฏผู้ที่อาวุโสน้อยกว่าลำดับที่ ${effectiveOrder} ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้น`
+              : `ในระดับ ${effectiveLevel} มีผู้ได้รับแต่งตั้งรวม ${allAppointedInLevel.length} ราย (เลื่อนตำแหน่งสูงขึ้น ${promotedInSameAccount.length} ราย · สับเปลี่ยนหมุนเวียน ${allAppointedInLevel.length - promotedInSameAccount.length} ราย)`,
           },
         }
       : null;
@@ -528,7 +642,8 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     zeroApiCost: true,
     query: qRaw,
     accounts: accountsList.filter((a) => a.source_page_start || a.total_suitable_population),
-    suggestions: matches.slice(0, 25).map((o) => ({
+    totalMatches: matches.length,
+    suggestions: matches.slice(0, 150).map((o) => ({
       name: o.name,
       rank: o.rank,
       fullNameWithRank: `${o.rank ? `${o.rank} ` : ''}${o.name}`.trim(),

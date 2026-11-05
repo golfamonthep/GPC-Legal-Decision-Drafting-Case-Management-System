@@ -33,6 +33,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [tableTab, setTableTab] = useState('junior'); // 'junior' | 'all_promoted' | 'all_appointed'
   const reportRef = useRef(null);
 
   async function runSearch(overrideParams = {}) {
@@ -60,6 +61,17 @@ export default function PersonSearch({ onApplyToAnalysis }) {
 
       const data = await api('/knowledge/person-search?' + qs.toString());
       setResult(data);
+
+      const nextComp = data?.profile?.comparison;
+      if (nextComp) {
+        if (nextComp.juniorPromotedCount > 0) {
+          setTableTab('junior');
+        } else if ((nextComp.totalPromotedInAccount || nextComp.allPromotedInAccount?.length || 0) > 0) {
+          setTableTab('all_promoted');
+        } else {
+          setTableTab('all_appointed');
+        }
+      }
     } catch (e) {
       setError(e.message || 'ไม่สามารถดึงข้อมูลจากฐานข้อมูลได้');
     } finally {
@@ -98,7 +110,19 @@ export default function PersonSearch({ onApplyToAnalysis }) {
     if (!result?.profile) return;
     const p = result.profile;
     const comp = p.comparison || {};
-    const juniors = comp.juniorPromotedOfficers || [];
+
+    let targetRows = [];
+    let sectionTitle = '';
+    if (tableTab === 'junior') {
+      targetRows = comp.juniorPromotedOfficers || [];
+      sectionTitle = `๗. รายชื่อผู้อาวุโสน้อยกว่าที่ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้น (${comp.juniorPromotedCount || 0} คน)`;
+    } else if (tableTab === 'all_promoted') {
+      targetRows = comp.allPromotedInAccount || [];
+      sectionTitle = `๗. รายชื่อผู้ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้นทั้งหมดในระดับ ${p.sourceLevel} (${comp.totalPromotedInAccount || comp.allPromotedInAccount?.length || 0} คน)`;
+    } else {
+      targetRows = comp.allAppointedInLevel || [];
+      sectionTitle = `๗. รายชื่อผู้ได้รับการแต่งตั้งทั้งหมดในระดับ ${p.sourceLevel} (${comp.totalAppointedInLevel || comp.allAppointedInLevel?.length || 0} คน · รวมเลื่อนระดับและสับเปลี่ยนหมุนเวียน)`;
+    }
 
     const printWindow = window.open('', '_blank', 'width=1024,height=800');
     if (!printWindow) {
@@ -106,23 +130,33 @@ export default function PersonSearch({ onApplyToAnalysis }) {
       return;
     }
 
-    const juniorRowsHtml = juniors.length
-      ? juniors
+    const rowsHtml = targetRows.length
+      ? targetRows
           .map(
             (j, idx) => `
-          <tr>
+          <tr style="${j.relationTag === 'target' ? 'background:#eff6ff;' : j.relationTag === 'junior' ? 'background:#fff1f2;' : ''}">
             <td style="text-align:center;">${idx + 1}</td>
-            <td style="font-weight:700;">${j.fullNameWithRank || j.name}</td>
-            <td style="text-align:center;font-weight:700;color:#991b1b;">ลำดับที่ ${j.seniorityOrder}${j.totalSuitablePopulation ? ` / ${j.totalSuitablePopulation}` : ''}</td>
-            <td style="text-align:center;">อาวุโสน้อยกว่า ${j.orderGap} ลำดับ</td>
+            <td style="font-weight:700;">
+              ${j.fullNameWithRank || j.name}
+              ${j.relationTag === 'target' ? ' <span style="color:#1d4ed8;font-size:11px;">[ผู้ค้นหา]</span>' : ''}
+              ${j.relationTag === 'junior' ? ' <span style="color:#b91c1c;font-size:11px;">[อาวุโสน้อยกว่า]</span>' : ''}
+              ${j.relationTag === 'rotation' ? ' <span style="color:#047857;font-size:11px;">[หมุนเวียน]</span>' : ''}
+            </td>
+            <td style="text-align:center;font-weight:700;color:#991b1b;">
+              ${j.seniorityOrder ? `ลำดับที่ ${j.seniorityOrder}${j.totalSuitablePopulation ? ` / ${j.totalSuitablePopulation}` : ''}` : '-'}
+            </td>
+            <td style="text-align:center;">
+              ${j.relationTag === 'junior' ? `อาวุโสน้อยกว่า ${j.orderGap} ลำดับ` : j.relationTag === 'senior' ? `อาวุโสสูงกว่า ${Math.abs(j.orderGap)} ลำดับ` : j.relationTag === 'target' ? 'เจ้าของประวัติ' : j.relationTag === 'rotation' ? 'สับเปลี่ยนหมุนเวียน' : '-'}
+            </td>
             <td>${j.currentPosition || '-'}</td>
-            <td style="font-weight:600;color:#1e3a8a;">${j.newPosition || '-'}</td>
+            <td style="font-weight:600;color:${j.appointmentType === 'เลื่อนระดับ' ? '#1e3a8a' : '#047857'};">${j.newPosition || '-'}</td>
+            <td style="text-align:center;">${j.appointmentType || '-'}</td>
             <td style="text-align:center;">${j.currentPositionDateThai || j.currentPositionDate || '-'}</td>
             <td style="text-align:center;">${j.retirementYearBE ? `พ.ศ. ${j.retirementYearBE}${j.bornAfterSep30 ? ' (+1 ปี)' : ''}` : '-'}</td>
           </tr>`,
           )
           .join('')
-      : `<tr><td colspan="8" style="text-align:center;padding:16px;">ไม่ปรากฏผู้ที่อาวุโสน้อยกว่าได้รับการเลื่อนตำแหน่งสูงขึ้นในบัญชีนี้</td></tr>`;
+      : `<tr><td colspan="9" style="text-align:center;padding:16px;">ไม่พบรายการแต่งตั้งในเงื่อนไขนี้</td></tr>`;
 
     const timelineHtml = (p.rankTimeline || [])
       .map(
@@ -138,12 +172,12 @@ export default function PersonSearch({ onApplyToAnalysis }) {
   <title>รายงานตรวจสอบข้อมูลอาวุโสและการแต่งตั้ง - ${p.fullNameWithRank}</title>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    @page { size: A4 portrait; margin: 14mm; }
+    @page { size: A4 landscape; margin: 12mm; }
     body { font-family: 'Sarabun', sans-serif; color: #0f172a; line-height: 1.5; font-size: 13px; margin: 0; padding: 0; }
     .header { border-bottom: 2px solid #991b1b; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; }
     .header h1 { margin: 0; font-size: 18px; color: #7f1d1d; }
     .header p { margin: 2px 0 0; font-size: 12px; color: #475569; }
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
     .card { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 12px; background: #ffffff; }
     .card-label { font-size: 11px; color: #475569; font-weight: 600; text-transform: uppercase; }
     .card-val { font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 2px; }
@@ -179,7 +213,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
       <div class="card-sub">${p.previousOrder ? `ลำดับอาวุโสเดิม: ${p.previousOrder} · ` : ''}${p.seniorityPdfPage ? `อ้างอิงไฟล์บัญชีอาวุโส หน้า ${p.seniorityPdfPage}` : 'ระบุลำดับเพื่อเปรียบเทียบ'}</div>
     </div>
     <div class="card">
-      <div class="card-label">๓. ตำแหน่งปัจจุบัน และตำแหน่งก่อนหน้า</div>
+      <div class="card-label">๓. ตำแหน่งปัจจุบัน และตำแหน่งใหม่</div>
       <div class="card-val">${p.currentPosition || '-'}</div>
       <div class="card-sub"><strong>ตำแหน่งก่อนหน้า:</strong> ${p.previousPosition || '-'}</div>
       ${p.isPromotedInOrder2569 ? `<div class="card-sub" style="color:#15803d;"><strong>ตำแหน่งใหม่ที่ได้รับแต่งตั้ง:</strong> ${p.newPosition} (ข้อที่ ${p.appointmentNumber || '-'})</div>` : ''}
@@ -204,7 +238,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
   ${timelineHtml ? `<div style="margin-bottom:12px;"><strong>ประวัติวันดำรงตำแหน่งในแต่ละระดับ (จากบัญชีอาวุโส):</strong><div style="margin-top:4px;">${timelineHtml}</div></div>` : ''}
 
   <div class="highlight-box">
-    <h2>๗. ผลการคำนวณเปรียบเทียบ: ผู้อาวุโสน้อยกว่าที่ได้รับการเลื่อนตำแหน่งสูงขึ้น (${comp.juniorPromotedCount || 0} คน)</h2>
+    <h2>${sectionTitle}</h2>
     <p style="margin:0;font-size:12.5px;">${comp.summaryText || ''}</p>
   </div>
 
@@ -214,20 +248,21 @@ export default function PersonSearch({ onApplyToAnalysis }) {
         <th style="width:36px;text-align:center;">ที่</th>
         <th>ยศ ชื่อ – นามสกุล</th>
         <th style="width:95px;text-align:center;">ลำดับอาวุโส</th>
-        <th style="width:110px;text-align:center;">ส่วนต่างอาวุโส</th>
+        <th style="width:115px;text-align:center;">เทียบกับผู้ค้นหา</th>
         <th>ตำแหน่งเดิม</th>
-        <th>ตำแหน่งใหม่ที่ได้รับเลื่อนสูงขึ้น</th>
+        <th>ตำแหน่งใหม่ที่ได้รับแต่งตั้ง</th>
+        <th style="width:75px;text-align:center;">ลักษณะ</th>
         <th style="width:85px;text-align:center;">วันครองระดับ</th>
         <th style="width:90px;text-align:center;">ปีครบเกษียณ</th>
       </tr>
     </thead>
     <tbody>
-      ${juniorRowsHtml}
+      ${rowsHtml}
     </tbody>
   </table>
 
   <div class="footer">
-    <span>แหล่งข้อมูล: ฐานข้อมูลบัญชีอาวุโสและคำสั่งแต่งตั้งข้าราชการตำรวจ วาระประจำปี พ.ศ. ๒๕๖๙</span>
+    <span>แหล่งข้อมูล: ฐานข้อมูลบัญชีอาวุโสและคำสั่งแต่งตั้งข้าราชการตำรวจ วาระประจำปี พ.ศ. ๒๕๖๙ (รวม ๒๘๑ รายการ)</span>
     <span>ระบบวิเคราะห์และร่างคำวินิจฉัยเบื้องต้น ก.พ.ค.ตร.</span>
   </div>
   <script>
@@ -244,6 +279,15 @@ export default function PersonSearch({ onApplyToAnalysis }) {
   const p = result?.profile;
   const comp = p?.comparison || {};
   const juniors = comp.juniorPromotedOfficers || [];
+  const allPromoted = comp.allPromotedInAccount || [];
+  const allAppointed = comp.allAppointedInLevel || [];
+
+  const displayRows =
+    tableTab === 'junior'
+      ? juniors
+      : tableTab === 'all_promoted'
+      ? allPromoted
+      : allAppointed;
 
   return (
     <div className="person-search-panel">
@@ -252,8 +296,8 @@ export default function PersonSearch({ onApplyToAnalysis }) {
           <span className="zero-api-badge">ประมวลผลจากฐานข้อมูลในเครื่อง 100% · ประหยัดงบ (0 API)</span>
           <h2>ค้นหาประวัติ อาวุโส วันเกษียณ และเปรียบเทียบผู้ได้รับเลื่อนตำแหน่งสูงขึ้น</h2>
           <p className="muted">
-            १. กรอกชื่อข้าราชการตำรวจ หรือระบุลำดับอาวุโส → ๒. กดค้นหา → ๓. ระบบคำนวณระยะเวลาครองตำแหน่ง
-            ระยะเวลาที่ครบเกณฑ์เลื่อนสูงขึ้น ปีเกษียณอายุราชการ (เกิดหลัง 30 ก.ย. +1 ปี) และรายชื่อผู้อาวุโสน้อยกว่าที่ได้รับเลื่อนตำแหน่งสูงขึ้นทันทีพร้อมดาวน์โหลด PDF
+            ๑. กรอกชื่อข้าราชการตำรวจ หรือระบุลำดับอาวุโส → ๒. กดค้นหา → ๓. ระบบคำนวณระยะเวลาครองตำแหน่ง
+            ระยะเวลาที่ครบเกณฑ์เลื่อนสูงขึ้น ปีเกษียณอายุราชการ (เกิดหลัง 30 ก.ย. +1 ปี) และรายชื่อผู้ได้รับการแต่งตั้งทั้งหมดทันทีพร้อมดาวน์โหลด PDF
           </p>
         </div>
         {p ? (
@@ -284,10 +328,10 @@ export default function PersonSearch({ onApplyToAnalysis }) {
       >
         <div className="person-search-main-row">
           <label className="person-search-input-wrap">
-            <span>๑. กรอกชื่อ – นามสกุล ข้าราชการตำรวจ</span>
+            <span>๑. กรอกชื่อ – นามสกุล หรือตำแหน่ง ข้าราชการตำรวจ</span>
             <input
               type="search"
-              placeholder="พิมพ์ชื่อ หรือ นามสกุล เช่น อาชยน ไกรทอง, พิทักษ์ อุทัยธรรม, คธา เกษรมาลา..."
+              placeholder="พิมพ์ชื่อ นามสกุล เช่น อาชยน ไกรทอง, พิทักษ์ อุทัยธรรม, คธา เกษรมาลา, สันติ ชัยนิรามัย..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -352,7 +396,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
               <input
                 type="number"
                 min="1"
-                max="610"
+                max="915"
                 placeholder="เช่น 15"
                 value={order}
                 onChange={(e) => setOrder(e.target.value)}
@@ -395,27 +439,32 @@ export default function PersonSearch({ onApplyToAnalysis }) {
         </p>
       ) : null}
 
-      {/* Matching suggestions when multiple names match */}
+      {/* Matching suggestions when multiple names match — full count without arbitrary 10-cap */}
       {result?.suggestions?.length > 1 ? (
         <div className="person-suggestions-bar">
-          <strong>ผลการค้นหาที่ใกล้เคียง ({result.suggestions.length} รายการ):</strong>
+          <div className="person-suggestions-head">
+            <strong>
+              พบข้อมูลตรงกับเงื่อนไขในฐานข้อมูล {result.suggestions.length} รายการ (คลิกเพื่อดูประวัติทันที):
+            </strong>
+          </div>
           <div className="person-suggestions-list">
-            {result.suggestions.slice(0, 10).map((s) => (
+            {result.suggestions.map((s) => (
               <button
-                key={`${s.name}-${s.appointmentNumber || s.seniorityOrder}`}
+                key={`${s.name}-${s.appointmentNumber || s.seniorityOrder || s.sourceLevel}`}
                 type="button"
                 className={'chip-btn' + (p?.name === s.name ? ' active' : '')}
                 onClick={() => selectSuggestion(s)}
               >
                 {s.fullNameWithRank} ({s.currentPosition || s.sourceLevel}
-                {s.seniorityOrder ? ` · อาวุโส ${s.seniorityOrder}` : ''})
+                {s.seniorityOrder ? ` · อาวุโส ${s.seniorityOrder}` : ''}
+                {s.appointmentType ? ` · ${s.appointmentType}` : ''})
               </button>
             ))}
           </div>
         </div>
       ) : null}
 
-      {/* Step 3: Results Presentation (Bento Cards + Comparison Table) */}
+      {/* Step 3: Results Presentation (Bento Cards + Multi-Tab Comparison Table) */}
       {p ? (
         <div ref={reportRef} className="person-result-container">
           <div className="person-profile-banner">
@@ -548,72 +597,153 @@ export default function PersonSearch({ onApplyToAnalysis }) {
             </div>
           ) : null}
 
-          {/* Comparison Summary & Table of Junior Promoted Officers */}
+          {/* Comparison Section with 3 Tabs: Junior Promoted / All Promoted in Account / All Appointed in Level */}
           <div className="person-comparison-section">
             <div className="person-comparison-summary-head">
               <div>
                 <h3>
-                  สรุปผลเปรียบเทียบคำสั่งแต่งตั้งเลื่อนตำแหน่งสูงขึ้น: มีผู้อาวุโสน้อยกว่าได้รับเลื่อนตำแหน่งสูงขึ้น{' '}
-                  <span className="junior-count-highlight">{comp.juniorPromotedCount || 0} คน</span>
+                  ผลเปรียบเทียบคำสั่งแต่งตั้งในระดับ {p.sourceLevel}:{' '}
+                  {tableTab === 'junior' ? (
+                    <>
+                      มีผู้อาวุโสน้อยกว่าได้รับเลื่อนสูงขึ้น{' '}
+                      <span className="junior-count-highlight">{comp.juniorPromotedCount || 0} คน</span>
+                    </>
+                  ) : tableTab === 'all_promoted' ? (
+                    <>
+                      ผู้ได้รับเลื่อนตำแหน่งสูงขึ้นทั้งหมดในบัญชีนี้{' '}
+                      <span className="junior-count-highlight">{comp.totalPromotedInAccount || allPromoted.length} คน</span>
+                    </>
+                  ) : (
+                    <>
+                      ผู้ได้รับการแต่งตั้งทั้งหมดในระดับนี้{' '}
+                      <span className="junior-count-highlight">{comp.totalAppointedInLevel || allAppointed.length} คน</span>
+                    </>
+                  )}
                 </h3>
                 <p>{comp.summaryText}</p>
               </div>
               <div className="comparison-stat-pills">
                 <span>ผู้มีรายชื่อในบัญชีทั้งหมด: <strong>{comp.totalSuitablePopulation || '-'} ราย</strong></span>
-                <span>ได้เลื่อนตำแหน่งสูงขึ้นในบัญชีนี้: <strong>{comp.totalPromotedInAccount || 0} ราย</strong></span>
+                <span>ได้เลื่อนตำแหน่งสูงขึ้นในบัญชีนี้: <strong>{comp.totalPromotedInAccount || allPromoted.length} ราย</strong></span>
                 <span className="stat-danger">
                   อาวุโสน้อยกว่าที่ได้เลื่อนสูงขึ้น: <strong>{comp.juniorPromotedCount || 0} ราย</strong>
                 </span>
+                <span>ได้รับการแต่งตั้งทั้งหมดในระดับนี้: <strong>{comp.totalAppointedInLevel || allAppointed.length} ราย</strong></span>
               </div>
             </div>
 
-            {juniors.length > 0 ? (
+            {/* 3 View Tabs */}
+            <div className="person-comparison-tabs" role="tablist" aria-label="ตัวเลือกแสดงตาราง">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tableTab === 'junior'}
+                className={'comp-tab-btn' + (tableTab === 'junior' ? ' active' : '')}
+                onClick={() => setTableTab('junior')}
+              >
+                ๑. ผู้อาวุโสน้อยกว่าที่ได้รับเลื่อนสูงขึ้น ({comp.juniorPromotedCount || 0} คน)
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tableTab === 'all_promoted'}
+                className={'comp-tab-btn' + (tableTab === 'all_promoted' ? ' active' : '')}
+                onClick={() => setTableTab('all_promoted')}
+              >
+                ๒. ผู้ได้รับเลื่อนตำแหน่งสูงขึ้นทั้งหมดในระดับนี้ ({comp.totalPromotedInAccount || allPromoted.length} คน)
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tableTab === 'all_appointed'}
+                className={'comp-tab-btn' + (tableTab === 'all_appointed' ? ' active' : '')}
+                onClick={() => setTableTab('all_appointed')}
+              >
+                ๓. ผู้ได้รับการแต่งตั้งทั้งหมดในระดับนี้ (รวมเลื่อนและหมุนเวียน {comp.totalAppointedInLevel || allAppointed.length} คน)
+              </button>
+            </div>
+
+            {displayRows.length > 0 ? (
               <div className="table-scroll">
-                <table className="person-comparison-table" aria-label="ตารางรายชื่อผู้อาวุโสน้อยกว่าที่ได้รับการเลื่อนตำแหน่งสูงขึ้น">
+                <table className="person-comparison-table" aria-label="ตารางรายชื่อเปรียบเทียบการแต่งตั้ง">
                   <thead>
                     <tr>
-                      <th>ลำดับ</th>
+                      <th style={{ width: '40px', textAlign: 'center' }}>ลำดับ</th>
                       <th>ยศ ชื่อ – นามสกุล</th>
-                      <th>ลำดับอาวุโส</th>
-                      <th>เทียบกับผู้ค้นหา</th>
+                      <th style={{ textAlign: 'center' }}>ลำดับอาวุโส</th>
+                      <th style={{ textAlign: 'center' }}>เทียบกับผู้ค้นหา</th>
                       <th>ตำแหน่งเดิม</th>
-                      <th>ตำแหน่งใหม่ที่ได้รับเลื่อนสูงขึ้น</th>
-                      <th>วันครองระดับปัจจุบัน</th>
-                      <th>วันเกิด / ปีครบเกษียณ</th>
-                      <th>อ้างอิง PDF</th>
+                      <th>ตำแหน่งใหม่ที่ได้รับแต่งตั้ง</th>
+                      <th style={{ textAlign: 'center' }}>ลักษณะการแต่งตั้ง</th>
+                      <th style={{ textAlign: 'center' }}>วันครองระดับปัจจุบัน</th>
+                      <th style={{ textAlign: 'center' }}>วันเกิด / ปีครบเกษียณ</th>
+                      <th style={{ textAlign: 'center' }}>อ้างอิง PDF</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {juniors.map((j, idx) => (
-                      <tr key={`${j.name}-${j.seniorityOrder}`}>
+                    {displayRows.map((row, idx) => (
+                      <tr
+                        key={`${row.name}-${row.seniorityOrder || row.appointmentNumber || idx}`}
+                        className={row.relationTag === 'target' ? 'row-target' : row.relationTag === 'junior' ? 'row-junior' : ''}
+                      >
                         <td className="center-cell">{idx + 1}</td>
                         <td>
-                          <strong>{j.fullNameWithRank}</strong>
+                          <strong>{row.fullNameWithRank}</strong>
+                          {row.relationTag === 'target' ? (
+                            <span className="relation-tag target">🎯 ผู้ค้นหา</span>
+                          ) : row.relationTag === 'junior' ? (
+                            <span className="relation-tag junior">⚠️ อาวุโสน้อยกว่า</span>
+                          ) : row.relationTag === 'senior' ? (
+                            <span className="relation-tag senior">อาวุโสสูงกว่า</span>
+                          ) : row.relationTag === 'rotation' ? (
+                            <span className="relation-tag rotation">หมุนเวียน</span>
+                          ) : null}
                         </td>
                         <td className="center-cell">
-                          <span className="order-badge-red">
-                            ลำดับที่ {j.seniorityOrder}
-                            {j.totalSuitablePopulation ? ` / ${j.totalSuitablePopulation}` : ''}
+                          {row.seniorityOrder ? (
+                            <span className={row.relationTag === 'junior' ? 'order-badge-red' : 'order-badge-normal'}>
+                              ลำดับที่ {row.seniorityOrder}
+                              {row.totalSuitablePopulation ? ` / ${row.totalSuitablePopulation}` : ''}
+                            </span>
+                          ) : (
+                            <span className="muted">-</span>
+                          )}
+                        </td>
+                        <td className="center-cell">
+                          {row.relationTag === 'junior' ? (
+                            <span className="gap-text">อาวุโสน้อยกว่า {row.orderGap} ลำดับ</span>
+                          ) : row.relationTag === 'senior' ? (
+                            <span className="gap-text-muted">อาวุโสสูงกว่า {Math.abs(row.orderGap)} ลำดับ</span>
+                          ) : row.relationTag === 'target' ? (
+                            <strong className="highlight-blue">เจ้าของประวัติที่ค้นหา</strong>
+                          ) : row.relationTag === 'rotation' ? (
+                            <span className="muted">สับเปลี่ยนหมุนเวียน</span>
+                          ) : (
+                            <span className="muted">-</span>
+                          )}
+                        </td>
+                        <td>{row.currentPosition || '-'}</td>
+                        <td>
+                          <strong className={row.appointmentType === 'เลื่อนระดับ' ? 'promoted-pos-text' : 'rotation-pos-text'}>
+                            {row.newPosition || '-'}
+                          </strong>
+                        </td>
+                        <td className="center-cell">
+                          <span className={row.appointmentType === 'เลื่อนระดับ' ? 'badge-promoted-sm' : 'badge-rotation-sm'}>
+                            {row.appointmentType || '-'}
                           </span>
                         </td>
                         <td className="center-cell">
-                          <span className="gap-text">อาวุโสน้อยกว่า {j.orderGap} ลำดับ</span>
-                        </td>
-                        <td>{j.currentPosition || '-'}</td>
-                        <td>
-                          <strong className="promoted-pos-text">{j.newPosition || '-'}</strong>
+                          {row.currentPositionDateThai || row.currentPositionDate || '-'}
                         </td>
                         <td className="center-cell">
-                          {j.currentPositionDateThai || j.currentPositionDate || '-'}
-                        </td>
-                        <td className="center-cell">
-                          {j.retirementYearBE ? (
+                          {row.retirementYearBE ? (
                             <>
-                              <strong>พ.ศ. {j.retirementYearBE}</strong>
+                              <strong>พ.ศ. {row.retirementYearBE}</strong>
                               <br />
                               <small>
-                                ({j.birthDateThai || j.birthDate}
-                                {j.bornAfterSep30 ? ' · +1 ปี' : ''})
+                                ({row.birthDateThai || row.birthDate}
+                                {row.bornAfterSep30 ? ' · +1 ปี' : ''})
                               </small>
                             </>
                           ) : (
@@ -621,24 +751,26 @@ export default function PersonSearch({ onApplyToAnalysis }) {
                           )}
                         </td>
                         <td className="center-cell">
-                          {j.seniorityPdfPage ? (
+                          {row.seniorityPdfPage ? (
                             <a
-                              href={`/api/analysis/knowledge/source?name=seniority_2569_round4_2026-08-07_CURRENT.pdf#page=${j.seniorityPdfPage}`}
+                              href={`/api/analysis/knowledge/source?name=seniority_2569_round4_2026-08-07_CURRENT.pdf#page=${row.seniorityPdfPage}`}
                               target="_blank"
                               rel="noreferrer"
+                              className="pdf-link-btn"
                             >
-                              อาวุโส น.{j.seniorityPdfPage}
+                              อาวุโส น.{row.seniorityPdfPage}
                             </a>
                           ) : null}
-                          {j.appointmentPdfPage ? (
+                          {row.appointmentPdfPage ? (
                             <>
-                              {' · '}
+                              {' '}
                               <a
-                                href={`/api/analysis/knowledge/source?name=appointments_2569.pdf#page=${j.appointmentPdfPage}`}
+                                href={`/api/analysis/knowledge/source?name=appointments_2569.pdf#page=${row.appointmentPdfPage}`}
                                 target="_blank"
                                 rel="noreferrer"
+                                className="pdf-link-btn"
                               >
-                                คำสั่ง น.{j.appointmentPdfPage}
+                                คำสั่ง น.{row.appointmentPdfPage}
                               </a>
                             </>
                           ) : null}
@@ -650,9 +782,33 @@ export default function PersonSearch({ onApplyToAnalysis }) {
               </div>
             ) : (
               <div className="empty-junior-notice">
-                {p.seniorityOrder
-                  ? `ไม่ปรากฏผู้ที่มีลำดับอาวุโสน้อยกว่าลำดับที่ ${p.seniorityOrder} ได้รับการเลื่อนตำแหน่งสูงขึ้นในระดับ ${p.sourceLevel} (บัญชี${p.sourceAccount})`
-                  : 'กรุณาเลือกรายชื่อจากฐานข้อมูล หรือระบุลำดับอาวุโสในตัวเลือกจำลอง เพื่อแสดงตารางรายชื่อผู้อาวุโสน้อยกว่าที่ได้รับการเลื่อนตำแหน่งสูงขึ้น'}
+                {tableTab === 'junior' ? (
+                  <>
+                    <p>
+                      {p.seniorityOrder
+                        ? `ในระดับ ${p.sourceLevel} (บัญชี${p.sourceAccount}) ไม่ปรากฏผู้ที่มีลำดับอาวุโสน้อยกว่าลำดับที่ ${p.seniorityOrder} ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้น`
+                        : 'ไม่ปรากฏข้อมูลผู้อาวุโสน้อยกว่าที่ได้รับเลื่อนตำแหน่งสูงขึ้นตามเงื่อนไขนี้'}
+                    </p>
+                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                      <button
+                        type="button"
+                        className="outline"
+                        onClick={() => setTableTab('all_promoted')}
+                      >
+                        ดูผู้ได้รับเลื่อนตำแหน่งสูงขึ้นทั้งหมด ({comp.totalPromotedInAccount || allPromoted.length} คน)
+                      </button>
+                      <button
+                        type="button"
+                        className="outline"
+                        onClick={() => setTableTab('all_appointed')}
+                      >
+                        ดูผู้ได้รับการแต่งตั้งทั้งหมดในระดับนี้ ({comp.totalAppointedInLevel || allAppointed.length} คน)
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  'ไม่พบรายการแต่งตั้งในเงื่อนไขที่เลือก'
+                )}
               </div>
             )}
           </div>
