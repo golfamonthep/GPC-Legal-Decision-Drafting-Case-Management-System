@@ -361,18 +361,22 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     const fullName = String(sen.appointment_name || sen.source_name || sen.label || '').trim();
     const norm = normalizeName(fullName);
     if (!norm) continue;
+    const isPromoted = Boolean(
+      (sen.promotion_outcome && (sen.promotion_outcome.includes('ได้เลื่อน') || sen.promotion_outcome.includes('พบในรายการ'))) ||
+      sen.new_position
+    );
     const existing = officerMap.get(norm) || {
       key: norm,
       name: fullName,
       rank: '',
-      appointmentNumber: null,
+      appointmentNumber: sen.appointment_item_no || null,
       currentPosition: sen.source_position || '',
-      newPosition: '',
+      newPosition: sen.new_position || '',
       currentLevel: sen.source_level || '',
-      newLevel: '',
-      appointmentType: 'เลื่อนระดับ',
+      newLevel: sen.new_level || '',
+      appointmentType: isPromoted ? 'เลื่อนระดับ' : '',
       appointmentPdfPage: null,
-      inAppointmentOrder: false,
+      inAppointmentOrder: isPromoted,
     };
 
     const stdLevel = canonicalLevel(sen.source_level || existing.sourceLevel);
@@ -387,8 +391,15 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
         ? sen.rank_dates
         : pageLookup?.dates || [];
 
+    const effectiveInOrder = Boolean(existing.inAppointmentOrder || isPromoted);
+    const effectiveApptType = existing.inAppointmentOrder ? (existing.appointmentType || 'เลื่อนระดับ') : (isPromoted ? 'เลื่อนระดับ' : '');
+
     officerMap.set(norm, {
       ...existing,
+      appointmentType: effectiveApptType,
+      inAppointmentOrder: effectiveInOrder,
+      newPosition: existing.newPosition || sen.new_position || '',
+      newLevel: existing.newLevel || sen.new_level || '',
       sourceLevel: stdLevel,
       sourceAccount: sen.source_account || existing.sourceAccount,
       seniorityOrder: Number.isInteger(sen.seniority_order) ? sen.seniority_order : existing.seniorityOrder,
@@ -485,10 +496,11 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
   const promotedInSameAccount = allOfficers
     .filter(
       (o) =>
+        o.inAppointmentOrder &&
+        o.appointmentType === 'เลื่อนระดับ' &&
         canonicalLevel(o.sourceLevel) === effectiveLevel &&
         (!manualAccount || o.sourceAccount === effectiveAccount) &&
-        Number.isInteger(o.seniorityOrder) &&
-        o.appointmentType === 'เลื่อนระดับ',
+        Number.isInteger(o.seniorityOrder),
     )
     .sort((a, b) => a.seniorityOrder - b.seniorityOrder)
     .map((o) => {
@@ -529,8 +541,9 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
   const allAppointedInLevel = allOfficers
     .filter(
       (o) =>
-        canonicalLevel(o.sourceLevel) === effectiveLevel ||
-        canonicalLevel(o.currentLevel) === effectiveLevel,
+        o.inAppointmentOrder &&
+        (canonicalLevel(o.sourceLevel) === effectiveLevel ||
+        canonicalLevel(o.currentLevel) === effectiveLevel),
     )
     .sort((a, b) => {
       if (a.appointmentNumber && b.appointmentNumber) return a.appointmentNumber - b.appointmentNumber;

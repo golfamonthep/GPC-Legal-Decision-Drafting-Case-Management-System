@@ -164,7 +164,7 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.equal(res.zeroApiCost, true);
   assert.ok(res.profile);
   assert.equal(res.profile.name, 'อาชยน ไกรทอง');
-  assert.equal(res.profile.seniorityOrder, 3);
+  assert.equal(res.profile.seniorityOrder, 4);
   assert.equal(res.profile.retirement?.bornAfterSep30, true);
   assert.equal(res.profile.retirement?.retirementYearBE, 2574);
   assert.equal(res.profile.comparison.juniorPromotedCount, 3);
