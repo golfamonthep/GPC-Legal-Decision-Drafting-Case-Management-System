@@ -310,6 +310,12 @@ export function canonicalLevel(rawLevel) {
  * ค้นหาและเปรียบเทียบข้อมูลข้าราชการตำรวจจากฐานข้อมูลในเครื่อง 100% (Zero-API-Cost)
  */
 export const DIRECT_OCR_MAP = {
+  'ปิตภพ โตเหมือน': 'ชิตภพ โตเหมือน',
+  'จรภพ ภริเดช': 'จิรภพ ภูริเดช',
+  'อบูซา รมยะนบันทน์': 'อนุชา รมยะนันทน์',
+  'ฯๆวัฒน์ แสงนุ่ม': 'จิรวัฒน์ แสงนุ่ม',
+  'YE กวินเดชาธร': 'ปิยะ กวินเดชาธร',
+  'HAY อาภาวศิน': 'นิเวศน์ อาภาวศิน',
   'สรพล เปรมบตร': 'สรพล เปรมบุตร',
   'ปยะวัฒน์ เฉลิมศรี': 'ปิยะวัฒน์ เฉลิมศรี',
   'ชัยต์พจน สวรรณรักษ์': 'ชัยต์พจน์ สุวรรณรักษ์',
@@ -372,11 +378,14 @@ export function thaiConsonantSkeleton(str) {
 
 export function canonicalRankForLevel(level) {
   const l = String(level || '');
-  if (l.includes('ผู้ช่วย ผบ.ตร.') || l.includes('ผบช.')) return 'พล.ต.ท.';
-  if (l.includes('รอง ผบช.') || l.includes('ผบก.')) return 'พล.ต.ต.';
+  if (l.includes('ผู้ช่วย ผบ.ตร.')) return 'พล.ต.ท.';
+  if (l.includes('รอง ผบช.')) return 'พล.ต.ต.';
+  if (l.includes('ผบช.') || l.includes('จตร')) return 'พล.ต.ท.';
   if (l.includes('รอง ผบก.')) return 'พ.ต.อ.';
-  if (l.includes('ผกก.')) return 'พ.ต.อ.';
+  if (l.includes('ผบก.')) return 'พล.ต.ต.';
   if (l.includes('รอง ผกก.')) return 'พ.ต.ท.';
+  if (l.includes('ผกก.')) return 'พ.ต.อ.';
+  if (l.includes('รอง สว.')) return 'ร.ต.อ.';
   if (l.includes('สว.')) return 'พ.ต.ท.';
   return '';
 }
@@ -511,9 +520,24 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
 
   // Multi-criteria filter: query keyword, consonant skeleton, level, account, or seniority order
   let matches = allOfficers;
+  const queryTokens = qRaw
+    .replace(/^(?:พ\.ต\.(?:อ|ท|ต)|พล\.ต\.(?:อ|ท|ต)|ร\.ต\.(?:อ|ท|ต)|ดาบตำรวจ|ด\.ต\.|ส\.ต\.(?:อ|ท|ต))\s*/, '')
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2);
+  const surnameToken =
+    queryTokens.length >= 2
+      ? queryTokens[queryTokens.length - 1]
+      : queryTokens.length === 1
+        ? queryTokens[0]
+        : null;
+  const surnameNorm = surnameToken ? normalizeName(surnameToken) : null;
+  const surnameSkel = surnameToken ? thaiConsonantSkeleton(surnameToken) : null;
+
   if (qNorm) {
-    matches = matches.filter(
-      (o) =>
+    matches = matches.filter((o) => {
+      // 1. Direct key, cleanKey, skeleton, rank+name, position, appointment number, or seniority order match
+      if (
         o.key.includes(qNorm) ||
         (o.cleanKey && o.cleanKey.includes(qNorm)) ||
         (qSkel && o.skeleton && o.skeleton.includes(qSkel)) ||
@@ -521,8 +545,34 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
         (o.currentPosition && normalizeName(o.currentPosition).includes(qNorm)) ||
         (o.newPosition && normalizeName(o.newPosition).includes(qNorm)) ||
         (o.appointmentNumber && String(o.appointmentNumber) === qRaw) ||
-        (qOrderNum && o.seniorityOrder === qOrderNum),
-    );
+        (qOrderNum && o.seniorityOrder === qOrderNum)
+      ) {
+        return true;
+      }
+
+      // 2. Surname / Token match (min 3 chars)
+      if (surnameNorm && surnameNorm.length >= 3) {
+        if (o.key.includes(surnameNorm) || (o.cleanKey && o.cleanKey.includes(surnameNorm))) return true;
+        if (surnameSkel && surnameSkel.length >= 3 && o.skeleton && o.skeleton.includes(surnameSkel)) return true;
+      }
+
+      // 3. Multi-token match (all tokens match across key, cleanKey, skeleton, or rank)
+      if (queryTokens.length > 1) {
+        const allTokensFound = queryTokens.every((tok) => {
+          const tNorm = normalizeName(tok);
+          const tSkel = thaiConsonantSkeleton(tok);
+          return (
+            o.key.includes(tNorm) ||
+            (o.cleanKey && o.cleanKey.includes(tNorm)) ||
+            (tSkel && o.skeleton && o.skeleton.includes(tSkel)) ||
+            (o.rank && o.rank.includes(tok))
+          );
+        });
+        if (allTokensFound) return true;
+      }
+
+      return false;
+    });
   }
   if (manualLevel) {
     const cLevel = canonicalLevel(manualLevel);
@@ -544,6 +594,19 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     target =
       matches.find((o) => o.key === qNorm || o.cleanKey === qNorm || normalizeName(o.name) === qNorm) ||
       matches.find((o) => qSkel && o.skeleton && o.skeleton === qSkel) ||
+      (queryTokens.length > 1
+        ? matches.find((o) =>
+            queryTokens.every(
+              (t) => o.key.includes(normalizeName(t)) || (o.cleanKey && o.cleanKey.includes(normalizeName(t))),
+            ),
+          )
+        : null) ||
+      (surnameNorm && surnameNorm.length >= 3
+        ? matches.find((o) => o.key.includes(surnameNorm) || (o.cleanKey && o.cleanKey.includes(surnameNorm)))
+        : null) ||
+      (surnameSkel && surnameSkel.length >= 3
+        ? matches.find((o) => o.skeleton && o.skeleton.includes(surnameSkel))
+        : null) ||
       matches.find((o) => qOrderNum && o.seniorityOrder === qOrderNum) ||
       (matches.length > 0 ? matches[0] : null);
   } else if (Number.isInteger(manualOrder) && manualOrder > 0) {
@@ -712,6 +775,10 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
             target?.currentPosition ||
             (effectiveLevel ? `ข้าราชการตำรวจระดับ ${effectiveLevel}` : '-'),
           newPosition: target?.newPosition || 'ไม่ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้นในคำสั่งนี้',
+          currentPositionDate: effectiveCurrentPosDate,
+          currentPositionDateThai: tenureInfo.currentPositionDateThai,
+          birthDate: effectiveBirthDate,
+          birthDateThai: retirementInfo?.birthDateThai || null,
           previousPosition: previousPositionDisplay,
           previousPositionDate: effectivePrevPosDate,
           previousPositionDateThai: prevPosDateParsed?.formattedThai || null,

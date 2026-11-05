@@ -105,6 +105,12 @@ DIRECT_MAP = {
     'วรพจน์ ดิษยบตร': 'วรพจน์ ดิษยบุตร',
     'ฯมิทธิ สวรรณสขโรจน์': 'สมิทธิ สุวรรณสุขโรจน์',
     'จมพร พกหอม': 'ชุมพร พุกหอม',
+    'ปิตภพ โตเหมือน': 'ชิตภพ โตเหมือน',
+    'จรภพ ภริเดช': 'จิรภพ ภูริเดช',
+    'อบูซา รมยะนบันทน์': 'อนุชา รมยะนันทน์',
+    'ฯๆวัฒน์ แสงนุ่ม': 'จิรวัฒน์ แสงนุ่ม',
+    'YE กวินเดชาธร': 'ปิยะ กวินเดชาธร',
+    'HAY อาภาวศิน': 'นิเวศน์ อาภาวศิน',
     'ก4พวัฒน์ อารยางกร': 'ณพวัฒน์ อารยางกูร',
     'วนพล ศรีโสภา': 'ธนพล ศรีโสภา',
     'าถษภา สรเชษฐพงษ์': 'กฤษฎา สุรเชษฐพงษ์',
@@ -182,12 +188,13 @@ for idx, r in enumerate(jsonl_records):
     
     if existing:
         matched_existing_count += 1
-        # Merge, prioritizing verified data from existing record
+        # Merge, prioritizing verified data from existing record and applying canonical name cleaning
+        final_name = clean_thai_name(cleaned_name) or clean_thai_name(existing.get('appointment_name') or existing.get('source_name') or '')
         entry = {
             "id": existing.get('id', f"seniority-{r.get('source_row', idx+1)}"),
             "workbook_row": existing.get('workbook_row', r.get('source_row', idx+1)),
-            "appointment_name": existing.get('appointment_name', cleaned_name),
-            "source_name": existing.get('source_name', cleaned_name),
+            "appointment_name": final_name,
+            "source_name": final_name,
             "seniority_order": order,
             "source_pdf_page": page,
             "total_suitable_population": total_pop,

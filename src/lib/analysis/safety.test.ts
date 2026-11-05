@@ -179,4 +179,23 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.equal(res.profile.comparison.allAppointedInLevel.length, 17);
   assert.ok(res.totalMatches > 0);
   assert.ok(res.suggestions.length > 0);
+
+  // 6. Verification of OCR-corrected roster officer (พ.ต.อ. ชิตภพ โตเหมือน, order 181 / 618)
+  const resChitphop = searchAndComparePerson(snapshot, { q: 'ชิตภพ โตเหมือน' });
+  assert.ok(resChitphop.profile);
+  assert.equal(resChitphop.profile.foundInDatabase, true);
+  assert.equal(resChitphop.profile.name, 'ชิตภพ โตเหมือน');
+  assert.equal(resChitphop.profile.rank, 'พ.ต.อ.');
+  assert.equal(resChitphop.profile.seniorityOrder, 181);
+  assert.equal(resChitphop.profile.totalSuitablePopulation, 618);
+  assert.equal(resChitphop.profile.currentPositionDate, '22/12/2563');
+  assert.equal(resChitphop.profile.birthDate, '7/05/2514');
+  assert.equal(resChitphop.profile.retirement?.retirementYearBE, 2574);
+  assert.equal(resChitphop.profile.comparison.juniorPromotedCount, 32);
+
+  // 7. Verification of surname-only search fallback
+  const resSurname = searchAndComparePerson(snapshot, { q: 'โตเหมือน' });
+  assert.ok(resSurname.profile);
+  assert.equal(resSurname.profile.name, 'ชิตภพ โตเหมือน');
+  assert.equal(resSurname.profile.seniorityOrder, 181);
 });
