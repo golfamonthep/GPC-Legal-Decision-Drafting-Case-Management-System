@@ -25,6 +25,7 @@ import { parseDispatchData } from "@/lib/dispatch/officialDispatchWorkflow";
 import { calculateFilingDeadline } from "@/lib/dispatch/courtDeadline";
 import { getHydratedSnapshotCases } from "@/lib/registry/caseSnapshot";
 import { normalizeCaseNumber } from "@/lib/registryNumbers";
+import { hydrateCaseWithSnapshot } from "@/lib/registry/dbSync";
 
 function formatDate(date: Date | null | undefined): string {
   if (!date) return "-";
@@ -95,6 +96,8 @@ export default async function CaseDetailPage({
   if (!caseData) {
     notFound();
   }
+
+  hydrateCaseWithSnapshot(caseData);
 
   const finalizationData = parseFinalizationData(caseData.proceedingNote);
   const dispatchData = parseDispatchData(caseData.dispatchData);

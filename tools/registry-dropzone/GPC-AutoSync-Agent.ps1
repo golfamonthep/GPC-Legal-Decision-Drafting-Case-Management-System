@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
     GPC-AutoSync-Agent - Windows Background Auto-Sync Agent for ก.พ.ค.ตร.
@@ -155,6 +155,20 @@ function Run-RegistrySync {
                         $p2 = [System.Diagnostics.Process]::Start($gitPsi)
                         $p2.WaitForExit(25000)
                         Write-SyncLog "ผลักดันข้อมูลขึ้น GitHub / Vercel คลาวด์สำเร็จเรียบร้อย"
+
+                        # Ping Vercel cloud to trigger PostgreSQL database auto-sync
+                        try {
+                            $syncUrl = "https://gpc-legal-decision-drafting-case-management-system.vercel.app/api/registry/auto-sync"
+                            $syncReq = [System.Net.WebRequest]::Create($syncUrl)
+                            $syncReq.Method = "POST"
+                            $syncReq.Timeout = 6000
+                            $syncReq.ContentLength = 0
+                            $syncResp = $syncReq.GetResponse()
+                            $syncResp.Close()
+                            Write-SyncLog "ส่งคำสั่งอัปเดตฐานข้อมูล PostgreSQL บนคลาวด์ Vercel สำเร็จเรียบร้อย"
+                        } catch {
+                            Write-SyncLog "ส่งสัญญาณ Vercel (ระบบจะอัปเดตฐานข้อมูลอัตโนมัติเมื่อผู้ใช้เปิดหน้าเว็บ): $($_.Exception.Message)"
+                        }
                     }
                 } catch {
                     Write-SyncLog "ข้ามการ push ขึ้น GitHub: $($_.Exception.Message)"

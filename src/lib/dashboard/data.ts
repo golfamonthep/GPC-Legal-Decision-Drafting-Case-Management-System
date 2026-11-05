@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { DemoDashboardDataSource } from "./demo";
 import { loadDashboardFromSource } from "./loader";
 import { getHydratedSnapshotCases } from "@/lib/registry/caseSnapshot";
+import { hydrateCasesWithSnapshot, scheduleBackgroundDbSync } from "@/lib/registry/dbSync";
 import type {
   DashboardDataSource,
   DashboardFilters,
@@ -68,8 +69,12 @@ class DatabaseDashboardDataSource implements DashboardDataSource {
     ]);
 
     const cases = queries[0].status === "fulfilled" && queries[0].value?.length
-      ? queries[0].value
+      ? hydrateCasesWithSnapshot(queries[0].value)
       : getHydratedSnapshotCases();
+
+    if (queries[0].status === "fulfilled" && queries[0].value?.length) {
+      scheduleBackgroundDbSync(prisma);
+    }
     const partialReasons: string[] = [];
     if (queries[1].status === "rejected") partialReasons.push("กิจกรรมล่าสุด");
     if (queries[2].status === "rejected") partialReasons.push("การประชุม");

@@ -9,6 +9,7 @@ import { filterCasesByRegistryCompletion, filterCasesByBlackYear, caseTextSearch
 import { hasPermission } from "@/lib/auth/permissions";
 import { getBlackNumberYear } from "@/lib/dashboard/metrics";
 import { getHydratedSnapshotCases } from "@/lib/registry/caseSnapshot";
+import { hydrateCasesWithSnapshot, scheduleBackgroundDbSync } from "@/lib/registry/dbSync";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -153,7 +154,10 @@ export default async function CasesPage({
       }
     }
 
-    if (!dbCases || dbCases.length === 0) {
+    if (dbCases && dbCases.length > 0) {
+      hydrateCasesWithSnapshot(dbCases);
+      scheduleBackgroundDbSync(prisma);
+    } else {
       let snapCases = getHydratedSnapshotCases();
       if (typeFilter) {
         snapCases = snapCases.filter(c => c.type === typeFilter);

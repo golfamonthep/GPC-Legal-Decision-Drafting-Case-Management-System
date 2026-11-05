@@ -4,6 +4,7 @@ import { requireApiPermission } from '@/lib/auth/requireApiPermission';
 import prisma from '@/lib/db';
 import { parseThaiDate } from '@/lib/dateUtils';
 import { getRegistryCaseStatus } from '@/lib/caseStatus';
+import { upsertRowsToSnapshot } from '@/lib/registry/caseSnapshot';
 
 type NormalizedCaseType = 'ร้องทุกข์' | 'อุทธรณ์' | 'ไม่ระบุ';
 
@@ -256,6 +257,43 @@ export async function POST(request: NextRequest) {
           messages.push(`แถวที่ ${item.rowInfo?.index ?? '-'}: ซิงก์ข้อมูลไม่สำเร็จเนื่องจากข้อผิดพลาดในระบบ`);
         });
       }
+    }
+
+    try {
+      const rowsForSnapshot = chunks.flatMap(chunk =>
+        chunk.map(c => {
+          const d = c.row?.data || {};
+          return {
+            type: c.caseType,
+            blackNumber: c.blackNumber,
+            redNumber: c.redNumber,
+            registryRedText: safeText(d.redCaseNo) || null,
+            petitionerName: safeText(d.complainantName) || 'ไม่ระบุ',
+            respondentName: safeText(d.accusedName) || 'ไม่ระบุ',
+            subject: safeText(d.subject) || 'ไม่ระบุ',
+            legalCategory: c.caseType === 'อุทธรณ์' ? 'อุทธรณ์คำสั่ง' : 'ร้องทุกข์',
+            legalOfficerName: safeText(d.legalOfficer) || null,
+            committeeOwnerName: safeText(d.commissioner) || null,
+            proceedingNote: safeText(d.proceedingNote) || null,
+            receivedDate: parseThaiDate(d.receivedDate),
+            dueDate30: parseThaiDate(d.deadline30),
+            dueDate60: parseThaiDate(d.deadline60),
+            dueDate90: parseThaiDate(d.deadline90),
+            dueDate120: parseThaiDate(d.deadline120),
+            dueDate240: parseThaiDate(d.deadline240),
+            meetingDate: parseThaiDate(d.meetingDate),
+            currentStatus: safeText(d.status) || 'อยู่ระหว่างดำเนินการ',
+            decisionResult: safeText(d.decisionResult) || null,
+            oneDriveUrl: safeText(d.oneDriveUrl) || null,
+            remarks: null,
+          };
+        }).filter(r => r.blackNumber && r.type !== 'ไม่ระบุ')
+      );
+      if (rowsForSnapshot.length > 0) {
+        upsertRowsToSnapshot(rowsForSnapshot as any, rowsForSnapshot[0].type as 'อุทธรณ์' | 'ร้องทุกข์');
+      }
+    } catch (snapErr) {
+      console.warn('[ImportRoute] Snapshot sync warning:', snapErr);
     }
 
     const synchronizedCount = insertedCount + updatedCount;
