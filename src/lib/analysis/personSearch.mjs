@@ -309,12 +309,88 @@ export function canonicalLevel(rawLevel) {
 /**
  * ค้นหาและเปรียบเทียบข้อมูลข้าราชการตำรวจจากฐานข้อมูลในเครื่อง 100% (Zero-API-Cost)
  */
+export const DIRECT_OCR_MAP = {
+  'สรพล เปรมบตร': 'สรพล เปรมบุตร',
+  'ปยะวัฒน์ เฉลิมศรี': 'ปิยะวัฒน์ เฉลิมศรี',
+  'ชัยต์พจน สวรรณรักษ์': 'ชัยต์พจน์ สุวรรณรักษ์',
+  'สวินท์ หรรษมนตร์': 'สุวินท์ หรรษมนตร์',
+  'าโัฐศักดิ์ เชาวนาศัย': 'ณัฐศักดิ์ เชาวนาศัย',
+  'ายภจ์ จันทร์ถาวร': 'สายภพ จันทร์ถาวร',
+  'ว่งโรจน์ ฐากรปณยสิริ': 'รุ่งโรจน์ ฐากูรปุณยสิริ',
+  'ภาณพงศ์ ชอบเพื่อน': 'ภาณุพงศ์ ชอบเพื่อน',
+  'นันทวฒิ สวรรณละออง': 'นันทวุฒิ สุวรรณละออง',
+  'ามสัน สขมาก': 'รามสูรย์ สุขมาก',
+  'าญชล อินทราราม': 'กาญจน์ชล อินทราราม',
+  'อนุสรณ์ พัฒนถาบตร': 'อนุสรณ์ พัฒนถาบุตร',
+  'ณรงค์ฤทธิ์ ด่านสวรรณ์': 'ณรงค์ฤทธิ์ ด่านสุวรรณ์',
+  'เพโรจน์ ค้มภัย': 'ไพโรจน์ คุ้มภัย',
+  'วรพจน์ ดิษยบตร': 'วรพจน์ ดิษยบุตร',
+  'ฯมิทธิ สวรรณสขโรจน์': 'สมิทธิ สุวรรณสุขโรจน์',
+  'จมพร พกหอม': 'ชุมพร พุกหอม',
+  'ก4พวัฒน์ อารยางกร': 'ณพวัฒน์ อารยางกูร',
+  'วนพล ศรีโสภา': 'ธนพล ศรีโสภา',
+  'าถษภา สรเชษฐพงษ์': 'กฤษฎา สุรเชษฐพงษ์',
+  'อทธิพล อิทธิสารรณชัย': 'อิทธิพล อิทธิสารรณชัย',
+  '1รพงษ์ ถนอมจิตร': 'จิรพงษ์ ถนอมจิตร',
+  'รพงษ์ ถนอมจิตร': 'จิรพงษ์ ถนอมจิตร',
+  'สยาม บญสม': 'สยาม บุญสม',
+  'อทธิพล นาคคำ': 'อิทธิพล นาคคำ',
+  'พิทักษ์ อทัยธรรม': 'พิทักษ์ อุทัยธรรม',
+  'กอฎตธาพล  ยี่สาคร': 'กฤตธาพล ยี่สาคร',
+  'Was ตันประเสริฐ': 'พิสิฐ ตันประเสริฐ',
+  'จันติ ชัยนิรามัย': 'สันติ ชัยนิรามัย',
+  'ธรจิต ซิงนวรรณ์': 'สุรจิต ชิงนวรรณ์',
+  'วมล พิทักษ์บรพา': 'วิมล พิทักษ์บูรพา',
+  'พโรจน์ สขรวยธนโชติ': 'ไพโรจน์ สุขรวยธนโชติ',
+  'เชคชัย งามวงศ์': 'โชคชัย งามวงศ์',
+};
+
+export function cleanThaiOcrName(raw) {
+  if (!raw) return '';
+  let s = String(raw).trim();
+  if (DIRECT_OCR_MAP[s]) return DIRECT_OCR_MAP[s];
+  s = s.replace(/^[0-9ฯ1]\s*/, '');
+  s = s.replace(/^า[โถ]\s*/, '');
+  s = s.replace(/^ก4\s*/, '');
+  s = s.replace(/บตร\b/g, 'บุตร');
+  s = s.replace(/สวรรณ/g, 'สุวรรณ');
+  s = s.replace(/ค้มภัย/g, 'คุ้มภัย');
+  s = s.replace(/พกหอม/g, 'พุกหอม');
+  s = s.replace(/จมพร/g, 'ชุมพร');
+  s = s.replace(/สพรรณ/g, 'สุพรรณ');
+  s = s.replace(/บญสม/g, 'บุญสม');
+  return s.trim();
+}
+
+export function thaiConsonantSkeleton(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/[0-9๑-๙]/g, '')
+    .replace(/[\u0E30-\u0E3A\u0E47-\u0E4E\u0E31\u0E34-\u0E39\u0E40-\u0E44]/g, '')
+    .replace(/\s+/g, '');
+}
+
+export function canonicalRankForLevel(level) {
+  const l = String(level || '');
+  if (l.includes('ผู้ช่วย ผบ.ตร.') || l.includes('ผบช.')) return 'พล.ต.ท.';
+  if (l.includes('รอง ผบช.') || l.includes('ผบก.')) return 'พล.ต.ต.';
+  if (l.includes('รอง ผบก.')) return 'พ.ต.อ.';
+  if (l.includes('ผกก.')) return 'พ.ต.อ.';
+  if (l.includes('รอง ผกก.')) return 'พ.ต.ท.';
+  if (l.includes('สว.')) return 'พ.ต.ท.';
+  return '';
+}
+
 export function searchAndComparePerson(knowledgeBundle, params = {}) {
   const qRaw = String(params.q || params.name || '').trim();
   const qNorm = normalizeName(qRaw);
+  const qSkel = thaiConsonantSkeleton(qRaw);
+  const orderMatch = qRaw.match(/^(?:ลำดับ(?:ที่)?\s*)?(\d+)$/);
+  const qOrderNum = orderMatch ? parseInt(orderMatch[1], 10) : null;
+
   const manualLevel = String(params.level || '').trim();
   const manualAccount = String(params.account || '').trim();
-  const manualOrder = params.order ? Number(params.order) : null;
+  const manualOrder = params.order ? Number(params.order) : qOrderNum;
   const manualBirthDate = String(params.birth_date || '').trim();
   const manualTenureDate = String(params.tenure_date || '').trim();
   const manualCurrentPos = String(params.current_position || '').trim();
@@ -324,18 +400,25 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
   const appointmentsList = knowledgeBundle?.appointments || [];
   const accountsList = knowledgeBundle?.accounts || [];
 
-  // Build unified index of all unique officers in the database (281 appointments + 181 seniority crosswalks)
+  // Build unified index of all unique officers in the database (281 appointments + 987 seniority roster)
   const officerMap = new Map();
 
   for (const appt of appointmentsList) {
-    const fullName = String(appt['ชื่อ–นามสกุล'] || appt['ชื่อ-นามสกุล'] || appt.label || '').trim();
-    const norm = normalizeName(fullName);
+    const rawFullName = String(appt['ชื่อ–นามสกุล'] || appt['ชื่อ-นามสกุล'] || appt.label || '').trim();
+    const cleanFullName = cleanThaiOcrName(rawFullName);
+    const norm = normalizeName(cleanFullName || rawFullName);
     if (!norm) continue;
     const stdLevel = canonicalLevel(appt.source_level || appt['ระดับเดิม'] || '');
+    const rank = appt['ยศเดิม'] || canonicalRankForLevel(stdLevel);
+    const skeleton = thaiConsonantSkeleton(rawFullName + ' ' + cleanFullName);
+
     officerMap.set(norm, {
       key: norm,
-      name: fullName,
-      rank: appt['ยศเดิม'] || '',
+      cleanKey: normalizeName(cleanFullName),
+      name: cleanFullName,
+      rawName: rawFullName,
+      skeleton,
+      rank,
       appointmentNumber: appt['ข้อที่'] || null,
       currentPosition: appt['ตำแหน่งเดิม'] || '',
       newPosition: appt['ตำแหน่งใหม่'] || '',
@@ -358,17 +441,22 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
   }
 
   for (const sen of seniorityList) {
-    const fullName = String(sen.appointment_name || sen.source_name || sen.label || '').trim();
-    const norm = normalizeName(fullName);
+    const rawFullName = String(sen.appointment_name || sen.source_name || sen.label || '').trim();
+    const cleanFullName = cleanThaiOcrName(rawFullName);
+    const norm = normalizeName(cleanFullName || rawFullName);
     if (!norm) continue;
     const isPromoted = Boolean(
       (sen.promotion_outcome && (sen.promotion_outcome.includes('ได้เลื่อน') || sen.promotion_outcome.includes('พบในรายการ'))) ||
       sen.new_position
     );
-    const existing = officerMap.get(norm) || {
+    const stdLevel = canonicalLevel(sen.source_level || '');
+    const existing = officerMap.get(norm) || officerMap.get(normalizeName(rawFullName)) || {
       key: norm,
-      name: fullName,
-      rank: '',
+      cleanKey: normalizeName(cleanFullName),
+      name: cleanFullName,
+      rawName: rawFullName,
+      skeleton: thaiConsonantSkeleton(rawFullName + ' ' + cleanFullName),
+      rank: canonicalRankForLevel(sen.source_level || stdLevel),
       appointmentNumber: sen.appointment_item_no || null,
       currentPosition: sen.source_position || '',
       newPosition: sen.new_position || '',
@@ -379,7 +467,6 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       inAppointmentOrder: isPromoted,
     };
 
-    const stdLevel = canonicalLevel(sen.source_level || existing.sourceLevel);
     const pageLookup = lookupDatesByAccountAndOrder(
       knowledgeBundle,
       sen.source_level,
@@ -393,15 +480,22 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
 
     const effectiveInOrder = Boolean(existing.inAppointmentOrder || isPromoted);
     const effectiveApptType = existing.inAppointmentOrder ? (existing.appointmentType || 'เลื่อนระดับ') : (isPromoted ? 'เลื่อนระดับ' : '');
+    const rank = existing.rank || canonicalRankForLevel(sen.source_level || stdLevel);
+    const skeleton = existing.skeleton || thaiConsonantSkeleton(rawFullName + ' ' + cleanFullName);
 
     officerMap.set(norm, {
       ...existing,
+      name: cleanFullName,
+      rawName: rawFullName,
+      skeleton,
+      rank,
+      currentPosition: existing.currentPosition || sen.source_position || '',
       appointmentType: effectiveApptType,
       inAppointmentOrder: effectiveInOrder,
       newPosition: existing.newPosition || sen.new_position || '',
       newLevel: existing.newLevel || sen.new_level || '',
-      sourceLevel: stdLevel,
-      sourceAccount: sen.source_account || existing.sourceAccount,
+      sourceLevel: stdLevel || existing.sourceLevel,
+      sourceAccount: sen.source_account || existing.sourceAccount || 'ทั่วไป',
       seniorityOrder: Number.isInteger(sen.seniority_order) ? sen.seniority_order : existing.seniorityOrder,
       previousOrder: sen.previous_order ?? existing.previousOrder,
       totalSuitablePopulation: sen.total_suitable_population || existing.totalSuitablePopulation,
@@ -415,16 +509,19 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
 
   const allOfficers = [...officerMap.values()];
 
-  // Multi-criteria filter: query keyword, level, account, or seniority order
+  // Multi-criteria filter: query keyword, consonant skeleton, level, account, or seniority order
   let matches = allOfficers;
   if (qNorm) {
     matches = matches.filter(
       (o) =>
         o.key.includes(qNorm) ||
+        (o.cleanKey && o.cleanKey.includes(qNorm)) ||
+        (qSkel && o.skeleton && o.skeleton.includes(qSkel)) ||
         normalizeName(`${o.rank}${o.name}`).includes(qNorm) ||
         (o.currentPosition && normalizeName(o.currentPosition).includes(qNorm)) ||
         (o.newPosition && normalizeName(o.newPosition).includes(qNorm)) ||
-        (o.appointmentNumber && String(o.appointmentNumber) === qRaw),
+        (o.appointmentNumber && String(o.appointmentNumber) === qRaw) ||
+        (qOrderNum && o.seniorityOrder === qOrderNum),
     );
   }
   if (manualLevel) {
@@ -445,7 +542,9 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
   let target = null;
   if (qNorm) {
     target =
-      allOfficers.find((o) => o.key === qNorm || normalizeName(`${o.rank}${o.name}`) === qNorm) ||
+      matches.find((o) => o.key === qNorm || o.cleanKey === qNorm || normalizeName(o.name) === qNorm) ||
+      matches.find((o) => qSkel && o.skeleton && o.skeleton === qSkel) ||
+      matches.find((o) => qOrderNum && o.seniorityOrder === qOrderNum) ||
       (matches.length > 0 ? matches[0] : null);
   } else if (Number.isInteger(manualOrder) && manualOrder > 0) {
     target = matches.find((o) => o.seniorityOrder === manualOrder) || null;
@@ -499,7 +598,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
         o.inAppointmentOrder &&
         o.appointmentType === 'เลื่อนระดับ' &&
         canonicalLevel(o.sourceLevel) === effectiveLevel &&
-        (!manualAccount || o.sourceAccount === effectiveAccount) &&
+        ((o.sourceAccount || 'ทั่วไป') === (effectiveAccount || 'ทั่วไป')) &&
         Number.isInteger(o.seniorityOrder),
     )
     .sort((a, b) => a.seniorityOrder - b.seniorityOrder)

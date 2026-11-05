@@ -12,11 +12,11 @@ const GENERAL_LEVELS = [
 
 const QUICK_SAMPLE_NAMES = [
   { label: 'พล.ต.ท. สันติ ชัยนิรามัย (ผบช. ลำดับ 1)', name: 'สันติ ชัยนิรามัย' },
-  { label: 'พล.ต.ท. อาชยน ไกรทอง (ผบช. ลำดับ 3 · เกิดหลัง 30 ก.ย.)', name: 'อาชยน ไกรทอง' },
-  { label: 'พล.ต.ต. พิทักษ์ อุทัยธรรม (รอง ผบช. ลำดับ 3)', name: 'พิทักษ์ อุทัยธรรม' },
-  { label: 'พล.ต.ต. โชคชัย งามวงศ์ (รอง ผบช. ลำดับ 2)', name: 'โชคชัย งามวงศ์' },
-  { label: 'พล.ต.ต. คธา เกษรมาลา (ผบก. ลำดับ 1)', name: 'คธา เกษรมาลา' },
-  { label: 'พ.ต.อ. อภิชิต สุรพินิจ (รอง ผบก. ลำดับ 1)', name: 'อภิชิต สุรพินิจ' },
+  { label: 'พล.ต.ท. สรพล เปรมบุตร (ผบช. ลำดับ 2 · ผู้ร้องไม่ติดคำสั่ง)', name: 'สรพล เปรมบุตร' },
+  { label: 'พล.ต.ท. อาชยน ไกรทอง (ผบช. ลำดับ 4 · เกิดหลัง 30 ก.ย.)', name: 'อาชยน ไกรทอง' },
+  { label: 'พล.ต.ต. พิทักษ์ อุทัยธรรม (รอง ผบช. ลำดับ 3 · เกิดหลัง 30 ก.ย.)', name: 'พิทักษ์ อุทัยธรรม' },
+  { label: 'พล.ต.ต. สมิทธิ สุวรรณสุขโรจน์ (ผบก. ลำดับ 1 · บริหารงานก่อสร้าง)', name: 'สมิทธิ สุวรรณสุขโรจน์' },
+  { label: 'พ.ต.อ. อภิชิต สุรพินิจ (รอง ผบก. ลำดับ 1 · ทั่วไป)', name: 'อภิชิต สุรพินิจ' },
 ];
 
 export default function PersonSearch({ onApplyToAnalysis }) {
@@ -328,10 +328,10 @@ export default function PersonSearch({ onApplyToAnalysis }) {
       >
         <div className="person-search-main-row">
           <label className="person-search-input-wrap">
-            <span>๑. กรอกชื่อ – นามสกุล หรือตำแหน่ง ข้าราชการตำรวจ</span>
+            <span>๑. กรอกชื่อ – นามสกุล หรือตำแหน่ง หรือระบุลำดับอาวุโส</span>
             <input
               type="search"
-              placeholder="พิมพ์ชื่อ นามสกุล เช่น อาชยน ไกรทอง, พิทักษ์ อุทัยธรรม, คธา เกษรมาลา, สันติ ชัยนิรามัย..."
+              placeholder="พิมพ์ชื่อ สกุล หรือเลขลำดับ เช่น สรพล เปรมบุตร, อาชยน ไกรทอง, สมิทธิ, ลำดับที่ 2..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -499,7 +499,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
             </div>
             <div className="person-profile-order-box">
               <small>ลำดับอาวุโสที่</small>
-              <strong>
+              <strong className="order-number-val">
                 {p.seniorityOrder ? `${p.seniorityOrder}` : '-'}
                 {p.totalSuitablePopulation ? <span> / {p.totalSuitablePopulation}</span> : null}
               </strong>

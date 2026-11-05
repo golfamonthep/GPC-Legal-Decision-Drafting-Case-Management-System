@@ -87,6 +87,60 @@ for r in jsonl_records:
     key = (lvl, acc)
     account_totals[key] = account_totals.get(key, 0) + 1
 
+DIRECT_MAP = {
+    'สรพล เปรมบตร': 'สรพล เปรมบุตร',
+    'ปยะวัฒน์ เฉลิมศรี': 'ปิยะวัฒน์ เฉลิมศรี',
+    'ชัยต์พจน สวรรณรักษ์': 'ชัยต์พจน์ สุวรรณรักษ์',
+    'สวินท์ หรรษมนตร์': 'สุวินท์ หรรษมนตร์',
+    'าโัฐศักดิ์ เชาวนาศัย': 'ณัฐศักดิ์ เชาวนาศัย',
+    'ายภจ์ จันทร์ถาวร': 'สายภพ จันทร์ถาวร',
+    'ว่งโรจน์ ฐากรปณยสิริ': 'รุ่งโรจน์ ฐากูรปุณยสิริ',
+    'ภาณพงศ์ ชอบเพื่อน': 'ภาณุพงศ์ ชอบเพื่อน',
+    'นันทวฒิ สวรรณละออง': 'นันทวุฒิ สุวรรณละออง',
+    'ามสัน สขมาก': 'รามสูรย์ สุขมาก',
+    'าญชล อินทราราม': 'กาญจน์ชล อินทราราม',
+    'อนุสรณ์ พัฒนถาบตร': 'อนุสรณ์ พัฒนถาบุตร',
+    'ณรงค์ฤทธิ์ ด่านสวรรณ์': 'ณรงค์ฤทธิ์ ด่านสุวรรณ์',
+    'เพโรจน์ ค้มภัย': 'ไพโรจน์ คุ้มภัย',
+    'วรพจน์ ดิษยบตร': 'วรพจน์ ดิษยบุตร',
+    'ฯมิทธิ สวรรณสขโรจน์': 'สมิทธิ สุวรรณสุขโรจน์',
+    'จมพร พกหอม': 'ชุมพร พุกหอม',
+    'ก4พวัฒน์ อารยางกร': 'ณพวัฒน์ อารยางกูร',
+    'วนพล ศรีโสภา': 'ธนพล ศรีโสภา',
+    'าถษภา สรเชษฐพงษ์': 'กฤษฎา สุรเชษฐพงษ์',
+    'อทธิพล อิทธิสารรณชัย': 'อิทธิพล อิทธิสารรณชัย',
+    '1รพงษ์ ถนอมจิตร': 'จิรพงษ์ ถนอมจิตร',
+    'รพงษ์ ถนอมจิตร': 'จิรพงษ์ ถนอมจิตร',
+    'สยาม บญสม': 'สยาม บุญสม',
+    'อทธิพล นาคคำ': 'อิทธิพล นาคคำ',
+    'พิทักษ์ อทัยธรรม': 'พิทักษ์ อุทัยธรรม',
+    'กอฎตธาพล  ยี่สาคร': 'กฤตธาพล ยี่สาคร',
+    'Was ตันประเสริฐ': 'พิสิฐ ตันประเสริฐ',
+    'จันติ ชัยนิรามัย': 'สันติ ชัยนิรามัย',
+    'ธรจิต ซิงนวรรณ์': 'สุรจิต ชิงนวรรณ์',
+    'วมล พิทักษ์บรพา': 'วิมล พิทักษ์บูรพา',
+    'พโรจน์ สขรวยธนโชติ': 'ไพโรจน์ สุขรวยธนโชติ',
+    'เชคชัย งามวงศ์': 'โชคชัย งามวงศ์',
+}
+
+def clean_thai_name(raw):
+    if not raw:
+        return ''
+    s = raw.strip()
+    if s in DIRECT_MAP:
+        return DIRECT_MAP[s]
+    s = re.sub(r'^[0-9ฯ1]\s*', '', s)
+    s = re.sub(r'^า[โถ]\s*', '', s)
+    s = re.sub(r'^ก4\s*', '', s)
+    s = re.sub(r'บตร\b', 'บุตร', s)
+    s = re.sub(r'สวรรณ', 'สุวรรณ', s)
+    s = re.sub(r'ค้มภัย', 'คุ้มภัย', s)
+    s = re.sub(r'พกหอม', 'พุกหอม', s)
+    s = re.sub(r'จมพร', 'ชุมพร', s)
+    s = re.sub(r'สพรรณ', 'สุพรรณ', s)
+    s = re.sub(r'บญสม', 'บุญสม', s)
+    return s.strip()
+
 # 4. Build enriched seniority list
 enriched_seniority = []
 matched_existing_count = 0
@@ -94,8 +148,7 @@ new_roster_count = 0
 
 for idx, r in enumerate(jsonl_records):
     raw_name = r.get('ชื่อ–นามสกุล (ดูสถานะ OCR)', '').strip()
-    # Clean raw name: remove OCR artifacts like leading 'ก4' or digit prefixes
-    cleaned_name = re.sub(r'^[0-9ก-ฮ]\s*', '', raw_name) if raw_name.startswith(('1', 'ก4', 'าโ', 'ง')) else raw_name
+    cleaned_name = clean_thai_name(raw_name)
     cleaned_name = re.sub(r'\s+', ' ', cleaned_name).strip()
     
     lvl = r['ระดับในบัญชีอาวุโส']
@@ -211,3 +264,9 @@ with open(SNAPSHOT_PATH, 'w', encoding='utf-8') as f:
     json.dump(snapshot, f, ensure_ascii=False, indent=2)
 
 print(f"Saved enriched snapshot to {SNAPSHOT_PATH}")
+
+MAIN_APP_SNAPSHOT = r'C:\APP\src\data\analysis\appointments-2569-snapshot.json'
+if os.path.exists(os.path.dirname(MAIN_APP_SNAPSHOT)):
+    with open(MAIN_APP_SNAPSHOT, 'w', encoding='utf-8') as f:
+        json.dump(snapshot, f, ensure_ascii=False, indent=2)
+    print(f"Saved enriched snapshot to {MAIN_APP_SNAPSHOT}")

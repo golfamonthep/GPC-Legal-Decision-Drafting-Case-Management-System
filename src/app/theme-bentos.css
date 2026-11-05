@@ -674,6 +674,158 @@ html:not([data-theme="dark"]) .analysis-workbench small {
   color: #64748b !important;
 }
 
+html[data-theme="light"] .analysis-workbench .person-search-header-box p.muted,
+html:not([data-theme="dark"]) .analysis-workbench .person-search-header-box p.muted {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .bento-value,
+html:not([data-theme="dark"]) .analysis-workbench .bento-value {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .analysis-workbench .bento-value.highlight-green,
+html:not([data-theme="dark"]) .analysis-workbench .bento-value.highlight-green {
+  color: #047857 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .bento-value.highlight-blue,
+html:not([data-theme="dark"]) .analysis-workbench .bento-value.highlight-blue {
+  color: #1d4ed8 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .bento-value.highlight-amber,
+html:not([data-theme="dark"]) .analysis-workbench .bento-value.highlight-amber {
+  color: #b45309 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .bento-sub,
+html:not([data-theme="dark"]) .analysis-workbench .bento-sub {
+  color: #334155 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .bento-sub strong,
+html:not([data-theme="dark"]) .analysis-workbench .bento-sub strong {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .analysis-workbench .bento-label,
+html:not([data-theme="dark"]) .analysis-workbench .bento-label {
+  color: #475569 !important;
+}
+
+html[data-theme="light"] .analysis-workbench .person-profile-name,
+html:not([data-theme="dark"]) .analysis-workbench .person-profile-name {
+  color: #991b1b !important;
+}
+
+html[data-theme="light"] .analysis-workbench .person-profile-order-box strong,
+html:not([data-theme="dark"]) .analysis-workbench .person-profile-order-box strong {
+  color: #dc2626 !important;
+}
+
+/* ==========================================================================
+   5.1 DARK MODE STYLES FOR ANALYSIS WORKBENCH (/analysis)
+   ========================================================================== */
+html[data-theme="dark"] .analysis-workbench,
+html.dark .analysis-workbench {
+  --navy: #ffffff !important;
+  --muted: #cbd5e1 !important;
+  --line: #27272a !important;
+  --warn: #271518 !important;
+  background-color: #0a0a0c !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .analysis-workbench h1,
+html[data-theme="dark"] .analysis-workbench h2,
+html[data-theme="dark"] .analysis-workbench h3,
+html[data-theme="dark"] .analysis-workbench h4,
+html.dark .analysis-workbench h1,
+html.dark .analysis-workbench h2,
+html.dark .analysis-workbench h3,
+html.dark .analysis-workbench h4 {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .analysis-workbench p,
+html.dark .analysis-workbench p {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .muted,
+html.dark .analysis-workbench .muted,
+html[data-theme="dark"] .analysis-workbench small,
+html.dark .analysis-workbench small {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .person-search-header-box p.muted,
+html.dark .analysis-workbench .person-search-header-box p.muted {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .bento-value,
+html.dark .analysis-workbench .bento-value {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .bento-value.highlight-green,
+html.dark .analysis-workbench .bento-value.highlight-green {
+  color: #34d399 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .bento-value.highlight-blue,
+html.dark .analysis-workbench .bento-value.highlight-blue {
+  color: #93c5fd !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .bento-value.highlight-amber,
+html.dark .analysis-workbench .bento-value.highlight-amber {
+  color: #fde047 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .bento-sub,
+html.dark .analysis-workbench .bento-sub {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .bento-sub strong,
+html.dark .analysis-workbench .bento-sub strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .bento-label,
+html.dark .analysis-workbench .bento-label {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .person-profile-name,
+html.dark .analysis-workbench .person-profile-name {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .person-profile-order-box,
+html.dark .analysis-workbench .person-profile-order-box {
+  background-color: #141419 !important;
+  border-color: #ef4444 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .person-profile-order-box strong,
+html.dark .analysis-workbench .person-profile-order-box strong {
+  color: #ffffff !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .person-profile-order-box strong span,
+html.dark .analysis-workbench .person-profile-order-box strong span {
+  color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] .analysis-workbench .person-profile-order-box small,
+html.dark .analysis-workbench .person-profile-order-box small {
+  color: #94a3b8 !important;
+}
+
 html[data-theme="light"] .analysis-workbench .app-header,
 html:not([data-theme="dark"]) .analysis-workbench .app-header {
   border-bottom-color: #e2e8f0 !important;

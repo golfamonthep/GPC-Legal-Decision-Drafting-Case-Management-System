@@ -776,6 +776,19 @@
   color: var(--wb-text-muted);
   font-weight: 600;
 }
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .person-profile-order-box {
+  background: #141419;
+  border-color: #ef4444;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .person-profile-order-box strong {
+  color: #ffffff;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .person-profile-order-box strong span {
+  color: #cbd5e1;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .person-profile-order-box small {
+  color: #94a3b8;
+}
 
 /* 4. The 6 Bento Info Cards */
 .analysis-workbench .person-bento-grid {

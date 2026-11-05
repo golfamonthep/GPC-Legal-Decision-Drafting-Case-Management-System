@@ -59,19 +59,29 @@ function readCircular2456PdfBuffer() {
 
 function mergeExtendedKnowledge(baseBundle) {
   const snapshot = loadSnapshotData();
-  const snapshotSeniorityMap = new Map((snapshot.seniority || []).map((s) => [s.id, s]));
-  const enrichedSeniority = (baseBundle.seniority || []).map((s) => {
-    const snap = snapshotSeniorityMap.get(s.id);
-    return snap
-      ? {
-          ...s,
-          current_position_date: snap.current_position_date || s.current_position_date || null,
-          previous_position_date: snap.previous_position_date || s.previous_position_date || null,
-          birth_date: snap.birth_date || s.birth_date || null,
-          rank_dates: snap.rank_dates || s.rank_dates || [],
-        }
-      : s;
-  });
+  const baseSeniorityMap = new Map((baseBundle.seniority || []).map((s) => [s.id, s]));
+  const snapshotSeniority = snapshot.seniority || [];
+
+  // Use full 987 roster from snapshot.seniority, enriched with any baseBundle metadata
+  const enrichedSeniority = snapshotSeniority.length > 0
+    ? snapshotSeniority.map((s) => {
+        const base = baseSeniorityMap.get(s.id);
+        return base
+          ? {
+              ...base,
+              ...s,
+              current_position_date: s.current_position_date || base.current_position_date || null,
+              previous_position_date: s.previous_position_date || base.previous_position_date || null,
+              birth_date: s.birth_date || base.birth_date || null,
+              rank_dates: (Array.isArray(s.rank_dates) && s.rank_dates.length >= 2) ? s.rank_dates : (base.rank_dates || []),
+            }
+          : s;
+      })
+    : (baseBundle.seniority || []);
+
+  const appointments = (snapshot.appointments && snapshot.appointments.length > 0)
+    ? snapshot.appointments
+    : (baseBundle.appointments || []);
 
   const existingSourceNames = new Set((baseBundle.summary.sources || []).map((s) => s.filename));
   const sources = existingSourceNames.has(CIRCULAR_2456_SOURCE.filename)
@@ -104,6 +114,8 @@ function mergeExtendedKnowledge(baseBundle) {
     ...baseBundle.summary,
     sources,
     accounts,
+    seniority: enrichedSeniority.length,
+    appointments: appointments.length,
     chunk_count: chunks.length,
     supported_tiers: ['๑. ระดับ ผบก. ขึ้นไป (ระดับนายพล)', '๒. ระดับ รอง ผบก. ลงมา (รอง ผบก. – สว.)'],
     tier_definitions: STATUTORY_TIER_DEFINITIONS,
@@ -122,6 +134,7 @@ function mergeExtendedKnowledge(baseBundle) {
     records,
     chunks,
     seniority: enrichedSeniority,
+    appointments,
     pageRowDates: snapshot.pageRowDates || baseBundle.pageRowDates || {},
     accounts,
     all,
@@ -417,7 +430,7 @@ function loadEmbeddedStatutoryFallback() {
     integrity: 'VERIFIED',
     sources,
     appointments: appointments.length || 281,
-    seniority: seniority.length || 181,
+    seniority: seniority.length || 987,
     accounts,
     chunk_count: chunks.length,
     exclusive_seniority_source: CIRCULAR_2456_SOURCE.filename,
