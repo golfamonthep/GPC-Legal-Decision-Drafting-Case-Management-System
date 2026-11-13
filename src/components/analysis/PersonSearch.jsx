@@ -147,7 +147,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
             </td>
             <td>${j.positionBeforeOrder || '-'}</td>
             <td style="font-weight:600;color:${j.appointmentType === 'เลื่อนระดับ' ? '#1e3a8a' : '#047857'};">${j.currentPosition || j.newPosition || '-'}</td>
-            <td style="text-align:center;">${j.appointmentType || '-'}</td>
+            <td style="text-align:center;">${j.appointmentType || '-'}${j.promotionGroup && j.promotionGroup !== 'สับเปลี่ยนหมุนเวียน' ? `<br/><span style="font-size:10.5px;color:#1e40af;font-weight:600;">${j.promotionGroup}</span>` : ''}</td>
             <td style="text-align:center;">${j.currentPositionDateThai || j.currentPositionDate || '-'}</td>
             <td style="text-align:center;">${j.retirementYearBE ? `พ.ศ. ${j.retirementYearBE}${j.bornAfterSep30 ? ' (+1 ปี)' : ''}` : '-'}</td>
           </tr>`,
@@ -230,6 +230,12 @@ export default function PersonSearch({ onApplyToAnalysis }) {
       <div class="card-label">๖. วันเดือนปีเกิด และปีครบเกษียณอายุราชการ (๖๐ ปี)</div>
       <div class="card-val" style="color:#7c2d12;">${p.retirement ? `ครบเกษียณ พ.ศ. ${p.retirement.retirementYearBE}` : 'ไม่ปรากฏข้อมูลวันเกิด'}</div>
       <div class="card-sub">${p.retirement ? `เกิดวันที่ ${p.retirement.birthDateThai} ${p.retirement.bornAfterSep30 ? '(เกิดหลัง 30 ก.ย. ได้บวกปีเกษียณเพิ่ม +1 ปี)' : '(เกิดภายใน 30 ก.ย. คำนวณปีเกษียณปกติ)'} · เหลืออายุราชการ ${p.retirement.remainingYearsFrom2569} ปี` : '-'}</div>
+    </div>
+    <div class="card" style="grid-column: 1 / -1; background: #f8fafc; border-color: #94a3b8;">
+      <div class="card-label">๗. เกณฑ์กลุ่มการเลื่อนตำแหน่งสูงขึ้น และข้อมูลตำแหน่งว่าง (การตัดโควตาอาวุโส ${p.quotaAssessment?.quotaRatioPct || 50}%)</div>
+      <div class="card-val" style="color:${p.quotaAssessment?.groupKey === 'seniority_50' || p.quotaAssessment?.groupKey === 'seniority_100' ? '#047857' : '#1e40af'};">${p.quotaAssessment?.groupLabel || '-'}</div>
+      <div class="card-sub"><strong>การคำนวณตำแหน่งว่างและจุดตัดโควตา:</strong> ${p.quotaAssessment?.vacancySummary || '-'}</div>
+      <div class="card-sub"><strong>หลักกฎหมาย:</strong> ${p.quotaAssessment?.legalBasis || '-'}</div>
     </div>
   </div>
 
@@ -468,10 +474,21 @@ export default function PersonSearch({ onApplyToAnalysis }) {
           <div className="person-profile-banner">
             <div>
               <div className="person-profile-badges">
-                <span className="badge-tier">บัญชีอาวุโส: {p.sourceLevel} · {p.sourceAccount}</span>
+                <span className="badge-tier">บัญชีอาวุโส ครั้งที่ 4: {p.sourceLevel} · {p.sourceAccount}</span>
                 <span className={p.isPromotedInOrder2569 ? 'badge-promoted' : 'badge-complainant'}>
                   {p.appointmentType}
                 </span>
+                {p.quotaAssessment?.shortBadge ? (
+                  <span
+                    className={
+                      p.quotaAssessment.groupKey === 'seniority_50' || p.quotaAssessment.groupKey === 'seniority_100'
+                        ? 'badge-promoted'
+                        : 'badge-tier'
+                    }
+                  >
+                    {p.quotaAssessment.shortBadge}
+                  </span>
+                ) : null}
                 {p.rankPromoted && p.previousRank ? (
                   <span className="badge-tier">เลื่อนยศจาก {p.previousRank} → {p.rank}</span>
                 ) : null}
@@ -592,6 +609,32 @@ export default function PersonSearch({ onApplyToAnalysis }) {
                 )}
               </p>
             </div>
+
+            {p.quotaAssessment ? (
+              <div className="person-bento-card" style={{ gridColumn: '1 / -1' }}>
+                <span className="bento-label">
+                  ๗. เกณฑ์กลุ่มการเลื่อนตำแหน่งสูงขึ้น และข้อมูลตำแหน่งว่าง (การตัดโควตาอาวุโส {p.quotaAssessment.quotaRatioPct || 50}%)
+                </span>
+                <strong
+                  className={
+                    'bento-value ' +
+                    (p.quotaAssessment.groupKey === 'seniority_50' || p.quotaAssessment.groupKey === 'seniority_100'
+                      ? 'highlight-green'
+                      : p.quotaAssessment.groupKey === 'knowledge_promoted'
+                        ? 'highlight-blue'
+                        : 'highlight-amber')
+                  }
+                >
+                  {p.quotaAssessment.groupLabel}
+                </strong>
+                <p className="bento-sub">
+                  <strong>ข้อมูลตำแหน่งว่างและการตัดโควตา:</strong> {p.quotaAssessment.vacancySummary}
+                </p>
+                <p className="bento-sub">
+                  <strong>หลักกฎหมายอ้างอิง:</strong> {p.quotaAssessment.legalBasis}
+                </p>
+              </div>
+            ) : null}
           </div>
 
           {/* Rank History Timeline from Seniority Table */}
@@ -640,7 +683,17 @@ export default function PersonSearch({ onApplyToAnalysis }) {
               </div>
               <div className="comparison-stat-pills">
                 <span>ผู้มีรายชื่อในบัญชีทั้งหมด: <strong>{comp.totalSuitablePopulation || '-'} ราย</strong></span>
-                <span>ได้เลื่อนตำแหน่งสูงขึ้นในบัญชีนี้: <strong>{comp.totalPromotedInAccount || allPromoted.length} ราย</strong></span>
+                <span>ตำแหน่งว่าง (ผู้ได้เลื่อนสูงขึ้น): <strong>{comp.totalPromotedInAccount || allPromoted.length} ตำแหน่ง</strong></span>
+                {comp.seniorityCutoffOrder ? (
+                  <span>
+                    ตัดโควตาอาวุโส {comp.quotaRatioPct || 50}% ที่: <strong>ลำดับที่ {comp.seniorityCutoffOrder} ({comp.seniorityQuotaCount} อัตรา)</strong>
+                  </span>
+                ) : null}
+                {comp.knowledgeQuotaCount > 0 && comp.seniorityCutoffOrder ? (
+                  <span>
+                    กลุ่มความรู้ความสามารถ: <strong>{comp.knowledgeQuotaCount} อัตรา (ลำดับที่ {comp.seniorityCutoffOrder + 1} ขึ้นไป)</strong>
+                  </span>
+                ) : null}
                 <span className="stat-danger">
                   อาวุโสน้อยกว่าที่ได้เลื่อนสูงขึ้น: <strong>{comp.juniorPromotedCount || 0} ราย</strong>
                 </span>
@@ -748,6 +801,13 @@ export default function PersonSearch({ onApplyToAnalysis }) {
                           <span className={row.appointmentType === 'เลื่อนระดับ' ? 'badge-promoted-sm' : 'badge-rotation-sm'}>
                             {row.appointmentType || '-'}
                           </span>
+                          {row.promotionGroup && row.promotionGroup !== 'สับเปลี่ยนหมุนเวียน' ? (
+                            <div style={{ marginTop: '4px' }}>
+                              <small className={row.promotionGroup.includes('อาวุโส') ? 'highlight-green' : 'highlight-blue'}>
+                                <strong>{row.promotionGroup}</strong>
+                              </small>
+                            </div>
+                          ) : null}
                         </td>
                         <td className="center-cell">
                           {row.currentPositionDateThai || row.currentPositionDate || '-'}

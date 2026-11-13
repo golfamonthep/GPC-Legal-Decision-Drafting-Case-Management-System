@@ -1210,6 +1210,43 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       ? `ดำรงตำแหน่งระดับ ${prevLevelLabel} เมื่อวันที่ ${prevPosDateParsed.formattedThai}`
       : `ระดับ ${prevLevelLabel} (ตรวจสอบจากตารางประวัติการดำรงตำแหน่ง)`;
 
+  // Raw promoted officers in this level & account (sorted by seniorityOrder) to compute vacancies & 50% / 100% cutoff
+  const rawPromotedInSameAccount = allOfficers
+    .filter(
+      (o) =>
+        o.inAppointmentOrder &&
+        o.appointmentType === 'เลื่อนระดับ' &&
+        canonicalLevel(o.sourceLevel) === effectiveLevel &&
+        ((o.sourceAccount || 'ทั่วไป') === (effectiveAccount || 'ทั่วไป')) &&
+        Number.isInteger(o.seniorityOrder),
+    )
+    .sort((a, b) => a.seniorityOrder - b.seniorityOrder);
+
+  const totalVacanciesFromPromotions = rawPromotedInSameAccount.length;
+  const is100PercentSeniorityLevel =
+    effectiveLevel === 'ผู้ช่วย ผบ.ตร. / รอง จตช.' ||
+    effectiveLevel === 'ผบช. / จตร. / เทียบเท่า' ||
+    effectiveLevel === 'รอง ผบ.ตร. / จตช.';
+  const seniorityQuotaRatio = is100PercentSeniorityLevel ? 1.0 : 0.5;
+  const seniorityQuotaCount =
+    totalVacanciesFromPromotions > 0 ? Math.ceil(totalVacanciesFromPromotions * seniorityQuotaRatio) : 0;
+  const knowledgeQuotaCount = Math.max(0, totalVacanciesFromPromotions - seniorityQuotaCount);
+  const seniorityCutoffOrder =
+    seniorityQuotaCount > 0
+      ? (rawPromotedInSameAccount[seniorityQuotaCount - 1]?.seniorityOrder ?? seniorityQuotaCount)
+      : null;
+
+  const classifyOfficerPromotionGroup = (orderNum, isPromotedFlag) => {
+    if (!Number.isInteger(orderNum) || !seniorityCutoffOrder) return '';
+    if (is100PercentSeniorityLevel) {
+      return orderNum <= seniorityCutoffOrder ? 'กลุ่มอาวุโส 100%' : 'นอกกรอบตำแหน่งว่าง';
+    }
+    if (orderNum <= seniorityCutoffOrder) {
+      return 'กลุ่มอาวุโส 50%';
+    }
+    return isPromotedFlag ? 'กลุ่มความรู้ความสามารถ (ได้เลื่อนสูงขึ้น)' : 'กลุ่มความรู้ความสามารถ';
+  };
+
   const toComparisonRow = (o, includeRotationFlag = false) => {
     const oTenure = calculateTenureAndEligibility(o.currentPositionDate, o.sourceLevel);
     const oRetire = calculateRetirementInfo(o.birthDate);
@@ -1218,6 +1255,10 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     const isJunior = Boolean(effectiveOrder && hasOrder && o.seniorityOrder > effectiveOrder);
     const isSenior = Boolean(effectiveOrder && hasOrder && o.seniorityOrder < effectiveOrder);
     const isRotation = includeRotationFlag && o.appointmentType !== 'เลื่อนระดับ';
+    const isRowPromoted = o.appointmentType === 'เลื่อนระดับ' || !includeRotationFlag;
+    const promotionGroup = isRotation
+      ? 'สับเปลี่ยนหมุนเวียน'
+      : classifyOfficerPromotionGroup(o.seniorityOrder, isRowPromoted);
     return {
       name: o.name,
       rank: o.rank,
@@ -1233,6 +1274,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       newPosition: o.newPosition,
       latestLevel: o.latestLevel || o.newLevel || o.sourceLevel,
       appointmentType: o.appointmentType || (includeRotationFlag ? 'ระดับเดิม' : 'เลื่อนระดับ'),
+      promotionGroup,
       currentPositionDate: o.currentPositionDate,
       currentPositionDateThai: oTenure.currentPositionDateThai,
       tenureDisplay: oTenure.tenureDisplay,
@@ -1252,17 +1294,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
   };
 
   // 1. All promoted officers in this level & account (sorted by seniorityOrder)
-  const promotedInSameAccount = allOfficers
-    .filter(
-      (o) =>
-        o.inAppointmentOrder &&
-        o.appointmentType === 'เลื่อนระดับ' &&
-        canonicalLevel(o.sourceLevel) === effectiveLevel &&
-        ((o.sourceAccount || 'ทั่วไป') === (effectiveAccount || 'ทั่วไป')) &&
-        Number.isInteger(o.seniorityOrder),
-    )
-    .sort((a, b) => a.seniorityOrder - b.seniorityOrder)
-    .map((o) => toComparisonRow(o, false));
+  const promotedInSameAccount = rawPromotedInSameAccount.map((o) => toComparisonRow(o, false));
 
   // 2. All appointed officers in this level (promotions + rotations, sorted by appointmentNumber)
   const allAppointedInLevel = allOfficers
@@ -1289,11 +1321,80 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     ? promotedInSameAccount.filter((o) => o.seniorityOrder < effectiveOrder)
     : [];
 
+  const isTargetPromoted = Boolean(target && target.appointmentType === 'เลื่อนระดับ');
+  let quotaGroupKey = 'unknown';
+  let quotaGroupLabel = 'ระบุลำดับอาวุโสเพื่อเทียบเกณฑ์โควตาตำแหน่งว่าง';
+  let quotaShortBadge = 'รอเทียบโควตา';
+
+  if (totalVacanciesFromPromotions > 0 && Number.isInteger(effectiveOrder) && seniorityCutoffOrder) {
+    if (is100PercentSeniorityLevel) {
+      if (effectiveOrder <= seniorityCutoffOrder) {
+        quotaGroupKey = 'seniority_100';
+        quotaGroupLabel = isTargetPromoted
+          ? 'อยู่ในกลุ่มอาวุโส 100% ที่ได้เลื่อนตำแหน่งสูงขึ้น'
+          : 'อยู่ในเกณฑ์กลุ่มอาวุโส 100%';
+        quotaShortBadge = 'กลุ่มอาวุโส 100%';
+      } else {
+        quotaGroupKey = 'outside_100';
+        quotaGroupLabel = isTargetPromoted
+          ? 'ได้เลื่อนตำแหน่งสูงขึ้น (ลำดับเกินกรอบอัตราว่างปกติ)'
+          : 'อยู่นอกกรอบตำแหน่งว่าง (เกณฑ์อาวุโส 100%)';
+        quotaShortBadge = 'นอกกรอบอาวุโส 100%';
+      }
+    } else if (effectiveOrder <= seniorityCutoffOrder) {
+      quotaGroupKey = 'seniority_50';
+      quotaGroupLabel = isTargetPromoted
+        ? 'อยู่ในกลุ่มอาวุโส 50% ที่ได้เลื่อนตำแหน่งสูงขึ้น'
+        : 'อยู่ในเกณฑ์กลุ่มอาวุโส 50%';
+      quotaShortBadge = 'กลุ่มอาวุโส 50%';
+    } else if (isTargetPromoted) {
+      quotaGroupKey = 'knowledge_promoted';
+      quotaGroupLabel = 'อยู่ในกลุ่มความรู้ความสามารถ ที่ได้เลื่อนตำแหน่งสูงขึ้น';
+      quotaShortBadge = 'กลุ่มความรู้ความสามารถ (ได้เลื่อนสูงขึ้น)';
+    } else {
+      quotaGroupKey = 'knowledge_pool';
+      quotaGroupLabel = 'อยู่ในเกณฑ์กลุ่มความรู้ความสามารถ (เกินจุดตัดอาวุโส 50% · ไม่ได้เลื่อนสูงขึ้น)';
+      quotaShortBadge = 'เกณฑ์กลุ่มความรู้ความสามารถ (ไม่ได้เลื่อนสูงขึ้น)';
+    }
+  } else if (isTargetPromoted) {
+    quotaGroupKey = is100PercentSeniorityLevel ? 'seniority_100' : 'promoted';
+    quotaGroupLabel = is100PercentSeniorityLevel
+      ? 'อยู่ในกลุ่มอาวุโส 100% ที่ได้เลื่อนตำแหน่งสูงขึ้น'
+      : 'ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้น';
+    quotaShortBadge = is100PercentSeniorityLevel ? 'กลุ่มอาวุโส 100%' : 'ได้เลื่อนตำแหน่งสูงขึ้น';
+  }
+
+  const quotaVacancySummary =
+    totalVacanciesFromPromotions > 0 && seniorityCutoffOrder
+      ? is100PercentSeniorityLevel
+        ? `ระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) มีตำแหน่งว่างเทียบจากผู้ได้เลื่อนตำแหน่งสูงขึ้นรวม ${totalVacanciesFromPromotions} ตำแหน่ง · คัดเลือกเรียงตามลำดับอาวุโส 100% ตัดที่ลำดับอาวุโสที่ ${seniorityCutoffOrder} (ลำดับที่ 1–${seniorityCutoffOrder})`
+        : `ระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) มีตำแหน่งว่าง (เทียบจากผู้ได้เลื่อนตำแหน่งสูงขึ้น) รวม ${totalVacanciesFromPromotions} ตำแหน่ง · ตัดโควตาอาวุโส 50% ที่ลำดับอาวุโสที่ ${seniorityCutoffOrder} (กลุ่มอาวุโส 50% จำนวน ${seniorityQuotaCount} ตำแหน่ง [ลำดับที่ 1–${seniorityCutoffOrder}] · กลุ่มความรู้ความสามารถ จำนวน ${knowledgeQuotaCount} ตำแหน่ง [คัดเลือกจากลำดับที่ ${seniorityCutoffOrder + 1}${totalPopulation ? `–${totalPopulation}` : ' ขึ้นไป'}])`
+      : `ในระดับ ${effectiveLevel || '-'} (บัญชี${effectiveAccount || 'ทั่วไป'}) ยังไม่มีรายการผู้ได้รับเลื่อนตำแหน่งสูงขึ้นในชุดข้อมูลเปรียบเทียบนี้`;
+
+  const quotaLegalBasis = is100PercentSeniorityLevel
+    ? 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๘๒(๑) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๓๙, ข้อ ๔๗(๑) (พิจารณาเรียงตามลำดับอาวุโสจำนวนร้อยละ ๑๐๐ ของจำนวนตำแหน่งว่าง)'
+    : 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๘๒(๒),(๔) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๓๙, ข้อ ๔๗(๒),(๔) (กลุ่มอาวุโสจำนวนร้อยละ ๕๐ ของจำนวนตำแหน่งว่าง และกลุ่มความรู้ความสามารถประกอบอาวุโสอีกร้อยละ ๕๐)';
+
+  const quotaAssessment = {
+    totalVacancies: totalVacanciesFromPromotions,
+    is100PercentSeniority: is100PercentSeniorityLevel,
+    quotaRatioPct: is100PercentSeniorityLevel ? 100 : 50,
+    seniorityQuotaCount,
+    knowledgeQuotaCount,
+    seniorityCutoffOrder,
+    knowledgeOrderStart: seniorityCutoffOrder ? seniorityCutoffOrder + 1 : null,
+    groupKey: quotaGroupKey,
+    groupLabel: quotaGroupLabel,
+    shortBadge: quotaShortBadge,
+    vacancySummary: quotaVacancySummary,
+    legalBasis: quotaLegalBasis,
+  };
+
   const profile =
     target || qRaw || effectiveOrder || manualLevel
       ? {
           foundInDatabase: Boolean(target),
-          isPromotedInOrder2569: Boolean(target && target.appointmentType === 'เลื่อนระดับ'),
+          isPromotedInOrder2569: isTargetPromoted,
           isAppointedInOrder2569: Boolean(target && target.inAppointmentOrder),
           appointmentType: target?.appointmentType || 'ผู้ร้องทุกข์ / เปรียบเทียบลำดับอาวุโส (ไม่ได้เลื่อนตำแหน่งสูงขึ้น)',
           appointmentNumber: target?.appointmentNumber || null,
@@ -1331,11 +1432,17 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
           tenure: tenureInfo,
           retirement: retirementInfo,
           rankTimeline,
+          quotaAssessment,
           comparison: {
             sourceLevel: effectiveLevel,
             sourceAccount: effectiveAccount,
             totalSuitablePopulation: totalPopulation,
             totalPromotedInAccount: promotedInSameAccount.length,
+            totalVacancies: totalVacanciesFromPromotions,
+            seniorityQuotaCount,
+            knowledgeQuotaCount,
+            seniorityCutoffOrder,
+            quotaRatioPct: is100PercentSeniorityLevel ? 100 : 50,
             totalAppointedInLevel: allAppointedInLevel.length,
             targetSeniorityOrder: effectiveOrder,
             juniorPromotedCount: juniorPromotedOfficers.length,
@@ -1346,9 +1453,9 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
             allAppointedInLevel,
             summaryText: effectiveOrder
               ? juniorPromotedOfficers.length > 0
-                ? `เมื่อเทียบกับคำสั่งแต่งตั้งเลื่อนตำแหน่งสูงขึ้นในระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) ซึ่งมีผู้ได้รับเลื่อนตำแหน่งรวม ${promotedInSameAccount.length} ราย พบว่ามีผู้ที่อาวุโสน้อยกว่า (ลำดับอาวุโสหลังลำดับที่ ${effectiveOrder}) ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้นจำนวน ${juniorPromotedOfficers.length} คน (ตั้งแต่ลำดับอาวุโสที่ ${juniorPromotedOfficers[0].seniorityOrder} ถึงลำดับที่ ${juniorPromotedOfficers[juniorPromotedOfficers.length - 1].seniorityOrder})`
-                : `ในระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) มีผู้ได้รับเลื่อนตำแหน่งรวม ${promotedInSameAccount.length} ราย โดยไม่ปรากฏผู้ที่อาวุโสน้อยกว่าลำดับที่ ${effectiveOrder} ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้น`
-              : `ในระดับ ${effectiveLevel} มีผู้ได้รับแต่งตั้งรวม ${allAppointedInLevel.length} ราย (เลื่อนตำแหน่งสูงขึ้น ${promotedInSameAccount.length} ราย · สับเปลี่ยนหมุนเวียน ${allAppointedInLevel.length - promotedInSameAccount.length} ราย)`,
+                ? `เมื่อเทียบกับคำสั่งแต่งตั้งเลื่อนตำแหน่งสูงขึ้นในระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) ซึ่งมีตำแหน่งว่าง (ผู้ได้รับเลื่อนตำแหน่งสูงขึ้น) รวม ${promotedInSameAccount.length} ตำแหน่ง${seniorityCutoffOrder ? (is100PercentSeniorityLevel ? ` (เกณฑ์อาวุโส 100% ตัดที่ลำดับที่ ${seniorityCutoffOrder})` : ` (ตัดโควตาอาวุโส 50% จำนวน ${seniorityQuotaCount} อัตรา ที่ลำดับอาวุโสที่ ${seniorityCutoffOrder} · กลุ่มความรู้ความสามารถ ${knowledgeQuotaCount} อัตรา)`) : ''} พบว่ามีผู้ที่อาวุโสน้อยกว่า (ลำดับอาวุโสหลังลำดับที่ ${effectiveOrder}) ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้นจำนวน ${juniorPromotedOfficers.length} คน (ตั้งแต่ลำดับอาวุโสที่ ${juniorPromotedOfficers[0].seniorityOrder} ถึงลำดับที่ ${juniorPromotedOfficers[juniorPromotedOfficers.length - 1].seniorityOrder})`
+                : `ในระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) มีตำแหน่งว่าง (ผู้ได้รับเลื่อนตำแหน่งสูงขึ้น) รวม ${promotedInSameAccount.length} ตำแหน่ง${seniorityCutoffOrder ? (is100PercentSeniorityLevel ? ` (เกณฑ์อาวุโส 100% ตัดที่ลำดับที่ ${seniorityCutoffOrder})` : ` (ตัดโควตาอาวุโส 50% จำนวน ${seniorityQuotaCount} อัตรา ที่ลำดับอาวุโสที่ ${seniorityCutoffOrder} · กลุ่มความรู้ความสามารถ ${knowledgeQuotaCount} อัตรา)`) : ''} โดยไม่ปรากฏผู้ที่อาวุโสน้อยกว่าลำดับที่ ${effectiveOrder} ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้น`
+              : `ในระดับ ${effectiveLevel} มีผู้ได้รับแต่งตั้งรวม ${allAppointedInLevel.length} ราย (เลื่อนตำแหน่งสูงขึ้น ${promotedInSameAccount.length} ตำแหน่ง${seniorityCutoffOrder && !is100PercentSeniorityLevel ? ` · ตัดอาวุโส 50% ที่ลำดับที่ ${seniorityCutoffOrder}` : ''} · สับเปลี่ยนหมุนเวียน ${allAppointedInLevel.length - promotedInSameAccount.length} ราย)`,
           },
         }
       : null;

@@ -244,11 +244,11 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.ok(!annualBgk.eligibilityDisplay.includes('ขาดอีก'));
   assert.ok(annualBgk.legalBasis.includes('ข้อ ๑๐(๑)'));
 
-  const resPatipan = searchAndComparePerson(snapshot, { q: 'ปติพันธ์ โรหิโตปการ' });
-  assert.ok(resPatipan.profile);
-  assert.equal(resPatipan.profile.tenure.isEligible, true);
-  assert.ok(resPatipan.profile.tenure.legalBasis.includes('มาตรา ๗๗(๕)'));
-  assert.ok(resPatipan.profile.tenure.legalBasis.includes('ข้อ ๑๗(๔)'));
+  const resPrarthana = searchAndComparePerson(snapshot, { q: 'ปรารถนา แผ่นผา' });
+  assert.ok(resPrarthana.profile);
+  assert.equal(resPrarthana.profile.tenure.isEligible, true);
+  assert.ok(resPrarthana.profile.tenure.legalBasis.includes('มาตรา ๗๗(๕)'));
+  assert.ok(resPrarthana.profile.tenure.legalBasis.includes('ข้อ ๑๗(๔)'));
 
   // 11. Verification that Card 4 legal basis adapts to current promoted level
   assert.equal(resSameRankBracket.profile?.tenure?.isPromotedToHigherLevel, true);
@@ -298,4 +298,49 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
     assert.equal(r.profile?.foundInDatabase, true, `Should find Round 4 restored officer ${name}`);
     assert.equal(r.profile?.name, name);
   }
+
+  // 15. Verification of Card 7 Quota & Vacancy Assessment (กลุ่มอาวุโส 50% / 100% vs กลุ่มความรู้ความสามารถ + จุดตัด 50%)
+  // 15.1 รอง ผบช. #1/95 (ไพโรจน์ สุขรวยธนโชติ) -> อยู่ในกลุ่มอาวุโส 50% ที่ได้เลื่อนตำแหน่งสูงขึ้น (ว่าง 20 ตำแหน่ง, ตัด 50% ที่ลำดับ 10)
+  const resPairoj = searchAndComparePerson(snapshot, { q: 'ไพโรจน์ สุขรวยธนโชติ' });
+  assert.equal(resPairoj.profile?.quotaAssessment?.totalVacancies, 20);
+  assert.equal(resPairoj.profile?.quotaAssessment?.seniorityQuotaCount, 10);
+  assert.equal(resPairoj.profile?.quotaAssessment?.knowledgeQuotaCount, 10);
+  assert.equal(resPairoj.profile?.quotaAssessment?.seniorityCutoffOrder, 10);
+  assert.equal(resPairoj.profile?.quotaAssessment?.groupKey, 'seniority_50');
+  assert.equal(resPairoj.profile?.quotaAssessment?.groupLabel, 'อยู่ในกลุ่มอาวุโส 50% ที่ได้เลื่อนตำแหน่งสูงขึ้น');
+
+  // 15.2 รอง ผบช. #21/95 (วิวัฒน์ คำชำนาญ) -> อยู่ในกลุ่มความรู้ความสามารถ ที่ได้เลื่อนตำแหน่งสูงขึ้น
+  const resWiwat = searchAndComparePerson(snapshot, { q: 'วิวัฒน์ คำชำนาญ' });
+  assert.equal(resWiwat.profile?.quotaAssessment?.totalVacancies, 20);
+  assert.equal(resWiwat.profile?.quotaAssessment?.seniorityCutoffOrder, 10);
+  assert.equal(resWiwat.profile?.quotaAssessment?.groupKey, 'knowledge_promoted');
+  assert.equal(resWiwat.profile?.quotaAssessment?.groupLabel, 'อยู่ในกลุ่มความรู้ความสามารถ ที่ได้เลื่อนตำแหน่งสูงขึ้น');
+
+  // 15.3 รอง ผบช. #76/95 (ลักขณา ศักดิแพทย์) -> อยู่ในเกณฑ์กลุ่มความรู้ความสามารถ (เกินจุดตัดอาวุโส 50% · ไม่ได้เลื่อนสูงขึ้น)
+  assert.equal(resLakkhana.profile?.quotaAssessment?.totalVacancies, 20);
+  assert.equal(resLakkhana.profile?.quotaAssessment?.seniorityCutoffOrder, 10);
+  assert.equal(resLakkhana.profile?.quotaAssessment?.groupKey, 'knowledge_pool');
+  assert.ok(resLakkhana.profile?.quotaAssessment?.groupLabel.includes('กลุ่มความรู้ความสามารถ'));
+
+  // 15.4 ผบก. #50/79 (ปรารถนา แผ่นผา) -> ว่าง 44 ตำแหน่ง, ตัดโควตาอาวุโส 50% ที่ลำดับที่ 22 (22 อัตรา)
+  assert.equal(resPrarthana.profile?.quotaAssessment?.totalVacancies, 44);
+  assert.equal(resPrarthana.profile?.quotaAssessment?.seniorityQuotaCount, 22);
+  assert.equal(resPrarthana.profile?.quotaAssessment?.knowledgeQuotaCount, 22);
+  assert.equal(resPrarthana.profile?.quotaAssessment?.seniorityCutoffOrder, 22);
+
+  // 15.5 รอง ผบก. #180/610 (ชิตภพ โตเหมือน) -> ว่าง 95 ตำแหน่ง, ตัดโควตาอาวุโส 50% ที่ลำดับที่ 48 (48 อัตรา)
+  assert.equal(resChitphop.profile?.quotaAssessment?.totalVacancies, 95);
+  assert.equal(resChitphop.profile?.quotaAssessment?.seniorityQuotaCount, 48);
+  assert.equal(resChitphop.profile?.quotaAssessment?.knowledgeQuotaCount, 47);
+  assert.equal(resChitphop.profile?.quotaAssessment?.seniorityCutoffOrder, 48);
+  assert.equal(resChitphop.profile?.quotaAssessment?.groupKey, 'knowledge_pool');
+
+  const juniorPromotedRongBgkName = resChitphop.profile!.comparison.juniorPromotedOfficers[0].name;
+  const resJuniorPromotedRongBgk = searchAndComparePerson(snapshot, { q: juniorPromotedRongBgkName });
+  assert.equal(resJuniorPromotedRongBgk.profile?.quotaAssessment?.groupKey, 'knowledge_promoted');
+
+  // 15.6 ผบช. #1/27 (ณพวัฒน์ อารยางกูร) -> อยู่ในกลุ่มอาวุโส 100% ที่ได้เลื่อนตำแหน่งสูงขึ้น (ว่าง 6 ตำแหน่ง, ตัดที่ลำดับ 6)
+  assert.equal(resSameRankBracket.profile?.quotaAssessment?.totalVacancies, 6);
+  assert.equal(resSameRankBracket.profile?.quotaAssessment?.seniorityCutoffOrder, 6);
+  assert.equal(resSameRankBracket.profile?.quotaAssessment?.groupKey, 'seniority_100');
 });
