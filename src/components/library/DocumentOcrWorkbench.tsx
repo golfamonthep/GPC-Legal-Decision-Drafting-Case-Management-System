@@ -42,7 +42,7 @@ export default function DocumentOcrWorkbench() {
   const [selectedFileMode, setSelectedFileMode] = useState<"preset" | "upload">("preset");
   const [presetIndex, setPresetIndex] = useState(0);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [engine, setEngine] = useState<"paddle" | "typhoon">("paddle");
+  const [engine, setEngine] = useState<"openthai-text" | "openthai-markdown" | "paddle" | "typhoon">("openthai-text");
   const [page, setPage] = useState(1);
   const [apiKey, setApiKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -117,24 +117,28 @@ export default function DocumentOcrWorkbench() {
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 text-xs font-semibold border border-emerald-200 dark:border-emerald-500/30">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-              OCR Engines Installed & Active
+              OpenThai 2.0 OCR & Multi-Engine Installed
             </div>
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              ระบบถอดข้อความเอกสารราชการ (PaddleOCR & Typhoon-OCR)
+              ระบบถอดข้อความเอกสารราชการ (OpenThai 2.0 · PaddleOCR · Typhoon)
             </h2>
             <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300">
-              สกัดตัวอักษรภาษาไทยจากเอกสารคดี PDF ที่ฟอนต์เพี้ยน หรือภาพสแกนคำสั่งทางราชการด้วย AI
+              สกัดตัวอักษรและตารางภาษาไทยจากเอกสารคดี PDF คำวินิจฉัยศาลปกครอง ราชกิจจานุเบกษา และคำสั่ง ตร. ด้วย iApp OpenThai 2.0 OCR (97.0%–98.7% Accuracy)
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="px-3 py-2 rounded-xl bg-white dark:bg-white/10 border border-indigo-100 dark:border-white/10 shadow-sm text-xs">
-              <div className="text-slate-500 dark:text-slate-400 text-[10px]">PADDLEOCR</div>
-              <div className="font-bold text-slate-900 dark:text-white">v2.9.1 / PP-OCR</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="px-3 py-2 rounded-xl bg-white dark:bg-white/10 border border-indigo-200 dark:border-indigo-500/30 shadow-sm text-xs">
+              <div className="text-indigo-600 dark:text-indigo-300 text-[10px] font-bold">OPENTHAI 2.0 TEXT</div>
+              <div className="font-bold text-slate-900 dark:text-white">iapp/OpenThai2.0-OCR-Text</div>
+            </div>
+            <div className="px-3 py-2 rounded-xl bg-white dark:bg-white/10 border border-indigo-200 dark:border-indigo-500/30 shadow-sm text-xs">
+              <div className="text-indigo-600 dark:text-indigo-300 text-[10px] font-bold">OPENTHAI 2.0 MD</div>
+              <div className="font-bold text-slate-900 dark:text-white">iapp/OpenThai2.0-OCR-Markdown</div>
             </div>
             <div className="px-3 py-2 rounded-xl bg-white dark:bg-white/10 border border-indigo-100 dark:border-white/10 shadow-sm text-xs">
-              <div className="text-slate-500 dark:text-slate-400 text-[10px]">TYPHOON-OCR</div>
-              <div className="font-bold text-slate-900 dark:text-white">v0.4.1 (SCB 10X)</div>
+              <div className="text-slate-500 dark:text-slate-400 text-[10px]">PADDLE / TYPHOON</div>
+              <div className="font-bold text-slate-900 dark:text-white">PP-OCR + SCB 10X</div>
             </div>
           </div>
         </div>
@@ -232,6 +236,30 @@ export default function DocumentOcrWorkbench() {
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <button
                     type="button"
+                    onClick={() => setEngine("openthai-text")}
+                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                      engine === "openthai-text"
+                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold"
+                        : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                    }`}
+                  >
+                    <div>OpenThai2.0-OCR-Text</div>
+                    <div className="text-[10px] font-normal text-slate-500">iApp CPU ONNX (97% ศาลปกครอง)</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEngine("openthai-markdown")}
+                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                      engine === "openthai-markdown"
+                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold"
+                        : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                    }`}
+                  >
+                    <div>OpenThai2.0-OCR-Markdown</div>
+                    <div className="text-[10px] font-normal text-slate-500">Markdown + ตาราง HTML (98.7%)</div>
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setEngine("paddle")}
                     className={`p-2.5 rounded-xl border text-left transition-all ${
                       engine === "paddle"
@@ -240,7 +268,7 @@ export default function DocumentOcrWorkbench() {
                     }`}
                   >
                     <div>PaddleOCR</div>
-                    <div className="text-[10px] font-normal text-slate-500">Local Offline (เร็ว)</div>
+                    <div className="text-[10px] font-normal text-slate-500">Local PP-OCRv5</div>
                   </button>
                   <button
                     type="button"
@@ -361,7 +389,14 @@ export default function DocumentOcrWorkbench() {
                 <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-3">
                   <Loader2 className="h-10 w-10 text-indigo-500 animate-spin" />
                   <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                    กำลังประมวลผลการอ่านเอกสารด้วย {engine === "paddle" ? "PaddleOCR" : "Typhoon-OCR"}
+                    กำลังประมวลผลการอ่านเอกสารด้วย{" "}
+                    {engine === "openthai-text"
+                      ? "OpenThai2.0-OCR-Text (iApp ONNX)"
+                      : engine === "openthai-markdown"
+                        ? "OpenThai2.0-OCR-Markdown (iApp Nemotron Parse)"
+                        : engine === "paddle"
+                          ? "PaddleOCR"
+                          : "Typhoon-OCR"}
                   </div>
                   <p className="text-xs text-slate-400 max-w-sm">
                     กำลังแปลงไฟล์หน้า {page} ตรวจหาตำแหน่งกล่องข้อความ (Detection) และสกัดตัวอักษร (Recognition)...

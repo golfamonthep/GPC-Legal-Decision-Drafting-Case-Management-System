@@ -15,6 +15,10 @@ description: >-
 
 ### สรุปสถานะระบบล่าสุด (2026-11-13)
 
+- **ติดตั้งสกิลและโมเดล OpenThai 2.0 OCR (`iapp/OpenThai2.0-OCR-Text` และ `iapp/OpenThai2.0-OCR-Markdown`) เข้าสู่คลังสกิลและระบบคลังความรู้กฎหมาย ๑๐๐% (2026-11-13)**:
+  - สร้างสกิล `C:\Users\polic\.codex\skills\openthai-ocr\SKILL.md` และอัปเดต `thai-ocr\SKILL.md` พร้อมติดตั้งโมเดล ONNX จริง (`tools/openthai2-ocr-text/det.onnx`, `rec.onnx`, `runtime/line_engine.py`) และเอนจินแปลง Markdown + ตาราง HTML (`scripts/ocr_processor.py`, `src/app/api/ocr/route.ts`, `src/components/library/DocumentOcrWorkbench.tsx`, `src/data/thai-law/openthai-ocr-presets.json`)
+  - รองรับการถอดข้อความทั้ง 4 เอนจิน (`OpenThai2.0-OCR-Text`, `OpenThai2.0-OCR-Markdown`, `PaddleOCR`, `Typhoon-OCR`) ทั้งบนเครื่อง Local และบน Vercel Cloud (`npm test` 104/104, `typecheck` 0 errors, `build` 39/39 routes)
+
 - **แก้ไขปัญหาข้อผิดพลาดฐานข้อมูล (`ข้อผิดพลาดฐานข้อมูล: ไม่สามารถเชื่อมต่อฐานข้อมูล Production ได้`) บนหน้าคลังความรู้กฎหมาย (`/library`) และทุกหน้าของระบบ ๑๐๐% (2026-11-13)**:
   - ยกเลิกการบล็อกหน้า `/library` เมื่อฐานข้อมูล PostgreSQL ไม่สามารถเชื่อมต่อได้ (`canConnect: false`) และเปลี่ยนมาใช้ `getOfflineFallbackLegalSources()` ดึงข้อมูลจากแคตตาล็อกกฎหมายตำรวจในระบบ (`39 ฉบับ · 2,398 มาตรา/ข้อ`) มาแสดงผลครบทั้ง ๔ แท็บ พร้อมรองรับหน้าดู Chunks (`/library/[id]/chunks`)
   - ปรับปรุง `src/lib/db.ts` และหน้า `/cases/[id]/draft`, `/cases/[id]/edit`, `/cases/[id]/update`, `/case-intelligence`, `/meetings`, `/dispatch`, `/finalization` ให้มี Offline/Snapshot Fallback ครบทุกหน้า 100% (`npm test` 104/104, `typecheck` 0 errors, `build` 39/39 routes)

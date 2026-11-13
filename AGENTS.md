@@ -41,6 +41,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
    - ชื่อระบบ/อัตลักษณ์หน้าเว็บปัจจุบัน: **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`**
    - โครงสร้างหลักที่พัฒนาเสร็จแล้ว:
 
+- **ติดตั้งสกิลและโมเดล OpenThai 2.0 OCR (`iapp/OpenThai2.0-OCR-Text` และ `iapp/OpenThai2.0-OCR-Markdown`) เข้าสู่คลังสกิลและระบบคลังความรู้กฎหมาย ๑๐๐% (2026-11-13)**:
+  - สร้างสกิล `C:\Users\polic\.codex\skills\openthai-ocr\SKILL.md` และอัปเดต `thai-ocr\SKILL.md` พร้อมติดตั้งโมเดล ONNX จริง (`tools/openthai2-ocr-text/det.onnx`, `rec.onnx`, `runtime/line_engine.py`) และเอนจินแปลง Markdown + ตาราง HTML (`scripts/ocr_processor.py`, `src/app/api/ocr/route.ts`, `src/components/library/DocumentOcrWorkbench.tsx`, `src/data/thai-law/openthai-ocr-presets.json`)
+  - รองรับการถอดข้อความทั้ง 4 เอนจิน (`OpenThai2.0-OCR-Text`, `OpenThai2.0-OCR-Markdown`, `PaddleOCR`, `Typhoon-OCR`) ทั้งบนเครื่อง Local และบน Vercel Cloud (`npm test` 104/104, `typecheck` 0 errors, `build` 39/39 routes)
+
 - **แยกเมนู "ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น" (`/person-search`) เป็นเมนูหลักเดี่ยว พร้อมใช้ยศและตำแหน่งล่าสุดจากคำสั่งแต่งตั้ง และแสดงยศเต็มครบถ้วน (2026-11-13)**:
   - ยกระดับ `/analysis?tab=search` เป็นเมนูหลักเดี่ยว **"ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น"** (`/person-search`, `src/components/Sidebar.tsx`, `src/app/person-search/page.tsx`, `src/components/analysis/PersonSearchStandalone.jsx`) พร้อม Redirect `/analysis?tab=search` → `/person-search` และส่งข้อมูลต่อไปยัง `/analysis` ผ่าน `sessionStorage`
   - ปรับเอนจิน `src/lib/analysis/personSearch.mjs` ให้ใช้ **ยศเต็มไม่ย่อ** (`พลตำรวจเอก`–`ร้อยตำรวจตรี` + `หญิง`), อัปเดตยศกับตำแหน่งล่าสุดจากการแต่งตั้งเป็น `rank` และ `currentPosition` โดยเก็บ `previousRank` / `positionBeforeOrder` ไว้เปรียบเทียบ, แก้ `cleanThaiOcrName` ไม่ให้เพี้ยนชื่อไทย (`เบญจวรรณ วุฒิวรวงศ์`, `ธงชัย เนตรสขาวัฒน์`), และปรับ UI `src/components/analysis/PersonSearch.jsx` ให้สะอาดตาเน้นการวิเคราะห์ (`npm test` 104/104, `typecheck` 0 errors, `build` 38/38 routes)

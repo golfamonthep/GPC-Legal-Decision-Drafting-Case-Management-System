@@ -213,9 +213,9 @@ export default function LibraryClient({ initialResources }: { initialResources: 
         >
           <ScanText className="h-4 w-4 shrink-0" />
           <span className="sm:hidden">ถอดข้อความ OCR</span>
-          <span className="hidden sm:inline">ถอดข้อความเอกสาร OCR (Paddle / Typhoon)</span>
+          <span className="hidden sm:inline">ถอดข้อความเอกสาร OCR (OpenThai 2.0 / Paddle / Typhoon)</span>
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold shrink-0">
-            AI OCR
+            OpenThai 2.0
           </span>
         </button>
 

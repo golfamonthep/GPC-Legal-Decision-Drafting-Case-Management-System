@@ -2,6 +2,13 @@
 
 ## สรุปสถานะระบบล่าสุด (2026-11-13)
 
+- **ติดตั้งสกิลและโมเดล OpenThai 2.0 OCR (`iapp/OpenThai2.0-OCR-Text` และ `iapp/OpenThai2.0-OCR-Markdown`) เข้าสู่คลังสกิลและระบบคลังความรู้กฎหมาย ๑๐๐% (2026-11-13)**:
+  - **ติดตั้งสกิลและโมเดลลงเครื่อง (`C:\Users\polic\.codex\skills\openthai-ocr\SKILL.md`, `C:\Users\polic\.codex\skills\thai-ocr\SKILL.md`, `tools/openthai2-ocr-text/`)**:
+    1. ดาวน์โหลดและติดตั้งโมเดลจริง **`iapp/OpenThai2.0-OCR-Text`** (`det.onnx` 1.8 MB, `rec.onnx` 2.4 MB, `rec_dict.txt`, `runtime/line_engine.py`, `runtime/thai_norm.py`) รันบน CPU ผ่าน ONNX Runtime ได้ทันทีโดยไม่ต้องใช้ GPU (ความเร็ว ~0.39–1.6 วินาที/หน้า ความแม่นยำคำพิพากษาศาลปกครอง 97.0% และเอกสารงบประมาณรัฐสภา 99.5%)
+    2. ติดตั้งชุดสคริปต์และเอนจิน **`iapp/OpenThai2.0-OCR-Markdown`** (Nemotron 3.5 Parse 0.63B fine-tuned โดย iApp ความแม่นยำราชกิจจานุเบกษา 98.7%) รองรับทั้งการเชื่อมต่อ vLLM GPU API และการแปลงโครงสร้างบรรทัด/ตาราง HTML (`<table>`) บน CPU โดยอัตโนมัติ
+  - **ผสานเข้ากับระบบคลังความรู้กฎหมาย (`/library` แท็บ ถอดข้อความ OCR)**:
+    - อัปเกรด `scripts/ocr_processor.py`, `src/app/api/ocr/route.ts`, `src/components/library/DocumentOcrWorkbench.tsx`, และ `src/data/thai-law/openthai-ocr-presets.json` ให้มี `OpenThai2.0-OCR-Text` และ `OpenThai2.0-OCR-Markdown` เป็นเอนจินหลักเคียงคู่กับ `PaddleOCR` และ `Typhoon-OCR` พร้อมทำงานได้ทั้งบนเครื่อง Local และบน Vercel Cloud 100% (`npm test` 104/104, `typecheck` 0 errors, `build` 39/39 routes)
+
 - **แยกเมนู "ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น" (`/person-search`) เป็นเมนูหลักเดี่ยว พร้อมใช้ยศและตำแหน่งล่าสุดจากคำสั่งแต่งตั้ง และแสดงยศเต็มครบถ้วน (2026-11-13)**:
   - **แยกเป็นเมนูหลัก `/person-search`**: เพิ่มเมนูหลัก **"ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น"** (`src/components/Sidebar.tsx`, `src/app/person-search/page.tsx`, `src/components/analysis/PersonSearchStandalone.jsx`), ถอดแท็บค้นหาออกจาก `Workbench.jsx`, Redirect `/analysis?tab=search` → `/person-search`, และเชื่อมต่อปุ่มส่งข้อมูลต่อไป `/analysis` ผ่าน `sessionStorage`
   - **ยศและตำแหน่งล่าสุด + ยศเต็มไม่ย่อ (`src/lib/analysis/personSearch.mjs`)**: เพิ่ม `normalizeFullRank` และ `resolveLatestRankForLevel` อ่านยศเต็ม (`พลตำรวจเอก`–`ร้อยตำรวจตรี` + `หญิง`), เลื่อนยศเฉพาะกรณีเลื่อนระดับข้ามขั้นยศ, ใช้ `ตำแหน่งใหม่` เป็น `currentPosition`, เก็บ `previousRank` / `positionBeforeOrder`, และแก้ `cleanThaiOcrName` ไม่ให้กระทบชื่อไทยที่ถูกต้อง (`เบญจวรรณ วุฒิวรวงศ์`, `ธงชัย เนตรสขาวัฒน์`)
