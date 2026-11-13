@@ -14,14 +14,19 @@ export default async function MeetingsListPage() {
     redirect("/dashboard");
   }
 
-  const meetings = await prisma.meeting.findMany({
-    orderBy: { meetingDate: 'desc' },
-    include: {
-      _count: {
-        select: { agendaItems: true }
+  let meetings: any[] = [];
+  try {
+    meetings = await prisma.meeting.findMany({
+      orderBy: { meetingDate: 'desc' },
+      include: {
+        _count: {
+          select: { agendaItems: true }
+        }
       }
-    }
-  });
+    });
+  } catch (e) {
+    console.warn("[MeetingsListPage] Database unavailable, using empty meetings list:", e);
+  }
 
   const canManage = hasPermission(user.role, 'MANAGE_MEETINGS');
 

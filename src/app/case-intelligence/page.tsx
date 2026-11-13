@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { Lightbulb, AlertTriangle, Users, Database, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { evaluateDataQuality } from "@/lib/search/dataQuality";
+import { getHydratedSnapshotCases } from "@/lib/registry/caseSnapshot";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,25 +15,35 @@ export default async function CaseIntelligencePage() {
 
   // Audit Log
   if (user) {
-    await prisma.auditLog.create({
-      data: {
-        userId: user.id,
-        action: "CASE_INTELLIGENCE_VIEWED",
-        entityType: "Search",
-        entityId: "case-intelligence",
-      },
-    });
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId: user.id,
+          action: "CASE_INTELLIGENCE_VIEWED",
+          entityType: "Search",
+          entityId: "case-intelligence",
+        },
+      });
+    } catch {}
   }
 
   // Fetch all active cases to analyze (with limits to avoid overload, e.g. recent 500)
   // In a real huge app we'd do agg queries, but Prisma doesn't support complex JS logic in DB
-  const cases = await prisma.case.findMany({
-    take: 1000,
-    orderBy: { updatedAt: 'desc' },
-    include: {
-      legalOfficer: { select: { name: true } }
-    }
-  });
+  let cases: any[] = [];
+  try {
+    cases = await prisma.case.findMany({
+      take: 1000,
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        legalOfficer: { select: { name: true } }
+      }
+    });
+  } catch (e) {
+    console.warn("[CaseIntelligencePage] Database unavailable, falling back to snapshot:", e);
+  }
+  if (!cases || cases.length === 0) {
+    cases = getHydratedSnapshotCases();
+  }
 
   const enhancedCases = cases.map((c: any) => ({
     ...c,

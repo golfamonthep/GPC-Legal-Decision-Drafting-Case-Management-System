@@ -14,13 +14,18 @@ export default async function DispatchDashboardPage() {
   await requirePermission("VIEW_DISPATCH_WORKFLOW");
 
   // Fetch only cases that have dispatchData initialized
-  const cases = await prisma.case.findMany({
-    where: { dispatchData: { not: null } },
-    include: {
-      legalOfficer: { select: { name: true } },
-    },
-    orderBy: { updatedAt: 'desc' }
-  });
+  let cases: any[] = [];
+  try {
+    cases = await prisma.case.findMany({
+      where: { dispatchData: { not: null } },
+      include: {
+        legalOfficer: { select: { name: true } },
+      },
+      orderBy: { updatedAt: 'desc' }
+    });
+  } catch (e) {
+    console.warn("[DispatchDashboardPage] Database unavailable, using empty list:", e);
+  }
 
   const dispatchStats = {
     totalActive: 0,

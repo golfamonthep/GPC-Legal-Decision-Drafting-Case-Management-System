@@ -181,7 +181,7 @@ export default function LibraryClient({ initialResources }: { initialResources: 
           <span className="sm:hidden">แคตตาล็อกกฎหมาย</span>
           <span className="hidden sm:inline">แคตตาล็อกกฎหมายตำรวจ (พ.ร.บ.ตำรวจ 2565 / กฤษฎีกา / ก.พ.ค.ตร. 2567)</span>
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold shrink-0">
-            2,377 มาตรา/ข้อ
+            2,398 มาตรา/ข้อ
           </span>
         </button>
 

@@ -28,52 +28,8 @@ function isSameTimestamp(expected: string | Date, actual: Date): boolean {
 export async function getOrCreateDraft(caseId: string) {
   await requirePermission("VIEW_DRAFT");
 
-  let draft = await prisma.decisionDraft.findFirst({
-    where: { caseId },
-    include: {
-      sections: {
-        orderBy: { order: "asc" }
-      }
-    }
-  });
-
-  if (!draft) {
-    const caseData = await prisma.case.findUnique({
-      where: { id: caseId }
-    });
-    const draftTitle = caseData ? `ร่างคำวินิจฉัย คดี ${caseData.blackNumber}` : "ร่างคำวินิจฉัย";
-
-    draft = await prisma.decisionDraft.create({
-      data: {
-        caseId,
-        title: draftTitle,
-        status: "draft",
-        sections: {
-          create: SECTION_TEMPLATES.map((t, index) => ({
-            sectionType: t.type,
-            content: "",
-            order: index + 1,
-            status: "pending",
-          }))
-        }
-      },
-      include: {
-        sections: {
-          orderBy: { order: "asc" }
-        }
-      }
-    });
-  } else if (draft.sections.length === 0) {
-    await prisma.decisionDraftSection.createMany({
-      data: SECTION_TEMPLATES.map((t, index) => ({
-        draftId: draft!.id,
-        sectionType: t.type,
-        content: "",
-        order: index + 1,
-        status: "pending",
-      }))
-    });
-    draft = await prisma.decisionDraft.findFirst({
+  try {
+    let draft = await prisma.decisionDraft.findFirst({
       where: { caseId },
       include: {
         sections: {
@@ -81,9 +37,77 @@ export async function getOrCreateDraft(caseId: string) {
         }
       }
     });
-  }
 
-  return draft;
+    if (!draft) {
+      const caseData = await prisma.case.findUnique({
+        where: { id: caseId }
+      });
+      const draftTitle = caseData ? `ร่างคำวินิจฉัย คดี ${caseData.blackNumber}` : "ร่างคำวินิจฉัย";
+
+      draft = await prisma.decisionDraft.create({
+        data: {
+          caseId,
+          title: draftTitle,
+          status: "draft",
+          sections: {
+            create: SECTION_TEMPLATES.map((t, index) => ({
+              sectionType: t.type,
+              content: "",
+              order: index + 1,
+              status: "pending",
+            }))
+          }
+        },
+        include: {
+          sections: {
+            orderBy: { order: "asc" }
+          }
+        }
+      });
+    } else if (draft.sections.length === 0) {
+      await prisma.decisionDraftSection.createMany({
+        data: SECTION_TEMPLATES.map((t, index) => ({
+          draftId: draft!.id,
+          sectionType: t.type,
+          content: "",
+          order: index + 1,
+          status: "pending",
+        }))
+      });
+      draft = await prisma.decisionDraft.findFirst({
+        where: { caseId },
+        include: {
+          sections: {
+            orderBy: { order: "asc" }
+          }
+        }
+      });
+    }
+
+    return draft;
+  } catch (e) {
+    console.warn("[getOrCreateDraft] Database unavailable, using offline draft template:", e);
+    const now = new Date();
+    return {
+      id: `offline-draft-${caseId}`,
+      caseId,
+      title: `ร่างคำวินิจฉัย`,
+      status: "draft",
+      createdAt: now,
+      updatedAt: now,
+      sections: SECTION_TEMPLATES.map((t, index) => ({
+        id: `offline-sec-${index + 1}`,
+        draftId: `offline-draft-${caseId}`,
+        sectionType: t.type,
+        content: "",
+        order: index + 1,
+        status: "pending",
+        aiReviewNote: null,
+        createdAt: now,
+        updatedAt: now,
+      })),
+    } as any;
+  }
 }
 
 export async function updateSection(

@@ -1,20 +1,45 @@
 import prisma from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Database, CheckCircle, XCircle, Clock } from "lucide-react";
+import { ArrowLeft, Database, CheckCircle, XCircle } from "lucide-react";
 import GenerateEmbeddingsButton from "./GenerateEmbeddingsButton";
+import { getLawActs, searchPoliceLaws } from "@/lib/thai-law/search";
 
 export default async function ViewChunksPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
-  const source = await prisma.legalSource.findUnique({
-    where: { id },
-    include: {
-      documentChunks: {
-        orderBy: { chunkIndex: 'asc' }
+
+  let source: any = null;
+  try {
+    source = await prisma.legalSource.findUnique({
+      where: { id },
+      include: {
+        documentChunks: {
+          orderBy: { chunkIndex: 'asc' }
+        }
       }
+    });
+  } catch (e) {
+    console.warn("[ViewChunksPage] Database unavailable, falling back to static law corpus:", e);
+  }
+
+  if (!source) {
+    const act = getLawActs().find((a) => a.id === id);
+    if (act) {
+      const { items } = searchPoliceLaws({ actId: id, pageSize: 2000 });
+      source = {
+        id: act.id,
+        title: act.title,
+        documentType: act.category,
+        sourceStatus: 'ใช้งาน',
+        documentChunks: items.map((sec, idx) => ({
+          id: sec.id,
+          chunkIndex: idx + 1,
+          content: `${sec.sectionLabel}\n${sec.content}`,
+          embeddingStatus: 'completed',
+        })),
+      };
     }
-  });
+  }
 
   if (!source) {
     notFound();
@@ -63,7 +88,7 @@ export default async function ViewChunksPage({ params }: { params: Promise<{ id:
             <p className="text-slate-500">No chunks found. Please ingest the document first.</p>
           </div>
         ) : (
-          source.documentChunks.map((chunk) => (
+          source.documentChunks.map((chunk: any) => (
             <div key={chunk.id} className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
               <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex justify-between items-center">
                 <div className="flex items-center gap-3">

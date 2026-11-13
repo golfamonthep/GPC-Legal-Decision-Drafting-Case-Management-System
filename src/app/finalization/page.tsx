@@ -18,17 +18,22 @@ export default async function FinalizationDashboard() {
   }
 
   // Fetch cases with proceedingNote that has _isFinalizationData
-  const cases = await prisma.case.findMany({
-    where: {
-      proceedingNote: {
-        contains: '"_isFinalizationData":true'
-      }
-    },
-    include: {
-      legalOfficer: true
-    },
-    orderBy: { updatedAt: 'desc' }
-  });
+  let cases: any[] = [];
+  try {
+    cases = await prisma.case.findMany({
+      where: {
+        proceedingNote: {
+          contains: '"_isFinalizationData":true'
+        }
+      },
+      include: {
+        legalOfficer: true
+      },
+      orderBy: { updatedAt: 'desc' }
+    });
+  } catch (e) {
+    console.warn("[FinalizationDashboard] Database unavailable, using empty list:", e);
+  }
 
   const finalizationCases = cases
     .map(c => {

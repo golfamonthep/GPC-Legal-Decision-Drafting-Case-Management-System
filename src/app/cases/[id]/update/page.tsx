@@ -9,6 +9,8 @@ import { hasPermission } from '@/lib/auth/permissions';
 import { CaseCompletionBadge } from '@/components/CaseCompletionBadge';
 import { CaseStatusUpdateForm } from '@/components/CaseStatusUpdateForm';
 import { getRegistryCaseStatus, getRegistryRedText } from '@/lib/caseStatus';
+import { getHydratedSnapshotCases } from '@/lib/registry/caseSnapshot';
+import { normalizeCaseNumber } from '@/lib/registryNumbers';
 
 export default async function UpdateCasePage({
   params,
@@ -18,24 +20,40 @@ export default async function UpdateCasePage({
   const user = await requirePermission('VIEW_CASE_DETAIL');
   const { id } = await params;
 
-  const caseData = await prisma.case.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      type: true,
-      blackNumber: true,
-      redNumber: true,
-      registryRedText: true,
-      subject: true,
-      petitionerName: true,
-      respondentName: true,
-      currentStatus: true,
-      proceedingNote: true,
-      legalOfficerName: true,
-      updatedAt: true,
-      legalOfficer: { select: { name: true } },
-    },
-  });
+  let caseData: any = null;
+  try {
+    caseData = await prisma.case.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        type: true,
+        blackNumber: true,
+        redNumber: true,
+        registryRedText: true,
+        subject: true,
+        petitionerName: true,
+        respondentName: true,
+        currentStatus: true,
+        proceedingNote: true,
+        legalOfficerName: true,
+        updatedAt: true,
+        legalOfficer: { select: { name: true } },
+      },
+    });
+  } catch (e) {
+    console.warn("[UpdateCasePage] Database unavailable, falling back to snapshot:", e);
+  }
+
+  if (!caseData) {
+    const snapCases = getHydratedSnapshotCases();
+    const found = snapCases.find((c: any) => c.id === id || c.blackNumber === id || normalizeCaseNumber(c.blackNumber) === normalizeCaseNumber(id));
+    if (found) {
+      caseData = {
+        ...found,
+        legalOfficer: found.legalOfficerName ? { name: found.legalOfficerName } : null,
+      };
+    }
+  }
 
   if (!caseData) notFound();
 

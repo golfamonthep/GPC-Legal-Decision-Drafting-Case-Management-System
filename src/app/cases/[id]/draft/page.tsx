@@ -10,6 +10,8 @@ import fs from "fs/promises";
 import path from "path";
 import { hasPermission } from "@/lib/auth/permissions";
 import { analysisAiStatus } from "@/lib/analysis/ai.mjs";
+import { getHydratedSnapshotCases } from "@/lib/registry/caseSnapshot";
+import { normalizeCaseNumber } from "@/lib/registryNumbers";
 
 export default async function DraftWorkspacePage({
   params,
@@ -20,16 +22,36 @@ export default async function DraftWorkspacePage({
   const resolvedParams = await params;
   const caseId = resolvedParams.id;
   
-  const caseData = await prisma.case.findUnique({
-    where: { id: caseId },
-    include: {
-      agendaItems: {
-        include: { meeting: true },
-        where: { meeting: { status: { in: ['DRAFT', 'SCHEDULED', 'AGENDA_LOCKED'] } } },
-        orderBy: { meeting: { meetingDate: 'asc' } }
+  let caseData: any = null;
+  try {
+    caseData = await prisma.case.findUnique({
+      where: { id: caseId },
+      include: {
+        agendaItems: {
+          include: { meeting: true },
+          where: { meeting: { status: { in: ['DRAFT', 'SCHEDULED', 'AGENDA_LOCKED'] } } },
+          orderBy: { meeting: { meetingDate: 'asc' } }
+        }
       }
+    });
+  } catch (e) {
+    console.warn("[DraftWorkspacePage] Database unavailable, falling back to snapshot:", e);
+  }
+
+  if (!caseData) {
+    const snapCases = getHydratedSnapshotCases();
+    const found = snapCases.find((c: any) =>
+      c.id === caseId ||
+      c.blackNumber === caseId ||
+      normalizeCaseNumber(c.blackNumber) === normalizeCaseNumber(caseId)
+    );
+    if (found) {
+      caseData = {
+        ...found,
+        agendaItems: [],
+      };
     }
-  });
+  }
 
   if (!caseData) {
     notFound();
