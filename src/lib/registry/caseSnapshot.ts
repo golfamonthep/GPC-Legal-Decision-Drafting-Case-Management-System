@@ -56,8 +56,19 @@ export interface CasesSnapshotData {
 
 const SNAPSHOT_PATH = path.resolve(process.cwd(), 'src/data/cases-snapshot.json');
 
+const globalForSnapshot = globalThis as unknown as {
+  __gpcSnapshotOverride?: CasesSnapshotData;
+};
+
+export function setInMemorySnapshotOverride(data: CasesSnapshotData): void {
+  globalForSnapshot.__gpcSnapshotOverride = data;
+}
+
 export function loadCasesSnapshot(): CasesSnapshotData {
   if (!fs.existsSync(SNAPSHOT_PATH)) {
+    if (globalForSnapshot.__gpcSnapshotOverride) {
+      return globalForSnapshot.__gpcSnapshotOverride;
+    }
     return {
       updatedAt: new Date().toISOString(),
       summary: { total: 0, complaint: 0, appeal: 0, completed: 0, pending: 0, withProceedingNotes: 0 },
@@ -68,9 +79,19 @@ export function loadCasesSnapshot(): CasesSnapshotData {
 
   try {
     const raw = fs.readFileSync(SNAPSHOT_PATH, 'utf8');
-    return JSON.parse(raw);
+    const diskData: CasesSnapshotData = JSON.parse(raw);
+    const memData = globalForSnapshot.__gpcSnapshotOverride;
+    if (memData && memData.updatedAt && diskData.updatedAt) {
+      if (new Date(memData.updatedAt).getTime() >= new Date(diskData.updatedAt).getTime()) {
+        return memData;
+      }
+    }
+    return diskData;
   } catch (err) {
     console.error('[CaseSnapshot] Failed to read snapshot file:', err);
+    if (globalForSnapshot.__gpcSnapshotOverride) {
+      return globalForSnapshot.__gpcSnapshotOverride;
+    }
     return {
       updatedAt: new Date().toISOString(),
       summary: { total: 0, complaint: 0, appeal: 0, completed: 0, pending: 0, withProceedingNotes: 0 },

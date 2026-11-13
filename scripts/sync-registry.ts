@@ -116,6 +116,7 @@ async function pushToCloudAndGit(): Promise<{ cloudSynced: boolean; gitPushed: b
         body: JSON.stringify({
           syncKey: SYNC_KEY,
           cases: snapshot.cases,
+          snapshot,
         }),
         signal: AbortSignal.timeout(10_000),
       });

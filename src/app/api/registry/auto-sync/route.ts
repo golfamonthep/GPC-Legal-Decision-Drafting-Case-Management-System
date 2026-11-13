@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
 import { syncSnapshotToDatabase, getSnapshotMetadata } from '@/lib/registry/dbSync';
+import { setInMemorySnapshotOverride } from '@/lib/registry/caseSnapshot';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,14 +18,17 @@ export async function GET() {
       revalidatePath('/dashboard');
     } catch {}
 
+    const isSnapshotReady = (meta.summary?.total || 0) > 0;
     return NextResponse.json(
       {
         ...result,
+        success: result.success || isSnapshotReady,
+        dbSynced: result.success,
         snapshotUpdatedAt: meta.updatedAt,
         summary: meta.summary,
         recentChangesCount: meta.recentChanges.length,
       },
-      { status: result.success ? 200 : 500 }
+      { status: result.success || isSnapshotReady ? 200 : 500 }
     );
   } catch (error: any) {
     console.error('[API AutoSync] GET Error:', error);
@@ -43,8 +47,13 @@ export async function POST(request: NextRequest) {
       if (contentType.includes('application/json')) {
         const body = await request.json().catch(() => null);
         const token = request.headers.get('x-gpc-sync-key') || body?.syncKey;
-        if (body && Array.isArray(body.cases) && body.cases.length > 0 && token === DEFAULT_SYNC_TOKEN) {
-          customCases = body.cases;
+        if (body && token === DEFAULT_SYNC_TOKEN) {
+          if (body.snapshot && Array.isArray(body.snapshot.cases)) {
+            setInMemorySnapshotOverride(body.snapshot);
+            customCases = body.snapshot.cases;
+          } else if (Array.isArray(body.cases) && body.cases.length > 0) {
+            customCases = body.cases;
+          }
         }
       }
     } catch {}
@@ -57,14 +66,17 @@ export async function POST(request: NextRequest) {
       revalidatePath('/dashboard');
     } catch {}
 
+    const isSnapshotReady = (meta.summary?.total || 0) > 0;
     return NextResponse.json(
       {
         ...result,
+        success: result.success || isSnapshotReady,
+        dbSynced: result.success,
         snapshotUpdatedAt: meta.updatedAt,
         summary: meta.summary,
         recentChangesCount: meta.recentChanges.length,
       },
-      { status: result.success ? 200 : 500 }
+      { status: result.success || isSnapshotReady ? 200 : 500 }
     );
   } catch (error: any) {
     console.error('[API AutoSync] POST Error:', error);
