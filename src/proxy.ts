@@ -22,6 +22,9 @@ function unauthorizedApiResponse() {
 export default async function middleware(req: NextRequest, event: unknown) {
   const authMode = getAuthMode();
   const pathname = req.nextUrl.pathname;
+  if (pathname === "/api/registry/auto-sync") {
+    return NextResponse.next();
+  }
   const isLoginPath = pathname.startsWith("/login");
 
   if (authMode === "misconfigured") {

@@ -1,11 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { parseRegistryWorkbook } from '../src/lib/registry/parseRegistryFile';
 import { normalizeCaseNumber } from '../src/lib/registryNumbers';
 import { upsertRowsToSnapshot, loadCasesSnapshot } from '../src/lib/registry/caseSnapshot';
 
 const CLOUD_SYNC_URLS = [
+  'https://pmspc-pol-gen-wichean.vercel.app/api/registry/auto-sync',
   'https://gpc-legal-decision-drafting-case-ma.vercel.app/api/registry/auto-sync',
   'http://127.0.0.1:3000/api/registry/auto-sync',
 ];
@@ -33,15 +34,13 @@ function showWindowsPopup(title: string, message: string, timeoutSeconds: number
       .map((line) => `"${line}"`)
       .join(' & vbCrLf & ');
     const safeTitle = title.replace(/"/g, '""');
-    const vbsContent = `Set sh = CreateObject("WScript.Shell")\r\nsh.Popup ${safeMsg}, ${timeoutSeconds}, "${safeTitle}", ${iconType}\r\n`;
+    const vbsContent = `Set sh = CreateObject("WScript.Shell")\r\nsh.Popup ${safeMsg}, ${timeoutSeconds}, "${safeTitle}", ${iconType}\r\nOn Error Resume Next\r\nCreateObject("Scripting.FileSystemObject").DeleteFile WScript.ScriptFullName\r\n`;
     // Write UTF-16LE with BOM so cscript/wscript renders Thai characters 100% accurately
     const bom = Buffer.from([0xff, 0xfe]);
     const body = Buffer.from(vbsContent, 'utf16le');
     fs.writeFileSync(tmpVbs, Buffer.concat([bom, body]));
-    execFileSync('wscript.exe', [tmpVbs], { windowsHide: false, timeout: (timeoutSeconds || 30) * 1000 + 5000 });
-    try {
-      fs.unlinkSync(tmpVbs);
-    } catch {}
+    const child = spawn('wscript.exe', [tmpVbs], { detached: true, stdio: 'ignore', windowsHide: false });
+    child.unref();
   } catch (err: any) {
     console.warn('[Popup] Could not display popup:', err?.message);
   }
