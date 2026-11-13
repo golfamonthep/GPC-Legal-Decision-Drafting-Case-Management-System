@@ -40,36 +40,70 @@ export function RegistryOverview({ title, snapshot, canViewDetails, accent, year
       {!canViewDetails ? (
         <p className="mt-2.5 text-sm text-zinc-400">บัญชีนี้ไม่มีสิทธิ์ดูรายละเอียดเรื่อง</p>
       ) : adminCourtCases.length ? (
-        <ol className="mt-2.5 divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-amber-500/20 bg-[#17171c]">
-          {adminCourtCases.map((item, idx) => {
-            const petitioner = item.petitionerName.replace(/\s+/g, ' ').trim() || 'ยังไม่ระบุชื่อผู้ร้อง';
-            const redText = item.registryRedText || item.redNumber;
-            const note = item.proceedingNote ? item.proceedingNote.replace(/\s+/g, ' ').trim() : '';
-            return (
-              <li
-                key={item.id}
-                className="flex min-w-0 flex-col gap-0.5 px-3 py-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3"
-              >
-                <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                  <span className="tabular-nums font-semibold text-zinc-400">{idx + 1}.</span>
-                  <Link href={`/cases/${item.id}`} className="font-bold text-white underline-offset-2 hover:underline">
-                    {petitioner}
-                  </Link>
-                  <Link href={`/cases/${item.id}`} className="tabular-nums text-zinc-300 underline-offset-2 hover:underline">
-                    ดำ {item.blackNumber}
-                  </Link>
-                  {redText ? <span className="tabular-nums text-zinc-400">แดง {redText}</span> : null}
-                  <span className="text-zinc-400">· นิติกร {item.legalOfficer}</span>
-                </div>
-                {note ? (
-                  <p className="min-w-0 truncate text-zinc-300 sm:max-w-[44%] sm:text-right" title={item.proceedingNote}>
-                    {note}
-                  </p>
-                ) : null}
-              </li>
-            );
-          })}
-        </ol>
+        <div className="mt-2.5 overflow-x-auto rounded-xl border border-amber-500/20 bg-[#17171c]">
+          <table className="w-full min-w-[780px] border-collapse text-left text-xs">
+            <thead>
+              <tr className="border-b border-white/[0.08] bg-white/[0.04] text-[11px] font-semibold text-zinc-300">
+                <th scope="col" className="w-11 border-r border-white/[0.06] px-2.5 py-2 text-center whitespace-nowrap">
+                  ที่
+                </th>
+                <th scope="col" className="border-r border-white/[0.06] px-3 py-2 whitespace-nowrap">
+                  {accent === 'teal' ? 'ผู้ร้องทุกข์' : 'ผู้อุทธรณ์'}
+                </th>
+                <th scope="col" className="border-r border-white/[0.06] px-3 py-2 text-center whitespace-nowrap">
+                  เรื่องดำ
+                </th>
+                <th scope="col" className="border-r border-white/[0.06] px-3 py-2 text-center whitespace-nowrap">
+                  เรื่องแดง
+                </th>
+                <th scope="col" className="border-r border-white/[0.06] px-3 py-2 whitespace-nowrap">
+                  นิติกรผู้รับผิดชอบ
+                </th>
+                <th scope="col" className="w-full px-3 py-2">
+                  การดำเนินการล่าสุด
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {adminCourtCases.map((item, idx) => {
+                const petitioner = item.petitionerName.replace(/\s+/g, ' ').trim() || 'ยังไม่ระบุชื่อผู้ร้อง';
+                const redText = item.registryRedText || item.redNumber || '-';
+                const note = item.proceedingNote ? item.proceedingNote.replace(/\s+/g, ' ').trim() : '-';
+                return (
+                  <tr
+                    key={item.id}
+                    className="border-b border-white/[0.06] transition-colors last:border-b-0 hover:bg-white/[0.03]"
+                  >
+                    <td className="border-r border-white/[0.06] px-2.5 py-2 text-center font-semibold tabular-nums text-zinc-400 whitespace-nowrap">
+                      {idx + 1}
+                    </td>
+                    <td className="border-r border-white/[0.06] px-3 py-2 whitespace-nowrap">
+                      <Link href={`/cases/${item.id}`} className="font-semibold text-white underline-offset-2 hover:underline">
+                        {petitioner}
+                      </Link>
+                    </td>
+                    <td className="border-r border-white/[0.06] px-3 py-2 text-center tabular-nums whitespace-nowrap">
+                      <Link href={`/cases/${item.id}`} className="font-semibold text-white underline-offset-2 hover:underline">
+                        {item.blackNumber}
+                      </Link>
+                    </td>
+                    <td className="border-r border-white/[0.06] px-3 py-2 text-center tabular-nums text-zinc-300 whitespace-nowrap">
+                      {redText}
+                    </td>
+                    <td className="border-r border-white/[0.06] px-3 py-2 text-zinc-300 whitespace-nowrap">
+                      {item.legalOfficer}
+                    </td>
+                    <td className="w-full max-w-0 px-3 py-2 text-zinc-300">
+                      <span className="block truncate" title={item.proceedingNote || undefined}>
+                        {note}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <p className="mt-2.5 rounded-xl bg-[#17171c] p-3 text-sm font-medium text-zinc-400">ไม่มีเรื่องที่ฟ้องศาลปกครองในทะเบียนนี้</p>
       )}
