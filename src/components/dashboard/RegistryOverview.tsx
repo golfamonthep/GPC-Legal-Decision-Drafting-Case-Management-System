@@ -30,51 +30,48 @@ export function RegistryOverview({ title, snapshot, canViewDetails, accent, year
       <RankedBars title="เรื่องค้างแยกตามนิติกร" note="หน่วย: ภาระรับผิดชอบ · เรื่องร่วมอาจนับให้หลายคน" data={snapshot.backlog.byOfficer} total={snapshot.kpis.active} scaleMax={officerMax} accent={accent} />
       </div>
     </div>
-    <div className="min-w-0 rounded-2xl border border-amber-500/35 bg-[#131317] p-4">
-      <div className="flex items-center justify-between gap-2 pb-3 border-b border-white/[0.06]">
+    <div className="min-w-0 rounded-2xl border border-amber-500/35 bg-[#131317] p-3.5">
+      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-white/[0.06]">
         <h3 className="inline-flex items-center gap-2 text-sm font-bold text-white">
           <IconScale size={16} className="text-amber-700" aria-hidden="true" />
           <span>เรื่องที่ฟ้องศาลปกครอง · {number.format(adminCourtCases.length)} เรื่อง</span>
         </h3>
       </div>
       {!canViewDetails ? (
-        <p className="mt-3 text-sm text-zinc-400">บัญชีนี้ไม่มีสิทธิ์ดูรายละเอียดเรื่อง</p>
+        <p className="mt-2.5 text-sm text-zinc-400">บัญชีนี้ไม่มีสิทธิ์ดูรายละเอียดเรื่อง</p>
       ) : adminCourtCases.length ? (
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          {adminCourtCases.map((item) => (
-            <article key={item.id} className="min-w-0 rounded-xl border border-amber-500/20 bg-[#17171c] p-4">
-              <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-[11px] text-zinc-400">{accent === 'teal' ? 'ผู้ร้องทุกข์' : 'ผู้อุทธรณ์'}</p>
-                  <h4 className="mt-0.5 break-words text-base font-bold text-white">{item.petitionerName || 'ยังไม่ระบุชื่อผู้ร้อง'}</h4>
+        <ol className="mt-2.5 divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-amber-500/20 bg-[#17171c]">
+          {adminCourtCases.map((item, idx) => {
+            const petitioner = item.petitionerName.replace(/\s+/g, ' ').trim() || 'ยังไม่ระบุชื่อผู้ร้อง';
+            const redText = item.registryRedText || item.redNumber;
+            const note = item.proceedingNote ? item.proceedingNote.replace(/\s+/g, ' ').trim() : '';
+            return (
+              <li
+                key={item.id}
+                className="flex min-w-0 flex-col gap-0.5 px-3 py-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+              >
+                <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className="tabular-nums font-semibold text-zinc-400">{idx + 1}.</span>
+                  <Link href={`/cases/${item.id}`} className="font-bold text-white underline-offset-2 hover:underline">
+                    {petitioner}
+                  </Link>
+                  <Link href={`/cases/${item.id}`} className="tabular-nums text-zinc-300 underline-offset-2 hover:underline">
+                    ดำ {item.blackNumber}
+                  </Link>
+                  {redText ? <span className="tabular-nums text-zinc-400">แดง {redText}</span> : null}
+                  <span className="text-zinc-400">· นิติกร {item.legalOfficer}</span>
                 </div>
-                <span className="inline-flex items-center rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-semibold text-zinc-300">
-                  {item.status}
-                </span>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-400">
-                <Link href={`/cases/${item.id}`} className="font-bold text-white underline-offset-2 hover:underline">
-                  เรื่องดำ {item.blackNumber}
-                </Link>
-                {(item.registryRedText || item.redNumber) && (
-                  <span>เรื่องแดง {item.registryRedText || item.redNumber}</span>
-                )}
-                <span>นิติกร: {item.legalOfficer}</span>
-              </div>
-              <p className="mt-2 break-words text-sm text-zinc-300">{item.subject}</p>
-              {item.proceedingNote ? (
-                <>
-                  <p className="mt-2 text-xs font-semibold text-zinc-400">การดำเนินการล่าสุด</p>
-                  <p className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-300 [overflow-wrap:anywhere]">
-                    {item.proceedingNote}
+                {note ? (
+                  <p className="min-w-0 truncate text-zinc-300 sm:max-w-[44%] sm:text-right" title={item.proceedingNote}>
+                    {note}
                   </p>
-                </>
-              ) : null}
-            </article>
-          ))}
-        </div>
+                ) : null}
+              </li>
+            );
+          })}
+        </ol>
       ) : (
-        <p className="mt-3 rounded-xl bg-[#17171c] p-4 text-sm font-medium text-zinc-400">ไม่มีเรื่องที่ฟ้องศาลปกครองในทะเบียนนี้</p>
+        <p className="mt-2.5 rounded-xl bg-[#17171c] p-3 text-sm font-medium text-zinc-400">ไม่มีเรื่องที่ฟ้องศาลปกครองในทะเบียนนี้</p>
       )}
     </div>
     <details className="group min-w-0 rounded-2xl border border-white/[0.08] bg-[#131317] px-4 py-1">
