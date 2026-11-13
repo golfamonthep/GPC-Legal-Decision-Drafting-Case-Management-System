@@ -42,7 +42,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
    - โครงสร้างหลักที่พัฒนาเสร็จแล้ว:
 
 - **ปรับปรุงเมนูค้นหารายชื่อ `/person-search`: Card 4 ปรับกฎหมายตามตำแหน่งปัจจุบัน/ข้อ ๑๐(๑), ระบบค้นหาคำพิมพ์ผิด-คำพ้องเสียง, และล้างข้อมูลบัญชีอาวุโส ๙๘๗ รายด้วย OpenThai 2.0 OCR (2026-11-13)**:
-  - ปรับ `calculateTenureAndEligibility` และ Card 4 (`src/lib/analysis/personSearch.mjs`, `src/components/analysis/PersonSearch.jsx`) ให้นับวาระประจำปี (`ต.ค.–ธ.ค.`) ถึง `2569` ตาม กฎ ก.ตร.ฯ ข้อ ๑๐(๑) เป็นปีเต็ม (แก้ `4/11/2566` เป็นครบเกณฑ์ ๓ ปีแล้ว) และแสดงหลักกฎหมายตามตำแหน่งปัจจุบันจริง
+  - ปรับ `calculateTenureAndEligibility` และ Card 4 (`src/lib/analysis/personSearch.mjs`, `src/components/analysis/PersonSearch.jsx`) ให้นับวาระประจำปี (`ต.ค.–ธ.ค.`) ถึง `2569` ตาม กฎ ก.ตร.ฯ ข้อ ๑๐(๑) เป็นปีเต็ม (แก้ `4/11/2566` เป็นครบเกณฑ์ ๓ ปีแล้ว) แสดงหลักกฎหมายตามตำแหน่งปัจจุบันจริง และระบุป้าย `ฐานข้อมูลอ้างอิง: การแต่งตั้งข้าราชการตำรวจระดับ ผบช. ลงมาถึง ผบก. วาระประจำปี 2569` บนหน้าเว็บและ PDF
   - รัน `OpenThai2.0-OCR-Text` สกัดบัญชีอาวุโสครบ 65 หน้า แก้ไขชื่อ 146 ราย, ตำแหน่ง 987/987 ราย, ระบุยศหญิง 73 ราย, และเพิ่ม Fuzzy/Phonetic Search (`thaiPhoneticKey`, `bestTokenFuzzyScore`, `scoreOfficerMatch`) ให้ค้นเจอแม้พิมพ์ผิด (`npm test` 104/104, `typecheck` 0 errors, `build` 38/38 routes)
 
 - **ติดตั้งสกิลและโมเดล OpenThai 2.0 OCR (`iapp/OpenThai2.0-OCR-Text` และ `iapp/OpenThai2.0-OCR-Markdown`) เข้าสู่คลังสกิลและระบบคลังความรู้กฎหมาย ๑๐๐% (2026-11-13)**:

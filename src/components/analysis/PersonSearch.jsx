@@ -191,7 +191,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
   <div class="header">
     <div>
       <h1>รายงานการตรวจสอบข้อมูลประวัติ อาวุโส และการเปรียบเทียบคำสั่งแต่งตั้ง</h1>
-      <p>พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร. · ประมวลผลจากฐานข้อมูลในเครื่อง (Zero-API-Cost)</p>
+      <p>พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร. · ฐานข้อมูลอ้างอิง: การแต่งตั้งข้าราชการตำรวจระดับ ผบช. ลงมาถึง ผบก. วาระประจำปี 2569</p>
     </div>
     <div style="text-align:right;font-size:11px;color:#475569;">
       วันที่พิมพ์: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -291,6 +291,9 @@ export default function PersonSearch({ onApplyToAnalysis }) {
     <div className="person-search-panel">
       <div className="person-search-header-box">
         <div>
+          <span className="zero-api-badge">
+            ฐานข้อมูลอ้างอิง: การแต่งตั้งข้าราชการตำรวจระดับ ผบช. ลงมาถึง ผบก. วาระประจำปี 2569
+          </span>
           <h2>ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น</h2>
           <p className="muted">
             ค้นหาจากชื่อ–นามสกุล ตำแหน่ง หรือลำดับอาวุโส เพื่อดูยศและตำแหน่งปัจจุบัน อายุครองระดับ ปีครบเกษียณ และเปรียบเทียบลำดับอาวุโส
