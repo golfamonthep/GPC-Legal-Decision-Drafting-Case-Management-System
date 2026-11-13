@@ -248,3 +248,22 @@ test("reports ready, empty, partial and unavailable without fake zero KPIs", asy
   assert.equal(unavailable.state, "unavailable");
   assert.equal(unavailable.snapshot, null);
 });
+
+test("derives adminCourtCases from orange highlight or ศาลปกครอง proceeding note while masking restricted details", () => {
+  const cases = [
+    record({ id: "orange-only", blackNumber: "49/66", type: "อุทธรณ์", petitionerName: "ส.ต.ท.สิทธิคุณ", isOrangeRow: true, isAdminCourt: true, adminCourtSource: "orange", proceedingNote: "" }),
+    record({ id: "both", blackNumber: "68/66", type: "ร้องทุกข์", petitionerName: "พ.ต.ท.ภนภัค", isOrangeRow: true, isAdminCourt: true, adminCourtSource: "both", proceedingNote: "ฟ้องศาลปกครองสูงสุด" }),
+    record({ id: "text-only", blackNumber: "203/2568", type: "ร้องทุกข์", petitionerName: "พ.ต.ท.ปัญจวุฒิ", isOrangeRow: false, isAdminCourt: true, adminCourtSource: "text", proceedingNote: "24 เม.ย.69 ศาลปกครองสูงสุดให้ทำคำให้การ", currentStatus: "เสร็จสิ้น (ศาลปกครอง)" }),
+    record({ id: "other-court", blackNumber: "99/68", type: "อุทธรณ์", proceedingNote: "ฟ้องศาลแขวงปทุมวัน คำสั่งทางปกครอง" }),
+  ];
+
+  const snapshot = deriveDashboardSnapshot({ cases, activities: [], meetings: [] }, { period: "all", type: "all" }, permissions, now);
+  assert.equal(snapshot.adminCourtCases.length, 3);
+  assert.equal(snapshot.adminCourtCases[0].source, "orange");
+  assert.equal(snapshot.adminCourtCases[1].source, "both");
+  assert.equal(snapshot.adminCourtCases[2].source, "text");
+
+  const restricted = deriveDashboardSnapshot({ cases, activities: [], meetings: [] }, { period: "all", type: "all" }, { canViewCaseDetails: false, canViewDataQuality: false }, now);
+  assert.equal(restricted.adminCourtCases.length, 3);
+  assert.equal(/ภนภัค|ฟ้องศาลปกครองสูงสุด/.test(JSON.stringify(restricted.adminCourtCases)), false);
+});

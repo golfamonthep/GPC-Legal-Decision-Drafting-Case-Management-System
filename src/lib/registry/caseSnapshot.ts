@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { ParsedRegistryCaseRow } from './parseRegistryFile';
+import type { AdminCourtSource, ParsedRegistryCaseRow } from './parseRegistryFile';
 import { normalizeCaseNumber } from '../registryNumbers';
 
 export interface SnapshotCase {
@@ -27,6 +27,9 @@ export interface SnapshotCase {
   decisionResult: string | null;
   oneDriveUrl: string | null;
   remarks: string | null;
+  isOrangeRow?: boolean;
+  isAdminCourt?: boolean;
+  adminCourtSource?: AdminCourtSource | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -49,6 +52,7 @@ export interface CasesSnapshotData {
     completed: number;
     pending: number;
     withProceedingNotes?: number;
+    adminCourt?: number;
   };
   recentChanges?: SnapshotRecentChange[];
   cases: SnapshotCase[];
@@ -149,6 +153,7 @@ export function upsertRowsToSnapshot(
   let updatedCount = 0;
   let insertedCount = 0;
   let changedCount = 0;
+  let anyDateChanged = false;
   const changedItems: SnapshotRecentChange[] = [];
   const now = new Date().toISOString();
 
@@ -164,13 +169,22 @@ export function upsertRowsToSnapshot(
     const redChanged = existing ? normText(existing.registryRedText) !== normText(r.registryRedText) : Boolean(r.registryRedText);
     const statusChanged = existing ? normText(existing.currentStatus) !== normText(r.currentStatus) : false;
     const officerChanged = existing ? normText(existing.legalOfficerName) !== normText(r.legalOfficerName) : false;
-    const isModified = !existing || noteChanged || redChanged || statusChanged || officerChanged;
+    const courtChanged = existing
+      ? Boolean(existing.isAdminCourt) !== Boolean(r.isAdminCourt) ||
+        Boolean(existing.isOrangeRow) !== Boolean(r.isOrangeRow)
+      : Boolean(r.isAdminCourt);
+    const dateChanged = existing
+      ? (r.receivedDate ? r.receivedDate.toISOString() : null) !== (existing.receivedDate || null)
+      : false;
+    if (dateChanged) anyDateChanged = true;
+    const isModified = !existing || noteChanged || redChanged || statusChanged || officerChanged || courtChanged;
 
     if (isModified) {
       changedCount++;
       const labels: string[] = [];
       if (!existing) labels.push('เพิ่มคดีใหม่');
       else {
+        if (courtChanged && r.isAdminCourt) labels.push(r.isOrangeRow ? 'ฟ้องศาลปกครอง (แถวส้ม)' : 'ฟ้องศาลปกครอง');
         if (noteChanged) labels.push('อัปเดตการดำเนินการ');
         if (redChanged) labels.push(`เรื่องแดง: ${r.registryRedText || '-'}`);
         if (statusChanged && !redChanged) labels.push(`สถานะ: ${r.currentStatus}`);
@@ -214,8 +228,11 @@ export function upsertRowsToSnapshot(
       decisionResult: r.decisionResult,
       oneDriveUrl: r.oneDriveUrl,
       remarks: r.remarks || existing?.remarks || null,
+      isOrangeRow: Boolean(r.isOrangeRow),
+      isAdminCourt: Boolean(r.isAdminCourt),
+      adminCourtSource: r.adminCourtSource ?? null,
       createdAt: existing?.createdAt || now,
-      updatedAt: isModified ? now : (existing?.updatedAt || now),
+      updatedAt: isModified ? now : (dateChanged ? now : (existing?.updatedAt || now)),
     };
 
     if (existing) {
@@ -236,6 +253,7 @@ export function upsertRowsToSnapshot(
   const appealCases = snapshot.cases.filter(c => c.type === 'อุทธรณ์');
   const completedCases = snapshot.cases.filter(c => c.currentStatus === 'เสร็จสิ้น');
   const withNotesCases = snapshot.cases.filter(c => c.proceedingNote && c.proceedingNote.trim() !== '');
+  const adminCourtCases = snapshot.cases.filter(c => Boolean(c.isAdminCourt || c.isOrangeRow));
 
   if (changedCount > 0 || !snapshot.updatedAt) {
     snapshot.updatedAt = now;
@@ -247,6 +265,7 @@ export function upsertRowsToSnapshot(
     completed: completedCases.length,
     pending: snapshot.cases.length - completedCases.length,
     withProceedingNotes: withNotesCases.length,
+    adminCourt: adminCourtCases.length,
   };
 
   if (changedItems.length > 0) {
@@ -258,7 +277,7 @@ export function upsertRowsToSnapshot(
     snapshot.recentChanges = [];
   }
 
-  if (changedCount > 0 || !fs.existsSync(SNAPSHOT_PATH)) {
+  if (changedCount > 0 || anyDateChanged || !fs.existsSync(SNAPSHOT_PATH)) {
     saveCasesSnapshot(snapshot);
   }
 

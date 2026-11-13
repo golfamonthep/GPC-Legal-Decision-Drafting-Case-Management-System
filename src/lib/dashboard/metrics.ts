@@ -7,8 +7,10 @@ import {
   getThisQuarterStart,
 } from "@/lib/date/fiscalYear";
 import { isClosedOrRedCase, isClosedCaseStatus } from "@/lib/caseStatus";
+import { hasAdminCourtMention } from "@/lib/registry/parseRegistryFile";
 import { buildOfficerDirectory } from './officerIdentity';
 import type {
+  DashboardAdminCourtCase,
   DashboardCaseRecord,
   DashboardFilters,
   DashboardPermissions,
@@ -119,6 +121,22 @@ function officerCell(record: DashboardCaseRecord) {
   return raw && raw !== '-' && raw !== 'ไม่ระบุ' ? raw : record.legalOfficer?.name;
 }
 
+function resolveAdminCourtSource(
+  record: DashboardCaseRecord
+): DashboardAdminCourtCase["source"] | null {
+  const isOrange = Boolean(record.isOrangeRow);
+  const hasText =
+    hasAdminCourtMention(record.proceedingNote) ||
+    hasAdminCourtMention(record.currentStatus) ||
+    record.adminCourtSource === "text" ||
+    record.adminCourtSource === "both";
+
+  if (isOrange && hasText) return "both";
+  if (isOrange) return "orange";
+  if (hasText || record.isAdminCourt) return "text";
+  return null;
+}
+
 export function deriveDashboardSnapshot(
   payload: DashboardSourcePayload,
   filters: DashboardFilters,
@@ -216,6 +234,34 @@ export function deriveDashboardSnapshot(
   const dataFreshness = records.reduce<Date | null>((latest, record) =>
     !latest || record.updatedAt > latest ? record.updatedAt : latest, null);
 
+  const adminCourtCases: DashboardAdminCourtCase[] = [];
+  for (const record of records) {
+    const source = resolveAdminCourtSource(record);
+    if (!source) continue;
+    adminCourtCases.push({
+      id: record.id,
+      blackNumber: record.blackNumber,
+      redNumber: record.redNumber,
+      registryRedText: record.registryRedText ?? null,
+      type: record.type,
+      petitionerName: permissions.canViewCaseDetails
+        ? record.petitionerName || "ไม่ระบุ"
+        : "ข้อมูลจำกัดตามสิทธิ์",
+      subject: permissions.canViewCaseDetails ? record.subject : "ข้อมูลคดีจำกัดตามสิทธิ์",
+      status: record.currentStatus || "ยังไม่ระบุ",
+      proceedingNote: permissions.canViewCaseDetails
+        ? (record.proceedingNote || "").trim()
+        : "",
+      legalOfficer: permissions.canViewCaseDetails
+        ? record.legalOfficerName || record.legalOfficer?.name || "ยังไม่มอบหมาย"
+        : record.legalOfficerId || record.legalOfficerName
+          ? "มอบหมายแล้ว"
+          : "ยังไม่มอบหมาย",
+      source,
+      isOrangeRow: Boolean(record.isOrangeRow),
+    });
+  }
+
   return {
     generatedAt: now.toISOString(),
     dataFreshness: dataFreshness?.toISOString() ?? null,
@@ -262,6 +308,7 @@ export function deriveDashboardSnapshot(
         dueDate: due!.toISOString(),
         daysUntilDue: days!,
       })),
+    adminCourtCases,
     dataQuality: {
       missingReceivedDate: records.filter((record) => !record.receivedDate).length,
       unknownType: records.filter((record) => !Object.values(VALID_TYPES).includes(record.type)).length,

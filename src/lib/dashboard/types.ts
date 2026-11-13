@@ -32,7 +32,25 @@ export interface DashboardCaseRecord {
   legalOfficerId: string | null;
   legalOfficerName: string | null;
   legalOfficer: { name: string } | null;
+  isOrangeRow?: boolean;
+  isAdminCourt?: boolean;
+  adminCourtSource?: string | null;
   updatedAt: Date;
+}
+
+export interface DashboardAdminCourtCase {
+  id: string;
+  blackNumber: string;
+  redNumber: string | null;
+  registryRedText: string | null;
+  type: string;
+  petitionerName: string;
+  subject: string;
+  status: string;
+  proceedingNote: string;
+  legalOfficer: string;
+  source: "orange" | "text" | "both";
+  isOrangeRow: boolean;
 }
 
 export interface DashboardActivity {
@@ -107,6 +125,7 @@ export interface DashboardSnapshot {
     dueDate: string;
     daysUntilDue: number;
   }>;
+  adminCourtCases: DashboardAdminCourtCase[];
   dataQuality: {
     missingReceivedDate: number;
     unknownType: number;

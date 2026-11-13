@@ -234,6 +234,7 @@ async function main() {
       `   • เรื่องร้องทุกข์: ${snap.summary.complaint} เรื่อง`,
       `   • เรื่องอุทธรณ์: ${snap.summary.appeal} เรื่อง`,
       `   • มีบันทึกการดำเนินการ: ${snap.summary.withProceedingNotes ?? 198} เรื่อง`,
+      `   • ฟ้องศาลปกครอง (แถวส้ม): ${snap.summary.adminCourt ?? 0} เรื่อง`,
       `   • เสร็จสิ้น: ${snap.summary.completed} เรื่อง | อยู่ระหว่างดำเนินการ: ${snap.summary.pending} เรื่อง`,
       ``,
       recentList ? `🔄 รายการที่มีการแก้ไข/เพิ่มเติมล่าสุด:\n${recentList}` : `🔄 ข้อมูลทั้งหมดตรงกับไฟล์ Excel ล่าสุดแล้ว`,
@@ -250,7 +251,9 @@ async function main() {
     );
   }
 
-  await pushToCloudAndGit();
+  if (!args.includes('--local-only')) {
+    await pushToCloudAndGit();
+  }
   appendSyncLog(`[Auto-Sync Complete] ซิงค์ไฟล์ทะเบียนคุมครบทั้งหมด ${results.length} ไฟล์เรียบร้อย (รวม ${snap.summary.total} คดี)`);
 }
 

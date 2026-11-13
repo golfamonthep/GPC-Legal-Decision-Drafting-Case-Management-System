@@ -76,6 +76,15 @@ export function hydrateCaseWithSnapshot<T extends Record<string, any>>(record: T
   if (snap.legalOfficerName && (!target.legalOfficerName || String(target.legalOfficerName).trim() === '' || snapIsNewer)) {
     target.legalOfficerName = snap.legalOfficerName;
   }
+  if (typeof snap.isOrangeRow === 'boolean') {
+    target.isOrangeRow = snap.isOrangeRow;
+  }
+  if (typeof snap.isAdminCourt === 'boolean') {
+    target.isAdminCourt = snap.isAdminCourt;
+  }
+  if (snap.adminCourtSource !== undefined) {
+    target.adminCourtSource = snap.adminCourtSource;
+  }
   return record;
 }
 
