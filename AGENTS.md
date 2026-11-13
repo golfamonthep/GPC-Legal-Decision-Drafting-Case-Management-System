@@ -41,6 +41,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
    - ชื่อระบบ/อัตลักษณ์หน้าเว็บปัจจุบัน: **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`**
    - โครงสร้างหลักที่พัฒนาเสร็จแล้ว:
 
+- **แยกเมนู "ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น" (`/person-search`) เป็นเมนูหลักเดี่ยว พร้อมใช้ยศและตำแหน่งล่าสุดจากคำสั่งแต่งตั้ง และแสดงยศเต็มครบถ้วน (2026-11-13)**:
+  - ยกระดับ `/analysis?tab=search` เป็นเมนูหลักเดี่ยว **"ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น"** (`/person-search`, `src/components/Sidebar.tsx`, `src/app/person-search/page.tsx`, `src/components/analysis/PersonSearchStandalone.jsx`) พร้อม Redirect `/analysis?tab=search` → `/person-search` และส่งข้อมูลต่อไปยัง `/analysis` ผ่าน `sessionStorage`
+  - ปรับเอนจิน `src/lib/analysis/personSearch.mjs` ให้ใช้ **ยศเต็มไม่ย่อ** (`พลตำรวจเอก`–`ร้อยตำรวจตรี` + `หญิง`), อัปเดตยศกับตำแหน่งล่าสุดจากการแต่งตั้งเป็น `rank` และ `currentPosition` โดยเก็บ `previousRank` / `positionBeforeOrder` ไว้เปรียบเทียบ, แก้ `cleanThaiOcrName` ไม่ให้เพี้ยนชื่อไทย (`เบญจวรรณ วุฒิวรวงศ์`, `ธงชัย เนตรสขาวัฒน์`), และปรับ UI `src/components/analysis/PersonSearch.jsx` ให้สะอาดตาเน้นการวิเคราะห์ (`npm test` 104/104, `typecheck` 0 errors, `build` 38/38 routes)
+
 - **แก้ไขปัญหาข้อผิดพลาดฐานข้อมูล (`ข้อผิดพลาดฐานข้อมูล: ไม่สามารถเชื่อมต่อฐานข้อมูล Production ได้`) บนหน้าคลังความรู้กฎหมาย (`/library`) และทุกหน้าของระบบ ๑๐๐% (2026-11-13)**:
   - ยกเลิกการบล็อกหน้า `/library` เมื่อฐานข้อมูล PostgreSQL ไม่สามารถเชื่อมต่อได้ (`canConnect: false`) และเปลี่ยนมาใช้ `getOfflineFallbackLegalSources()` ดึงข้อมูลจากแคตตาล็อกกฎหมายตำรวจในระบบ (`39 ฉบับ · 2,398 มาตรา/ข้อ`) มาแสดงผลครบทั้ง ๔ แท็บ พร้อมรองรับหน้าดู Chunks (`/library/[id]/chunks`)
   - ปรับปรุง `src/lib/db.ts` และหน้า `/cases/[id]/draft`, `/cases/[id]/edit`, `/cases/[id]/update`, `/case-intelligence`, `/meetings`, `/dispatch`, `/finalization` ให้มี Offline/Snapshot Fallback ครบทุกหน้า 100% (`npm test` 104/104, `typecheck` 0 errors, `build` 39/39 routes)

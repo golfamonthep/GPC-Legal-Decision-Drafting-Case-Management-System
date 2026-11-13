@@ -2,6 +2,11 @@
 
 ## สรุปสถานะระบบล่าสุด (2026-11-13)
 
+- **แยกเมนู "ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น" (`/person-search`) เป็นเมนูหลักเดี่ยว พร้อมใช้ยศและตำแหน่งล่าสุดจากคำสั่งแต่งตั้ง และแสดงยศเต็มครบถ้วน (2026-11-13)**:
+  - **แยกเป็นเมนูหลัก `/person-search`**: เพิ่มเมนูหลัก **"ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น"** (`src/components/Sidebar.tsx`, `src/app/person-search/page.tsx`, `src/components/analysis/PersonSearchStandalone.jsx`), ถอดแท็บค้นหาออกจาก `Workbench.jsx`, Redirect `/analysis?tab=search` → `/person-search`, และเชื่อมต่อปุ่มส่งข้อมูลต่อไป `/analysis` ผ่าน `sessionStorage`
+  - **ยศและตำแหน่งล่าสุด + ยศเต็มไม่ย่อ (`src/lib/analysis/personSearch.mjs`)**: เพิ่ม `normalizeFullRank` และ `resolveLatestRankForLevel` อ่านยศเต็ม (`พลตำรวจเอก`–`ร้อยตำรวจตรี` + `หญิง`), เลื่อนยศเฉพาะกรณีเลื่อนระดับข้ามขั้นยศ, ใช้ `ตำแหน่งใหม่` เป็น `currentPosition`, เก็บ `previousRank` / `positionBeforeOrder`, และแก้ `cleanThaiOcrName` ไม่ให้กระทบชื่อไทยที่ถูกต้อง (`เบญจวรรณ วุฒิวรวงศ์`, `ธงชัย เนตรสขาวัฒน์`)
+  - **UI ค้นหาสะอาดตา เน้นการวิเคราะห์ (`src/components/analysis/PersonSearch.jsx`)**: ลดป้ายตัวอย่างเหลือ ๓ รายการ, ปรับกล่องค้นหาและตารางเปรียบเทียบ `ตำแหน่งเดิม (ก่อนแต่งตั้ง)` กับ `ตำแหน่งปัจจุบัน (ที่ได้รับแต่งตั้ง)` ให้ชัดเจน (`npm test` 104/104, `typecheck` 0 errors, `eslint` changed files 0 errors, `build` 38/38 routes)
+
 - **แก้ไขปัญหาข้อผิดพลาดฐานข้อมูล (`ข้อผิดพลาดฐานข้อมูล: ไม่สามารถเชื่อมต่อฐานข้อมูล Production ได้`) บนหน้าคลังความรู้กฎหมาย (`/library`) และทุกหน้าของระบบ ๑๐๐% (2026-11-13)**:
   - **แก้ไขหน้าคลังความรู้กฎหมาย (`src/app/library/page.tsx`, `src/app/library/[id]/chunks/page.tsx`, `src/app/library/LibraryClient.tsx`)**:
     1. ยกเลิกบล็อกแสดงกล่องสีแดง `ข้อผิดพลาดฐานข้อมูล` เมื่อฐานข้อมูล PostgreSQL บน Production ไม่สามารถเชื่อมต่อได้ (`canConnect: false`) และเปลี่ยนมาใช้ `getOfflineFallbackLegalSources()` ดึงข้อมูลจากแคตตาล็อกกฎหมายตำรวจในระบบ (`39 ฉบับ · 2,398 มาตรา/ข้อ`) มาแสดงผลทันทีครบทั้ง ๔ แท็บ (แคตตาล็อกกฎหมายตำรวจ, ระเบียบ คำสั่ง และนโยบาย ตร. 465 ฉบับ, ระบบถอดข้อความ OCR, และคลังคำวินิจฉัย/เอกสารอ้างอิง)

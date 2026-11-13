@@ -11,13 +11,9 @@ const GENERAL_LEVELS = [
 ];
 
 const QUICK_SAMPLE_NAMES = [
-  { label: 'พล.ต.ท. สันติ ชัยนิรามัย (ผบช. ลำดับ 1)', name: 'สันติ ชัยนิรามัย' },
-  { label: 'พล.ต.ท. สรพล เปรมบุตร (ผบช. ลำดับ 2 · ผู้ร้องไม่ติดคำสั่ง)', name: 'สรพล เปรมบุตร' },
-  { label: 'พล.ต.ท. อาชยน ไกรทอง (ผบช. ลำดับ 4 · เกิดหลัง 30 ก.ย.)', name: 'อาชยน ไกรทอง' },
-  { label: 'พ.ต.อ. ชิตภพ โตเหมือน (รอง ผบก. ลำดับ 181 · ผู้ร้องทุกข์)', name: 'ชิตภพ โตเหมือน' },
-  { label: 'พล.ต.ต. พิทักษ์ อุทัยธรรม (รอง ผบช. ลำดับ 3 · เกิดหลัง 30 ก.ย.)', name: 'พิทักษ์ อุทัยธรรม' },
-  { label: 'พล.ต.ต. สมิทธิ สุวรรณสุขโรจน์ (ผบก. ลำดับ 1 · บริหารงานก่อสร้าง)', name: 'สมิทธิ สุวรรณสุขโรจน์' },
-  { label: 'พ.ต.อ. อภิชิต สุรพินิจ (รอง ผบก. ลำดับ 1 · ทั่วไป)', name: 'อภิชิต สุรพินิจ' },
+  { label: 'พลตำรวจโท อาชยน ไกรทอง', name: 'อาชยน ไกรทอง' },
+  { label: 'พลตำรวจเอก ณพวัฒน์ อารยางกูร', name: 'ณพวัฒน์ อารยางกูร' },
+  { label: 'พันตำรวจเอก ชิตภพ โตเหมือน', name: 'ชิตภพ โตเหมือน' },
 ];
 
 export default function PersonSearch({ onApplyToAnalysis }) {
@@ -149,8 +145,8 @@ export default function PersonSearch({ onApplyToAnalysis }) {
             <td style="text-align:center;">
               ${j.relationTag === 'junior' ? `อาวุโสน้อยกว่า ${j.orderGap} ลำดับ` : j.relationTag === 'senior' ? `อาวุโสสูงกว่า ${Math.abs(j.orderGap)} ลำดับ` : j.relationTag === 'target' ? 'เจ้าของประวัติ' : j.relationTag === 'rotation' ? 'สับเปลี่ยนหมุนเวียน' : '-'}
             </td>
-            <td>${j.currentPosition || '-'}</td>
-            <td style="font-weight:600;color:${j.appointmentType === 'เลื่อนระดับ' ? '#1e3a8a' : '#047857'};">${j.newPosition || '-'}</td>
+            <td>${j.positionBeforeOrder || '-'}</td>
+            <td style="font-weight:600;color:${j.appointmentType === 'เลื่อนระดับ' ? '#1e3a8a' : '#047857'};">${j.currentPosition || j.newPosition || '-'}</td>
             <td style="text-align:center;">${j.appointmentType || '-'}</td>
             <td style="text-align:center;">${j.currentPositionDateThai || j.currentPositionDate || '-'}</td>
             <td style="text-align:center;">${j.retirementYearBE ? `พ.ศ. ${j.retirementYearBE}${j.bornAfterSep30 ? ' (+1 ปี)' : ''}` : '-'}</td>
@@ -214,10 +210,10 @@ export default function PersonSearch({ onApplyToAnalysis }) {
       <div class="card-sub">${p.previousOrder ? `ลำดับอาวุโสเดิม: ${p.previousOrder} · ` : ''}${p.seniorityPdfPage ? `อ้างอิงไฟล์บัญชีอาวุโส หน้า ${p.seniorityPdfPage}` : 'ระบุลำดับเพื่อเปรียบเทียบ'}</div>
     </div>
     <div class="card">
-      <div class="card-label">๓. ตำแหน่งปัจจุบัน และตำแหน่งใหม่</div>
+      <div class="card-label">๓. ตำแหน่งปัจจุบัน และตำแหน่งเดิม</div>
       <div class="card-val">${p.currentPosition || '-'}</div>
-      <div class="card-sub"><strong>ตำแหน่งก่อนหน้า:</strong> ${p.previousPosition || '-'}</div>
-      ${p.isPromotedInOrder2569 ? `<div class="card-sub" style="color:#15803d;"><strong>ตำแหน่งใหม่ที่ได้รับแต่งตั้ง:</strong> ${p.newPosition} (ข้อที่ ${p.appointmentNumber || '-'})</div>` : ''}
+      ${p.positionBeforeOrder && p.isAppointedInOrder2569 ? `<div class="card-sub" style="color:#15803d;"><strong>ตำแหน่งเดิม (ก่อนแต่งตั้ง):</strong> ${p.previousRank ? `${p.previousRank} · ` : ''}${p.positionBeforeOrder} (ข้อที่ ${p.appointmentNumber || '-'})</div>` : ''}
+      <div class="card-sub"><strong>ระดับก่อนหน้า:</strong> ${p.previousPosition || '-'}</div>
     </div>
     <div class="card">
       <div class="card-label">๔. ดำรงตำแหน่งปัจจุบันมาแล้วกี่ปี</div>
@@ -294,17 +290,15 @@ export default function PersonSearch({ onApplyToAnalysis }) {
     <div className="person-search-panel">
       <div className="person-search-header-box">
         <div>
-          <span className="zero-api-badge">ประมวลผลจากฐานข้อมูลในเครื่อง 100% · ประหยัดงบ (0 API)</span>
-          <h2>ค้นหาประวัติ อาวุโส วันเกษียณ และเปรียบเทียบผู้ได้รับเลื่อนตำแหน่งสูงขึ้น</h2>
+          <h2>ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น</h2>
           <p className="muted">
-            ๑. กรอกชื่อข้าราชการตำรวจ หรือระบุลำดับอาวุโส → ๒. กดค้นหา → ๓. ระบบคำนวณระยะเวลาครองตำแหน่ง
-            ระยะเวลาที่ครบเกณฑ์เลื่อนสูงขึ้น ปีเกษียณอายุราชการ (เกิดหลัง 30 ก.ย. +1 ปี) และรายชื่อผู้ได้รับการแต่งตั้งทั้งหมดทันทีพร้อมดาวน์โหลด PDF
+            ค้นหาจากชื่อ–นามสกุล ตำแหน่ง หรือลำดับอาวุโส เพื่อดูยศและตำแหน่งปัจจุบัน อายุครองระดับ ปีครบเกษียณ และเปรียบเทียบลำดับอาวุโส
           </p>
         </div>
         {p ? (
           <div className="person-search-actions">
             <button type="button" className="pdf-download-btn" onClick={handlePrintPdf}>
-              ดาวน์โหลดรายงาน PDF / พิมพ์
+              ดาวน์โหลด PDF / พิมพ์
             </button>
             {onApplyToAnalysis ? (
               <button
@@ -319,7 +313,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
         ) : null}
       </div>
 
-      {/* Step 1 & 2: Search Bar */}
+      {/* Search Bar */}
       <form
         className="person-search-form"
         onSubmit={(e) => {
@@ -329,29 +323,29 @@ export default function PersonSearch({ onApplyToAnalysis }) {
       >
         <div className="person-search-main-row">
           <label className="person-search-input-wrap">
-            <span>๑. กรอกชื่อ – นามสกุล หรือตำแหน่ง หรือระบุลำดับอาวุโส</span>
+            <span>ชื่อ – นามสกุล ตำแหน่ง หรือลำดับอาวุโส</span>
             <input
               type="search"
-              placeholder="พิมพ์ชื่อ สกุล หรือเลขลำดับ เช่น สรพล เปรมบุตร, อาชยน ไกรทอง, สมิทธิ, ลำดับที่ 2..."
+              placeholder="พิมพ์ชื่อ นามสกุล ตำแหน่ง หรือเลขลำดับ เช่น อาชยน ไกรทอง, ชิตภพ โตเหมือน, ลำดับที่ 2"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </label>
           <button type="submit" className="person-search-submit-btn" disabled={loading}>
-            {loading ? 'กำลังค้นหา…' : '๒. ค้นหาและคำนวณทันที'}
+            {loading ? 'กำลังค้นหา…' : 'ค้นหา'}
           </button>
           <button
             type="button"
             className="outline"
             onClick={() => setShowAdvanced((v) => !v)}
           >
-            {showAdvanced ? 'ซ่อนตัวเลือกจำลองข้อมูลผู้ร้อง' : 'กรณีค้นชื่อผู้ร้องที่ไม่ติดคำสั่ง / จำลองลำดับอาวุโส'}
+            {showAdvanced ? 'ซ่อนตัวเลือกเพิ่มเติม' : 'ระบุข้อมูลเพิ่มเติม'}
           </button>
         </div>
 
-        {/* Quick Sample Chips */}
+        {/* Minimal Quick Samples */}
         <div className="person-search-chips">
-          <small>ตัวอย่างรายชื่อในฐานข้อมูล:</small>
+          <small>ตัวอย่าง:</small>
           {QUICK_SAMPLE_NAMES.map((sample) => (
             <button
               key={sample.name}
@@ -440,25 +434,24 @@ export default function PersonSearch({ onApplyToAnalysis }) {
         </p>
       ) : null}
 
-      {/* Matching suggestions when multiple names match — full count without arbitrary 10-cap */}
+      {/* Clean compact match list when multiple records match */}
       {result?.suggestions?.length > 1 ? (
         <div className="person-suggestions-bar">
           <div className="person-suggestions-head">
             <strong>
-              พบข้อมูลตรงกับเงื่อนไขในฐานข้อมูล {result.suggestions.length} รายการ (คลิกเพื่อดูประวัติทันที):
+              พบ {result.totalMatches} รายการ{result.totalMatches > 12 ? ' (แสดง ๑๒ รายการแรก · พิมพ์ชื่อ/สกุลเพิ่มเพื่อเจาะจง)' : ' (คลิกเพื่อดูข้อมูลวิเคราะห์)'}
             </strong>
           </div>
           <div className="person-suggestions-list">
-            {result.suggestions.map((s) => (
+            {result.suggestions.slice(0, 12).map((s) => (
               <button
                 key={`${s.name}-${s.appointmentNumber || s.seniorityOrder || s.sourceLevel}`}
                 type="button"
                 className={'chip-btn' + (p?.name === s.name ? ' active' : '')}
                 onClick={() => selectSuggestion(s)}
               >
-                {s.fullNameWithRank} ({s.currentPosition || s.sourceLevel}
-                {s.seniorityOrder ? ` · อาวุโส ${s.seniorityOrder}` : ''}
-                {s.appointmentType ? ` · ${s.appointmentType}` : ''})
+                {s.fullNameWithRank} · {s.currentPosition || s.sourceLevel}
+                {s.seniorityOrder ? ` (อาวุโส ${s.seniorityOrder})` : ''}
               </button>
             ))}
           </div>
@@ -471,10 +464,13 @@ export default function PersonSearch({ onApplyToAnalysis }) {
           <div className="person-profile-banner">
             <div>
               <div className="person-profile-badges">
-                <span className="badge-tier">{p.sourceLevel} · บัญชี{p.sourceAccount}</span>
+                <span className="badge-tier">บัญชีอาวุโส: {p.sourceLevel} · {p.sourceAccount}</span>
                 <span className={p.isPromotedInOrder2569 ? 'badge-promoted' : 'badge-complainant'}>
                   {p.appointmentType}
                 </span>
+                {p.rankPromoted && p.previousRank ? (
+                  <span className="badge-tier">เลื่อนยศจาก {p.previousRank} → {p.rank}</span>
+                ) : null}
                 {p.seniorityPdfPage ? (
                   <a
                     className="badge-link"
@@ -482,7 +478,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    เปิดไฟล์ PDF บัญชีอาวุโส หน้า {p.seniorityPdfPage}
+                    PDF บัญชีอาวุโส หน้า {p.seniorityPdfPage}
                   </a>
                 ) : null}
                 {p.appointmentPdfPage ? (
@@ -492,7 +488,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    เปิดไฟล์ PDF คำสั่งแต่งตั้ง หน้า {p.appointmentPdfPage} (ข้อ {p.appointmentNumber})
+                    PDF คำสั่งแต่งตั้ง หน้า {p.appointmentPdfPage} (ข้อ {p.appointmentNumber})
                   </a>
                 ) : null}
               </div>
@@ -511,20 +507,22 @@ export default function PersonSearch({ onApplyToAnalysis }) {
           {/* 6 Structured Info Blocks matching user requirements */}
           <div className="person-bento-grid">
             <div className="person-bento-card">
-              <span className="bento-label">๑. ชื่อ – นามสกุล และตำแหน่งปัจจุบัน</span>
+              <span className="bento-label">๑. ยศ ชื่อ – นามสกุล และตำแหน่งปัจจุบัน (ล่าสุด)</span>
               <strong className="bento-value">{p.currentPosition || '-'}</strong>
               <p className="bento-sub">
-                <strong>ชื่อ-สกุล:</strong> {p.fullNameWithRank}
+                <strong>ยศและชื่อเต็ม:</strong> {p.fullNameWithRank}
               </p>
-              {p.isPromotedInOrder2569 ? (
+              {p.positionBeforeOrder && p.isAppointedInOrder2569 ? (
                 <p className="bento-sub highlight-blue">
-                  <strong>ตำแหน่งใหม่ที่ได้รับแต่งตั้ง:</strong> {p.newPosition}
+                  <strong>ตำแหน่งเดิม (ก่อนแต่งตั้ง):</strong>{' '}
+                  {p.previousRank ? `${p.previousRank} · ` : ''}
+                  {p.positionBeforeOrder}
                 </p>
               ) : null}
             </div>
 
             <div className="person-bento-card">
-              <span className="bento-label">๒. ตำแหน่งก่อนหน้า / ระดับก่อนหน้า</span>
+              <span className="bento-label">๒. ประวัติระดับก่อนหน้า / การแต่งตั้ง</span>
               <strong className="bento-value">{p.previousPosition || '-'}</strong>
               <p className="bento-sub">
                 {p.previousPositionDateThai
@@ -673,8 +671,8 @@ export default function PersonSearch({ onApplyToAnalysis }) {
                       <th>ยศ ชื่อ – นามสกุล</th>
                       <th style={{ textAlign: 'center' }}>ลำดับอาวุโส</th>
                       <th style={{ textAlign: 'center' }}>เทียบกับผู้ค้นหา</th>
-                      <th>ตำแหน่งเดิม</th>
-                      <th>ตำแหน่งใหม่ที่ได้รับแต่งตั้ง</th>
+                      <th>ตำแหน่งเดิม (ก่อนแต่งตั้ง)</th>
+                      <th>ตำแหน่งปัจจุบัน (ที่ได้รับแต่งตั้ง)</th>
                       <th style={{ textAlign: 'center' }}>ลักษณะการแต่งตั้ง</th>
                       <th style={{ textAlign: 'center' }}>วันครองระดับปัจจุบัน</th>
                       <th style={{ textAlign: 'center' }}>วันเกิด / ปีครบเกษียณ</th>
@@ -723,10 +721,10 @@ export default function PersonSearch({ onApplyToAnalysis }) {
                             <span className="muted">-</span>
                           )}
                         </td>
-                        <td>{row.currentPosition || '-'}</td>
+                        <td>{row.positionBeforeOrder || '-'}</td>
                         <td>
                           <strong className={row.appointmentType === 'เลื่อนระดับ' ? 'promoted-pos-text' : 'rotation-pos-text'}>
-                            {row.newPosition || '-'}
+                            {row.currentPosition || row.newPosition || '-'}
                           </strong>
                         </td>
                         <td className="center-cell">

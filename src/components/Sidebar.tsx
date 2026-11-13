@@ -11,6 +11,7 @@ import {
   Upload,
   Settings,
   Scale,
+  UserSearch,
   Users,
 } from "lucide-react";
 import type { SessionUser } from "@/lib/auth/currentUser";
@@ -22,6 +23,12 @@ const navigation = [
   { name: "หน้าหลัก (Dashboard)", href: "/dashboard", icon: LayoutDashboard },
   { name: "รายการคดี", href: "/cases", icon: Files },
   {
+    name: "ค้นหารายชื่อวิเคราะห์ข้อมูลเบื้องต้น",
+    href: "/person-search",
+    icon: UserSearch,
+    permission: "USE_ANALYSIS" as const,
+  },
+  {
     name: "วิเคราะห์และร่างคำวินิจฉัย",
     href: "/analysis",
     icon: Scale,
@@ -29,7 +36,6 @@ const navigation = [
     subItems: [
       { name: "๑. ระดับ ผบก. ขึ้นไป (นายพล)", href: "/analysis?tier=general" },
       { name: "๒. ระดับ รอง ผบก. ลงมา (รอง ผบก.–สว.)", href: "/analysis?tier=sub_general" },
-      { name: "๓. ค้นหาและเปรียบเทียบอาวุโส (0 API)", href: "/analysis?tab=search" },
     ],
   },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },

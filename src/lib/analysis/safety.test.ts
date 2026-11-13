@@ -180,12 +180,12 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.ok(res.totalMatches > 0);
   assert.ok(res.suggestions.length > 0);
 
-  // 6. Verification of OCR-corrected roster officer (พ.ต.อ. ชิตภพ โตเหมือน, order 181 / 618)
+  // 6. Verification of OCR-corrected roster officer (พันตำรวจเอก ชิตภพ โตเหมือน, order 181 / 618)
   const resChitphop = searchAndComparePerson(snapshot, { q: 'ชิตภพ โตเหมือน' });
   assert.ok(resChitphop.profile);
   assert.equal(resChitphop.profile.foundInDatabase, true);
   assert.equal(resChitphop.profile.name, 'ชิตภพ โตเหมือน');
-  assert.equal(resChitphop.profile.rank, 'พ.ต.อ.');
+  assert.equal(resChitphop.profile.rank, 'พันตำรวจเอก');
   assert.equal(resChitphop.profile.seniorityOrder, 181);
   assert.equal(resChitphop.profile.totalSuitablePopulation, 618);
   assert.equal(resChitphop.profile.currentPositionDate, '22/12/2563');
@@ -193,9 +193,46 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.equal(resChitphop.profile.retirement?.retirementYearBE, 2574);
   assert.equal(resChitphop.profile.comparison.juniorPromotedCount, 32);
 
-  // 7. Verification of surname-only search fallback
+  // 7. Verification of surname-only search fallback & rank prefix search
   const resSurname = searchAndComparePerson(snapshot, { q: 'โตเหมือน' });
   assert.ok(resSurname.profile);
   assert.equal(resSurname.profile.name, 'ชิตภพ โตเหมือน');
   assert.equal(resSurname.profile.seniorityOrder, 181);
+
+  const resFullRankQuery = searchAndComparePerson(snapshot, { q: 'พันตำรวจเอก ชิตภพ โตเหมือน' });
+  assert.equal(resFullRankQuery.profile?.name, 'ชิตภพ โตเหมือน');
+
+  // 8. Verification of latest rank & latest position after 2569 appointment order
+  const resPromoGen = searchAndComparePerson(snapshot, { q: 'ณพวัฒน์ อารยางกูร' });
+  assert.equal(resPromoGen.profile?.rank, 'พลตำรวจเอก');
+  assert.equal(resPromoGen.profile?.previousRank, 'พลตำรวจโท');
+  assert.equal(resPromoGen.profile?.rankPromoted, true);
+  assert.ok(resPromoGen.profile?.currentPosition);
+  assert.equal(resPromoGen.profile?.currentPosition, resPromoGen.profile?.newPosition);
+  assert.ok(resPromoGen.profile?.positionBeforeOrder);
+
+  const resPromoLtGen = searchAndComparePerson(snapshot, { q: 'ไพโรจน์ สุขรวยธนโชติ' });
+  assert.equal(resPromoLtGen.profile?.rank, 'พลตำรวจโท');
+  assert.equal(resPromoLtGen.profile?.previousRank, 'พลตำรวจตรี');
+  assert.equal(resPromoLtGen.profile?.rankPromoted, true);
+
+  const resPromoFemale = searchAndComparePerson(snapshot, { q: 'พิมพรรณ ทรัพย์ขำ' });
+  assert.equal(resPromoFemale.profile?.rank, 'พลตำรวจโทหญิง');
+  assert.equal(resPromoFemale.profile?.previousRank, 'พลตำรวจตรีหญิง');
+
+  const resPromoMajGen = searchAndComparePerson(snapshot, { q: 'ธงชัย วิไลพรหม' });
+  assert.equal(resPromoMajGen.profile?.rank, 'พลตำรวจตรี');
+  assert.equal(resPromoMajGen.profile?.previousRank, 'พันตำรวจเอก');
+
+  const resSameRankBracket = searchAndComparePerson(snapshot, { q: 'อาชยน ไกรทอง' });
+  assert.equal(resSameRankBracket.profile?.rank, 'พลตำรวจโท');
+  assert.equal(resSameRankBracket.profile?.previousRank, 'พลตำรวจโท');
+  assert.equal(resSameRankBracket.profile?.rankPromoted, false);
+  assert.equal(resSameRankBracket.profile?.currentPosition, 'ผู้ช่วยผู้บัญชาการตำรวจแห่งชาติ');
+
+  // 9. Verification that clean Thai names are never corrupted by OCR rules
+  const resClean1 = searchAndComparePerson(snapshot, { q: 'เบญจวรรณ วุฒิวรวงศ์' });
+  assert.equal(resClean1.profile?.name, 'เบญจวรรณ วุฒิวรวงศ์');
+  const resClean2 = searchAndComparePerson(snapshot, { q: 'ธงชัย เนตรสขาวัฒน์' });
+  assert.equal(resClean2.profile?.name, 'ธงชัย เนตรสขาวัฒน์');
 });

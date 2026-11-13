@@ -512,6 +512,7 @@ export const DIRECT_OCR_MAP = {
   "ไว ๆพร วสนาท": "สุภาพร วสนาท",
   "ๆธี เสน่ห์ลักษณา": "สุธี เสน่ห์ลักษณา",
   "ๆรพันธ์ มันคงดี": "ธีรพันธ์ มั่นคงดี",
+  "จกรเทพ กุณชร ณ อยธยา": "จักรเทพ กุณชร ณ อยุธยา",
 };
 
 export function cleanThaiOcrName(raw) {
@@ -521,21 +522,10 @@ export function cleanThaiOcrName(raw) {
   s = s.replace(/^[0-9ฯๆ1\s]+/, '');
   s = s.replace(/^า[โถ]\s*/, '');
   s = s.replace(/^ก4\s*/, '');
-  s = s.replace(/บตร\b/g, 'บุตร');
-  s = s.replace(/สวรรณ/g, 'สุวรรณ');
-  s = s.replace(/ค้มภัย/g, 'คุ้มภัย');
-  s = s.replace(/พกหอม/g, 'พุกหอม');
-  s = s.replace(/จมพร/g, 'ชุมพร');
-  s = s.replace(/สพรรณ/g, 'สุพรรณ');
-  s = s.replace(/บญ/g, 'บุญ');
-  s = s.replace(/สข/g, 'สุข');
-  s = s.replace(/มสิกล/g, 'มุสิกูล');
-  s = s.replace(/กาวิกล/g, 'กาวิกูล');
-  s = s.replace(/วสทธิ์/g, 'วสุทธิ์');
-  s = s.replace(/สริย/g, 'สุริย');
-  s = s.replace(/พบลย์/g, 'พิบูลย์');
-  s = s.replace(/บำรง/g, 'บำรุง');
-  s = s.replace(/บตราช/g, 'บุตรราช');
+  s = s.replace(/ณ\s*อยธยา/g, 'ณ อยุธยา');
+  s = s.replace(/ณอยุธยา/g, 'ณ อยุธยา');
+  s = s.replace(/ณชุมแพ/g, 'ณ ชุมแพ');
+  if (DIRECT_OCR_MAP[s]) return DIRECT_OCR_MAP[s];
   return s.trim();
 }
 
@@ -547,18 +537,113 @@ export function thaiConsonantSkeleton(str) {
     .replace(/\s+/g, '');
 }
 
+const FULL_RANK_ORDER = [
+  'สิบตำรวจตรี',
+  'สิบตำรวจโท',
+  'สิบตำรวจเอก',
+  'จ่าสิบตำรวจ',
+  'ดาบตำรวจ',
+  'ร้อยตำรวจตรี',
+  'ร้อยตำรวจโท',
+  'ร้อยตำรวจเอก',
+  'พันตำรวจตรี',
+  'พันตำรวจโท',
+  'พันตำรวจเอก',
+  'พลตำรวจตรี',
+  'พลตำรวจโท',
+  'พลตำรวจเอก',
+];
+
+const ABBREV_TO_FULL_RANK = [
+  [/พล\.?\s*ต\.?\s*อ\.?/, 'พลตำรวจเอก'],
+  [/พล\.?\s*ต\.?\s*ท\.?/, 'พลตำรวจโท'],
+  [/พล\.?\s*ต\.?\s*ต\.?/, 'พลตำรวจตรี'],
+  [/พ\.?\s*ต\.?\s*อ\.?/, 'พันตำรวจเอก'],
+  [/พ\.?\s*ต\.?\s*ท\.?/, 'พันตำรวจโท'],
+  [/พ\.?\s*ต\.?\s*ต\.?/, 'พันตำรวจตรี'],
+  [/ร\.?\s*ต\.?\s*อ\.?/, 'ร้อยตำรวจเอก'],
+  [/ร\.?\s*ต\.?\s*ท\.?/, 'ร้อยตำรวจโท'],
+  [/ร\.?\s*ต\.?\s*ต\.?/, 'ร้อยตำรวจตรี'],
+  [/ด\.?\s*ต\.?/, 'ดาบตำรวจ'],
+  [/จ\.?\s*ส\.?\s*ต\.?/, 'จ่าสิบตำรวจ'],
+  [/ส\.?\s*ต\.?\s*อ\.?/, 'สิบตำรวจเอก'],
+  [/ส\.?\s*ต\.?\s*ท\.?/, 'สิบตำรวจโท'],
+  [/ส\.?\s*ต\.?\s*ต\.?/, 'สิบตำรวจตรี'],
+];
+
+function rankPriority(fullRank) {
+  const clean = String(fullRank || '').replace(/^ว่าที่\s*/, '').replace(/\s*หญิง$/, '').trim();
+  return FULL_RANK_ORDER.indexOf(clean);
+}
+
+export function normalizeFullRank(rawRank) {
+  const s = String(rawRank || '').trim();
+  if (!s) return '';
+  const isFemale = /หญิง/.test(s);
+  const acting = /^ว่าที่\s*/.test(s) ? 'ว่าที่ ' : '';
+  for (const base of [...FULL_RANK_ORDER].reverse()) {
+    if (s.includes(base)) {
+      return `${acting}${base}${isFemale ? 'หญิง' : ''}`;
+    }
+  }
+  for (const [re, full] of ABBREV_TO_FULL_RANK) {
+    if (re.test(s)) {
+      return `${acting}${full}${isFemale ? 'หญิง' : ''}`;
+    }
+  }
+  return s;
+}
+
 export function canonicalRankForLevel(level) {
-  const l = String(level || '');
-  if (l.includes('ผู้ช่วย ผบ.ตร.')) return 'พล.ต.ท.';
-  if (l.includes('รอง ผบช.')) return 'พล.ต.ต.';
-  if (l.includes('ผบช.') || l.includes('จตร')) return 'พล.ต.ท.';
-  if (l.includes('รอง ผบก.')) return 'พ.ต.อ.';
-  if (l.includes('ผบก.')) return 'พล.ต.ต.';
-  if (l.includes('รอง ผกก.')) return 'พ.ต.ท.';
-  if (l.includes('ผกก.')) return 'พ.ต.อ.';
-  if (l.includes('รอง สว.')) return 'ร.ต.อ.';
-  if (l.includes('สว.')) return 'พ.ต.ท.';
+  const l = String(level || '').replace(/\s+/g, ' ').trim();
+  if (!l) return '';
+  if (
+    l.includes('ผู้ช่วย ผบ.ตร.') ||
+    l.includes('ผู้ช่วยผู้บัญชาการตำรวจแห่งชาติ') ||
+    l.includes('รอง จตช.') ||
+    l.includes('รองจเรตำรวจแห่งชาติ')
+  ) {
+    return 'พลตำรวจโท';
+  }
+  if (
+    l.includes('ผบ.ตร.') ||
+    l.includes('รอง ผบ.ตร.') ||
+    l.includes('จตช.') ||
+    l.includes('ผู้บัญชาการตำรวจแห่งชาติ') ||
+    l.includes('จเรตำรวจแห่งชาติ')
+  ) {
+    return 'พลตำรวจเอก';
+  }
+  if (l.includes('รอง ผบช.') || l.includes('รองผู้บัญชาการ') || l.includes('รอง จตร.') || l.includes('รองจเรตำรวจ')) {
+    return 'พลตำรวจตรี';
+  }
+  if (l.includes('ผบช.') || l.includes('จตร') || l.includes('ผู้บัญชาการ') || l.includes('จเรตำรวจ')) {
+    return 'พลตำรวจโท';
+  }
+  if (l.includes('รอง ผบก.') || l.includes('รองผู้บังคับการ')) return 'พันตำรวจเอก';
+  if (l.includes('ผบก.') || l.includes('ผู้บังคับการ')) return 'พลตำรวจตรี';
+  if (l.includes('รอง ผกก.') || l.includes('รองผู้กำกับการ') || l.includes('สารวัตรใหญ่') || l.includes('สวญ.')) {
+    return 'พันตำรวจโท';
+  }
+  if (l.includes('ผกก.') || l.includes('ผู้กำกับการ')) return 'พันตำรวจเอก';
+  if (l.includes('รอง สว.') || l.includes('รองสารวัตร') || l.includes('ผู้บังคับหมวด')) return 'ร้อยตำรวจเอก';
+  if (l.includes('สารวัตร') || l.includes('สว.')) return 'พันตำรวจตรี';
+  if (l.includes('ผู้บังคับกอง')) return 'ร้อยตำรวจเอก';
   return '';
+}
+
+export function resolveLatestRankForLevel(levelOrPosition, previousRank = '') {
+  const prevNorm = normalizeFullRank(previousRank);
+  const expected = canonicalRankForLevel(levelOrPosition);
+  if (!expected) return prevNorm;
+  if (!prevNorm) return expected;
+
+  const isFemale = /หญิง/.test(prevNorm);
+  const expectedWithGender = `${expected}${isFemale ? 'หญิง' : ''}`;
+  if (rankPriority(expectedWithGender) > rankPriority(prevNorm)) {
+    return expectedWithGender;
+  }
+  return prevNorm;
 }
 
 export function searchAndComparePerson(knowledgeBundle, params = {}) {
@@ -589,7 +674,13 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     const norm = normalizeName(cleanFullName || rawFullName);
     if (!norm) continue;
     const stdLevel = canonicalLevel(appt.source_level || appt['ระดับเดิม'] || '');
-    const rank = appt['ยศเดิม'] || canonicalRankForLevel(stdLevel);
+    const previousRank = normalizeFullRank(appt['ยศเดิม'] || canonicalRankForLevel(stdLevel));
+    const positionBeforeOrder = appt['ตำแหน่งเดิม'] || '';
+    const newPosition = appt['ตำแหน่งใหม่'] || '';
+    const newLevel = appt['ระดับใหม่'] || '';
+    const latestRank = resolveLatestRankForLevel(newLevel || newPosition || stdLevel, previousRank);
+    const latestPosition = newPosition || positionBeforeOrder;
+    const rankPromoted = Boolean(previousRank && latestRank && latestRank !== previousRank);
     const skeleton = thaiConsonantSkeleton(rawFullName + ' ' + cleanFullName);
 
     officerMap.set(norm, {
@@ -598,12 +689,16 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       name: cleanFullName,
       rawName: rawFullName,
       skeleton,
-      rank,
+      rank: latestRank,
+      previousRank,
+      rankPromoted,
       appointmentNumber: appt['ข้อที่'] || null,
-      currentPosition: appt['ตำแหน่งเดิม'] || '',
-      newPosition: appt['ตำแหน่งใหม่'] || '',
+      currentPosition: latestPosition,
+      positionBeforeOrder,
+      newPosition,
       currentLevel: appt['ระดับเดิม'] || appt.source_level || '',
-      newLevel: appt['ระดับใหม่'] || '',
+      newLevel,
+      latestLevel: newLevel || appt['ระดับเดิม'] || appt.source_level || '',
       appointmentType: appt['ลักษณะการแต่งตั้ง'] || '',
       appointmentPdfPage: appt['หน้า PDF'] || null,
       sourceLevel: stdLevel,
@@ -630,18 +725,29 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       sen.new_position
     );
     const stdLevel = canonicalLevel(sen.source_level || '');
-    const existing = officerMap.get(norm) || officerMap.get(normalizeName(rawFullName)) || {
+    const fromAppt = officerMap.get(norm) || officerMap.get(normalizeName(rawFullName));
+    const fallbackPrevRank = normalizeFullRank(canonicalRankForLevel(sen.source_level || stdLevel));
+    const fallbackLatestRank = isPromoted && (sen.new_level || sen.new_position)
+      ? resolveLatestRankForLevel(sen.new_level || sen.new_position, fallbackPrevRank)
+      : fallbackPrevRank;
+    const fallbackPosBefore = sen.source_position || '';
+    const fallbackCurrentPos = isPromoted && sen.new_position ? sen.new_position : fallbackPosBefore;
+    const existing = fromAppt || {
       key: norm,
       cleanKey: normalizeName(cleanFullName),
       name: cleanFullName,
       rawName: rawFullName,
       skeleton: thaiConsonantSkeleton(rawFullName + ' ' + cleanFullName),
-      rank: canonicalRankForLevel(sen.source_level || stdLevel),
+      rank: fallbackLatestRank,
+      previousRank: fallbackPrevRank,
+      rankPromoted: Boolean(fallbackPrevRank && fallbackLatestRank && fallbackLatestRank !== fallbackPrevRank),
       appointmentNumber: sen.appointment_item_no || null,
-      currentPosition: sen.source_position || '',
+      currentPosition: fallbackCurrentPos,
+      positionBeforeOrder: fallbackPosBefore,
       newPosition: sen.new_position || '',
       currentLevel: sen.source_level || '',
       newLevel: sen.new_level || '',
+      latestLevel: sen.new_level || sen.source_level || '',
       appointmentType: isPromoted ? 'เลื่อนระดับ' : '',
       appointmentPdfPage: null,
       inAppointmentOrder: isPromoted,
@@ -660,20 +766,23 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
 
     const effectiveInOrder = Boolean(existing.inAppointmentOrder || isPromoted);
     const effectiveApptType = existing.inAppointmentOrder ? (existing.appointmentType || 'เลื่อนระดับ') : (isPromoted ? 'เลื่อนระดับ' : '');
-    const rank = existing.rank || canonicalRankForLevel(sen.source_level || stdLevel);
+    const rank = existing.rank || fallbackLatestRank;
     const skeleton = existing.skeleton || thaiConsonantSkeleton(rawFullName + ' ' + cleanFullName);
+    const preferredName = (fromAppt?.name && fromAppt.name.length >= 3) ? fromAppt.name : cleanFullName;
 
     officerMap.set(norm, {
       ...existing,
-      name: cleanFullName,
+      name: preferredName,
       rawName: rawFullName,
       skeleton,
       rank,
-      currentPosition: existing.currentPosition || sen.source_position || '',
+      currentPosition: existing.currentPosition || fallbackCurrentPos,
+      positionBeforeOrder: existing.positionBeforeOrder || fallbackPosBefore,
       appointmentType: effectiveApptType,
       inAppointmentOrder: effectiveInOrder,
       newPosition: existing.newPosition || sen.new_position || '',
       newLevel: existing.newLevel || sen.new_level || '',
+      latestLevel: existing.latestLevel || existing.newLevel || sen.new_level || sen.source_level || '',
       sourceLevel: stdLevel || existing.sourceLevel,
       sourceAccount: sen.source_account || existing.sourceAccount || 'ทั่วไป',
       seniorityOrder: Number.isInteger(sen.seniority_order) ? sen.seniority_order : existing.seniorityOrder,
@@ -692,7 +801,10 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
   // Multi-criteria filter: query keyword, consonant skeleton, level, account, or seniority order
   let matches = allOfficers;
   const queryTokens = qRaw
-    .replace(/^(?:พ\.ต\.(?:อ|ท|ต)|พล\.ต\.(?:อ|ท|ต)|ร\.ต\.(?:อ|ท|ต)|ดาบตำรวจ|ด\.ต\.|ส\.ต\.(?:อ|ท|ต))\s*/, '')
+    .replace(
+      /^(?:ว่าที่\s*)?(?:พล\.?\s*ต\.?\s*[อทต]\.?|พ\.?\s*ต\.?\s*[อทต]\.?|ร\.?\s*ต\.?\s*[อทต]\.?|ด\.?\s*ต\.?|จ\.?\s*ส\.?\s*ต\.?|ส\.?\s*ต\.?\s*[อทต]\.?|พลตำรวจ(?:เอก|โท|ตรี)|พันตำรวจ(?:เอก|โท|ตรี)|ร้อยตำรวจ(?:เอก|โท|ตรี)|ดาบตำรวจ|จ่าสิบตำรวจ|สิบตำรวจ(?:เอก|โท|ตรี))(?:\s*หญิง|\s*\(หญิง\))?\s*/,
+      '',
+    )
     .split(/\s+/)
     .map((t) => t.trim())
     .filter((t) => t.length >= 2);
@@ -714,6 +826,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
         (qSkel && o.skeleton && o.skeleton.includes(qSkel)) ||
         normalizeName(`${o.rank}${o.name}`).includes(qNorm) ||
         (o.currentPosition && normalizeName(o.currentPosition).includes(qNorm)) ||
+        (o.positionBeforeOrder && normalizeName(o.positionBeforeOrder).includes(qNorm)) ||
         (o.newPosition && normalizeName(o.newPosition).includes(qNorm)) ||
         (o.appointmentNumber && String(o.appointmentNumber) === qRaw) ||
         (qOrderNum && o.seniorityOrder === qOrderNum)
@@ -825,6 +938,47 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       ? `ดำรงตำแหน่งระดับ ${prevLevelLabel} เมื่อวันที่ ${prevPosDateParsed.formattedThai}`
       : `ระดับ ${prevLevelLabel} (ตรวจสอบจากตารางประวัติการดำรงตำแหน่ง)`;
 
+  const toComparisonRow = (o, includeRotationFlag = false) => {
+    const oTenure = calculateTenureAndEligibility(o.currentPositionDate, o.sourceLevel);
+    const oRetire = calculateRetirementInfo(o.birthDate);
+    const isTarget = Boolean(target && (o.key === target.key || o.name === target.name));
+    const hasOrder = Number.isInteger(o.seniorityOrder);
+    const isJunior = Boolean(effectiveOrder && hasOrder && o.seniorityOrder > effectiveOrder);
+    const isSenior = Boolean(effectiveOrder && hasOrder && o.seniorityOrder < effectiveOrder);
+    const isRotation = includeRotationFlag && o.appointmentType !== 'เลื่อนระดับ';
+    return {
+      name: o.name,
+      rank: o.rank,
+      previousRank: o.previousRank || '',
+      rankPromoted: Boolean(o.rankPromoted),
+      fullNameWithRank: `${o.rank ? `${o.rank} ` : ''}${o.name}`.trim(),
+      appointmentNumber: o.appointmentNumber,
+      seniorityOrder: o.seniorityOrder,
+      previousOrder: o.previousOrder,
+      totalSuitablePopulation: o.totalSuitablePopulation || totalPopulation,
+      currentPosition: o.currentPosition,
+      positionBeforeOrder: o.positionBeforeOrder || '',
+      newPosition: o.newPosition,
+      latestLevel: o.latestLevel || o.newLevel || o.sourceLevel,
+      appointmentType: o.appointmentType || (includeRotationFlag ? 'ระดับเดิม' : 'เลื่อนระดับ'),
+      currentPositionDate: o.currentPositionDate,
+      currentPositionDateThai: oTenure.currentPositionDateThai,
+      tenureDisplay: oTenure.tenureDisplay,
+      birthDate: o.birthDate,
+      birthDateThai: oRetire?.birthDateThai || null,
+      retirementYearBE: oRetire?.retirementYearBE || null,
+      bornAfterSep30: oRetire?.bornAfterSep30 || false,
+      seniorityPdfPage: o.seniorityPdfPage,
+      appointmentPdfPage: o.appointmentPdfPage,
+      orderGap: effectiveOrder && hasOrder ? Math.abs(o.seniorityOrder - effectiveOrder) : null,
+      isTarget,
+      isJunior,
+      isSenior,
+      ...(includeRotationFlag ? { isRotation } : {}),
+      relationTag: isTarget ? 'target' : isRotation ? 'rotation' : isJunior ? 'junior' : isSenior ? 'senior' : 'same',
+    };
+  };
+
   // 1. All promoted officers in this level & account (sorted by seniorityOrder)
   const promotedInSameAccount = allOfficers
     .filter(
@@ -836,39 +990,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
         Number.isInteger(o.seniorityOrder),
     )
     .sort((a, b) => a.seniorityOrder - b.seniorityOrder)
-    .map((o) => {
-      const oTenure = calculateTenureAndEligibility(o.currentPositionDate, o.sourceLevel);
-      const oRetire = calculateRetirementInfo(o.birthDate);
-      const isTarget = Boolean(target && (o.key === target.key || o.name === target.name));
-      const isJunior = Boolean(effectiveOrder && o.seniorityOrder > effectiveOrder);
-      const isSenior = Boolean(effectiveOrder && o.seniorityOrder < effectiveOrder);
-      return {
-        name: o.name,
-        rank: o.rank,
-        fullNameWithRank: `${o.rank ? `${o.rank} ` : ''}${o.name}`.trim(),
-        appointmentNumber: o.appointmentNumber,
-        seniorityOrder: o.seniorityOrder,
-        previousOrder: o.previousOrder,
-        totalSuitablePopulation: o.totalSuitablePopulation || totalPopulation,
-        currentPosition: o.currentPosition,
-        newPosition: o.newPosition,
-        appointmentType: o.appointmentType || 'เลื่อนระดับ',
-        currentPositionDate: o.currentPositionDate,
-        currentPositionDateThai: oTenure.currentPositionDateThai,
-        tenureDisplay: oTenure.tenureDisplay,
-        birthDate: o.birthDate,
-        birthDateThai: oRetire?.birthDateThai || null,
-        retirementYearBE: oRetire?.retirementYearBE || null,
-        bornAfterSep30: oRetire?.bornAfterSep30 || false,
-        seniorityPdfPage: o.seniorityPdfPage,
-        appointmentPdfPage: o.appointmentPdfPage,
-        orderGap: effectiveOrder ? Math.abs(o.seniorityOrder - effectiveOrder) : null,
-        isTarget,
-        isJunior,
-        isSenior,
-        relationTag: isTarget ? 'target' : isJunior ? 'junior' : isSenior ? 'senior' : 'same',
-      };
-    });
+    .map((o) => toComparisonRow(o, false));
 
   // 2. All appointed officers in this level (promotions + rotations, sorted by appointmentNumber)
   const allAppointedInLevel = allOfficers
@@ -883,41 +1005,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       if (a.seniorityOrder && b.seniorityOrder) return a.seniorityOrder - b.seniorityOrder;
       return 0;
     })
-    .map((o) => {
-      const oTenure = calculateTenureAndEligibility(o.currentPositionDate, o.sourceLevel);
-      const oRetire = calculateRetirementInfo(o.birthDate);
-      const isTarget = Boolean(target && (o.key === target.key || o.name === target.name));
-      const isJunior = Boolean(effectiveOrder && Number.isInteger(o.seniorityOrder) && o.seniorityOrder > effectiveOrder);
-      const isSenior = Boolean(effectiveOrder && Number.isInteger(o.seniorityOrder) && o.seniorityOrder < effectiveOrder);
-      const isRotation = o.appointmentType !== 'เลื่อนระดับ';
-      return {
-        name: o.name,
-        rank: o.rank,
-        fullNameWithRank: `${o.rank ? `${o.rank} ` : ''}${o.name}`.trim(),
-        appointmentNumber: o.appointmentNumber,
-        seniorityOrder: o.seniorityOrder,
-        previousOrder: o.previousOrder,
-        totalSuitablePopulation: o.totalSuitablePopulation || totalPopulation,
-        currentPosition: o.currentPosition,
-        newPosition: o.newPosition,
-        appointmentType: o.appointmentType || 'ระดับเดิม',
-        currentPositionDate: o.currentPositionDate,
-        currentPositionDateThai: oTenure.currentPositionDateThai,
-        tenureDisplay: oTenure.tenureDisplay,
-        birthDate: o.birthDate,
-        birthDateThai: oRetire?.birthDateThai || null,
-        retirementYearBE: oRetire?.retirementYearBE || null,
-        bornAfterSep30: oRetire?.bornAfterSep30 || false,
-        seniorityPdfPage: o.seniorityPdfPage,
-        appointmentPdfPage: o.appointmentPdfPage,
-        orderGap: effectiveOrder && Number.isInteger(o.seniorityOrder) ? Math.abs(o.seniorityOrder - effectiveOrder) : null,
-        isTarget,
-        isJunior,
-        isSenior,
-        isRotation,
-        relationTag: isTarget ? 'target' : isRotation ? 'rotation' : isJunior ? 'junior' : isSenior ? 'senior' : 'same',
-      };
-    });
+    .map((o) => toComparisonRow(o, true));
 
   // Junior promoted officers: those with seniorityOrder > effectiveOrder
   const juniorPromotedOfficers = effectiveOrder
@@ -934,9 +1022,12 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       ? {
           foundInDatabase: Boolean(target),
           isPromotedInOrder2569: Boolean(target && target.appointmentType === 'เลื่อนระดับ'),
+          isAppointedInOrder2569: Boolean(target && target.inAppointmentOrder),
           appointmentType: target?.appointmentType || 'ผู้ร้องทุกข์ / เปรียบเทียบลำดับอาวุโส (ไม่ได้เลื่อนตำแหน่งสูงขึ้น)',
           appointmentNumber: target?.appointmentNumber || null,
           rank: target?.rank || '',
+          previousRank: target?.previousRank || '',
+          rankPromoted: Boolean(target?.rankPromoted),
           name: target?.name || qRaw || `ผู้เปรียบเทียบลำดับอาวุโสที่ ${effectiveOrder || '-'}`,
           fullNameWithRank: target
             ? `${target.rank ? `${target.rank} ` : ''}${target.name}`.trim()
@@ -945,7 +1036,9 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
             manualCurrentPos ||
             target?.currentPosition ||
             (effectiveLevel ? `ข้าราชการตำรวจระดับ ${effectiveLevel}` : '-'),
+          positionBeforeOrder: target?.positionBeforeOrder || '',
           newPosition: target?.newPosition || 'ไม่ได้รับการแต่งตั้งเลื่อนตำแหน่งสูงขึ้นในคำสั่งนี้',
+          latestLevel: target?.latestLevel || target?.newLevel || effectiveLevel,
           currentPositionDate: effectiveCurrentPosDate,
           currentPositionDateThai: tenureInfo.currentPositionDateThai,
           birthDate: effectiveBirthDate,
@@ -996,9 +1089,13 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     suggestions: matches.slice(0, 150).map((o) => ({
       name: o.name,
       rank: o.rank,
+      previousRank: o.previousRank || '',
+      rankPromoted: Boolean(o.rankPromoted),
       fullNameWithRank: `${o.rank ? `${o.rank} ` : ''}${o.name}`.trim(),
       currentPosition: o.currentPosition,
+      positionBeforeOrder: o.positionBeforeOrder || '',
       newPosition: o.newPosition,
+      latestLevel: o.latestLevel || o.newLevel || o.sourceLevel,
       sourceLevel: o.sourceLevel,
       sourceAccount: o.sourceAccount,
       seniorityOrder: o.seniorityOrder,
