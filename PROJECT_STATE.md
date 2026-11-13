@@ -2,6 +2,14 @@
 
 ## สรุปสถานะระบบล่าสุด (2026-11-13)
 
+- **ปรับปรุงระบบค้นหารายชื่อ `/person-search` ปรับกฎหมายตามตำแหน่งปัจจุบัน นับวาระประจำปีตามข้อ ๑๐(๑) ค้นหาแม้พิมพ์ผิด และล้างข้อมูล ๙๘๗ รายด้วย OpenThai 2.0 OCR (2026-11-13)**:
+  - **แก้ไข Card 4 (`๔. ครบหลักเกณฑ์เลื่อนตำแหน่งสูงขึ้นมาแล้วกี่ปี`) (`src/lib/analysis/personSearch.mjs`, `src/components/analysis/PersonSearch.jsx`)**:
+    1. วันเริ่มดำรงตำแหน่งในวาระประจำปี (`ต.ค.–ธ.ค.` เช่น `4/11/2566`) นับถึงวาระ `2569` ตาม กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๐(๑) เป็น **ปีเต็มบริบูรณ์** (ระดับ ผบก. ครบเกณฑ์ ๓ ปีแล้วในปี พ.ศ. ๒๕๖๙ — แก้ปัญหาเดิมที่ขึ้นว่า `ขาดอีก 1 เดือน`)
+    2. ปรับ `MINIMUM_TENURE_RULES` ให้ตรงอนุมาตรา ข้อ ๑๗(๑)–(๙) และเพิ่ม `currentLevel` / `currentLegalBasis` / `isPromotedToHigherLevel` ให้ Card 4 ทั้งบนเว็บและ PDF ปรับหลักกฎหมายตาม **ตำแหน่งปัจจุบันจริง** ของบุคคลนั้น
+  - **แก้ไขข้อมูลผิด/เพี้ยนและระบบค้นหาแบบทนต่อคำสะกดผิด (`src/data/analysis/appointments-2569-snapshot.json`, `src/lib/analysis/personSearch.mjs`)**:
+    1. รัน `OpenThai2.0-OCR-Text` สกัดบัญชีอาวุโสฉบับจริงครบทั้ง 65 หน้า แก้ไขชื่อ 146 ราย, ตำแหน่งครบ 987/987 ราย, ระบุยศหญิง 73 ราย, แก้ไขวันเกิดหน้า 57, และเก็บ `search_aliases` พร้อมจับคู่ `(source_pdf_page, seniority_order)` ป้องกันชื่อซ้ำ
+    2. เพิ่ม `thaiPhoneticKey`, `editDistance`, `bestTokenFuzzyScore`, และ `scoreOfficerMatch` ให้ค้นหาเจอทั้งชื่อที่พิมพ์ผิด คำพ้องเสียง หรือขาดสระ/วรรณยุกต์ (`npm test` 104/104, `typecheck` 0 errors, `build` 38/38 routes)
+
 - **ติดตั้งสกิลและโมเดล OpenThai 2.0 OCR (`iapp/OpenThai2.0-OCR-Text` และ `iapp/OpenThai2.0-OCR-Markdown`) เข้าสู่คลังสกิลและระบบคลังความรู้กฎหมาย ๑๐๐% (2026-11-13)**:
   - **ติดตั้งสกิลและโมเดลลงเครื่อง (`C:\Users\polic\.codex\skills\openthai-ocr\SKILL.md`, `C:\Users\polic\.codex\skills\thai-ocr\SKILL.md`, `tools/openthai2-ocr-text/`)**:
     1. ดาวน์โหลดและติดตั้งโมเดลจริง **`iapp/OpenThai2.0-OCR-Text`** (`det.onnx` 1.8 MB, `rec.onnx` 2.4 MB, `rec_dict.txt`, `runtime/line_engine.py`, `runtime/thai_norm.py`) รันบน CPU ผ่าน ONNX Runtime ได้ทันทีโดยไม่ต้องใช้ GPU (ความเร็ว ~0.39–1.6 วินาที/หน้า ความแม่นยำคำพิพากษาศาลปกครอง 97.0% และเอกสารงบประมาณรัฐสภา 99.5%)

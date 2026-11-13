@@ -235,4 +235,39 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.equal(resClean1.profile?.name, 'เบญจวรรณ วุฒิวรวงศ์');
   const resClean2 = searchAndComparePerson(snapshot, { q: 'ธงชัย เนตรสขาวัฒน์' });
   assert.equal(resClean2.profile?.name, 'ธงชัย เนตรสขาวัฒน์');
+
+  // 10. Verification of Card 4 tenure eligibility rule under กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๐(๑) (annual round date 4/11/2566 -> 2569 = 3 full years)
+  const annualBgk = calculateTenureAndEligibility('4/11/2566', 'ผบก. / เทียบเท่า');
+  assert.equal(annualBgk.isEligible, true);
+  assert.equal(annualBgk.tenureYears, 3);
+  assert.equal(annualBgk.tenureMonths, 0);
+  assert.ok(!annualBgk.eligibilityDisplay.includes('ขาดอีก'));
+  assert.ok(annualBgk.legalBasis.includes('ข้อ ๑๐(๑)'));
+
+  const resPatipan = searchAndComparePerson(snapshot, { q: 'ปติพันธ์ โรหิโตปการ' });
+  assert.ok(resPatipan.profile);
+  assert.equal(resPatipan.profile.tenure.isEligible, true);
+  assert.ok(resPatipan.profile.tenure.legalBasis.includes('มาตรา ๗๗(๕)'));
+  assert.ok(resPatipan.profile.tenure.legalBasis.includes('ข้อ ๑๗(๔)'));
+
+  // 11. Verification that Card 4 legal basis adapts to current promoted level
+  assert.equal(resSameRankBracket.profile?.tenure?.isPromotedToHigherLevel, true);
+  assert.equal(resSameRankBracket.profile?.tenure?.currentLevel, 'ผู้ช่วย ผบ.ตร. / รอง จตช.');
+  assert.ok(resSameRankBracket.profile?.tenure?.currentLegalBasis?.includes('มาตรา ๗๗(๒)'));
+
+  // 12. Verification of OpenThai 2.0 restored OCR names, clean positions & female ranks
+  for (const name of ['ธนิต ไทยวัชรามาศ', 'ยุทธพงษ์ ทองนุ้ย', 'ฐายุฏฐ์ จันทร์ถาวร', 'นิรมล ปัณฑวนันท์']) {
+    const r = searchAndComparePerson(snapshot, { q: name });
+    assert.equal(r.profile?.foundInDatabase, true, `Should find ${name}`);
+    assert.equal(r.profile?.name, name);
+    assert.ok(!/[A-Za-z]/.test(r.profile?.currentPosition || ''), `Position should be clean Thai for ${name}: ${r.profile?.currentPosition}`);
+  }
+  const resNiromon = searchAndComparePerson(snapshot, { q: 'นิรมล ปัณฑวนันท์' });
+  assert.equal(resNiromon.profile?.rank, 'พลตำรวจโทหญิง');
+
+  // 13. Verification of Thai typo & phonetic fuzzy search
+  assert.equal(searchAndComparePerson(snapshot, { q: 'ชิดพบ โตเหมื่อน' }).profile?.name, 'ชิตภพ โตเหมือน');
+  assert.equal(searchAndComparePerson(snapshot, { q: 'อาชย ไกรทง' }).profile?.name, 'อาชยน ไกรทอง');
+  assert.equal(searchAndComparePerson(snapshot, { q: 'ทำนูน เชาววนิช' }).profile?.name, 'ธรรมนูญ เชาวะวนิชย์');
+  assert.ok(searchAndComparePerson(snapshot, { q: 'กิตติพงศ' }).totalMatches > 0);
 });

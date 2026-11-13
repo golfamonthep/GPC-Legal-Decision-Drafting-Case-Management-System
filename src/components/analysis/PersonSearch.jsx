@@ -222,8 +222,9 @@ export default function PersonSearch({ onApplyToAnalysis }) {
     </div>
     <div class="card">
       <div class="card-label">๕. ครบหลักเกณฑ์เลื่อนตำแหน่งสูงขึ้นมาแล้วกี่ปี</div>
-      <div class="card-val" style="color:#047857;">${p.tenure?.eligibilityDisplay || '-'}</div>
-      <div class="card-sub">${p.tenure?.legalBasis || ''}</div>
+      <div class="card-val" style="color:#047857;">${p.tenure?.isPromotedToHigherLevel ? `ครบเกณฑ์และได้เลื่อนเป็น ${p.tenure.currentLevel} แล้ว (วาระ ๒๕๖๙)` : (p.tenure?.eligibilityDisplay || '-')}</div>
+      <div class="card-sub"><strong>ตามตำแหน่งปัจจุบัน (${p.tenure?.currentLevel || p.sourceLevel || '-'}):</strong> ${p.tenure?.currentLegalBasis || p.tenure?.legalBasis || ''}</div>
+      ${p.tenure?.isPromotedToHigherLevel ? `<div class="card-sub"><strong>เกณฑ์ขณะดำรงระดับเดิม (${p.sourceLevel}):</strong> ${p.tenure?.eligibilityDisplay || '-'}</div>` : ''}
     </div>
     <div class="card">
       <div class="card-label">๖. วันเดือนปีเกิด และปีครบเกษียณอายุราชการ (๖๐ ปี)</div>
@@ -541,8 +542,21 @@ export default function PersonSearch({ onApplyToAnalysis }) {
 
             <div className="person-bento-card">
               <span className="bento-label">๔. ครบหลักเกณฑ์เลื่อนตำแหน่งสูงขึ้นมาแล้วกี่ปี</span>
-              <strong className="bento-value highlight-green">{p.tenure?.eligibilityDisplay || '-'}</strong>
-              <p className="bento-sub">{p.tenure?.legalBasis}</p>
+              <strong className="bento-value highlight-green">
+                {p.tenure?.isPromotedToHigherLevel
+                  ? `ครบเกณฑ์และได้เลื่อนเป็น ${p.tenure.currentLevel} แล้ว (วาระ ๒๕๖๙)`
+                  : (p.tenure?.eligibilityDisplay || '-')}
+              </strong>
+              <p className="bento-sub">
+                <strong>ตามตำแหน่งปัจจุบัน ({p.tenure?.currentLevel || p.sourceLevel}):</strong>{' '}
+                {p.tenure?.currentLegalBasis || p.tenure?.legalBasis}
+                {p.tenure?.isPromotedToHigherLevel && (
+                  <>
+                    <br />
+                    <span>เกณฑ์ระดับเดิม ({p.sourceLevel}): {p.tenure.eligibilityDisplay}</span>
+                  </>
+                )}
+              </p>
             </div>
 
             <div className="person-bento-card">

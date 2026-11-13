@@ -21,75 +21,82 @@ const THAI_MONTHS_SHORT = [
  * under พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗ and กฎ ก.ตร.ว่าด้วยการแต่งตั้งข้าราชการตำรวจ พ.ศ. ๒๕๖๗ ข้อ ๑๗
  */
 export const MINIMUM_TENURE_RULES = {
+  'รอง ผบ.ตร. / จตช.': {
+    requiredYears: 0,
+    nextLevel: 'ผบ.ตร.',
+    previousLevelLabel: 'ผู้ช่วย ผบ.ตร. / รอง จตช.',
+    rankColumnLabels: ['รอง ผบ.ตร.', 'ผู้ช่วย ผบ.ตร.', 'ผบช.', 'รอง ผบช.', 'ผบก.', 'รอง ผบก.', 'ผกก.', 'รอง ผกก.', 'สว.', 'รอง สว.', 'วันเกิด'],
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๑) (ระดับ รอง ผบ.ตร. หรือ จตช. เพื่อคัดเลือกเป็น ผบ.ตร.)',
+  },
   'ผู้ช่วย ผบ.ตร. / รอง จตช.': {
     requiredYears: 1,
     nextLevel: 'รอง ผบ.ตร. / จตช.',
     previousLevelLabel: 'ผบช. / จตร.',
     rankColumnLabels: ['ผู้ช่วย ผบ.ตร.', 'ผบช.', 'รอง ผบช.', 'ผบก.', 'รอง ผบก.', 'ผกก.', 'รอง ผกก.', 'สว.', 'รอง สว.', 'วันเกิด'],
-    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๒) (ระดับผู้ช่วย ผบ.ตร. หรือรอง จตช. ไม่น้อยกว่า ๑ ปี)',
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๒) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๑), ข้อ ๑๐(๑) (ระดับ ผู้ช่วย ผบ.ตร. / รอง จตช. ไม่น้อยกว่า ๑ ปี เพื่อเลื่อนเป็น รอง ผบ.ตร. / จตช.)',
   },
   'ผบช. / จตร. / เทียบเท่า': {
     requiredYears: 1,
     nextLevel: 'ผู้ช่วย ผบ.ตร. / รอง จตช.',
     previousLevelLabel: 'รอง ผบช. / รอง จตร.',
     rankColumnLabels: ['ผบช.', 'รอง ผบช.', 'ผบก.', 'รอง ผบก.', 'ผกก.', 'รอง ผกก.', 'สว.', 'รอง สว.', 'วันเกิด'],
-    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๓) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗ (ระดับ ผบช. หรือ จตร. ไม่น้อยกว่า ๑ ปี)',
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๓) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๒), ข้อ ๑๐(๑) (ระดับ ผบช. / จตร. ไม่น้อยกว่า ๑ ปี เพื่อเลื่อนเป็น ผู้ช่วย ผบ.ตร. / รอง จตช.)',
   },
   'รอง ผบช. / รอง จตร. / เทียบเท่า': {
     requiredYears: 2,
     nextLevel: 'ผบช. / จตร.',
     previousLevelLabel: 'ผบก.',
     rankColumnLabels: ['รอง ผบช.', 'ผบก.', 'รอง ผบก.', 'ผกก.', 'รอง ผกก.', 'สว.', 'รอง สว.', 'วันเกิด'],
-    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๔) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗ (ระดับ รอง ผบช. หรือ รอง จตร. ไม่น้อยกว่า ๒ ปี)',
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๔) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๓), ข้อ ๑๐(๑) (ระดับ รอง ผบช. / รอง จตร. ไม่น้อยกว่า ๒ ปี เพื่อเลื่อนเป็น ผบช. / จตร.)',
   },
   'รอง ผบช. / เทียบเท่า': {
     requiredYears: 2,
     nextLevel: 'ผบช. / นายแพทย์ใหญ่ (สบ ๘)',
     previousLevelLabel: 'ผบก. / นายแพทย์ (สบ ๖)',
     rankColumnLabels: ['รอง ผบช.', 'ผบก.', 'รอง ผบก.', 'ผกก.', 'รอง ผกก.', 'สว.', 'รอง สว.', 'วันเกิด'],
-    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๔) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗ (ระดับ รอง ผบช. ไม่น้อยกว่า ๒ ปี)',
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๔) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๓), ข้อ ๑๐(๑) (ระดับ รอง ผบช. ไม่น้อยกว่า ๒ ปี เพื่อเลื่อนเป็น ผบช. / นายแพทย์ใหญ่)',
   },
   'ผบก. / เทียบเท่า': {
     requiredYears: 3,
     nextLevel: 'รอง ผบช. / รอง จตร.',
     previousLevelLabel: 'รอง ผบก.',
     rankColumnLabels: ['ผบก.', 'รอง ผบก.', 'ผกก.', 'รอง ผกก.', 'สว.', 'รอง สว.', 'วันเกิด'],
-    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๕) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗ (ระดับ ผบก. ไม่น้อยกว่า ๓ ปี)',
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๕) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๔), ข้อ ๑๐(๑) (ระดับ ผบก. ไม่น้อยกว่า ๓ ปี เพื่อเลื่อนเป็น รอง ผบช. / รอง จตร.)',
   },
   'รอง ผบก. / เทียบเท่า': {
     requiredYears: 4,
     nextLevel: 'ผบก.',
     previousLevelLabel: 'ผกก.',
     rankColumnLabels: ['รอง ผบก.', 'ผกก.', 'รอง ผกก.', 'สว.', 'รอง สว.', 'วันเกิด'],
-    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๖) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗ (ระดับ รอง ผบก. ไม่น้อยกว่า ๔ ปี)',
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๖) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๕), ข้อ ๑๐(๑) (ระดับ รอง ผบก. ไม่น้อยกว่า ๔ ปี เพื่อเลื่อนเป็น ผบก.)',
   },
   'ผกก. (เลื่อนเป็น รอง ผบก.)': {
     requiredYears: 4,
     nextLevel: 'รอง ผบก.',
     previousLevelLabel: 'รอง ผกก. / สวญ.',
     rankColumnLabels: ['ผกก.', 'รอง ผกก.', 'สว.', 'รอง สว.', 'วันเกิด'],
-    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๗) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๗) (ระดับ ผกก. ไม่น้อยกว่า ๔ ปี)',
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๗) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๖) (ระดับ ผกก. ไม่น้อยกว่า ๔ ปี เพื่อเลื่อนเป็น รอง ผบก.)',
   },
   'รอง ผกก. / สวญ. (เลื่อนเป็น ผกก.)': {
     requiredYears: 4,
     nextLevel: 'ผกก.',
     previousLevelLabel: 'สว.',
     rankColumnLabels: ['รอง ผกก.', 'สว.', 'รอง สว.', 'วันเกิด'],
-    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๘) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๘) (ระดับ รอง ผกก. หรือ สวญ. ไม่น้อยกว่า ๔ ปี)',
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๘) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๗) (ระดับ รอง ผกก. หรือ สวญ. ไม่น้อยกว่า ๔ ปี เพื่อเลื่อนเป็น ผกก.)',
   },
   'สว. (เลื่อนเป็น รอง ผกก. / สวญ.)': {
     requiredYears: 5,
     nextLevel: 'รอง ผกก. / สวญ.',
     previousLevelLabel: 'รอง สว.',
     rankColumnLabels: ['สว.', 'รอง สว.', 'วันเกิด'],
-    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๙) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๙) (ระดับ สว. ไม่น้อยกว่า ๕ ปี)',
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๙) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๘) (ระดับ สว. ไม่น้อยกว่า ๕ ปี เพื่อเลื่อนเป็น รอง ผกก. / สวญ.)',
   },
   'รอง สว. (เลื่อนเป็น สว.)': {
     requiredYears: 7,
     nextLevel: 'สว.',
     previousLevelLabel: 'ผบ.หมู่',
     rankColumnLabels: ['รอง สว.', 'วันเกิด'],
-    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๑๐) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๑๐) (ระดับ รอง สว. ไม่น้อยกว่า ๗ ปี)',
+    legalBasis: 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕ มาตรา ๗๗(๑๐) และ กฎ ก.ตร.ฯ พ.ศ. ๒๕๖๗ ข้อ ๑๗(๙) (ระดับ รอง สว. ไม่น้อยกว่า ๗ ปี เพื่อเลื่อนเป็น สว.)',
   },
 };
 
@@ -172,12 +179,17 @@ export function calculateTenureAndEligibility(currentPosDateStr, sourceLevel, re
     };
   }
 
-  let totalMonths = (ref.yearBE - start.yearBE) * 12 + (ref.month - start.month);
-  if (ref.day < start.day && !(start.day <= 4 && start.month === 11)) {
-    // Handle exact day difference unless standard appointment round
-    totalMonths -= 1;
+  const isAnnualRoundDate = start.month >= 10; // วาระประจำปี (ต.ค.–ธ.ค.) นับถึงวาระประจำปีถัดไปเป็น 1 ปีเต็มตาม กฎ ก.ตร.ฯ ข้อ ๑๐(๑)
+  let totalMonths;
+  if (isAnnualRoundDate && ref.month >= 10) {
+    totalMonths = Math.max(0, (ref.yearBE - start.yearBE) * 12);
+  } else {
+    totalMonths = (ref.yearBE - start.yearBE) * 12 + (ref.month - start.month);
+    if (ref.day < start.day) {
+      totalMonths -= 1;
+    }
+    if (totalMonths < 0) totalMonths = 0;
   }
-  if (totalMonths < 0) totalMonths = 0;
 
   const tenureYears = Math.floor(totalMonths / 12);
   const tenureMonths = totalMonths % 12;
@@ -193,16 +205,19 @@ export function calculateTenureAndEligibility(currentPosDateStr, sourceLevel, re
   const tenureDisplay =
     tenureMonths > 0
       ? `${tenureYears} ปี ${tenureMonths} เดือน (ตั้งแต่วันที่ ${start.formattedThai})`
-      : `${tenureYears} ปีบริบูรณ์ (ตั้งแต่วันที่ ${start.formattedThai})`;
+      : `${tenureYears} ปีบริบูรณ์ (ตั้งแต่วันที่ ${start.formattedThai}${isAnnualRoundDate ? ' · นับวาระประจำปีตามข้อ ๑๐(๑)' : ''})`;
 
+  const ruleSuffix = isAnnualRoundDate ? ' · นับตามข้อ ๑๐(๑)' : '';
   let eligibilityDisplay;
-  if (isEligible) {
+  if (rule.requiredYears === 0) {
+    eligibilityDisplay = `ครบหลักเกณฑ์ระดับสูงสุด (ดำรงตำแหน่งมาแล้ว ${tenureYears} ปี${tenureMonths > 0 ? ` ${tenureMonths} เดือน` : ''})`;
+  } else if (isEligible) {
     if (yearsPastEligibility === 0 && monthsPastEligibility === 0) {
-      eligibilityDisplay = `ครบเกณฑ์พอดีในปี พ.ศ. ${eligibleYearBE} (เกณฑ์ขั้นต่ำ ${rule.requiredYears} ปี · เกินเกณฑ์ 0 ปี)`;
+      eligibilityDisplay = `ครบเกณฑ์ ${rule.requiredYears} ปีแล้วในปี พ.ศ. ${eligibleYearBE}${ruleSuffix}`;
     } else if (monthsPastEligibility > 0) {
-      eligibilityDisplay = `ครบเกณฑ์มาแล้ว ${yearsPastEligibility} ปี ${monthsPastEligibility} เดือน (ครบเกณฑ์ขั้นต่ำ ${rule.requiredYears} ปี ตั้งแต่ พ.ศ. ${eligibleYearBE})`;
+      eligibilityDisplay = `ครบเกณฑ์มาแล้ว ${yearsPastEligibility} ปี ${monthsPastEligibility} เดือน (ครบเกณฑ์ขั้นต่ำ ${rule.requiredYears} ปี ตั้งแต่ พ.ศ. ${eligibleYearBE}${ruleSuffix})`;
     } else {
-      eligibilityDisplay = `ครบเกณฑ์มาแล้ว ${yearsPastEligibility} ปี (ครบเกณฑ์ขั้นต่ำ ${rule.requiredYears} ปี ตั้งแต่ พ.ศ. ${eligibleYearBE})`;
+      eligibilityDisplay = `ครบเกณฑ์มาแล้ว ${yearsPastEligibility} ปี (ครบเกณฑ์ขั้นต่ำ ${rule.requiredYears} ปี ตั้งแต่ พ.ศ. ${eligibleYearBE}${ruleSuffix})`;
     }
   } else {
     const shortMonths = Math.abs(diffMonths);
@@ -223,6 +238,7 @@ export function calculateTenureAndEligibility(currentPosDateStr, sourceLevel, re
     yearsPastEligibility,
     monthsPastEligibility,
     isEligible,
+    isAnnualRoundCount: isAnnualRoundDate && ref.month >= 10,
     eligibilityDisplay,
     legalBasis: rule.legalBasis,
     nextLevel: rule.nextLevel,
@@ -286,20 +302,25 @@ export function buildRankHistoryTimeline(rankDates, sourceLevel) {
 export function canonicalLevel(rawLevel) {
   if (!rawLevel) return '';
   const s = String(rawLevel).trim();
-  if (s.includes('ผู้ช่วย ผบ.ตร') || s.includes('รอง จตช')) return 'ผู้ช่วย ผบ.ตร. / รอง จตช.';
-  if (s.includes('ผบช') || s.includes('จตร')) {
+  if (s.includes('ผู้ช่วย ผบ.ตร') || s.includes('ผู้ช่วยผู้บัญชาการตำรวจแห่งชาติ') || s.includes('รอง จตช') || s.includes('รองจเรตำรวจแห่งชาติ')) {
+    return 'ผู้ช่วย ผบ.ตร. / รอง จตช.';
+  }
+  if (s.includes('รอง ผบ.ตร') || s.includes('รองผู้บัญชาการตำรวจแห่งชาติ') || s.includes('จตช') || s.includes('จเรตำรวจแห่งชาติ')) {
+    return 'รอง ผบ.ตร. / จตช.';
+  }
+  if (s.includes('ผบช') || s.includes('จตร') || s.includes('ผู้บัญชาการ') || s.includes('จเรตำรวจ')) {
     if (s.includes('รอง')) return s.includes('แพทย์') ? 'รอง ผบช. / เทียบเท่า' : 'รอง ผบช. / รอง จตร. / เทียบเท่า';
     return 'ผบช. / จตร. / เทียบเท่า';
   }
-  if (s.includes('ผบก')) {
+  if (s.includes('ผบก') || s.includes('ผู้บังคับการ')) {
     if (s.includes('รอง')) return 'รอง ผบก. / เทียบเท่า';
     return 'ผบก. / เทียบเท่า';
   }
-  if (s.includes('ผกก')) {
+  if (s.includes('ผกก') || s.includes('ผู้กำกับการ')) {
     if (s.includes('รอง')) return 'รอง ผกก. / สวญ. (เลื่อนเป็น ผกก.)';
     return 'ผกก. (เลื่อนเป็น รอง ผบก.)';
   }
-  if (s.includes('สว.')) {
+  if (s.includes('สว.') || s.includes('สารวัตร')) {
     if (s.includes('รอง')) return 'รอง สว. (เลื่อนเป็น สว.)';
     return 'สว. (เลื่อนเป็น รอง ผกก. / สวญ.)';
   }
@@ -533,8 +554,112 @@ export function thaiConsonantSkeleton(str) {
   if (!str) return '';
   return String(str)
     .replace(/[0-9๑-๙]/g, '')
-    .replace(/[\u0E30-\u0E3A\u0E47-\u0E4E\u0E31\u0E34-\u0E39\u0E40-\u0E44]/g, '')
+    .replace(/[\u0E30-\u0E3A\u0E45\u0E47-\u0E4E]/g, '')
     .replace(/\s+/g, '');
+}
+
+const THAI_PHONETIC_CHAR_MAP = {
+  ข: 'ก', ค: 'ก', ฅ: 'ก', ฆ: 'ก',
+  ฉ: 'ช', จ: 'ช', ซ: 'ช', ฌ: 'ช',
+  ฎ: 'ด',
+  ฏ: 'ต',
+  ฐ: 'ท', ฑ: 'ท', ฒ: 'ท', ถ: 'ท', ธ: 'ท',
+  ณ: 'น',
+  ป: 'บ',
+  ผ: 'พ', ภ: 'พ',
+  ฝ: 'ฟ',
+  ญ: 'ย',
+  ร: 'ล', ฬ: 'ล',
+  ศ: 'ส', ษ: 'ส',
+  ฮ: 'ห',
+};
+
+export function thaiPhoneticKey(str) {
+  if (!str) return '';
+  const cleaned = String(str)
+    .normalize('NFC')
+    .replace(/\u0E33/g, 'ม')
+    .replace(/[\u0E30-\u0E4E0-9๑-๙\s]/g, '')
+    .replace(/[^\u0E01-\u0E2EA-Za-z]/g, '');
+  let out = '';
+  let prev = '';
+  for (const ch of cleaned) {
+    const mapped = THAI_PHONETIC_CHAR_MAP[ch] || ch;
+    if (mapped !== prev) {
+      out += mapped;
+      prev = mapped;
+    }
+  }
+  return out;
+}
+
+function editDistance(a, b) {
+  if (!a || !b) return Math.max(a?.length || 0, b?.length || 0);
+  if (a === b) return 0;
+  const la = a.length;
+  const lb = b.length;
+  if (Math.abs(la - lb) > 4) return Math.abs(la - lb);
+  const dp = Array.from({ length: lb + 1 }, (_, j) => j);
+  for (let i = 1; i <= la; i++) {
+    let prev = i;
+    let diag = i - 1;
+    for (let j = 1; j <= lb; j++) {
+      const temp = dp[j];
+      if (a[i - 1] === b[j - 1]) {
+        dp[j] = diag;
+      } else {
+        dp[j] = 1 + Math.min(diag, dp[j], prev);
+      }
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        // transposition check skipped for O(n) single-row DP simplicity
+      }
+      diag = temp;
+      prev = dp[j];
+    }
+  }
+  return dp[lb];
+}
+
+function bestTokenFuzzyScore(qTokNorm, qTokPhonetic, targetTokens) {
+  let best = 0;
+  for (const t of targetTokens) {
+    if (!t.norm) continue;
+    if (t.norm === qTokNorm) return 95;
+    if (t.norm.includes(qTokNorm) || (qTokNorm.length >= 3 && qTokNorm.includes(t.norm))) {
+      best = Math.max(best, 85);
+      continue;
+    }
+    if (qTokPhonetic && t.phonetic) {
+      if (t.phonetic === qTokPhonetic) {
+        best = Math.max(best, 78);
+        continue;
+      }
+      if (qTokPhonetic.length >= 3 && (t.phonetic.includes(qTokPhonetic) || (t.phonetic.length >= 3 && qTokPhonetic.includes(t.phonetic)))) {
+        best = Math.max(best, 72);
+        continue;
+      }
+      const minLenPh = Math.min(qTokPhonetic.length, t.phonetic.length);
+      if (minLenPh >= 3) {
+        const sameInitial = qTokPhonetic[0] === t.phonetic[0];
+        const maxEditPh = sameInitial && minLenPh <= 5 ? 2 : Math.max(1, Math.floor(minLenPh / 3));
+        const dPh = editDistance(qTokPhonetic, t.phonetic);
+        if (dPh <= maxEditPh) {
+          best = Math.max(best, 72 - dPh * 9);
+          continue;
+        }
+      }
+    }
+    if (qTokNorm.length >= 3 && t.norm.length >= 3) {
+      const sameStart = qTokNorm[0] === t.norm[0] || (qTokPhonetic && t.phonetic && qTokPhonetic[0] === t.phonetic[0]);
+      const minLenRaw = Math.min(qTokNorm.length, t.norm.length);
+      const maxEdit = sameStart ? Math.max(1, Math.floor(minLenRaw / 3)) : Math.max(1, Math.floor(minLenRaw / 4));
+      const dRaw = editDistance(qTokNorm, t.norm);
+      if (dRaw <= maxEdit) {
+        best = Math.max(best, 64 - dRaw * 10);
+      }
+    }
+  }
+  return best;
 }
 
 const FULL_RANK_ORDER = [
@@ -667,6 +792,7 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
 
   // Build unified index of all unique officers in the database (281 appointments + 987 seniority roster)
   const officerMap = new Map();
+  const apptByPageOrder = new Map();
 
   for (const appt of appointmentsList) {
     const rawFullName = String(appt['ชื่อ–นามสกุล'] || appt['ชื่อ-นามสกุล'] || appt.label || '').trim();
@@ -683,11 +809,12 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     const rankPromoted = Boolean(previousRank && latestRank && latestRank !== previousRank);
     const skeleton = thaiConsonantSkeleton(rawFullName + ' ' + cleanFullName);
 
-    officerMap.set(norm, {
+    const record = {
       key: norm,
       cleanKey: normalizeName(cleanFullName),
       name: cleanFullName,
       rawName: rawFullName,
+      searchAliases: [rawFullName, cleanFullName].filter(Boolean),
       skeleton,
       rank: latestRank,
       previousRank,
@@ -712,7 +839,12 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       birthDate: null,
       rankDates: [],
       inAppointmentOrder: true,
-    });
+    };
+
+    officerMap.set(norm, record);
+    if (record.seniorityPdfPage && Number.isInteger(record.seniorityOrder)) {
+      apptByPageOrder.set(`${record.seniorityPdfPage}::${record.seniorityOrder}`, record);
+    }
   }
 
   for (const sen of seniorityList) {
@@ -725,8 +857,37 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       sen.new_position
     );
     const stdLevel = canonicalLevel(sen.source_level || '');
-    const fromAppt = officerMap.get(norm) || officerMap.get(normalizeName(rawFullName));
-    const fallbackPrevRank = normalizeFullRank(canonicalRankForLevel(sen.source_level || stdLevel));
+    const senAliases = [...new Set([
+      rawFullName,
+      cleanFullName,
+      sen.source_name,
+      sen.appointment_name,
+      ...(Array.isArray(sen.search_aliases) ? sen.search_aliases : []),
+    ].map((s) => String(s || '').trim()).filter(Boolean))];
+
+    let fromAppt = officerMap.get(norm) || officerMap.get(normalizeName(rawFullName));
+    if (!fromAppt && sen.source_pdf_page && Number.isInteger(sen.seniority_order)) {
+      fromAppt = apptByPageOrder.get(`${sen.source_pdf_page}::${sen.seniority_order}`);
+    }
+    if (!fromAppt) {
+      for (const alias of senAliases) {
+        const hit = officerMap.get(normalizeName(alias));
+        if (hit) {
+          fromAppt = hit;
+          break;
+        }
+      }
+    }
+
+    const isFemale = Boolean(
+      sen.is_female ||
+      /หญิง/.test(rawFullName) ||
+      /หญิง/.test(sen.source_name || '') ||
+      /หญิง/.test(fromAppt?.previousRank || '') ||
+      /หญิง/.test(fromAppt?.rank || '')
+    );
+    const basePrevRank = canonicalRankForLevel(sen.source_level || stdLevel);
+    const fallbackPrevRank = normalizeFullRank(`${basePrevRank}${isFemale && basePrevRank ? 'หญิง' : ''}`);
     const fallbackLatestRank = isPromoted && (sen.new_level || sen.new_position)
       ? resolveLatestRankForLevel(sen.new_level || sen.new_position, fallbackPrevRank)
       : fallbackPrevRank;
@@ -737,7 +898,8 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
       cleanKey: normalizeName(cleanFullName),
       name: cleanFullName,
       rawName: rawFullName,
-      skeleton: thaiConsonantSkeleton(rawFullName + ' ' + cleanFullName),
+      searchAliases: senAliases,
+      skeleton: thaiConsonantSkeleton(`${rawFullName} ${cleanFullName} ${senAliases.join(' ')}`),
       rank: fallbackLatestRank,
       previousRank: fallbackPrevRank,
       rankPromoted: Boolean(fallbackPrevRank && fallbackLatestRank && fallbackLatestRank !== fallbackPrevRank),
@@ -766,16 +928,26 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
 
     const effectiveInOrder = Boolean(existing.inAppointmentOrder || isPromoted);
     const effectiveApptType = existing.inAppointmentOrder ? (existing.appointmentType || 'เลื่อนระดับ') : (isPromoted ? 'เลื่อนระดับ' : '');
-    const rank = existing.rank || fallbackLatestRank;
-    const skeleton = existing.skeleton || thaiConsonantSkeleton(rawFullName + ' ' + cleanFullName);
+    let rank = existing.rank || fallbackLatestRank;
+    if (isFemale && rank && !/หญิง/.test(rank)) {
+      rank = `${rank}หญิง`;
+    }
+    const mergedAliases = [...new Set([...(existing.searchAliases || []), ...senAliases])];
+    const skeleton = existing.skeleton || thaiConsonantSkeleton(`${rawFullName} ${cleanFullName} ${mergedAliases.join(' ')}`);
     const preferredName = (fromAppt?.name && fromAppt.name.length >= 3) ? fromAppt.name : cleanFullName;
+    const mapKey = fromAppt?.key || norm;
 
-    officerMap.set(norm, {
+    officerMap.set(mapKey, {
       ...existing,
+      key: mapKey,
       name: preferredName,
       rawName: rawFullName,
+      searchAliases: mergedAliases,
       skeleton,
       rank,
+      previousRank: isFemale && existing.previousRank && !/หญิง/.test(existing.previousRank)
+        ? `${existing.previousRank}หญิง`
+        : existing.previousRank,
       currentPosition: existing.currentPosition || fallbackCurrentPos,
       positionBeforeOrder: existing.positionBeforeOrder || fallbackPosBefore,
       appointmentType: effectiveApptType,
@@ -796,72 +968,161 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     });
   }
 
-  const allOfficers = [...officerMap.values()];
+  const allOfficers = [...officerMap.values()].map((o) => {
+    const tokenWords = [...new Set(
+      [o.name, ...(o.searchAliases || [])]
+        .flatMap((s) => String(s || '').split(/\s+/))
+        .map((t) => t.trim())
+        .filter((t) => t.length >= 2),
+    )];
+    return {
+      ...o,
+      nameTokens: tokenWords.map((t) => ({
+        raw: t,
+        norm: normalizeName(t),
+        phonetic: thaiPhoneticKey(t),
+      })),
+      fullPhonetic: thaiPhoneticKey(o.name),
+      aliasNorms: [...new Set((o.searchAliases || []).map((a) => normalizeName(a)).filter(Boolean))],
+      aliasPhonetics: [...new Set((o.searchAliases || []).map((a) => thaiPhoneticKey(a)).filter(Boolean))],
+    };
+  });
 
   // Multi-criteria filter: query keyword, consonant skeleton, level, account, or seniority order
   let matches = allOfficers;
-  const queryTokens = qRaw
+  const queryCleanNoRank = qRaw
     .replace(
       /^(?:ว่าที่\s*)?(?:พล\.?\s*ต\.?\s*[อทต]\.?|พ\.?\s*ต\.?\s*[อทต]\.?|ร\.?\s*ต\.?\s*[อทต]\.?|ด\.?\s*ต\.?|จ\.?\s*ส\.?\s*ต\.?|ส\.?\s*ต\.?\s*[อทต]\.?|พลตำรวจ(?:เอก|โท|ตรี)|พันตำรวจ(?:เอก|โท|ตรี)|ร้อยตำรวจ(?:เอก|โท|ตรี)|ดาบตำรวจ|จ่าสิบตำรวจ|สิบตำรวจ(?:เอก|โท|ตรี))(?:\s*หญิง|\s*\(หญิง\))?\s*/,
       '',
     )
+    .trim();
+  const qNameNorm = normalizeName(queryCleanNoRank || qRaw);
+  const qNameSkel = thaiConsonantSkeleton(queryCleanNoRank || qRaw);
+  const qPhoneticFull = thaiPhoneticKey(queryCleanNoRank || qRaw);
+  const queryTokens = queryCleanNoRank
     .split(/\s+/)
     .map((t) => t.trim())
     .filter((t) => t.length >= 2);
-  const surnameToken =
-    queryTokens.length >= 2
-      ? queryTokens[queryTokens.length - 1]
-      : queryTokens.length === 1
-        ? queryTokens[0]
-        : null;
-  const surnameNorm = surnameToken ? normalizeName(surnameToken) : null;
-  const surnameSkel = surnameToken ? thaiConsonantSkeleton(surnameToken) : null;
+  const queryTokenEntries = queryTokens.map((t) => ({
+    raw: t,
+    norm: normalizeName(t),
+    phonetic: thaiPhoneticKey(t),
+  }));
+
+  const scoreOfficerMatch = (o) => {
+    if (!qNorm) return 100;
+    let best = 0;
+
+    // 1. Exact matches (name, cleanKey, aliases, order/appointment number)
+    if (
+      o.key === qNorm ||
+      o.cleanKey === qNorm ||
+      (qNameNorm && (o.key === qNameNorm || o.cleanKey === qNameNorm)) ||
+      o.aliasNorms.includes(qNorm) ||
+      (qNameNorm && o.aliasNorms.includes(qNameNorm))
+    ) {
+      return 100;
+    }
+    if ((o.appointmentNumber && String(o.appointmentNumber) === qRaw) || (qOrderNum && o.seniorityOrder === qOrderNum)) {
+      best = Math.max(best, 92);
+    }
+
+    // 2. Exact phonetic match across whole name or aliases (handles Thai homophones/vowels)
+    if (
+      qPhoneticFull &&
+      qPhoneticFull.length >= 4 &&
+      (o.fullPhonetic === qPhoneticFull || o.aliasPhonetics.includes(qPhoneticFull))
+    ) {
+      best = Math.max(best, 90);
+    }
+
+    // 3. Direct substring match on name, aliases, rank+name
+    if (
+      o.key.includes(qNorm) ||
+      (o.cleanKey && o.cleanKey.includes(qNorm)) ||
+      (qNameNorm && (o.key.includes(qNameNorm) || (o.cleanKey && o.cleanKey.includes(qNameNorm)))) ||
+      o.aliasNorms.some((a) => a.includes(qNorm) || (qNameNorm && a.includes(qNameNorm))) ||
+      normalizeName(`${o.rank}${o.name}`).includes(qNorm)
+    ) {
+      best = Math.max(best, 84);
+    }
+
+    // 4. Skeleton / phonetic substring match (min 3 chars)
+    const skelCheck = qNameSkel || qSkel;
+    if (skelCheck && skelCheck.length >= 3 && o.skeleton && o.skeleton.includes(skelCheck)) {
+      best = Math.max(best, 78);
+    }
+    if (
+      qPhoneticFull &&
+      qPhoneticFull.length >= 4 &&
+      (o.fullPhonetic.includes(qPhoneticFull) || o.aliasPhonetics.some((p) => p.includes(qPhoneticFull)))
+    ) {
+      best = Math.max(best, 76);
+    }
+
+    // 5. Position substring match
+    if (
+      (o.currentPosition && normalizeName(o.currentPosition).includes(qNorm)) ||
+      (o.positionBeforeOrder && normalizeName(o.positionBeforeOrder).includes(qNorm)) ||
+      (o.newPosition && normalizeName(o.newPosition).includes(qNorm))
+    ) {
+      best = Math.max(best, 70);
+    }
+
+    // 6. Per-token exact, phonetic, and fuzzy edit-distance scoring
+    if (queryTokenEntries.length > 0) {
+      const tokenScores = queryTokenEntries.map((qt) =>
+        bestTokenFuzzyScore(qt.norm, qt.phonetic, o.nameTokens),
+      );
+      if (queryTokenEntries.length === 1) {
+        if (tokenScores[0] >= 48) {
+          best = Math.max(best, tokenScores[0]);
+        }
+      } else {
+        const minTok = Math.min(...tokenScores);
+        const maxTok = Math.max(...tokenScores);
+        const avgTok = tokenScores.reduce((acc, v) => acc + v, 0) / tokenScores.length;
+        if (minTok >= 45) {
+          const allStrongBonus = minTok >= 65 ? 5 : 0;
+          best = Math.max(best, Math.min(99, Math.round(avgTok) + allStrongBonus));
+        } else if (maxTok >= 72 && minTok >= 20) {
+          best = Math.max(best, Math.max(46, Math.round(avgTok * 0.78)));
+        }
+      }
+    }
+
+    // 7. Full-string phonetic fuzzy edit distance fallback (even when written without spaces)
+    if (best < 45 && qPhoneticFull && qPhoneticFull.length >= 5 && o.fullPhonetic.length >= 5) {
+      const maxEd = Math.max(1, Math.floor(Math.min(qPhoneticFull.length, o.fullPhonetic.length) / 4));
+      const d = editDistance(qPhoneticFull, o.fullPhonetic);
+      if (d <= maxEd) {
+        best = Math.max(best, 64 - d * 8);
+      }
+    }
+
+    return best;
+  };
 
   if (qNorm) {
-    matches = matches.filter((o) => {
-      // 1. Direct key, cleanKey, skeleton, rank+name, position, appointment number, or seniority order match
-      if (
-        o.key.includes(qNorm) ||
-        (o.cleanKey && o.cleanKey.includes(qNorm)) ||
-        (qSkel && o.skeleton && o.skeleton.includes(qSkel)) ||
-        normalizeName(`${o.rank}${o.name}`).includes(qNorm) ||
-        (o.currentPosition && normalizeName(o.currentPosition).includes(qNorm)) ||
-        (o.positionBeforeOrder && normalizeName(o.positionBeforeOrder).includes(qNorm)) ||
-        (o.newPosition && normalizeName(o.newPosition).includes(qNorm)) ||
-        (o.appointmentNumber && String(o.appointmentNumber) === qRaw) ||
-        (qOrderNum && o.seniorityOrder === qOrderNum)
-      ) {
-        return true;
-      }
-
-      // 2. Surname / Token match (min 3 chars)
-      if (surnameNorm && surnameNorm.length >= 3) {
-        if (o.key.includes(surnameNorm) || (o.cleanKey && o.cleanKey.includes(surnameNorm))) return true;
-        if (surnameSkel && surnameSkel.length >= 3 && o.skeleton && o.skeleton.includes(surnameSkel)) return true;
-      }
-
-      // 3. Multi-token match (all tokens match across key, cleanKey, skeleton, or rank)
-      if (queryTokens.length > 1) {
-        const allTokensFound = queryTokens.every((tok) => {
-          const tNorm = normalizeName(tok);
-          const tSkel = thaiConsonantSkeleton(tok);
-          return (
-            o.key.includes(tNorm) ||
-            (o.cleanKey && o.cleanKey.includes(tNorm)) ||
-            (tSkel && o.skeleton && o.skeleton.includes(tSkel)) ||
-            (o.rank && o.rank.includes(tok))
-          );
-        });
-        if (allTokensFound) return true;
-      }
-
-      return false;
-    });
+    matches = matches
+      .map((o) => ({ officer: o, score: scoreOfficerMatch(o) }))
+      .filter((entry) => entry.score >= 45)
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (a.officer.seniorityOrder && b.officer.seniorityOrder) {
+          return a.officer.seniorityOrder - b.officer.seniorityOrder;
+        }
+        return (a.officer.name || '').localeCompare(b.officer.name || '', 'th');
+      })
+      .map((entry) => entry.officer);
   }
   if (manualLevel) {
     const cLevel = canonicalLevel(manualLevel);
     matches = matches.filter(
-      (o) => canonicalLevel(o.sourceLevel) === cLevel || canonicalLevel(o.currentLevel) === cLevel,
+      (o) =>
+        canonicalLevel(o.sourceLevel) === cLevel ||
+        canonicalLevel(o.currentLevel) === cLevel ||
+        canonicalLevel(o.latestLevel) === cLevel,
     );
   }
   if (manualAccount) {
@@ -872,26 +1133,11 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     if (orderMatches.length > 0) matches = orderMatches;
   }
 
-  // Pick primary target officer
+  // Pick primary target officer (highest-scored match first)
   let target = null;
   if (qNorm) {
     target =
       matches.find((o) => o.key === qNorm || o.cleanKey === qNorm || normalizeName(o.name) === qNorm) ||
-      matches.find((o) => qSkel && o.skeleton && o.skeleton === qSkel) ||
-      (queryTokens.length > 1
-        ? matches.find((o) =>
-            queryTokens.every(
-              (t) => o.key.includes(normalizeName(t)) || (o.cleanKey && o.cleanKey.includes(normalizeName(t))),
-            ),
-          )
-        : null) ||
-      (surnameNorm && surnameNorm.length >= 3
-        ? matches.find((o) => o.key.includes(surnameNorm) || (o.cleanKey && o.cleanKey.includes(surnameNorm)))
-        : null) ||
-      (surnameSkel && surnameSkel.length >= 3
-        ? matches.find((o) => o.skeleton && o.skeleton.includes(surnameSkel))
-        : null) ||
-      matches.find((o) => qOrderNum && o.seniorityOrder === qOrderNum) ||
       (matches.length > 0 ? matches[0] : null);
   } else if (Number.isInteger(manualOrder) && manualOrder > 0) {
     target = matches.find((o) => o.seniorityOrder === manualOrder) || null;
@@ -899,8 +1145,22 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     target = matches[0];
   }
 
-  // Determine effective level, account and seniority order
+  // Determine effective level (seniority roster level), current position level (after appointment), account and order
   const effectiveLevel = canonicalLevel(manualLevel || target?.sourceLevel || target?.currentLevel || 'รอง ผบก. / เทียบเท่า');
+  const currentLevelForLaw = canonicalLevel(
+    manualLevel ||
+      (target?.inAppointmentOrder
+        ? target.latestLevel || target.newLevel || target.currentPosition || effectiveLevel
+        : target?.sourceLevel || target?.currentLevel || effectiveLevel),
+  );
+  const currentPositionRule = MINIMUM_TENURE_RULES[currentLevelForLaw] || MINIMUM_TENURE_RULES[effectiveLevel];
+  const isPromotedToHigherLevel = Boolean(
+    target &&
+      target.appointmentType === 'เลื่อนระดับ' &&
+      currentLevelForLaw &&
+      effectiveLevel &&
+      currentLevelForLaw !== effectiveLevel,
+  );
   const effectiveAccount = manualAccount || target?.sourceAccount || 'ทั่วไป';
   const effectiveOrder =
     Number.isInteger(manualOrder) && manualOrder > 0 ? manualOrder : target?.seniorityOrder || null;
@@ -925,7 +1185,17 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
   const effectiveRankDates =
     target?.rankDates?.length >= 2 ? target.rankDates : orderDateLookup?.dates || [];
 
-  const tenureInfo = calculateTenureAndEligibility(effectiveCurrentPosDate, effectiveLevel);
+  const baseTenureInfo = calculateTenureAndEligibility(effectiveCurrentPosDate, effectiveLevel);
+  const tenureInfo = {
+    ...baseTenureInfo,
+    currentLevel: currentLevelForLaw,
+    currentRequiredYears: currentPositionRule?.requiredYears ?? baseTenureInfo.requiredYears,
+    currentNextLevel: currentPositionRule?.nextLevel ?? baseTenureInfo.nextLevel,
+    currentLegalBasis: currentPositionRule?.legalBasis || baseTenureInfo.legalBasis,
+    isPromotedToHigherLevel,
+    legalBasis: currentPositionRule?.legalBasis || baseTenureInfo.legalBasis,
+    priorLevelLegalBasis: baseTenureInfo.legalBasis,
+  };
   const retirementInfo = calculateRetirementInfo(effectiveBirthDate);
   const rankTimeline = buildRankHistoryTimeline(effectiveRankDates, effectiveLevel);
 
