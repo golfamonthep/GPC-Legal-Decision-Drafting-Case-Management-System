@@ -343,4 +343,17 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.equal(resSameRankBracket.profile?.quotaAssessment?.totalVacancies, 6);
   assert.equal(resSameRankBracket.profile?.quotaAssessment?.seniorityCutoffOrder, 6);
   assert.equal(resSameRankBracket.profile?.quotaAssessment?.groupKey, 'seniority_100');
+
+  // 15.7 รอง ผบช. #22/95 (วสันต์ เตชะอัครเกษม) -> เลื่อนเป็น ผบช.ภ.2, ระดับก่อนหน้าจริงคือ รอง ผบช. (1 ต.ค. 2565)
+  const resWasan = searchAndComparePerson(snapshot, { q: 'วสันต์ เตชะอัครเกษม' });
+  assert.ok(resWasan.profile);
+  assert.equal(resWasan.profile.currentPosition, 'ผู้บัญชาการตำรวจภูธรภาค2');
+  assert.equal(resWasan.profile.positionBeforeOrder, 'รองผู้บัญชาการตำรวจนครบาล');
+  assert.ok(resWasan.profile.previousPosition.includes('รองผู้บัญชาการตำรวจนครบาล'));
+  assert.ok(resWasan.profile.previousPosition.includes('รอง ผบช.'));
+  assert.ok(resWasan.profile.previousPosition.includes('1 ต.ค. 2565'));
+  assert.equal(resWasan.profile.previousPositionDate, '1/10/2565');
+  assert.equal(resWasan.profile.previousPositionDateThai, '1 ต.ค. 2565');
+  assert.equal(resWasan.profile.seniorityOrder, 22);
+  assert.equal(resWasan.profile.quotaAssessment?.groupKey, 'knowledge_promoted');
 });

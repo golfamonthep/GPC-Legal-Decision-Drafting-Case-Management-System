@@ -812,6 +812,22 @@
   border-color: var(--wb-border-strong);
   transform: translateY(-1px);
 }
+.analysis-workbench .person-bento-card.person-bento-card-wide {
+  grid-column: span 2;
+}
+@media (max-width: 900px) {
+  .analysis-workbench .person-bento-card.person-bento-card-wide {
+    grid-column: 1 / -1;
+  }
+}
+.analysis-workbench .rank-change-inline {
+  color: #1d4ed8;
+  font-weight: 700;
+  margin-left: 4px;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .rank-change-inline {
+  color: #93c5fd;
+}
 .analysis-workbench .bento-label {
   font-size: 13.5px;
   font-weight: 700;

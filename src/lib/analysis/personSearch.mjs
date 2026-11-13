@@ -1204,11 +1204,23 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
   // Previous position display
   const prevLevelLabel = tenureInfo.previousLevelLabel || 'ระดับก่อนหน้า';
   const prevPosDateParsed = parseThaiDateBE(effectivePrevPosDate);
-  const previousPositionDisplay = manualPrevPos
-    ? manualPrevPos
-    : prevPosDateParsed
-      ? `ดำรงตำแหน่งระดับ ${prevLevelLabel} เมื่อวันที่ ${prevPosDateParsed.formattedThai}`
-      : `ระดับ ${prevLevelLabel} (ตรวจสอบจากตารางประวัติการดำรงตำแหน่ง)`;
+  const currentPosDateParsed = parseThaiDateBE(effectiveCurrentPosDate);
+
+  let previousPositionDisplay;
+  if (manualPrevPos) {
+    previousPositionDisplay = manualPrevPos;
+  } else if (isPromotedToHigherLevel) {
+    // For an officer promoted to a higher level in order 2569 (e.g. from รอง ผบช. to ผบช.):
+    // Their true previous level is their candidate level before promotion (effectiveLevel / รอง ผบช.)!
+    const sourceLevelText = target?.positionBeforeOrder
+      ? `${target.positionBeforeOrder} (ระดับ ${effectiveLevel})`
+      : `ระดับ ${effectiveLevel}`;
+    previousPositionDisplay = `${sourceLevelText}${currentPosDateParsed ? ` เมื่อวันที่ ${currentPosDateParsed.formattedThai}` : ''}${prevPosDateParsed ? ` (ก่อนหน้านั้นระดับ ${prevLevelLabel} เมื่อวันที่ ${prevPosDateParsed.formattedThai})` : ''}`;
+  } else if (prevPosDateParsed) {
+    previousPositionDisplay = `ดำรงตำแหน่งระดับ ${prevLevelLabel} เมื่อวันที่ ${prevPosDateParsed.formattedThai}`;
+  } else {
+    previousPositionDisplay = `ระดับ ${prevLevelLabel} (ตรวจสอบจากตารางประวัติการดำรงตำแหน่ง)`;
+  }
 
   // Raw promoted officers in this level & account (sorted by seniorityOrder) to compute vacancies & 50% / 100% cutoff
   const rawPromotedInSameAccount = allOfficers
@@ -1426,8 +1438,10 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
           birthDate: effectiveBirthDate,
           birthDateThai: retirementInfo?.birthDateThai || null,
           previousPosition: previousPositionDisplay,
-          previousPositionDate: effectivePrevPosDate,
-          previousPositionDateThai: prevPosDateParsed?.formattedThai || null,
+          previousPositionDate: isPromotedToHigherLevel ? effectiveCurrentPosDate : effectivePrevPosDate,
+          previousPositionDateThai: isPromotedToHigherLevel
+            ? (currentPosDateParsed?.formattedThai || tenureInfo.currentPositionDateThai || null)
+            : (prevPosDateParsed?.formattedThai || null),
           sourceLevel: effectiveLevel,
           sourceAccount: effectiveAccount,
           seniorityOrder: effectiveOrder,

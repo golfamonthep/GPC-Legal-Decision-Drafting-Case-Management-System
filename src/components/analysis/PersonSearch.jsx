@@ -201,40 +201,37 @@ export default function PersonSearch({ onApplyToAnalysis }) {
   </div>
 
   <div class="grid">
-    <div class="card">
-      <div class="card-label">๑. ชื่อ – นามสกุล และสถานะ</div>
-      <div class="card-val">${p.fullNameWithRank}</div>
-      <div class="card-sub">ระดับบัญชี: <strong>${p.sourceLevel}</strong> (สายงาน${p.sourceAccount}) · ${p.appointmentType}</div>
-    </div>
-    <div class="card">
-      <div class="card-label">๒. ลำดับอาวุโสในบัญชี</div>
-      <div class="card-val" style="color:#1e40af;">${p.seniorityDisplay}</div>
-      <div class="card-sub">${p.previousOrder ? `ลำดับอาวุโสเดิม: ${p.previousOrder} · ` : ''}${p.seniorityPdfPage ? `อ้างอิงไฟล์บัญชีอาวุโส หน้า ${p.seniorityPdfPage}` : 'ระบุลำดับเพื่อเปรียบเทียบ'}</div>
-    </div>
-    <div class="card">
-      <div class="card-label">๓. ตำแหน่งปัจจุบัน และตำแหน่งเดิม</div>
+    <div class="card" style="grid-column: span 2;">
+      <div class="card-label">๑. ยศ ชื่อ – นามสกุล ตำแหน่งปัจจุบัน และตำแหน่งเดิมก่อนแต่งตั้ง</div>
       <div class="card-val">${p.currentPosition || '-'}</div>
-      ${p.positionBeforeOrder && p.isAppointedInOrder2569 ? `<div class="card-sub" style="color:#15803d;"><strong>ตำแหน่งเดิม (ก่อนแต่งตั้ง):</strong> ${p.previousRank ? `${p.previousRank} · ` : ''}${p.positionBeforeOrder} (ข้อที่ ${p.appointmentNumber || '-'})</div>` : ''}
-      <div class="card-sub"><strong>ระดับก่อนหน้า:</strong> ${p.previousPosition || '-'}</div>
+      <div class="card-sub"><strong>ยศและชื่อเต็ม:</strong> ${p.fullNameWithRank}${p.rankPromoted && p.previousRank ? ` (เลื่อนยศจาก ${p.previousRank} ➔ ${p.rank})` : ''}</div>
+      ${p.positionBeforeOrder && p.isAppointedInOrder2569 ? `<div class="card-sub" style="color:#15803d;"><strong>ตำแหน่งเดิม (ก่อนแต่งตั้ง):</strong> ${p.previousRank ? `${p.previousRank} · ` : ''}${p.positionBeforeOrder} (ระดับ ${p.sourceLevel} · ข้อที่ ${p.appointmentNumber || '-'})</div>` : ''}
+      ${p.previousPosition ? `<div class="card-sub"><strong>ประวัติระดับก่อนหน้า:</strong> ${p.previousPosition}</div>` : ''}
     </div>
     <div class="card">
-      <div class="card-label">๔. ดำรงตำแหน่งปัจจุบันมาแล้วกี่ปี</div>
+      <div class="card-label">๒. ระยะเวลาดำรงตำแหน่ง (อายุครองตำแหน่ง)</div>
       <div class="card-val">${p.tenure?.tenureDisplay || '-'}</div>
-      <div class="card-sub">วันเริ่มดำรงตำแหน่งระดับปัจจุบัน: <strong>${p.tenure?.currentPositionDateThai || p.tenure?.currentPositionDate || '-'}</strong></div>
+      <div class="card-sub">วันเริ่มดำรงตำแหน่ง: <strong>${p.tenure?.currentPositionDateThai || p.tenure?.currentPositionDate || '-'}</strong> (คำนวณถึงวาระประจำปี พ.ศ. ๒๕๖๙)</div>
+      ${p.tenure?.isPromotedToHigherLevel ? `<div class="card-sub" style="color:#047857;">(อายุครองตำแหน่งระดับเดิม ${p.sourceLevel} ก่อนได้รับการแต่งตั้งเลื่อนระดับ)</div>` : ''}
     </div>
     <div class="card">
-      <div class="card-label">๕. ครบหลักเกณฑ์เลื่อนตำแหน่งสูงขึ้นมาแล้วกี่ปี</div>
+      <div class="card-label">๓. ครบหลักเกณฑ์เลื่อนตำแหน่งสูงขึ้นมาแล้วกี่ปี</div>
       <div class="card-val" style="color:#047857;">${p.tenure?.isPromotedToHigherLevel ? `ครบเกณฑ์และได้เลื่อนเป็น ${p.tenure.currentLevel} แล้ว (วาระ ๒๕๖๙)` : (p.tenure?.eligibilityDisplay || '-')}</div>
       <div class="card-sub"><strong>ตามตำแหน่งปัจจุบัน (${p.tenure?.currentLevel || p.sourceLevel || '-'}):</strong> ${p.tenure?.currentLegalBasis || p.tenure?.legalBasis || ''}</div>
-      ${p.tenure?.isPromotedToHigherLevel ? `<div class="card-sub"><strong>เกณฑ์ขณะดำรงระดับเดิม (${p.sourceLevel}):</strong> ${p.tenure?.eligibilityDisplay || '-'}</div>` : ''}
+      ${p.tenure?.isPromotedToHigherLevel ? `<div class="card-sub"><strong>เกณฑ์ระดับเดิม (${p.sourceLevel}):</strong> ${p.tenure?.eligibilityDisplay || '-'}</div>` : ''}
     </div>
     <div class="card">
-      <div class="card-label">๖. วันเดือนปีเกิด และปีครบเกษียณอายุราชการ (๖๐ ปี)</div>
+      <div class="card-label">๔. ลำดับอาวุโสในบัญชี</div>
+      <div class="card-val" style="color:#1e40af;">${p.seniorityDisplay}</div>
+      <div class="card-sub">ระดับ ${p.sourceLevel} (บัญชี${p.sourceAccount}) · ${p.previousOrder ? `ลำดับอาวุโสเดิม: ${p.previousOrder} · ` : ''}${p.seniorityPdfPage ? `อ้างอิงไฟล์บัญชีอาวุโส หน้า ${p.seniorityPdfPage}` : ''}</div>
+    </div>
+    <div class="card">
+      <div class="card-label">๕. วันเดือนปีเกิด และปีครบเกษียณอายุราชการ (๖๐ ปี)</div>
       <div class="card-val" style="color:#7c2d12;">${p.retirement ? `ครบเกษียณ พ.ศ. ${p.retirement.retirementYearBE}` : 'ไม่ปรากฏข้อมูลวันเกิด'}</div>
       <div class="card-sub">${p.retirement ? `เกิดวันที่ ${p.retirement.birthDateThai} ${p.retirement.bornAfterSep30 ? '(เกิดหลัง 30 ก.ย. ได้บวกปีเกษียณเพิ่ม +1 ปี)' : '(เกิดภายใน 30 ก.ย. คำนวณปีเกษียณปกติ)'} · เหลืออายุราชการ ${p.retirement.remainingYearsFrom2569} ปี` : '-'}</div>
     </div>
     <div class="card" style="grid-column: 1 / -1; background: #f8fafc; border: 1.5px solid #94a3b8; padding: 12px 14px;">
-      <div class="card-label">๗. เกณฑ์กลุ่มการเลื่อนตำแหน่งสูงขึ้น และข้อมูลตำแหน่งว่าง (การตัดโควตาอาวุโส ${p.quotaAssessment?.quotaRatioPct || 50}%)</div>
+      <div class="card-label">๖. เกณฑ์กลุ่มการเลื่อนตำแหน่งสูงขึ้น และข้อมูลตำแหน่งว่าง (การตัดโควตาอาวุโส ${p.quotaAssessment?.quotaRatioPct || 50}%)</div>
       <div class="card-val" style="color:${p.quotaAssessment?.groupKey === 'seniority_50' || p.quotaAssessment?.groupKey === 'seniority_100' ? '#047857' : '#1e40af'}; font-size: 16px; margin-bottom: 8px;">
         ${p.quotaAssessment?.groupLabel || '-'}
       </div>
@@ -561,41 +558,44 @@ export default function PersonSearch({ onApplyToAnalysis }) {
 
           {/* 6 Structured Info Blocks matching user requirements */}
           <div className="person-bento-grid">
-            <div className="person-bento-card">
-              <span className="bento-label">๑. ยศ ชื่อ – นามสกุล และตำแหน่งปัจจุบัน (ล่าสุด)</span>
+            <div className="person-bento-card person-bento-card-wide">
+              <span className="bento-label">๑. ยศ ชื่อ – นามสกุล ตำแหน่งปัจจุบัน และตำแหน่งเดิมก่อนแต่งตั้ง</span>
               <strong className="bento-value">{p.currentPosition || '-'}</strong>
               <p className="bento-sub">
                 <strong>ยศและชื่อเต็ม:</strong> {p.fullNameWithRank}
+                {p.rankPromoted && p.previousRank ? (
+                  <span className="rank-change-inline"> (เลื่อนยศจาก {p.previousRank} ➔ {p.rank})</span>
+                ) : null}
               </p>
               {p.positionBeforeOrder && p.isAppointedInOrder2569 ? (
                 <p className="bento-sub highlight-blue">
                   <strong>ตำแหน่งเดิม (ก่อนแต่งตั้ง):</strong>{' '}
                   {p.previousRank ? `${p.previousRank} · ` : ''}
-                  {p.positionBeforeOrder}
+                  {p.positionBeforeOrder} (ระดับ {p.sourceLevel} · ข้อที่ {p.appointmentNumber || '-'})
+                </p>
+              ) : null}
+              {p.previousPosition ? (
+                <p className="bento-sub">
+                  <strong>ประวัติระดับก่อนหน้า:</strong> {p.previousPosition}
                 </p>
               ) : null}
             </div>
 
             <div className="person-bento-card">
-              <span className="bento-label">๒. ประวัติระดับก่อนหน้า / การแต่งตั้ง</span>
-              <strong className="bento-value">{p.previousPosition || '-'}</strong>
-              <p className="bento-sub">
-                {p.previousPositionDateThai
-                  ? `วันเริ่มดำรงตำแหน่งระดับก่อนหน้า: ${p.previousPositionDateThai}`
-                  : 'ดึงจากคอลัมน์ประวัติการดำรงตำแหน่งในบัญชีอาวุโส'}
-              </p>
-            </div>
-
-            <div className="person-bento-card">
-              <span className="bento-label">๓. ดำรงตำแหน่งปัจจุบันมาแล้วกี่ปี</span>
+              <span className="bento-label">๒. ระยะเวลาดำรงตำแหน่ง (อายุครองตำแหน่ง)</span>
               <strong className="bento-value">{p.tenure?.tenureDisplay || '-'}</strong>
               <p className="bento-sub">
-                วันเริ่มดำรงตำแหน่งปัจจุบัน: <strong>{p.tenure?.currentPositionDateThai || '-'}</strong> (คำนวณถึงวาระประจำปี พ.ศ. ๒๕๖๙)
+                วันเริ่มดำรงตำแหน่ง: <strong>{p.tenure?.currentPositionDateThai || '-'}</strong> (คำนวณถึงวาระประจำปี พ.ศ. ๒๕๖๙)
               </p>
+              {p.tenure?.isPromotedToHigherLevel ? (
+                <p className="bento-sub" style={{ color: '#047857' }}>
+                  (อายุครองตำแหน่งระดับเดิม {p.sourceLevel} ก่อนได้รับการแต่งตั้งเลื่อนระดับ)
+                </p>
+              ) : null}
             </div>
 
             <div className="person-bento-card">
-              <span className="bento-label">๔. ครบหลักเกณฑ์เลื่อนตำแหน่งสูงขึ้นมาแล้วกี่ปี</span>
+              <span className="bento-label">๓. ครบหลักเกณฑ์เลื่อนตำแหน่งสูงขึ้นมาแล้วกี่ปี</span>
               <strong className="bento-value highlight-green">
                 {p.tenure?.isPromotedToHigherLevel
                   ? `ครบเกณฑ์และได้เลื่อนเป็น ${p.tenure.currentLevel} แล้ว (วาระ ๒๕๖๙)`
@@ -614,16 +614,21 @@ export default function PersonSearch({ onApplyToAnalysis }) {
             </div>
 
             <div className="person-bento-card">
-              <span className="bento-label">๕. ลำดับอาวุโสที่</span>
+              <span className="bento-label">๔. ลำดับอาวุโสในบัญชี</span>
               <strong className="bento-value highlight-blue">{p.seniorityDisplay}</strong>
               <p className="bento-sub">
                 ระดับ {p.sourceLevel} (บัญชี{p.sourceAccount})
                 {p.previousOrder ? ` · ลำดับเดิม ${p.previousOrder}` : ''}
               </p>
+              {p.seniorityPdfPage ? (
+                <p className="bento-sub">
+                  อ้างอิงไฟล์บัญชีอาวุโส ครั้งที่ ๔ หน้า {p.seniorityPdfPage}
+                </p>
+              ) : null}
             </div>
 
             <div className="person-bento-card">
-              <span className="bento-label">๖. วันเกิด และปีครบเกษียณอายุราชการ (๖๐ ปี)</span>
+              <span className="bento-label">๕. วันเกิด และปีครบเกษียณอายุราชการ (๖๐ ปี)</span>
               <strong className="bento-value highlight-amber">
                 {p.retirement ? `ครบเกษียณ พ.ศ. ${p.retirement.retirementYearBE}` : 'ไม่ปรากฏข้อมูลวันเกิด'}
               </strong>
@@ -647,7 +652,7 @@ export default function PersonSearch({ onApplyToAnalysis }) {
             {p.quotaAssessment ? (
               <div className="person-bento-card" style={{ gridColumn: '1 / -1' }}>
                 <span className="bento-label">
-                  ๗. เกณฑ์กลุ่มการเลื่อนตำแหน่งสูงขึ้น และข้อมูลตำแหน่งว่าง (การตัดโควตาอาวุโส {p.quotaAssessment.quotaRatioPct || 50}%)
+                  ๖. เกณฑ์กลุ่มการเลื่อนตำแหน่งสูงขึ้น และข้อมูลตำแหน่งว่าง (การตัดโควตาอาวุโส {p.quotaAssessment.quotaRatioPct || 50}%)
                 </span>
                 <strong
                   className={
