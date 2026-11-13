@@ -1367,8 +1367,8 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
   const quotaVacancySummary =
     totalVacanciesFromPromotions > 0 && seniorityCutoffOrder
       ? is100PercentSeniorityLevel
-        ? `ระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) มีตำแหน่งว่างเทียบจากผู้ได้เลื่อนตำแหน่งสูงขึ้นรวม ${totalVacanciesFromPromotions} ตำแหน่ง · คัดเลือกเรียงตามลำดับอาวุโส 100% ตัดที่ลำดับอาวุโสที่ ${seniorityCutoffOrder} (ลำดับที่ 1–${seniorityCutoffOrder})`
-        : `ระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) มีตำแหน่งว่าง (เทียบจากผู้ได้เลื่อนตำแหน่งสูงขึ้น) รวม ${totalVacanciesFromPromotions} ตำแหน่ง · ตัดโควตาอาวุโส 50% ที่ลำดับอาวุโสที่ ${seniorityCutoffOrder} (กลุ่มอาวุโส 50% จำนวน ${seniorityQuotaCount} ตำแหน่ง [ลำดับที่ 1–${seniorityCutoffOrder}] · กลุ่มความรู้ความสามารถ จำนวน ${knowledgeQuotaCount} ตำแหน่ง [คัดเลือกจากลำดับที่ ${seniorityCutoffOrder + 1}${totalPopulation ? `–${totalPopulation}` : ' ขึ้นไป'}])`
+        ? `ระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) มีตำแหน่งว่างทั้งหมด ${totalVacanciesFromPromotions} ตำแหน่ง · เกณฑ์อาวุโส 100% จัดสรรเต็มจำนวน ${seniorityQuotaCount} ตำแหน่ง โดยตัดที่ลำดับอาวุโสที่ ${seniorityCutoffOrder} (ลำดับที่ 1–${seniorityCutoffOrder}) · เหลือว่างกลุ่มอื่น 0 ตำแหน่ง`
+        : `ระดับ ${effectiveLevel} (บัญชี${effectiveAccount}) มีตำแหน่งว่างทั้งหมด ${totalVacanciesFromPromotions} ตำแหน่ง · โควตาอาวุโส 50% จัดสรร ${seniorityQuotaCount} ตำแหน่ง โดยตัดที่ลำดับอาวุโสที่ ${seniorityCutoffOrder} (ลำดับที่ 1–${seniorityCutoffOrder}) · เหลือว่างสำหรับกลุ่มความรู้ความสามารถอีก ${knowledgeQuotaCount} ตำแหน่ง (คัดเลือกจากลำดับที่ ${seniorityCutoffOrder + 1}${totalPopulation ? ` ถึง ${totalPopulation}` : ' ขึ้นไป'})`
       : `ในระดับ ${effectiveLevel || '-'} (บัญชี${effectiveAccount || 'ทั่วไป'}) ยังไม่มีรายการผู้ได้รับเลื่อนตำแหน่งสูงขึ้นในชุดข้อมูลเปรียบเทียบนี้`;
 
   const quotaLegalBasis = is100PercentSeniorityLevel
@@ -1386,6 +1386,15 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     groupKey: quotaGroupKey,
     groupLabel: quotaGroupLabel,
     shortBadge: quotaShortBadge,
+    totalVacanciesText: `ว่างทั้งหมด ${totalVacanciesFromPromotions} ตำแหน่ง`,
+    seniorityCutoffText: seniorityCutoffOrder
+      ? is100PercentSeniorityLevel
+        ? `เกณฑ์อาวุโส 100% ตัดที่ลำดับที่ ${seniorityCutoffOrder} (${seniorityQuotaCount} ตำแหน่ง)`
+        : `โควตาอาวุโส 50% ตัดที่ลำดับที่ ${seniorityCutoffOrder} (${seniorityQuotaCount} ตำแหน่ง)`
+      : '-',
+    knowledgeRemainingText: is100PercentSeniorityLevel
+      ? 'เหลือว่างสำหรับกลุ่มอื่น 0 ตำแหน่ง (อาวุโส 100%)'
+      : `เหลือว่างกลุ่มความรู้ความสามารถ ${knowledgeQuotaCount} ตำแหน่ง`,
     vacancySummary: quotaVacancySummary,
     legalBasis: quotaLegalBasis,
   };

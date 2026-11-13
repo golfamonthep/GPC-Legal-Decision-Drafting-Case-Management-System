@@ -886,6 +886,160 @@
   border-color: #ef444460;
 }
 
+/* Card 7 Quota Highlights & Breakdown */
+.analysis-workbench .quota-metric-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 10px 0 12px;
+}
+@media (max-width: 768px) {
+  .analysis-workbench .quota-metric-tiles {
+    grid-template-columns: 1fr;
+  }
+}
+.analysis-workbench .quota-metric-tile {
+  background: var(--wb-card);
+  border: 1.5px solid var(--wb-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.analysis-workbench .quota-metric-tile.tile-total {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.analysis-workbench .quota-metric-tile.tile-seniority {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+.analysis-workbench .quota-metric-tile.tile-knowledge {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .quota-metric-tile.tile-total {
+  background: #181d26;
+  border-color: #334155;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .quota-metric-tile.tile-seniority {
+  background: #0f2e24;
+  border-color: #059669;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .quota-metric-tile.tile-knowledge {
+  background: #172554;
+  border-color: #2563eb;
+}
+.analysis-workbench .quota-metric-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .quota-metric-title {
+  color: #cbd5e1;
+}
+.analysis-workbench .quota-metric-num {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #0f172a;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .quota-metric-num {
+  color: #ffffff;
+}
+.analysis-workbench .quota-metric-num.text-green {
+  color: #047857;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .quota-metric-num.text-green {
+  color: #34d399;
+}
+.analysis-workbench .quota-metric-num.text-blue {
+  color: #1d4ed8;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .quota-metric-num.text-blue {
+  color: #60a5fa;
+}
+.analysis-workbench .quota-metric-desc {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .quota-metric-desc {
+  color: #94a3b8;
+}
+.analysis-workbench .quota-explanation-box {
+  background: var(--wb-card);
+  border: 1px solid var(--wb-border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-top: 4px;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.analysis-workbench .quota-exp-list {
+  margin: 6px 0 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.analysis-workbench .highlight-tag-total {
+  background: #f1f5f9;
+  color: #0f172a;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  font-weight: 800;
+}
+.analysis-workbench .highlight-tag-seniority {
+  background: #ecfdf5;
+  color: #065f46;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid #a7f3d0;
+  font-weight: 800;
+}
+.analysis-workbench .highlight-tag-knowledge {
+  background: #eff6ff;
+  color: #1e40af;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid #bfdbfe;
+  font-weight: 800;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .highlight-tag-total {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #475569;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .highlight-tag-seniority {
+  background: #064e3b;
+  color: #a7f3d0;
+  border-color: #059669;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .highlight-tag-knowledge {
+  background: #1e3a8a;
+  color: #bfdbfe;
+  border-color: #2563eb;
+}
+.analysis-workbench .text-green-bold {
+  color: #047857;
+  font-weight: 700;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .text-green-bold {
+  color: #34d399;
+}
+.analysis-workbench .text-amber-bold {
+  color: #b45309;
+  font-weight: 700;
+}
+:is(html.dark, html[data-theme="dark"], body.dark, [data-theme="dark"]) .analysis-workbench .text-amber-bold {
+  color: #fbbf24;
+}
+
 /* 5. Rank History Timeline Box */
 .analysis-workbench .person-timeline-box {
   background: var(--wb-card);

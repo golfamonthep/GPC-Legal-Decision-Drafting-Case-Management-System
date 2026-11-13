@@ -17,7 +17,7 @@ const QUICK_SAMPLE_NAMES = [
 ];
 
 export default function PersonSearch({ onApplyToAnalysis }) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState('อาชยน ไกรทอง');
   const [level, setLevel] = useState('');
   const [account, setAccount] = useState('');
   const [order, setOrder] = useState('');
@@ -77,8 +77,10 @@ export default function PersonSearch({ onApplyToAnalysis }) {
   }
 
   useEffect(() => {
-    runSearch({ q: 'อาชยน ไกรทอง' });
-    setQuery('อาชยน ไกรทอง');
+    const timer = setTimeout(() => {
+      runSearch({ q: 'อาชยน ไกรทอง' });
+    }, 0);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -231,11 +233,43 @@ export default function PersonSearch({ onApplyToAnalysis }) {
       <div class="card-val" style="color:#7c2d12;">${p.retirement ? `ครบเกษียณ พ.ศ. ${p.retirement.retirementYearBE}` : 'ไม่ปรากฏข้อมูลวันเกิด'}</div>
       <div class="card-sub">${p.retirement ? `เกิดวันที่ ${p.retirement.birthDateThai} ${p.retirement.bornAfterSep30 ? '(เกิดหลัง 30 ก.ย. ได้บวกปีเกษียณเพิ่ม +1 ปี)' : '(เกิดภายใน 30 ก.ย. คำนวณปีเกษียณปกติ)'} · เหลืออายุราชการ ${p.retirement.remainingYearsFrom2569} ปี` : '-'}</div>
     </div>
-    <div class="card" style="grid-column: 1 / -1; background: #f8fafc; border-color: #94a3b8;">
+    <div class="card" style="grid-column: 1 / -1; background: #f8fafc; border: 1.5px solid #94a3b8; padding: 12px 14px;">
       <div class="card-label">๗. เกณฑ์กลุ่มการเลื่อนตำแหน่งสูงขึ้น และข้อมูลตำแหน่งว่าง (การตัดโควตาอาวุโส ${p.quotaAssessment?.quotaRatioPct || 50}%)</div>
-      <div class="card-val" style="color:${p.quotaAssessment?.groupKey === 'seniority_50' || p.quotaAssessment?.groupKey === 'seniority_100' ? '#047857' : '#1e40af'};">${p.quotaAssessment?.groupLabel || '-'}</div>
-      <div class="card-sub"><strong>การคำนวณตำแหน่งว่างและจุดตัดโควตา:</strong> ${p.quotaAssessment?.vacancySummary || '-'}</div>
-      <div class="card-sub"><strong>หลักกฎหมาย:</strong> ${p.quotaAssessment?.legalBasis || '-'}</div>
+      <div class="card-val" style="color:${p.quotaAssessment?.groupKey === 'seniority_50' || p.quotaAssessment?.groupKey === 'seniority_100' ? '#047857' : '#1e40af'}; font-size: 16px; margin-bottom: 8px;">
+        ${p.quotaAssessment?.groupLabel || '-'}
+      </div>
+
+      <!-- 3 Highlight Tiles -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;">
+        <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; background: #ffffff;">
+          <div style="font-size: 11px; color: #475569; font-weight: 700;">๑. ตำแหน่งว่างทั้งหมด</div>
+          <div style="font-size: 16px; font-weight: 700; color: #0f172a; margin: 2px 0;">${p.quotaAssessment?.totalVacancies || 0} ตำแหน่ง</div>
+          <div style="font-size: 10.5px; color: #64748b;">เทียบจากผู้ได้รับเลื่อนสูงขึ้นจริง</div>
+        </div>
+        <div style="border: 1.5px solid #86efac; border-radius: 6px; padding: 8px 10px; background: #f0fdf4;">
+          <div style="font-size: 11px; color: #166534; font-weight: 700;">๒. โควตาอาวุโส ${p.quotaAssessment?.quotaRatioPct || 50}%</div>
+          <div style="font-size: 16px; font-weight: 700; color: #047857; margin: 2px 0;">ตัดที่ลำดับที่ ${p.quotaAssessment?.seniorityCutoffOrder || '-'}</div>
+          <div style="font-size: 10.5px; color: #15803d;">จัดสรร ${p.quotaAssessment?.seniorityQuotaCount || 0} ตำแหน่ง (ลำดับที่ 1–${p.quotaAssessment?.seniorityCutoffOrder || '-'})</div>
+        </div>
+        <div style="border: 1.5px solid #93c5fd; border-radius: 6px; padding: 8px 10px; background: #eff6ff;">
+          <div style="font-size: 11px; color: #1e40af; font-weight: 700;">๓. ${p.quotaAssessment?.is100PercentSeniority ? 'กลุ่มอื่น' : 'เหลือว่างกลุ่มความรู้ความสามารถ'}</div>
+          <div style="font-size: 16px; font-weight: 700; color: #1d4ed8; margin: 2px 0;">${p.quotaAssessment?.is100PercentSeniority ? '0 ตำแหน่ง' : `เหลือว่าง ${p.quotaAssessment?.knowledgeQuotaCount || 0} ตำแหน่ง`}</div>
+          <div style="font-size: 10.5px; color: #1e40af;">${p.quotaAssessment?.is100PercentSeniority ? 'อาวุโส 100% เต็มจำนวน' : `คัดจากลำดับที่ ${p.quotaAssessment?.knowledgeOrderStart || '-'} ถึง ${p.totalSuitablePopulation || '-'}`}</div>
+        </div>
+      </div>
+
+      <!-- Detail Explanation Box with Bold Highlights -->
+      <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 12px; font-size: 12px; line-height: 1.6; margin-bottom: 8px;">
+        <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">ข้อมูลตำแหน่งว่างและการตัดโควตา (สรุปรายละเอียด):</div>
+        <div style="margin-left: 8px;">
+          • <strong>ตำแหน่งว่างทั้งหมด:</strong> ว่างทั้งหมด <strong>${p.quotaAssessment?.totalVacancies || 0} ตำแหน่ง</strong> (ประมวลจากผู้มีรายชื่อในบัญชีนี้ที่ได้รับการแต่งตั้งเลื่อนระดับสูงขึ้นจริง)<br/>
+          • <strong>โควตาอาวุโส ${p.quotaAssessment?.quotaRatioPct || 50}% (ตัดที่ลำดับ):</strong> จัดสรรจำนวน <strong>${p.quotaAssessment?.seniorityQuotaCount || 0} ตำแหน่ง</strong> โดย<strong>ตัดโควตาอาวุโสที่ลำดับที่ ${p.quotaAssessment?.seniorityCutoffOrder || '-'}</strong> (ผู้มีลำดับอาวุโสที่ 1 ถึง ${p.quotaAssessment?.seniorityCutoffOrder || '-'} ได้รับแต่งตั้งเลื่อนระดับในกลุ่มอาวุโสครบถ้วนทุกคน)<br/>
+          • <strong>${p.quotaAssessment?.is100PercentSeniority ? 'ตำแหน่งคงเหลือกลุ่มอื่น:' : 'เหลือว่างกี่ตำแหน่ง (กลุ่มความรู้ความสามารถ):'}</strong> ${p.quotaAssessment?.is100PercentSeniority ? '<strong>0 ตำแหน่ง</strong> (เนื่องจากต้องพิจารณาเรียงตามลำดับอาวุโส 100% เต็มจำนวนตำแหน่งว่าง)' : `เหลือว่างสำหรับกลุ่มความรู้ความสามารถอีก <strong>${p.quotaAssessment?.knowledgeQuotaCount || 0} ตำแหน่ง</strong> (คัดเลือกจากผู้มีลำดับอาวุโสที่ <strong>${p.quotaAssessment?.knowledgeOrderStart || '-'} ถึง ${p.totalSuitablePopulation || '-'}</strong> โดยคำนึงถึงอาวุโสและความรู้ความสามารถประกอบกัน)`}<br/>
+          ${Number.isInteger(p.seniorityOrder) ? `• <strong>สถานะของผู้ค้นหา (${p.fullNameWithRank}):</strong> ลำดับอาวุโสที่ <strong>${p.seniorityOrder}</strong> ➔ ${p.seniorityOrder <= p.quotaAssessment?.seniorityCutoffOrder ? `<span style="color:#047857; font-weight:700;">อยู่ในโควตาอาวุโส ${p.quotaAssessment?.quotaRatioPct || 50}% (ลำดับที่ 1 ถึง ${p.quotaAssessment?.seniorityCutoffOrder})</span>` : `<span style="color:#b45309; font-weight:700;">อยู่ในกลุ่มความรู้ความสามารถ (เกินจุดตัดโควตาอาวุโสลำดับที่ ${p.quotaAssessment?.seniorityCutoffOrder})</span>`}` : ''}
+        </div>
+      </div>
+
+      <div class="card-sub"><strong>หลักกฎหมายอ้างอิง:</strong> ${p.quotaAssessment?.legalBasis || '-'}</div>
     </div>
   </div>
 
@@ -627,10 +661,102 @@ export default function PersonSearch({ onApplyToAnalysis }) {
                 >
                   {p.quotaAssessment.groupLabel}
                 </strong>
-                <p className="bento-sub">
-                  <strong>ข้อมูลตำแหน่งว่างและการตัดโควตา:</strong> {p.quotaAssessment.vacancySummary}
-                </p>
-                <p className="bento-sub">
+
+                {/* 3 Metric Highlight Tiles: ว่างทั้งหมดเท่าใด / โควต้าอาวุโสตัดที่เท่าใด / เหลือว่างกี่ตำแหน่ง */}
+                <div className="quota-metric-tiles">
+                  <div className="quota-metric-tile tile-total">
+                    <span className="quota-metric-title">๑. ตำแหน่งว่างทั้งหมด</span>
+                    <strong className="quota-metric-num">{p.quotaAssessment.totalVacancies} ตำแหน่ง</strong>
+                    <small className="quota-metric-desc">
+                      เทียบจากผู้ได้รับเลื่อนสูงขึ้นจริงในระดับ{p.sourceLevel}
+                    </small>
+                  </div>
+                  <div className="quota-metric-tile tile-seniority">
+                    <span className="quota-metric-title">
+                      ๒. โควตาอาวุโส {p.quotaAssessment.quotaRatioPct}% (ตัดที่ลำดับ)
+                    </span>
+                    <strong className="quota-metric-num text-green">
+                      ตัดที่ลำดับที่ {p.quotaAssessment.seniorityCutoffOrder || '-'}
+                    </strong>
+                    <small className="quota-metric-desc">
+                      จัดสรรจำนวน {p.quotaAssessment.seniorityQuotaCount} ตำแหน่ง (ลำดับที่ 1 ถึง {p.quotaAssessment.seniorityCutoffOrder})
+                    </small>
+                  </div>
+                  <div className="quota-metric-tile tile-knowledge">
+                    <span className="quota-metric-title">
+                      {p.quotaAssessment.is100PercentSeniority
+                        ? '๓. เหลือว่างกลุ่มอื่น'
+                        : '๓. เหลือว่างกลุ่มความรู้ความสามารถ'}
+                    </span>
+                    <strong className="quota-metric-num text-blue">
+                      {p.quotaAssessment.is100PercentSeniority
+                        ? '0 ตำแหน่ง'
+                        : `เหลือว่าง ${p.quotaAssessment.knowledgeQuotaCount} ตำแหน่ง`}
+                    </strong>
+                    <small className="quota-metric-desc">
+                      {p.quotaAssessment.is100PercentSeniority
+                        ? 'พิจารณาเรียงตามลำดับอาวุโส 100% เต็มจำนวน'
+                        : `คัดเลือกจากลำดับที่ ${p.quotaAssessment.knowledgeOrderStart} ถึง ${p.totalSuitablePopulation || '-'}`}
+                    </small>
+                  </div>
+                </div>
+
+                {/* Structured Explanation with Bold Bullet Highlights */}
+                <div className="quota-explanation-box">
+                  <div style={{ fontWeight: 700, color: 'var(--wb-text-main)', marginBottom: '4px' }}>
+                    ข้อมูลตำแหน่งว่างและการตัดโควตา (สรุปรายละเอียด):
+                  </div>
+                  <ul className="quota-exp-list">
+                    <li>
+                      <strong>ตำแหน่งว่างทั้งหมด:</strong> ว่างทั้งหมด{' '}
+                      <strong className="highlight-tag-total">{p.quotaAssessment.totalVacancies} ตำแหน่ง</strong>{' '}
+                      (ประมวลจากผู้มีรายชื่อในบัญชีนี้ที่ได้รับการแต่งตั้งเลื่อนระดับสูงขึ้นจริง)
+                    </li>
+                    <li>
+                      <strong>โควตาอาวุโส {p.quotaAssessment.quotaRatioPct}% (ตัดที่ลำดับ):</strong> จัดสรรจำนวน{' '}
+                      <strong>{p.quotaAssessment.seniorityQuotaCount} ตำแหน่ง</strong> โดย{' '}
+                      <strong className="highlight-tag-seniority">
+                        ตัดโควตาอาวุโสที่ลำดับที่ {p.quotaAssessment.seniorityCutoffOrder}
+                      </strong>{' '}
+                      (ผู้มีลำดับอาวุโสที่ 1 ถึง {p.quotaAssessment.seniorityCutoffOrder} ได้รับแต่งตั้งเลื่อนระดับในกลุ่มอาวุโสครบถ้วนทุกคน)
+                    </li>
+                    <li>
+                      <strong>{p.quotaAssessment.is100PercentSeniority ? 'ตำแหน่งคงเหลือกลุ่มอื่น:' : 'เหลือว่างกี่ตำแหน่ง (กลุ่มความรู้ความสามารถ):'}</strong>{' '}
+                      {p.quotaAssessment.is100PercentSeniority ? (
+                        <span>
+                          เนื่องจากต้องพิจารณาเรียงตามลำดับอาวุโส 100% เต็มจำนวนตำแหน่งว่าง จึง<strong>ไม่มีตำแหน่งคงเหลือสำหรับกลุ่มอื่น</strong>
+                        </span>
+                      ) : (
+                        <span>
+                          เหลือว่างสำหรับกลุ่มความรู้ความสามารถอีก{' '}
+                          <strong className="highlight-tag-knowledge">{p.quotaAssessment.knowledgeQuotaCount} ตำแหน่ง</strong>{' '}
+                          (เปิดให้คัดเลือกจากผู้มีลำดับอาวุโสที่{' '}
+                          <strong>
+                            {p.quotaAssessment.knowledgeOrderStart} ถึง {p.totalSuitablePopulation || '-'}
+                          </strong>{' '}
+                          โดยคำนึงถึงอาวุโสและความรู้ความสามารถประกอบกัน)
+                        </span>
+                      )}
+                    </li>
+                    {Number.isInteger(p.seniorityOrder) ? (
+                      <li style={{ marginTop: '4px', borderTop: '1px dashed var(--wb-border)', paddingTop: '6px' }}>
+                        <strong>สถานะของผู้ค้นหา ({p.fullNameWithRank}):</strong> ลำดับอาวุโสที่{' '}
+                        <strong>{p.seniorityOrder}</strong>{' '}
+                        {p.seniorityOrder <= p.quotaAssessment.seniorityCutoffOrder ? (
+                          <span className="text-green-bold">
+                            ➔ อยู่ในโควตาอาวุโส {p.quotaAssessment.quotaRatioPct}% (เนื่องจากลำดับที่ {p.seniorityOrder} อยู่ในเกณฑ์ลำดับที่ 1 ถึง {p.quotaAssessment.seniorityCutoffOrder})
+                          </span>
+                        ) : (
+                          <span className="text-amber-bold">
+                            ➔ อยู่ในกลุ่มความรู้ความสามารถ (เนื่องจากลำดับที่ {p.seniorityOrder} เกินจุดตัดโควตาอาวุโสลำดับที่ {p.quotaAssessment.seniorityCutoffOrder})
+                          </span>
+                        )}
+                      </li>
+                    ) : null}
+                  </ul>
+                </div>
+
+                <p className="bento-sub" style={{ marginTop: '8px' }}>
                   <strong>หลักกฎหมายอ้างอิง:</strong> {p.quotaAssessment.legalBasis}
                 </p>
               </div>
