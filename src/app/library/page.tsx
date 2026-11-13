@@ -40,18 +40,22 @@ export default async function LibraryPage() {
   let legalSources: any[] = [];
   if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('dummy') && !process.env.DATABASE_URL.includes('[SENSITIVE]')) {
     try {
-      legalSources = await prisma.legalSource.findMany({
-        orderBy: { date: 'desc' },
-        include: {
-          ingestionJobs: {
-            orderBy: { createdAt: 'desc' },
-            take: 1
-          },
-          _count: {
-            select: { documentChunks: true }
+      // A hanging DB must not freeze the menu: fall back after 4s.
+      legalSources = await Promise.race([
+        prisma.legalSource.findMany({
+          orderBy: { date: 'desc' },
+          include: {
+            ingestionJobs: {
+              orderBy: { createdAt: 'desc' },
+              take: 1
+            },
+            _count: {
+              select: { documentChunks: true }
+            }
           }
-        }
-      });
+        }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('DB timeout')), 4000)),
+      ]);
     } catch (e) {
       console.warn("[LibraryPage] Database unavailable, using built-in legal corpus snapshot:", e);
       legalSources = [];

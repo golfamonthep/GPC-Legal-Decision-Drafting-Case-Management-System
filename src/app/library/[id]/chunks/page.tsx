@@ -10,14 +10,18 @@ export default async function ViewChunksPage({ params }: { params: Promise<{ id:
 
   let source: any = null;
   try {
-    source = await prisma.legalSource.findUnique({
-      where: { id },
-      include: {
-        documentChunks: {
-          orderBy: { chunkIndex: 'asc' }
+    // A hanging DB must not freeze the page: fall back after 4s.
+    source = await Promise.race([
+      prisma.legalSource.findUnique({
+        where: { id },
+        include: {
+          documentChunks: {
+            orderBy: { chunkIndex: 'asc' }
+          }
         }
-      }
-    });
+      }),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('DB timeout')), 4000)),
+    ]);
   } catch (e) {
     console.warn("[ViewChunksPage] Database unavailable, falling back to static law corpus:", e);
   }
