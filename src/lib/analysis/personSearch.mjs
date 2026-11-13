@@ -853,7 +853,9 @@ export function searchAndComparePerson(knowledgeBundle, params = {}) {
     const norm = normalizeName(cleanFullName || rawFullName);
     if (!norm) continue;
     const isPromoted = Boolean(
-      (sen.promotion_outcome && (sen.promotion_outcome.includes('ได้เลื่อน') || sen.promotion_outcome.includes('พบในรายการ'))) ||
+      (sen.promotion_outcome &&
+        !sen.promotion_outcome.startsWith('ไม่พบ') &&
+        (sen.promotion_outcome.includes('ได้เลื่อน') || sen.promotion_outcome.includes('พบในรายการ'))) ||
       sen.new_position
     );
     const stdLevel = canonicalLevel(sen.source_level || '');

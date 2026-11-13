@@ -164,7 +164,7 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.equal(res.zeroApiCost, true);
   assert.ok(res.profile);
   assert.equal(res.profile.name, 'อาชยน ไกรทอง');
-  assert.equal(res.profile.seniorityOrder, 4);
+  assert.equal(res.profile.seniorityOrder, 3);
   assert.equal(res.profile.retirement?.bornAfterSep30, true);
   assert.equal(res.profile.retirement?.retirementYearBE, 2574);
   assert.equal(res.profile.comparison.juniorPromotedCount, 3);
@@ -180,14 +180,14 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.ok(res.totalMatches > 0);
   assert.ok(res.suggestions.length > 0);
 
-  // 6. Verification of OCR-corrected roster officer (พันตำรวจเอก ชิตภพ โตเหมือน, order 181 / 618)
+  // 6. Verification of OCR-corrected roster officer (พันตำรวจเอก ชิตภพ โตเหมือน, Round 4 order 180 / 610)
   const resChitphop = searchAndComparePerson(snapshot, { q: 'ชิตภพ โตเหมือน' });
   assert.ok(resChitphop.profile);
   assert.equal(resChitphop.profile.foundInDatabase, true);
   assert.equal(resChitphop.profile.name, 'ชิตภพ โตเหมือน');
   assert.equal(resChitphop.profile.rank, 'พันตำรวจเอก');
-  assert.equal(resChitphop.profile.seniorityOrder, 181);
-  assert.equal(resChitphop.profile.totalSuitablePopulation, 618);
+  assert.equal(resChitphop.profile.seniorityOrder, 180);
+  assert.equal(resChitphop.profile.totalSuitablePopulation, 610);
   assert.equal(resChitphop.profile.currentPositionDate, '22/12/2563');
   assert.equal(resChitphop.profile.birthDate, '7/05/2514');
   assert.equal(resChitphop.profile.retirement?.retirementYearBE, 2574);
@@ -197,7 +197,7 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   const resSurname = searchAndComparePerson(snapshot, { q: 'โตเหมือน' });
   assert.ok(resSurname.profile);
   assert.equal(resSurname.profile.name, 'ชิตภพ โตเหมือน');
-  assert.equal(resSurname.profile.seniorityOrder, 181);
+  assert.equal(resSurname.profile.seniorityOrder, 180);
 
   const resFullRankQuery = searchAndComparePerson(snapshot, { q: 'พันตำรวจเอก ชิตภพ โตเหมือน' });
   assert.equal(resFullRankQuery.profile?.name, 'ชิตภพ โตเหมือน');
@@ -270,4 +270,32 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.equal(searchAndComparePerson(snapshot, { q: 'อาชย ไกรทง' }).profile?.name, 'อาชยน ไกรทอง');
   assert.equal(searchAndComparePerson(snapshot, { q: 'ทำนูน เชาววนิช' }).profile?.name, 'ธรรมนูญ เชาวะวนิชย์');
   assert.ok(searchAndComparePerson(snapshot, { q: 'กิตติพงศ' }).totalMatches > 0);
+
+  // 14. Verification of Round 4 seniority roster officers (ลักขณา ศักดิแพทย์ #76/95 + 331 OpenThai restored names)
+  const resLakkhana = searchAndComparePerson(snapshot, { q: 'ลักขณา ศักดิแพทย์' });
+  assert.equal(resLakkhana.profile?.foundInDatabase, true);
+  assert.equal(resLakkhana.profile?.name, 'ลักขณา ศักดิแพทย์');
+  assert.equal(resLakkhana.profile?.rank, 'พลตำรวจตรีหญิง');
+  assert.equal(resLakkhana.profile?.currentPosition, 'รอง ผบช.สตส.');
+  assert.equal(resLakkhana.profile?.seniorityOrder, 76);
+  assert.equal(resLakkhana.profile?.totalSuitablePopulation, 95);
+  assert.equal(resLakkhana.profile?.currentPositionDate, '4/02/2568');
+  assert.equal(resLakkhana.profile?.comparison?.juniorPromotedCount, 1);
+
+  const resLakkhanaAlt = searchAndComparePerson(snapshot, { q: 'ลักขณา ศักดิ์แพทย์' });
+  assert.equal(resLakkhanaAlt.profile?.name, 'ลักขณา ศักดิแพทย์');
+
+  for (const name of [
+    'สมควร พึ่งทรัพย์',
+    'โสภณ สารพัฒน์',
+    'ชูสวัสดิ์ จันทร์โรจนกิจ',
+    'ณัฐนนท์ ประชุม',
+    'สุรพงษ์ ถนอมจิตร',
+    'ชุลีรัตน์ สงคศิริ',
+    'ธีรเดช ธรรมสุธีร์',
+  ]) {
+    const r = searchAndComparePerson(snapshot, { q: name });
+    assert.equal(r.profile?.foundInDatabase, true, `Should find Round 4 restored officer ${name}`);
+    assert.equal(r.profile?.name, name);
+  }
 });
