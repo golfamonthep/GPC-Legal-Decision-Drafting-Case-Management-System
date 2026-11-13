@@ -209,7 +209,6 @@ async function main() {
     results.push(res);
   }
 
-  const cloudStatus = await pushToCloudAndGit();
   const snap = loadCasesSnapshot();
   const thaiNow = new Date().toLocaleString('th-TH', {
     year: 'numeric',
@@ -218,9 +217,8 @@ async function main() {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
+    hour12: false,
   });
-
-  appendSyncLog(`[Auto-Sync Complete] ซิงค์ไฟล์ทะเบียนคุมครบทั้งหมด ${results.length} ไฟล์เรียบร้อย (รวม ${snap.summary.total} คดี)`);
 
   if (showPopup || showNotify) {
     const recentList = (snap.recentChanges || [])
@@ -231,20 +229,19 @@ async function main() {
     const popupLines = [
       `✅ อัปเดตฐานข้อมูลเว็บไซต์ ก.พ.ค.ตร. สำเร็จเรียบร้อย!`,
       ``,
-      `🕒 เวลาซิงค์ล่าสุด: ${thaiNow} น.`,
+      `🕒 เวลาตรวจสอบ/ซิงค์ล่าสุด: ${thaiNow} น.`,
       `📊 ข้อมูลในระบบทั้งหมด: ${snap.summary.total} เรื่อง`,
       `   • เรื่องร้องทุกข์: ${snap.summary.complaint} เรื่อง`,
       `   • เรื่องอุทธรณ์: ${snap.summary.appeal} เรื่อง`,
-      `   • มีบันทึกการดำเนินการ: ${snap.summary.withProceedingNotes ?? 199} เรื่อง`,
+      `   • มีบันทึกการดำเนินการ: ${snap.summary.withProceedingNotes ?? 198} เรื่อง`,
       `   • เสร็จสิ้น: ${snap.summary.completed} เรื่อง | อยู่ระหว่างดำเนินการ: ${snap.summary.pending} เรื่อง`,
       ``,
       recentList ? `🔄 รายการที่มีการแก้ไข/เพิ่มเติมล่าสุด:\n${recentList}` : `🔄 ข้อมูลทั้งหมดตรงกับไฟล์ Excel ล่าสุดแล้ว`,
       ``,
-      `🌐 สถานะคลาวด์: ${cloudStatus.cloudSynced || cloudStatus.gitPushed ? 'ส่งข้อมูลขึ้นเว็บไซต์สำเร็จเรียบร้อย' : 'บันทึกสแน็ปช็อตในเครื่องสำเร็จ'}`,
+      `🌐 ระบบกำลังซิงค์ข้อมูลขึ้นเว็บไซต์คลาวด์อัตโนมัติ...`,
     ].join('\n');
 
-    // If --notify (automatic background trigger on Excel save/close), auto-close popup after 7 seconds.
-    // If --popup (user manually double-clicked shortcut), auto-close after 20 seconds or when user clicks OK.
+    // Show popup immediately (<1s) so user gets instant confirmation
     showWindowsPopup(
       'ระบบออโต้อัปเดตทะเบียนคุม ก.พ.ค.ตร.',
       popupLines,
@@ -252,6 +249,9 @@ async function main() {
       64
     );
   }
+
+  await pushToCloudAndGit();
+  appendSyncLog(`[Auto-Sync Complete] ซิงค์ไฟล์ทะเบียนคุมครบทั้งหมด ${results.length} ไฟล์เรียบร้อย (รวม ${snap.summary.total} คดี)`);
 }
 
 main().catch((err) => {

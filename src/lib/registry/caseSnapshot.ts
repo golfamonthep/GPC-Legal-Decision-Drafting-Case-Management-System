@@ -237,7 +237,9 @@ export function upsertRowsToSnapshot(
   const completedCases = snapshot.cases.filter(c => c.currentStatus === 'เสร็จสิ้น');
   const withNotesCases = snapshot.cases.filter(c => c.proceedingNote && c.proceedingNote.trim() !== '');
 
-  snapshot.updatedAt = now;
+  if (changedCount > 0 || !snapshot.updatedAt) {
+    snapshot.updatedAt = now;
+  }
   snapshot.summary = {
     total: snapshot.cases.length,
     complaint: complaintCases.length,
@@ -256,7 +258,9 @@ export function upsertRowsToSnapshot(
     snapshot.recentChanges = [];
   }
 
-  saveCasesSnapshot(snapshot);
+  if (changedCount > 0 || !fs.existsSync(SNAPSHOT_PATH)) {
+    saveCasesSnapshot(snapshot);
+  }
 
   return {
     updatedCount,
