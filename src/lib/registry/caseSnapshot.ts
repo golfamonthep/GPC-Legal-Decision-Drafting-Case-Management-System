@@ -184,7 +184,7 @@ export function upsertRowsToSnapshot(
       const labels: string[] = [];
       if (!existing) labels.push('เพิ่มคดีใหม่');
       else {
-        if (courtChanged && r.isAdminCourt) labels.push(r.isOrangeRow ? 'ฟ้องศาลปกครอง (แถวส้ม)' : 'ฟ้องศาลปกครอง');
+        if (courtChanged && r.isAdminCourt) labels.push('ฟ้องศาลปกครอง');
         if (noteChanged) labels.push('อัปเดตการดำเนินการ');
         if (redChanged) labels.push(`เรื่องแดง: ${r.registryRedText || '-'}`);
         if (statusChanged && !redChanged) labels.push(`สถานะ: ${r.currentStatus}`);

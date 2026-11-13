@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { DashboardSnapshot } from "../../lib/dashboard/types";
 import { CompletionRing, RankedBars, YearOutcomeBars, type RegistryAccent } from "./BacklogCharts";
 import { OfficerPerformance } from "./OfficerPerformance";
-import { IconClockHour4 } from '@tabler/icons-react';
+import { IconClockHour4, IconScale } from '@tabler/icons-react';
 
 const number = new Intl.NumberFormat("th-TH");
 
@@ -10,6 +10,8 @@ export function RegistryOverview({ title, snapshot, canViewDetails, accent, year
   title: string; snapshot: DashboardSnapshot; canViewDetails: boolean; accent: RegistryAccent;
   yearMax: number; officerMax: number; responsibilityMax: number;
 }) {
+  const adminCourtCases = snapshot.adminCourtCases ?? [];
+
   return <section id={accent === "teal" ? "registry-complaint" : "registry-appeal"} aria-label={title} className="min-w-0 scroll-mt-5 rounded-[1.75rem] border border-white/[0.06] bg-[#0e0e11] p-4 sm:p-5">
     <div className="space-y-4">
     <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/[0.08] pb-4">
@@ -18,6 +20,7 @@ export function RegistryOverview({ title, snapshot, canViewDetails, accent, year
         <div><dt className="text-xs text-zinc-400">คงเหลือที่ค้าง</dt><dd className="mt-1 text-3xl font-bold tabular-nums text-white">{number.format(snapshot.kpis.active)} <span className="text-sm font-normal text-zinc-400">เรื่อง</span></dd></div>
         <div><dt className="text-xs text-zinc-400">เสร็จสิ้น</dt><dd className="mt-2 text-xl font-semibold text-white">{number.format(snapshot.totalCases - snapshot.kpis.active)}</dd></div>
         <div><dt className="text-xs text-zinc-400">ทะเบียนทั้งหมด</dt><dd className="mt-2 text-xl font-semibold text-white">{number.format(snapshot.totalCases)}</dd></div>
+        <div><dt className="text-xs text-amber-700">ฟ้องศาลปกครอง</dt><dd className="mt-2 text-xl font-semibold text-amber-700 tabular-nums">{number.format(adminCourtCases.length)}</dd></div>
       </dl>
     </div>
     <div className="grid min-w-0 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.15fr)_minmax(0,1.05fr)]">
@@ -26,6 +29,53 @@ export function RegistryOverview({ title, snapshot, canViewDetails, accent, year
       <div className="min-w-0 md:col-span-2 xl:col-span-1">
       <RankedBars title="เรื่องค้างแยกตามนิติกร" note="หน่วย: ภาระรับผิดชอบ · เรื่องร่วมอาจนับให้หลายคน" data={snapshot.backlog.byOfficer} total={snapshot.kpis.active} scaleMax={officerMax} accent={accent} />
       </div>
+    </div>
+    <div className="min-w-0 rounded-2xl border border-amber-500/35 bg-[#131317] p-4">
+      <div className="flex items-center justify-between gap-2 pb-3 border-b border-white/[0.06]">
+        <h3 className="inline-flex items-center gap-2 text-sm font-bold text-white">
+          <IconScale size={16} className="text-amber-700" aria-hidden="true" />
+          <span>เรื่องที่ฟ้องศาลปกครอง · {number.format(adminCourtCases.length)} เรื่อง</span>
+        </h3>
+      </div>
+      {!canViewDetails ? (
+        <p className="mt-3 text-sm text-zinc-400">บัญชีนี้ไม่มีสิทธิ์ดูรายละเอียดเรื่อง</p>
+      ) : adminCourtCases.length ? (
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          {adminCourtCases.map((item) => (
+            <article key={item.id} className="min-w-0 rounded-xl border border-amber-500/20 bg-[#17171c] p-4">
+              <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[11px] text-zinc-400">{accent === 'teal' ? 'ผู้ร้องทุกข์' : 'ผู้อุทธรณ์'}</p>
+                  <h4 className="mt-0.5 break-words text-base font-bold text-white">{item.petitionerName || 'ยังไม่ระบุชื่อผู้ร้อง'}</h4>
+                </div>
+                <span className="inline-flex items-center rounded-md border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-semibold text-zinc-300">
+                  {item.status}
+                </span>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-400">
+                <Link href={`/cases/${item.id}`} className="font-bold text-white underline-offset-2 hover:underline">
+                  เรื่องดำ {item.blackNumber}
+                </Link>
+                {(item.registryRedText || item.redNumber) && (
+                  <span>เรื่องแดง {item.registryRedText || item.redNumber}</span>
+                )}
+                <span>นิติกร: {item.legalOfficer}</span>
+              </div>
+              <p className="mt-2 break-words text-sm text-zinc-300">{item.subject}</p>
+              {item.proceedingNote ? (
+                <>
+                  <p className="mt-2 text-xs font-semibold text-zinc-400">การดำเนินการล่าสุด</p>
+                  <p className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-300 [overflow-wrap:anywhere]">
+                    {item.proceedingNote}
+                  </p>
+                </>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 rounded-xl bg-[#17171c] p-4 text-sm font-medium text-zinc-400">ไม่มีเรื่องที่ฟ้องศาลปกครองในทะเบียนนี้</p>
+      )}
     </div>
     <details className="group min-w-0 rounded-2xl border border-white/[0.08] bg-[#131317] px-4 py-1">
       <summary className="flex min-h-11 cursor-pointer items-center justify-between rounded py-3 text-sm font-bold text-white transition hover:text-[#d62839] focus-visible:outline-2 focus-visible:outline-[#c81e2b]"><span>รายละเอียดเรื่องค้าง · {number.format(snapshot.kpis.active)} เรื่อง</span><span className="text-xs text-zinc-400 transition-transform duration-200 group-open:rotate-180">▼</span></summary>
