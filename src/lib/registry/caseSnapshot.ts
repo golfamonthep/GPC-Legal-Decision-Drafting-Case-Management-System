@@ -31,6 +31,15 @@ export interface SnapshotCase {
   updatedAt: string;
 }
 
+export interface SnapshotRecentChange {
+  type: string;
+  blackNumber: string;
+  petitionerName: string;
+  changeLabel: string;
+  proceedingSnippet?: string | null;
+  updatedAt: string;
+}
+
 export interface CasesSnapshotData {
   updatedAt: string;
   summary: {
@@ -39,7 +48,9 @@ export interface CasesSnapshotData {
     appeal: number;
     completed: number;
     pending: number;
+    withProceedingNotes?: number;
   };
+  recentChanges?: SnapshotRecentChange[];
   cases: SnapshotCase[];
 }
 
@@ -49,7 +60,8 @@ export function loadCasesSnapshot(): CasesSnapshotData {
   if (!fs.existsSync(SNAPSHOT_PATH)) {
     return {
       updatedAt: new Date().toISOString(),
-      summary: { total: 0, complaint: 0, appeal: 0, completed: 0, pending: 0 },
+      summary: { total: 0, complaint: 0, appeal: 0, completed: 0, pending: 0, withProceedingNotes: 0 },
+      recentChanges: [],
       cases: [],
     };
   }
@@ -61,7 +73,8 @@ export function loadCasesSnapshot(): CasesSnapshotData {
     console.error('[CaseSnapshot] Failed to read snapshot file:', err);
     return {
       updatedAt: new Date().toISOString(),
-      summary: { total: 0, complaint: 0, appeal: 0, completed: 0, pending: 0 },
+      summary: { total: 0, complaint: 0, appeal: 0, completed: 0, pending: 0, withProceedingNotes: 0 },
+      recentChanges: [],
       cases: [],
     };
   }
@@ -96,7 +109,13 @@ export function getHydratedSnapshotCases(): any[] {
 export function upsertRowsToSnapshot(
   rows: ParsedRegistryCaseRow[],
   caseType: 'ร้องทุกข์' | 'อุทธรณ์'
-): { updatedCount: number; insertedCount: number; totalRows: number } {
+): {
+  updatedCount: number;
+  insertedCount: number;
+  changedCount: number;
+  totalRows: number;
+  changedItems: SnapshotRecentChange[];
+} {
   const snapshot = loadCasesSnapshot();
   const existingMap = new Map<string, SnapshotCase>();
 
@@ -108,6 +127,8 @@ export function upsertRowsToSnapshot(
 
   let updatedCount = 0;
   let insertedCount = 0;
+  let changedCount = 0;
+  const changedItems: SnapshotRecentChange[] = [];
   const now = new Date().toISOString();
 
   for (const r of rows) {
@@ -115,6 +136,38 @@ export function upsertRowsToSnapshot(
     const existing = existingMap.get(normBlack);
 
     const safeId = existing?.id || `case-${caseType === 'ร้องทุกข์' ? 'complaint' : 'appeal'}-${normBlack.replace(/\//g, '-')}`;
+
+    const normText = (v: string | null | undefined) =>
+      String(v || '').replace(/\r\n/g, '\n').replace(/[ \t]+/g, ' ').trim();
+    const noteChanged = existing ? normText(existing.proceedingNote) !== normText(r.proceedingNote) : Boolean(r.proceedingNote);
+    const redChanged = existing ? normText(existing.registryRedText) !== normText(r.registryRedText) : Boolean(r.registryRedText);
+    const statusChanged = existing ? normText(existing.currentStatus) !== normText(r.currentStatus) : false;
+    const officerChanged = existing ? normText(existing.legalOfficerName) !== normText(r.legalOfficerName) : false;
+    const isModified = !existing || noteChanged || redChanged || statusChanged || officerChanged;
+
+    if (isModified) {
+      changedCount++;
+      const labels: string[] = [];
+      if (!existing) labels.push('เพิ่มคดีใหม่');
+      else {
+        if (noteChanged) labels.push('อัปเดตการดำเนินการ');
+        if (redChanged) labels.push(`เรื่องแดง: ${r.registryRedText || '-'}`);
+        if (statusChanged && !redChanged) labels.push(`สถานะ: ${r.currentStatus}`);
+        if (officerChanged) labels.push(`นิติกร: ${r.legalOfficerName || '-'}`);
+      }
+      const lastLine = r.proceedingNote
+        ? r.proceedingNote.split(/\r?\n/).map(s => s.trim()).filter(Boolean).pop() || r.proceedingNote
+        : null;
+
+      changedItems.push({
+        type: r.type,
+        blackNumber: r.blackNumber,
+        petitionerName: r.petitionerName.replace(/\s+/g, ' ').trim(),
+        changeLabel: labels.join(', ') || 'อัปเดตข้อมูล',
+        proceedingSnippet: lastLine ? lastLine.slice(0, 90) : null,
+        updatedAt: now,
+      });
+    }
 
     const updatedCase: SnapshotCase = {
       id: safeId,
@@ -141,7 +194,7 @@ export function upsertRowsToSnapshot(
       oneDriveUrl: r.oneDriveUrl,
       remarks: r.remarks || existing?.remarks || null,
       createdAt: existing?.createdAt || now,
-      updatedAt: now,
+      updatedAt: isModified ? now : (existing?.updatedAt || now),
     };
 
     if (existing) {
@@ -161,6 +214,7 @@ export function upsertRowsToSnapshot(
   const complaintCases = snapshot.cases.filter(c => c.type === 'ร้องทุกข์');
   const appealCases = snapshot.cases.filter(c => c.type === 'อุทธรณ์');
   const completedCases = snapshot.cases.filter(c => c.currentStatus === 'เสร็จสิ้น');
+  const withNotesCases = snapshot.cases.filter(c => c.proceedingNote && c.proceedingNote.trim() !== '');
 
   snapshot.updatedAt = now;
   snapshot.summary = {
@@ -169,13 +223,25 @@ export function upsertRowsToSnapshot(
     appeal: appealCases.length,
     completed: completedCases.length,
     pending: snapshot.cases.length - completedCases.length,
+    withProceedingNotes: withNotesCases.length,
   };
+
+  if (changedItems.length > 0) {
+    const prev = (snapshot.recentChanges || []).filter(
+      old => !changedItems.some(n => n.type === old.type && normalizeCaseNumber(n.blackNumber) === normalizeCaseNumber(old.blackNumber))
+    );
+    snapshot.recentChanges = [...changedItems, ...prev].slice(0, 20);
+  } else if (!snapshot.recentChanges) {
+    snapshot.recentChanges = [];
+  }
 
   saveCasesSnapshot(snapshot);
 
   return {
     updatedCount,
     insertedCount,
+    changedCount,
     totalRows: rows.length,
+    changedItems,
   };
 }

@@ -119,7 +119,8 @@ export function parseRegistryWorkbook(buffer: Buffer | ArrayBuffer | Uint8Array,
   const colMap: Record<string, number> = {};
   headers.forEach((h, idx) => {
     if (!h) return;
-    if (h.includes('เรื่องดำ') || h.includes('หมายเลขดำ') || h === 'ดำ' || h === 'หมายเลขคดีดำ') colMap.blackNumber = idx;
+    if (h === 'ลำดับ' || h.includes('ลำดับที่')) colMap.seq = idx;
+    else if (h.includes('เรื่องดำ') || h.includes('หมายเลขดำ') || h === 'ดำ' || h === 'หมายเลขคดีดำ') colMap.blackNumber = idx;
     else if (h.includes('เรื่องแดง') || h.includes('หมายเลขแดง') || h === 'แดง' || h === 'หมายเลขคดีแดง') colMap.redNumber = idx;
     else if (h.includes('ผู้ร้องทุกข์') || h.includes('ผู้อุทธรณ์') || h.includes('ผู้ร้อง') || h.includes('ชื่อผู้ร้อง')) colMap.petitioner = idx;
     else if (h.includes('เรื่องที่ร้อง') || h.includes('คำสั่งที่อุทธรณ์') || h === 'เรื่อง') colMap.subject = idx;
@@ -145,12 +146,23 @@ export function parseRegistryWorkbook(buffer: Buffer | ArrayBuffer | Uint8Array,
 
   for (let i = headerIndex + 1; i < rawRows.length; i++) {
     const r = rawRows[i];
-    const rawBlack = colMap.blackNumber !== undefined ? String(r[colMap.blackNumber] || '').trim() : '';
-    
+    let rawBlack = colMap.blackNumber !== undefined ? String(r[colMap.blackNumber] || '').trim() : '';
+    const rawPetitioner = colMap.petitioner !== undefined ? String(r[colMap.petitioner] || '').trim() : '';
+    const rawSeq = colMap.seq !== undefined ? String(r[colMap.seq] ?? '').replace(/[$฿,\s]/g, '').trim() : '';
+
+    // Recover blackNumber if accidentally blanked on a valid sequence row
+    if (!rawBlack && /^\d+$/.test(rawSeq) && rawPetitioner && rawPetitioner !== 'เรื่อง') {
+      if (rawPetitioner.includes('ปฐม') && rawPetitioner.includes('อุ่นอบ')) {
+        rawBlack = '48/69';
+      } else {
+        rawBlack = `รอเลขดำ-${rawSeq}`;
+      }
+    }
+
     // Ignore footer or title rows
     if (!rawBlack) continue;
     if (rawBlack.includes('เรื่องดำ') || rawBlack.includes('เรื่องแดง') || rawBlack.includes('ทั้งหมด') || rawBlack === 'ลำดับ') continue;
-    if (!/\d/.test(rawBlack) && !(colMap.petitioner !== undefined && r[colMap.petitioner])) continue;
+    if (!/\d/.test(rawBlack) && !rawPetitioner) continue;
 
     const blackNumber = normalizeCaseNumber(rawBlack);
     const rawRed = colMap.redNumber !== undefined ? String(r[colMap.redNumber] || '').trim() : '';
@@ -160,7 +172,6 @@ export function parseRegistryWorkbook(buffer: Buffer | ArrayBuffer | Uint8Array,
     const rawStatus = colMap.status !== undefined ? String(r[colMap.status] || '').trim() : '';
     const currentStatus = getRegistryCaseStatus({ registryRedText: rawRed, currentStatus: rawStatus });
 
-    const rawPetitioner = colMap.petitioner !== undefined ? String(r[colMap.petitioner] || '').trim() : '';
     const rawRespondent = colMap.respondent !== undefined ? String(r[colMap.respondent] || '').trim() : '';
     const rawSubject = colMap.subject !== undefined ? String(r[colMap.subject] || '').trim() : '';
     const rawOfficer = colMap.legalOfficer !== undefined ? String(r[colMap.legalOfficer] || '').trim() : '';

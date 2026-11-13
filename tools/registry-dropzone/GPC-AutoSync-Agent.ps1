@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     GPC-AutoSync-Agent - Windows Background Auto-Sync Agent for ก.พ.ค.ตร.
@@ -158,7 +158,7 @@ function Run-RegistrySync {
 
                         # Ping Vercel cloud to trigger PostgreSQL database auto-sync
                         try {
-                            $syncUrl = "https://gpc-legal-decision-drafting-case-management-system.vercel.app/api/registry/auto-sync"
+                            $syncUrl = "https://gpc-legal-decision-drafting-case-ma.vercel.app/api/registry/auto-sync"
                             $syncReq = [System.Net.WebRequest]::Create($syncUrl)
                             $syncReq.Method = "POST"
                             $syncReq.Timeout = 6000

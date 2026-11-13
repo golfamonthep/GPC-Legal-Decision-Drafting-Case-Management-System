@@ -9,7 +9,8 @@ import { filterCasesByRegistryCompletion, filterCasesByBlackYear, caseTextSearch
 import { hasPermission } from "@/lib/auth/permissions";
 import { getBlackNumberYear } from "@/lib/dashboard/metrics";
 import { getHydratedSnapshotCases } from "@/lib/registry/caseSnapshot";
-import { hydrateCasesWithSnapshot, scheduleBackgroundDbSync } from "@/lib/registry/dbSync";
+import { hydrateCasesWithSnapshot, scheduleBackgroundDbSync, getSnapshotMetadata } from "@/lib/registry/dbSync";
+import { RegistrySyncStatusBanner } from "@/components/RegistrySyncStatusBanner";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -20,7 +21,7 @@ interface CasesCacheItem {
   timestamp: number;
 }
 const casesPageCache = new Map<string, CasesCacheItem>();
-const CACHE_TTL_MS = 20_000;
+const CACHE_TTL_MS = 3_000;
 
 
 
@@ -94,6 +95,7 @@ export default async function CasesPage({
     const and = Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : [];
     where.AND = [...and, caseTextSearch(query)];
   }
+  const snapshotMeta = getSnapshotMetadata();
   const cacheKey = JSON.stringify({
     typeFilter: typeFilter || '',
     completionStatusFilter: completionStatusFilter || '',
@@ -102,7 +104,8 @@ export default async function CasesPage({
     legalOfficerFilter: legalOfficerFilter || '',
     unassignedFilter: unassignedFilter || '',
     query: query || '',
-    year: year || ''
+    year: year || '',
+    snapRev: snapshotMeta.updatedAt || '',
   });
 
   const now = Date.now();
@@ -144,6 +147,7 @@ export default async function CasesPage({
             decisionResult: true,
             oneDriveUrl: true,
             proceedingNote: true,
+            updatedAt: true,
             owner: { select: { id: true, name: true } },
             legalOfficer: { select: { id: true, name: true } },
           }
@@ -155,7 +159,11 @@ export default async function CasesPage({
     }
 
     if (dbCases && dbCases.length > 0) {
-      hydrateCasesWithSnapshot(dbCases);
+      const canAppendMissing = !legalOfficerFilter && !unassignedFilter && !qaMissingFieldsFilter && !query;
+      hydrateCasesWithSnapshot(dbCases, {
+        appendMissingFromSnapshot: canAppendMissing,
+        typeFilter,
+      });
       scheduleBackgroundDbSync(prisma);
     } else {
       let snapCases = getHydratedSnapshotCases();
@@ -245,7 +253,15 @@ export default async function CasesPage({
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-5">
+        <RegistrySyncStatusBanner
+          updatedAt={snapshotMeta.updatedAt}
+          summary={snapshotMeta.summary}
+          recentChanges={snapshotMeta.recentChanges}
+        />
+      </div>
+
+      <div className="mt-4">
         <CaseListFilters years={years} />
       </div>
 

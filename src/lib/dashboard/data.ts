@@ -69,7 +69,7 @@ class DatabaseDashboardDataSource implements DashboardDataSource {
     ]);
 
     const cases = queries[0].status === "fulfilled" && queries[0].value?.length
-      ? hydrateCasesWithSnapshot(queries[0].value)
+      ? hydrateCasesWithSnapshot(queries[0].value, { appendMissingFromSnapshot: true })
       : getHydratedSnapshotCases();
 
     if (queries[0].status === "fulfilled" && queries[0].value?.length) {

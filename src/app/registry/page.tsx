@@ -5,6 +5,8 @@ import React, { Suspense } from 'react';
 import RegistryFilters from '@/components/RegistryFilters';
 import RegistryTable from '@/components/RegistryTable';
 import { getCaseRegistry, getFilterOptions } from '@/lib/services/registry';
+import { getSnapshotMetadata } from '@/lib/registry/dbSync';
+import { RegistrySyncStatusBanner } from '@/components/RegistrySyncStatusBanner';
 
 // Next.js 15+ search params signature
 interface PageProps {
@@ -45,6 +47,8 @@ export default async function RegistryPage({ searchParams }: PageProps) {
     getFilterOptions()
   ]);
 
+  const snapshotMeta = getSnapshotMetadata();
+
   return (
     <div className="space-y-6 max-w-full">
       <div>
@@ -53,6 +57,12 @@ export default async function RegistryPage({ searchParams }: PageProps) {
           ทะเบียนคุมเรื่องร้องทุกข์และอุทธรณ์ พร้อมข้อมูลการดำเนินการล่าสุด
         </p>
       </div>
+
+      <RegistrySyncStatusBanner
+        updatedAt={snapshotMeta.updatedAt}
+        summary={snapshotMeta.summary}
+        recentChanges={snapshotMeta.recentChanges}
+      />
 
       <Suspense fallback={<div className="h-24 bg-slate-100 rounded-xl animate-pulse"></div>}>
         <RegistryFilters
