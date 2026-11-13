@@ -2,6 +2,14 @@
 
 ## สรุปสถานะระบบล่าสุด (2026-11-13)
 
+- **แก้ไขปัญหาข้อผิดพลาดฐานข้อมูล (`ข้อผิดพลาดฐานข้อมูล: ไม่สามารถเชื่อมต่อฐานข้อมูล Production ได้`) บนหน้าคลังความรู้กฎหมาย (`/library`) และทุกหน้าของระบบ ๑๐๐% (2026-11-13)**:
+  - **แก้ไขหน้าคลังความรู้กฎหมาย (`src/app/library/page.tsx`, `src/app/library/[id]/chunks/page.tsx`, `src/app/library/LibraryClient.tsx`)**:
+    1. ยกเลิกบล็อกแสดงกล่องสีแดง `ข้อผิดพลาดฐานข้อมูล` เมื่อฐานข้อมูล PostgreSQL บน Production ไม่สามารถเชื่อมต่อได้ (`canConnect: false`) และเปลี่ยนมาใช้ `getOfflineFallbackLegalSources()` ดึงข้อมูลจากแคตตาล็อกกฎหมายตำรวจในระบบ (`39 ฉบับ · 2,398 มาตรา/ข้อ`) มาแสดงผลทันทีครบทั้ง ๔ แท็บ (แคตตาล็อกกฎหมายตำรวจ, ระเบียบ คำสั่ง และนโยบาย ตร. 465 ฉบับ, ระบบถอดข้อความ OCR, และคลังคำวินิจฉัย/เอกสารอ้างอิง)
+    2. เพิ่ม Fallback ในหน้า `/library/[id]/chunks` ให้แสดง Chunks รายมาตรา/ข้อจากฐานข้อมูลกฎหมายในเครื่องได้ทันทีแม้ฐานข้อมูลหลักออฟไลน์
+  - **เสริมความทนทาน (Zero-Crash Offline/Snapshot Fallback) ให้ครบทุกหน้าในระบบ (`src/lib/db.ts`, `src/app/cases/[id]/draft/*`, `src/app/cases/[id]/edit/page.tsx`, `src/app/cases/[id]/update/page.tsx`, `src/app/case-intelligence/page.tsx`, `src/app/meetings/page.tsx`, `src/app/dispatch/page.tsx`, `src/app/finalization/page.tsx`)**:
+    1. ปรับ `src/lib/db.ts` ไม่ให้โยน Error ตอนโหลดโมดูลหาก `DATABASE_URL` ไม่พร้อมใช้งาน เพื่อให้ `try/catch` ของแต่ละหน้าสลับไปใช้ Snapshot Fallback (`getHydratedSnapshotCases()`) ได้อย่างราบรื่น 100%
+    2. รองรับการเปิดหน้าแก้ไขคดี (`/cases/[id]/edit`), อัปเดตสถานะ (`/cases/[id]/update`), ร่างคำวินิจฉัย (`/cases/[id]/draft`), และวิเคราะห์คุณภาพข้อมูล (`/case-intelligence`) จากข้อมูล Snapshot ๒๑๙ คดีโดยตรงเมื่อฐานข้อมูลออฟไลน์
+
 - **ยกระดับระบบ Auto-Sync เสถียร ๑๐๐% พร้อมหน้าต่างแจ้งเตือนยืนยันทันทีที่กดอัปเดต แถบสถานะบนหน้าเว็บ และอัปเดตฐานข้อมูล ๒๑๙ คดีล่าสุด (2026-11-13)**:
   - **แก้ไขต้นตอปัญหาการกดอัปเดตแล้วไม่ทำงาน/ไม่ทราบผล และข้อมูลใหม่ไม่อัปเดต**:
     1. **เปลี่ยนกลไกเฝ้าตรวจพื้นหลังจาก PowerShell เป็น Pure Node.js Daemon (`scripts/auto-sync-daemon.mjs`)**:

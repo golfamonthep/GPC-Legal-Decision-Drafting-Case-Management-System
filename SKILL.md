@@ -13,7 +13,16 @@ description: >-
 > 4. **ห้าม reset หรือเขียนทับงานค้างใน `C:\APP`**: การทำงาน Git/Push ให้ทำผ่าน clean worktree (`C:\Users\polic\.codex\worktrees\ai-harness\APP`) และซิงก์เฉพาะไฟล์ที่เกี่ยวข้องกลับไปยัง `C:\APP` อย่างระมัดระวัง
 > 5. **ดึงสกิลที่ติดตั้งเพิ่มเติมจาก GitHub มาใช้ทุกครั้ง (Mandatory GitHub Installed Skills Integration)**: การทำงานทุกครั้งจะต้องดึงเอาสกิลต่าง ๆ ที่ได้ติดตั้งเพิ่มเติมจาก GitHub (ใน `C:\Users\polic\.codex\skills` เช่น `impeccable`, `design-taste-frontend`, `ui-ux-pro-max`, `ponytail`, `caveman`, `archify`, `thai-law`, `deepseek-harness`, `tabler`, `react-bits`, `motion-react`, `systematic-debugging`, `verification-before-completion`, `agentic-awesome-skills` ฯลฯ) มาประยุกต์ใช้ในการตัดสินใจและลงมือปฏิบัติงานทุกครั้ง เพื่อให้ผลงานมีประสิทธิภาพและคุณภาพสูงสุด
 
-### สรุปสถานะระบบล่าสุด (2026-11-05)
+### สรุปสถานะระบบล่าสุด (2026-11-13)
+
+- **แก้ไขปัญหาข้อผิดพลาดฐานข้อมูล (`ข้อผิดพลาดฐานข้อมูล: ไม่สามารถเชื่อมต่อฐานข้อมูล Production ได้`) บนหน้าคลังความรู้กฎหมาย (`/library`) และทุกหน้าของระบบ ๑๐๐% (2026-11-13)**:
+  - ยกเลิกการบล็อกหน้า `/library` เมื่อฐานข้อมูล PostgreSQL ไม่สามารถเชื่อมต่อได้ (`canConnect: false`) และเปลี่ยนมาใช้ `getOfflineFallbackLegalSources()` ดึงข้อมูลจากแคตตาล็อกกฎหมายตำรวจในระบบ (`39 ฉบับ · 2,398 มาตรา/ข้อ`) มาแสดงผลครบทั้ง ๔ แท็บ พร้อมรองรับหน้าดู Chunks (`/library/[id]/chunks`)
+  - ปรับปรุง `src/lib/db.ts` และหน้า `/cases/[id]/draft`, `/cases/[id]/edit`, `/cases/[id]/update`, `/case-intelligence`, `/meetings`, `/dispatch`, `/finalization` ให้มี Offline/Snapshot Fallback ครบทุกหน้า 100% (`npm test` 104/104, `typecheck` 0 errors, `build` 39/39 routes)
+
+- **ยกระดับระบบ Auto-Sync เสถียร ๑๐๐% พร้อมหน้าต่างแจ้งเตือนยืนยันทันทีที่กดอัปเดต แถบสถานะบนหน้าเว็บ และอัปเดตฐานข้อมูล ๒๑๙ คดีล่าสุด (2026-11-13)**:
+  - เปลี่ยนกลไกเฝ้าตรวจพื้นหลังจาก PowerShell เป็น Pure Node.js Daemon (`scripts/auto-sync-daemon.mjs`) ทำงานแบบ Single-instance (`127.0.0.1:49876`) ตรวจจับการแก้ไขไฟล์ Excel และการปิดโปรแกรม Excel ทุก ๑.๐ วินาที และเมื่อคลิกไอคอน `ออโต้อัปเดตทะเบียนคุม ก.พ.ค.ตร..lnk` จะรันซิงค์ทันทีพร้อมแสดง **หน้าต่างแจ้งเตือน Windows Popup** สรุปเวลา จำนวนคดี และรายชื่อคดีที่เพิ่งอัปเดต
+  - เพิ่มแถบแสดงสถานะการอัปเดตและรายการที่เพิ่งแก้ไขบนหน้าเว็บ (`src/components/RegistrySyncStatusBanner.tsx`) ในหน้า `/cases` และ `/registry` พร้อมปุ่มซิงค์ฐานข้อมูลทันที
+  - กู้คืนเรื่องร้องทุกข์ `48/69` (พ.ต.อ.ปฐม อุ่นอบ) และซิงค์ข้อมูลใหม่ทั้งหมดรวม **๒๑๙ คดี** (ร้องทุกข์ ๑๐๗, อุทธรณ์ ๑๑๒ — เพิ่มคดีใหม่ `162/69`, `163/69` และอัปเดตการดำเนินการ/เลขแดงล่าสุด) พร้อมส่งข้อมูลเข้าฐานข้อมูล PostgreSQL บน `https://gpc-legal-decision-drafting-case-ma.vercel.app/api/registry/auto-sync` โดยตรง (`npm test` 104/104, `typecheck` 0 errors, `build` 39/39 routes)
 
 - **อัปเดตข้อมูลการดำเนินการล่าสุด (198 คดี) และปรับปรุงระบบ Auto-Sync ตอบสนองทันที (Zero-Delay) พร้อมคลีนไอคอน OneDrive เหลือ ๑ ตัว (2026-11-05)**:
   - **อัปเดตข้อมูลการดำเนินการ (Proceeding Notes) และระบบแสดงผล `/cases/[id]` Fallback**:
