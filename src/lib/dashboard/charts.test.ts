@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { CompletionRing, RankedBars, YearColumns, YearOutcomeBars } from "../../components/dashboard/BacklogCharts";
+import { AdminCourtRing, CompletionRing, RankedBars, YearColumns, YearOutcomeBars } from "../../components/dashboard/BacklogCharts";
 import { OfficerPerformance } from "../../components/dashboard/OfficerPerformance";
 import { RegistryOverview } from "../../components/dashboard/RegistryOverview";
 import { deriveDashboardSnapshot } from "./metrics";
@@ -124,4 +124,32 @@ test("ranked bars retain all labels, percentages and safely escape source text",
   assert.match(html, /width:50%/);
   assert.match(html, /&lt;script&gt;ข้อความเต็ม&lt;\/script&gt;/);
   assert.doesNotMatch(html, /<script>/);
+});
+
+test("admin court ring shows share, counts, anchor link and handles empty or clamped total", () => {
+  const html = renderToStaticMarkup(createElement(AdminCourtRing, { total: 112, adminCourtCount: 9, accent: "blue", tone: "dark" }));
+  assert.match(html, /สัดส่วนเรื่องที่ฟ้องศาลปกครอง/);
+  assert.match(html, /8%/);
+  assert.match(html, /9 เรื่อง/);
+  assert.match(html, /103 เรื่อง/);
+  assert.match(html, /ฐาน: 112 เรื่อง/);
+  assert.match(html, /href="#admin-court-blue"/);
+  assert.doesNotMatch(html, /NaN|Infinity/);
+
+  const clamped = renderToStaticMarkup(createElement(AdminCourtRing, { total: 5, adminCourtCount: 12, accent: "teal" }));
+  assert.match(clamped, /100%/);
+  assert.match(clamped, /5 เรื่อง/);
+  assert.match(clamped, /0 เรื่อง/);
+
+  const empty = renderToStaticMarkup(createElement(AdminCourtRing, { total: 0, adminCourtCount: 3, accent: "teal", tone: "dark" }));
+  assert.match(empty, /ยังไม่มีข้อมูล/);
+  assert.doesNotMatch(empty, /NaN|Infinity|0%/);
+});
+
+test("registry overview renders admin court ring inside the first summary card with matching anchor", () => {
+  const snapshot = deriveDashboardSnapshot(createDemoDashboardPayload(new Date("2026-10-12T00:00:00Z")), { period: "all", type: "appeal" }, { canViewCaseDetails: true, canViewDataQuality: true });
+  const html = renderToStaticMarkup(createElement(RegistryOverview, { title: "เรื่องอุทธรณ์", snapshot, accent: "blue", canViewDetails: true, yearMax: 6, officerMax: 4, responsibilityMax: 4 }));
+  assert.match(html, /สัดส่วนเรื่องที่ฟ้องศาลปกครอง/);
+  assert.match(html, /id="admin-court-blue"/);
+  assert.ok(html.indexOf("สัดส่วนเรื่องที่ฟ้องศาลปกครอง") < html.indexOf("สถานะเรื่องตามปีเลขดำ"));
 });

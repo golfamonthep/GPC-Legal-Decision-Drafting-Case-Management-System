@@ -16,7 +16,7 @@ export function CompletionRing({ total, pending, accent, tone = "light" }: { tot
   const completed = total - pending;
   const share = total > 0 ? completed / total : 0;
   const dark = tone === "dark";
-  return <figure className={`flex h-full min-w-0 flex-col items-center gap-4 ${dark ? "text-zinc-300" : "text-zinc-400"}`}>
+  return <figure className={`flex min-w-0 flex-col items-center gap-4 ${dark ? "text-zinc-300" : "text-zinc-400"}`}>
     <figcaption className="w-full text-base font-bold text-white">สัดส่วนของทะเบียนทั้งหมด</figcaption>
     <div className="relative h-36 w-36 shrink-0">
       <svg viewBox="0 0 144 144" className="h-full w-full" aria-hidden="true">
@@ -33,6 +33,32 @@ export function CompletionRing({ total, pending, accent, tone = "light" }: { tot
       <p className="flex flex-wrap items-center gap-2 text-zinc-300"><Link href={`/cases?type=${accent === "teal" ? "ร้องทุกข์" : "อุทธรณ์"}&completionStatus=completed`} title="คลิกดูสำนวนที่เสร็จสิ้นแล้ว" className="inline-flex items-center gap-2 hover:underline"><span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#d62839]" />เสร็จสิ้นแล้ว <strong className="text-white">{number.format(completed)} เรื่อง</strong></Link></p>
       <p className="flex flex-wrap items-center gap-2 text-zinc-300"><Link href={`/cases?type=${accent === "teal" ? "ร้องทุกข์" : "อุทธรณ์"}&completionStatus=open`} title="คลิกดูสำนวนที่ยังไม่เสร็จสิ้น" className="inline-flex items-center gap-2 hover:underline"><span aria-hidden="true" className="cyber-legend-secondary h-2.5 w-2.5 shrink-0 rounded-full" />ยังไม่เสร็จสิ้น <strong className="text-white">{number.format(pending)} เรื่อง</strong></Link></p>
       <p className="border-t border-white/[0.08] pt-3 text-xs leading-5 text-zinc-400">ฐาน: {number.format(total)} เรื่อง · ไม่ใช่อัตราการทำงานรายเดือน</p>
+    </div>
+  </figure>;
+}
+
+export function AdminCourtRing({ total, adminCourtCount, accent, tone = "light" }: { total: number; adminCourtCount: number; accent: RegistryAccent; tone?: "light" | "dark" }) {
+  const safeCount = total > 0 ? Math.min(Math.max(adminCourtCount, 0), total) : 0;
+  const nonAdminCourtCount = Math.max(total - safeCount, 0);
+  const share = total > 0 ? safeCount / total : 0;
+  const dark = tone === "dark";
+  return <figure className={`flex min-w-0 flex-col items-center gap-4 ${dark ? "text-zinc-300" : "text-zinc-400"}`}>
+    <figcaption className="w-full text-base font-bold text-white">สัดส่วนเรื่องที่ฟ้องศาลปกครอง</figcaption>
+    <div className="relative h-36 w-36 shrink-0">
+      <svg viewBox="0 0 144 144" className="h-full w-full" aria-hidden="true">
+        <circle cx="72" cy="72" r="59" fill="none" className="cyber-gauge-track" strokeWidth="14" />
+        {total > 0 && safeCount > 0 && <circle cx="72" cy="72" r="59" fill="none" stroke="#d97706" strokeWidth="14" pathLength="100"
+          strokeDasharray={`${share * 100} 100`} transform="rotate(-90 72 72)" />}
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <strong className="text-3xl font-bold tabular-nums text-white">{total ? `${percent.format(share * 100)}%` : "—"}</strong>
+        <span className="mt-1 text-xs text-zinc-400">{total ? "ฟ้องศาลปกครอง" : "ยังไม่มีข้อมูล"}</span>
+      </div>
+    </div>
+    <div className="w-full min-w-0 space-y-2 text-sm">
+      <p className="flex flex-wrap items-center gap-2 text-zinc-300"><a href={`#admin-court-${accent}`} title="เลื่อนลงไปดูรายชื่อเรื่องที่ฟ้องศาลปกครอง" className="inline-flex items-center gap-2 hover:underline"><span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#d97706]" />ฟ้องศาลปกครอง <strong className="text-white">{number.format(safeCount)} เรื่อง</strong></a></p>
+      <p className="flex flex-wrap items-center gap-2 text-zinc-300"><span className="inline-flex items-center gap-2"><span aria-hidden="true" className="cyber-legend-secondary h-2.5 w-2.5 shrink-0 rounded-full" />ไม่ฟ้องศาลปกครอง <strong className="text-white">{number.format(nonAdminCourtCount)} เรื่อง</strong></span></p>
+      <p className="border-t border-white/[0.08] pt-3 text-xs leading-5 text-zinc-400">ฐาน: {number.format(total)} เรื่อง · แถวสีส้มหรือระบุศาลปกครอง</p>
     </div>
   </figure>;
 }

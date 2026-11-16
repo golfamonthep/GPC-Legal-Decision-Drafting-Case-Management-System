@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { DashboardSnapshot } from "../../lib/dashboard/types";
-import { CompletionRing, RankedBars, YearOutcomeBars, type RegistryAccent } from "./BacklogCharts";
+import { AdminCourtRing, CompletionRing, RankedBars, YearOutcomeBars, type RegistryAccent } from "./BacklogCharts";
 import { OfficerPerformance } from "./OfficerPerformance";
 import { IconClockHour4, IconScale } from '@tabler/icons-react';
 
@@ -24,13 +24,18 @@ export function RegistryOverview({ title, snapshot, canViewDetails, accent, year
       </dl>
     </div>
     <div className="grid min-w-0 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.15fr)_minmax(0,1.05fr)]">
-      <div className="min-w-0 rounded-[1.25rem] border border-white/[0.08] bg-[#131317] p-5 text-white shadow-[0_12px_28px_-14px_rgba(0,0,0,0.75)]"><CompletionRing total={snapshot.totalCases} pending={snapshot.kpis.active} accent={accent} tone="dark" /></div>
+      <div className="flex min-w-0 flex-col justify-between gap-5 rounded-[1.25rem] border border-white/[0.08] bg-[#131317] p-5 text-white shadow-[0_12px_28px_-14px_rgba(0,0,0,0.75)]">
+        <CompletionRing total={snapshot.totalCases} pending={snapshot.kpis.active} accent={accent} tone="dark" />
+        <div className="border-t border-white/[0.08] pt-5">
+          <AdminCourtRing total={snapshot.totalCases} adminCourtCount={adminCourtCases.length} accent={accent} tone="dark" />
+        </div>
+      </div>
       <YearOutcomeBars data={snapshot.backlog.byYearCompletion} scaleMax={yearMax} type={accent === 'teal' ? 'ร้องทุกข์' : 'อุทธรณ์'} />
       <div className="min-w-0 md:col-span-2 xl:col-span-1">
       <RankedBars title="เรื่องค้างแยกตามนิติกร" note="หน่วย: ภาระรับผิดชอบ · เรื่องร่วมอาจนับให้หลายคน" data={snapshot.backlog.byOfficer} total={snapshot.kpis.active} scaleMax={officerMax} accent={accent} />
       </div>
     </div>
-    <div className="min-w-0 rounded-2xl border border-amber-500/35 bg-[#131317] p-3.5">
+    <div id={`admin-court-${accent}`} className="min-w-0 scroll-mt-5 rounded-2xl border border-amber-500/35 bg-[#131317] p-3.5">
       <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-white/[0.06]">
         <h3 className="inline-flex items-center gap-2 text-sm font-bold text-white">
           <IconScale size={16} className="text-amber-700" aria-hidden="true" />
