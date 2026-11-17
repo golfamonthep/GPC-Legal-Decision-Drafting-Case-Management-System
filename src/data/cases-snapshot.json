@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-11-17T06:13:21.500Z",
+  "updatedAt": "2026-11-17T10:21:30.645Z",
   "summary": {
     "total": 219,
     "complaint": 107,
     "appeal": 112,
     "completed": 171,
     "pending": 48,
-    "withProceedingNotes": 197,
+    "withProceedingNotes": 198,
     "adminCourt": 15
   },
   "cases": [
@@ -6562,7 +6562,7 @@
       "legalCategory": "อุทธรณ์คำสั่ง",
       "legalOfficerName": "พ.ต.ท.วิสุทธิ์ พรบุญญพัฒน์ + ว่าที่ ร.ต.อ.กรรพี วีระเดช",
       "committeeOwnerName": null,
-      "proceedingNote": null,
+      "proceedingNote": "17 พ.ย.69 ให้คู่กรณีทำคำแก้",
       "receivedDate": "2026-11-09T17:17:56.000Z",
       "dueDate30": null,
       "dueDate60": null,
@@ -6578,7 +6578,7 @@
       "isAdminCourt": false,
       "adminCourtSource": null,
       "createdAt": "2026-11-13T05:18:51.239Z",
-      "updatedAt": "2026-11-17T06:13:21.500Z"
+      "updatedAt": "2026-11-17T10:21:30.645Z"
     }
   ],
   "recentChanges": [
@@ -6586,9 +6586,9 @@
       "type": "อุทธรณ์",
       "blackNumber": "163/69",
       "petitionerName": "ร.ต.อ.ชวนากรณ์ คูณเพชรนาค",
-      "changeLabel": "นิติกร: พ.ต.ท.วิสุทธิ์ พรบุญญพัฒน์ + ว่าที่ ร.ต.อ.กรรพี วีระเดช",
-      "proceedingSnippet": null,
-      "updatedAt": "2026-11-17T06:13:21.500Z"
+      "changeLabel": "อัปเดตการดำเนินการ",
+      "proceedingSnippet": "17 พ.ย.69 ให้คู่กรณีทำคำแก้",
+      "updatedAt": "2026-11-17T10:21:30.645Z"
     },
     {
       "type": "ร้องทุกข์",
