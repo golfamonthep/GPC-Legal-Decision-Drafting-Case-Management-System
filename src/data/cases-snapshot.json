@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-17T10:21:30.645Z",
+  "updatedAt": "2026-11-18T05:30:34.691Z",
   "summary": {
     "total": 219,
     "complaint": 107,
@@ -3172,7 +3172,7 @@
       "legalCategory": "ร้องทุกข์",
       "legalOfficerName": "ว่าที่ พ.ต.ท.ชรินทร์ พันธชิต",
       "committeeOwnerName": null,
-      "proceedingNote": "ตำแหน่งขณะร้องทุกข์ : รอง ผบก.ปส.4\n 9 ต.ค.69 ให้คู่กรณีส่งคำแก้คำร้องทุกข์",
+      "proceedingNote": "ตำแหน่งขณะร้องทุกข์ : รอง ผบก.ปส.4\n 9 ต.ค.69 ให้คู่กรณีส่งคำแก้คำร้องทุกข์\n18 พ.ย.69 จัดส่งคำแก้ให้ผู้ร้องทุกข์ทราบ",
       "receivedDate": null,
       "dueDate30": null,
       "dueDate60": null,
@@ -3188,7 +3188,7 @@
       "isAdminCourt": false,
       "adminCourtSource": null,
       "createdAt": "2026-11-04T10:04:54.594Z",
-      "updatedAt": "2026-11-16T03:28:05.449Z"
+      "updatedAt": "2026-11-18T05:30:34.691Z"
     },
     {
       "id": "case-complaint-115-69",
@@ -6583,6 +6583,14 @@
   ],
   "recentChanges": [
     {
+      "type": "ร้องทุกข์",
+      "blackNumber": "99/69",
+      "petitionerName": "พ.ต.อ.ศรีศักดิ์ พรหมบุญ",
+      "changeLabel": "อัปเดตการดำเนินการ",
+      "proceedingSnippet": "18 พ.ย.69 จัดส่งคำแก้ให้ผู้ร้องทุกข์ทราบ",
+      "updatedAt": "2026-11-18T05:30:34.691Z"
+    },
+    {
       "type": "อุทธรณ์",
       "blackNumber": "163/69",
       "petitionerName": "ร.ต.อ.ชวนากรณ์ คูณเพชรนาค",
@@ -6732,14 +6740,6 @@
       "petitionerName": "พ.ต.ท.ชยานนท์ ทองแถม",
       "changeLabel": "นิติกร: พ.ต.ท.หญิงปุริศร การินทร์",
       "proceedingSnippet": "16 ต.ค.68 บันทึกเสนอเข้าประชุมวันที่30ต.ค.68",
-      "updatedAt": "2026-11-16T03:28:05.449Z"
-    },
-    {
-      "type": "ร้องทุกข์",
-      "blackNumber": "79/68",
-      "petitionerName": "พ.ต.ท.เฉลา พงษ์ประยูร",
-      "changeLabel": "นิติกร: ว่าที่ ร.ต.อ.พีระชัย ลือวงศ์ประยูร",
-      "proceedingSnippet": "4 กย 68 เข้าประชุมมีมติ ให้ ภ.๓ & ภ.๕ ดำเนินการแต่งตั้งให้ดำรงตำแหน่งใน บุรีรัมย์",
       "updatedAt": "2026-11-16T03:28:05.449Z"
     }
   ]
