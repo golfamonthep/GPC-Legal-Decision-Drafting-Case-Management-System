@@ -14,6 +14,11 @@ sys.stderr.reconfigure(encoding='utf-8')
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 
+MODEL_TEXT_ID = "iapp/OpenThai2.1-OCR-Text-20261118"
+MODEL_TEXT_VERSION = "v2.1.4"
+MODEL_MARKDOWN_ID = "iapp/OpenThai2.1-OCR-Markdown-20261118"
+MODEL_MARKDOWN_VERSION = "v2.1.0"
+
 OPENTHAI_TEXT_CANDIDATES = [
     PROJECT_ROOT / "tools" / "openthai2-ocr-text",
     Path(r"C:\Users\polic\.codex\skills\openthai-ocr\models\openthai2-ocr-text"),
@@ -26,25 +31,61 @@ def get_openthai_text_dir() -> Path:
         if (candidate / "det.onnx").exists() and (candidate / "rec.onnx").exists():
             return candidate
     raise RuntimeError(
-        "OpenThai2.0-OCR-Text model files (det.onnx, rec.onnx) not found in tools/openthai2-ocr-text"
+        "OpenThai2.1-OCR-Text model files (det.onnx, rec.onnx) not found in tools/openthai2-ocr-text"
     )
 
 
-def extract_pdf_page_image(pdf_path: str, page_num: int, output_img_path: str, scale: float = 2.0):
+def _thai_char_count(text: str) -> int:
+    return len(re.findall(r"[\u0e00-\u0e7f]", text or ""))
+
+
+def _needs_adaptive_rescue(res: dict) -> bool:
+    lines = res.get("lines", [])
+    dropped = res.get("dropped", [])
+    if not lines:
+        return True
+    confs = [float(l.get("confidence", 0.0)) for l in lines]
+    avg_conf = sum(confs) / len(confs)
+    total = len(lines) + len(dropped)
+    drop_ratio = len(dropped) / total if total else 0.0
+    return avg_conf < 0.88 or (len(dropped) >= 4 and drop_ratio > 0.25)
+
+
+def _quality_score(res: dict) -> float:
+    lines = res.get("lines", [])
+    if not lines:
+        return 0.0
+    confs = [float(l.get("confidence", 0.0)) for l in lines]
+    avg_conf = sum(confs) / len(confs)
+    thai_chars = _thai_char_count(res.get("text", ""))
+    return avg_conf * (1.0 + min(thai_chars, 500) / 5000.0)
+
+
+def extract_pdf_page_image(pdf_path: str, page_num: int, output_img_path: str, dpi: int = 200):
+    """Render one PDF page at exact DPI (default 200 DPI = optimal for OpenThai 2.1.4)."""
     try:
         import pypdfium2 as pdfium
         pdf = pdfium.PdfDocument(pdf_path)
-        if page_num < 1 or page_num > len(pdf):
-            raise ValueError(f"Page number {page_num} out of bounds (1-{len(pdf)})")
-        page = pdf[page_num - 1]
-        image = page.render(scale=scale).to_pil()
-        image.save(output_img_path)
+        try:
+            if page_num < 1 or page_num > len(pdf):
+                raise ValueError(f"Page number {page_num} out of bounds (1-{len(pdf)})")
+            page = pdf[page_num - 1]
+            bitmap = page.render(scale=dpi / 72.0)
+            image = bitmap.to_pil()
+            try:
+                image.save(output_img_path)
+            finally:
+                image.close()
+                bitmap.close()
+                page.close()
+        finally:
+            pdf.close()
         return output_img_path
     except Exception as e:
         raise RuntimeError(f"Failed to render PDF page {page_num} with pypdfium2: {e}")
 
 
-def run_openthai_text_ocr(image_path: str):
+def _build_openthai_ocr(threads: int = 4, paragraphs: bool = False):
     model_dir = get_openthai_text_dir()
     model_dir_str = str(model_dir)
     if model_dir_str not in sys.path:
@@ -52,44 +93,160 @@ def run_openthai_text_ocr(image_path: str):
 
     from runtime.line_engine import LineOCR
 
-    t0 = time.time()
-    ocr = LineOCR(model_dir_str, threads=2)
-    res = ocr.read(image_path)
-    elapsed = round(time.time() - t0, 3)
+    overrides = {"det": {"rescan_below": 16.0}}
+    if paragraphs:
+        overrides["join"] = {"paragraphs": True}
+    return LineOCR(model_dir_str, threads=threads, **overrides)
 
+
+def _format_openthai_result(
+    res: dict,
+    elapsed: float,
+    rec2_enabled: bool,
+    backend: str,
+    dpi: int | None = None,
+    rescued: bool = False,
+) -> dict:
     extracted_lines = []
+    confs = []
+    low_conf_lines = []
     for line in res.get("lines", []):
+        conf = round(float(line.get("confidence", 0.0)), 4)
+        confs.append(conf)
         box = line.get("box", [])
         if hasattr(box, "tolist"):
             box = box.tolist()
-        extracted_lines.append({
+        entry = {
             "text": line.get("text", ""),
-            "confidence": round(float(line.get("confidence", 0.0)), 4),
+            "confidence": conf,
             "row": int(line.get("row", 0)),
             "box": box,
-        })
+        }
+        extracted_lines.append(entry)
+        if conf < 0.90:
+            low_conf_lines.append({
+                "row": entry["row"],
+                "confidence": conf,
+                "text": entry["text"],
+            })
+
+    dropped_lines = [
+        {
+            "text": d.get("text", ""),
+            "confidence": round(float(d.get("confidence", 0.0)), 4),
+            "reason": d.get("reason", ""),
+        }
+        for d in res.get("dropped", [])
+    ]
+
+    avg_conf = round(sum(confs) / len(confs), 4) if confs else 0.0
+    min_conf = round(min(confs), 4) if confs else 0.0
 
     return {
-        "engine": "OpenThai2.0-OCR-Text (iapp/OpenThai2.0-OCR-Text)",
-        "model_id": "iapp/OpenThai2.0-OCR-Text",
-        "elapsed_sec": elapsed,
+        "engine": f"OpenThai2.1-OCR-Text ({MODEL_TEXT_ID} · {MODEL_TEXT_VERSION})",
+        "model_id": MODEL_TEXT_ID,
+        "model_version": MODEL_TEXT_VERSION,
+        "rec2_enabled": rec2_enabled,
+        "backend": backend,
+        "dpi": dpi,
+        "adaptive_rescue_used": rescued,
+        "elapsed_sec": round(elapsed, 3),
         "rotation": int(res.get("rotation", 0)),
         "text_angle": round(float(res.get("text_angle", 0.0)), 2),
+        "avg_confidence": avg_conf,
+        "min_confidence": min_conf,
+        "low_confidence_count": len(low_conf_lines),
+        "low_confidence_lines": low_conf_lines,
+        "dropped_count": len(dropped_lines),
+        "dropped": dropped_lines,
         "text": res.get("text", ""),
         "lines": extracted_lines,
         "line_count": len(extracted_lines),
     }
 
 
+def run_openthai_text_ocr(
+    image_path: str,
+    threads: int = 4,
+    paragraphs: bool = False,
+    dpi: int | None = None,
+):
+    ocr = _build_openthai_ocr(threads=threads, paragraphs=paragraphs)
+    t0 = time.perf_counter()
+    res = ocr.read(image_path)
+    elapsed = time.perf_counter() - t0
+    return _format_openthai_result(
+        res,
+        elapsed=elapsed,
+        rec2_enabled=ocr.rec2 is not None,
+        backend=getattr(ocr, "backend", "onnxruntime"),
+        dpi=dpi,
+        rescued=False,
+    )
+
+
+def run_openthai_pdf_text_ocr(
+    pdf_path: str,
+    page_num: int,
+    dpi: int = 200,
+    threads: int = 4,
+    paragraphs: bool = False,
+    adaptive_rescue: bool = True,
+):
+    """Run OpenThai 2.1.4 directly on a rendered PDF page with adaptive 250 DPI rescue."""
+    import pypdfium2 as pdfium
+
+    ocr = _build_openthai_ocr(threads=threads, paragraphs=paragraphs)
+    pdf = pdfium.PdfDocument(pdf_path)
+    try:
+        if page_num < 1 or page_num > len(pdf):
+            raise ValueError(f"Page number {page_num} out of bounds (1-{len(pdf)})")
+
+        def _render_and_read(target_dpi: int):
+            page = pdf[page_num - 1]
+            bitmap = page.render(scale=target_dpi / 72.0)
+            pil_img = bitmap.to_pil()
+            try:
+                t0 = time.perf_counter()
+                r = ocr.read(pil_img)
+                return r, time.perf_counter() - t0
+            finally:
+                pil_img.close()
+                bitmap.close()
+                page.close()
+
+        res, elapsed = _render_and_read(dpi)
+        used_dpi = dpi
+        rescued = False
+
+        if adaptive_rescue and dpi < 250 and _needs_adaptive_rescue(res):
+            res2, elapsed2 = _render_and_read(250)
+            elapsed += elapsed2
+            if _quality_score(res2) > _quality_score(res):
+                res = res2
+                used_dpi = 250
+                rescued = True
+
+        return _format_openthai_result(
+            res,
+            elapsed=elapsed,
+            rec2_enabled=ocr.rec2 is not None,
+            backend=getattr(ocr, "backend", "onnxruntime"),
+            dpi=used_dpi,
+            rescued=rescued,
+        )
+    finally:
+        pdf.close()
+
+
 def lines_to_structured_markdown(lines: list) -> str:
     """
     Reconstructs structured Markdown (with headings, Saraban metadata, and HTML tables
-    for multi-column rows) from OpenThai2.0 bounding boxes and row indices.
+    for multi-column rows) from OpenThai 2.1.4 bounding boxes and row indices.
     """
     if not lines:
         return ""
 
-    # Group lines by row index
     rows_map: dict[int, list] = {}
     for line in lines:
         r_idx = line.get("row", 0)
@@ -104,7 +261,6 @@ def lines_to_structured_markdown(lines: list) -> str:
         if not table_buffer:
             return
         if len(table_buffer) == 1 and len(table_buffer[0]) == 2:
-            # 2-column header line (e.g. ส่วนราชการ ... โทร. ... or ที่ ... วันที่ ...)
             cells = [c["text"].strip() for c in table_buffer[0]]
             md_blocks.append(f"**{cells[0]}** — {cells[1]}")
             table_buffer = []
@@ -134,7 +290,6 @@ def lines_to_structured_markdown(lines: list) -> str:
         table_buffer = []
 
     for row_cells in sorted_rows:
-        # Sort left-to-right by x coordinate of box
         row_cells.sort(key=lambda c: c["box"][0][0] if c.get("box") else 0)
         if len(row_cells) >= 3 or (len(row_cells) == 2 and len(table_buffer) >= 1):
             table_buffer.append(row_cells)
@@ -145,7 +300,6 @@ def lines_to_structured_markdown(lines: list) -> str:
         if not joined:
             continue
 
-        # Detect headings and Thai Saraban structure
         if joined in ("บันทึกข้อความ", "คำสั่งสำนักงานตำรวจแห่งชาติ", "ระเบียบสำนักงานตำรวจแห่งชาติ"):
             md_blocks.append(f"# {joined}")
         elif re.match(r"^(เรื่อง|เรียน|อ้างถึง|สิ่งที่ส่งมาด้วย)\s+", joined):
@@ -164,7 +318,12 @@ def lines_to_structured_markdown(lines: list) -> str:
     return "\n\n".join(md_blocks)
 
 
-def run_openthai_markdown_ocr(image_path: str, api_url: str = None, api_key: str = None):
+def run_openthai_markdown_ocr(
+    image_path: str,
+    api_url: str = None,
+    api_key: str = None,
+    base_res: dict | None = None,
+):
     endpoint = api_url or os.environ.get("OPENTHAI_MARKDOWN_API_URL")
     if endpoint:
         import base64
@@ -174,7 +333,7 @@ def run_openthai_markdown_ocr(image_path: str, api_url: str = None, api_key: str
             b64_img = base64.b64encode(f.read()).decode("ascii")
 
         payload = {
-            "model": "iapp/OpenThai2.0-OCR-Markdown",
+            "model": MODEL_MARKDOWN_ID,
             "messages": [
                 {
                     "role": "user",
@@ -200,29 +359,41 @@ def run_openthai_markdown_ocr(image_path: str, api_url: str = None, api_key: str
             headers=headers,
             method="POST",
         )
-        t0 = time.time()
+        t0 = time.perf_counter()
         with urllib.request.urlopen(req, timeout=90) as resp:
             body = json.loads(resp.read().decode("utf-8"))
-        elapsed = round(time.time() - t0, 3)
+        elapsed = round(time.perf_counter() - t0, 3)
         md_text = body["choices"][0]["message"]["content"]
         return {
-            "engine": "OpenThai2.0-OCR-Markdown (iapp/OpenThai2.0-OCR-Markdown · vLLM)",
-            "model_id": "iapp/OpenThai2.0-OCR-Markdown",
+            "engine": f"OpenThai2.1-OCR-Markdown ({MODEL_MARKDOWN_ID} · vLLM)",
+            "model_id": MODEL_MARKDOWN_ID,
+            "model_version": MODEL_MARKDOWN_VERSION,
             "elapsed_sec": elapsed,
             "format": "markdown",
             "text": md_text,
             "line_count": len(md_text.splitlines()),
         }
 
-    # Local CPU fallback using OpenThai2.0-OCR-Text spatial layout + Markdown/HTML table builder
-    base_res = run_openthai_text_ocr(image_path)
+    # Local CPU fallback using OpenThai 2.1.4 spatial layout + Markdown/HTML table builder
+    if base_res is None:
+        base_res = run_openthai_text_ocr(image_path)
     md_text = lines_to_structured_markdown(base_res.get("lines", []))
     return {
-        "engine": "OpenThai2.0-OCR-Markdown (iapp/OpenThai2.0-OCR-Markdown · Local CPU Layout)",
-        "model_id": "iapp/OpenThai2.0-OCR-Markdown",
+        "engine": f"OpenThai2.1-OCR-Markdown ({MODEL_MARKDOWN_ID} · Local CPU Layout via {MODEL_TEXT_VERSION})",
+        "model_id": MODEL_MARKDOWN_ID,
+        "model_version": MODEL_MARKDOWN_VERSION,
+        "rec2_enabled": base_res.get("rec2_enabled", True),
+        "dpi": base_res.get("dpi"),
+        "adaptive_rescue_used": base_res.get("adaptive_rescue_used", False),
         "elapsed_sec": base_res.get("elapsed_sec", 0),
         "rotation": base_res.get("rotation", 0),
         "text_angle": base_res.get("text_angle", 0.0),
+        "avg_confidence": base_res.get("avg_confidence", 0.0),
+        "min_confidence": base_res.get("min_confidence", 0.0),
+        "low_confidence_count": base_res.get("low_confidence_count", 0),
+        "low_confidence_lines": base_res.get("low_confidence_lines", []),
+        "dropped_count": base_res.get("dropped_count", 0),
+        "dropped": base_res.get("dropped", []),
         "format": "markdown",
         "text": md_text,
         "raw_text": base_res.get("text", ""),
@@ -278,7 +449,7 @@ def run_typhoon_ocr(file_path: str, page_num: int = 1, api_key: str = None):
             "engine": "Typhoon-OCR (SCB 10X)",
             "page": page_num,
             "status": "ready_offline",
-            "text": "ข้อความพร้อมสำหรับการประมวลผลด้วย Typhoon Vision Model (ระบุ TYPHOON_API_KEY ในระบบเพื่อประมวลผลผ่าน Cloud API หรือใช้ OpenThai2.0-OCR-Text สำหรับการประมวลผล Offline บน CPU ทันที)",
+            "text": "ข้อความพร้อมสำหรับการประมวลผลด้วย Typhoon Vision Model (ระบุ TYPHOON_API_KEY ในระบบเพื่อประมวลผลผ่าน Cloud API หรือใช้ OpenThai2.1-OCR-Text สำหรับการประมวลผล Offline บน CPU ทันที)",
             "messages_count": len(messages),
             "note": "Typhoon-OCR v0.4.1 client is fully installed and verified.",
         }
@@ -311,7 +482,7 @@ def resolve_input_file(raw_path: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="GPC Police Document OCR Service (OpenThai2.0-OCR-Text, OpenThai2.0-OCR-Markdown, PaddleOCR & Typhoon-OCR)"
+        description="GPC Police Document OCR Service (OpenThai2.1-OCR-Text v2.1.4, OpenThai2.1-OCR-Markdown, PaddleOCR & Typhoon-OCR)"
     )
     parser.add_argument("--file", required=True, help="Path to input PDF or image file")
     parser.add_argument(
@@ -321,6 +492,9 @@ def main():
         help="OCR engine to use",
     )
     parser.add_argument("--page", type=int, default=1, help="Page number for PDF (1-based)")
+    parser.add_argument("--dpi", type=int, default=200, help="PDF render DPI (default: 200)")
+    parser.add_argument("--threads", type=int, default=4, help="CPU threads for OpenThai OCR")
+    parser.add_argument("--paragraphs", action="store_true", help="Preserve blank lines between paragraphs")
     parser.add_argument("--lang", default="en", help="Language code for PaddleOCR")
     parser.add_argument("--api-key", default=None, help="API key for Typhoon-OCR or OpenThai Markdown endpoint")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
@@ -338,10 +512,31 @@ def main():
     try:
         if args.engine == "typhoon":
             result = run_typhoon_ocr(file_path, page_num=args.page, api_key=args.api_key)
+        elif is_pdf and args.engine in ("openthai-text", "auto"):
+            result = run_openthai_pdf_text_ocr(
+                file_path,
+                page_num=args.page,
+                dpi=args.dpi,
+                threads=args.threads,
+                paragraphs=args.paragraphs,
+            )
+            result["source_file"] = file_path
+            result["page"] = args.page
+        elif is_pdf and args.engine == "openthai-markdown" and not os.environ.get("OPENTHAI_MARKDOWN_API_URL"):
+            base_res = run_openthai_pdf_text_ocr(
+                file_path,
+                page_num=args.page,
+                dpi=args.dpi,
+                threads=args.threads,
+                paragraphs=args.paragraphs,
+            )
+            result = run_openthai_markdown_ocr(file_path, api_key=args.api_key, base_res=base_res)
+            result["source_file"] = file_path
+            result["page"] = args.page
         else:
             def run_img_engine(img_path: str):
                 if args.engine in ("openthai-text", "auto"):
-                    return run_openthai_text_ocr(img_path)
+                    return run_openthai_text_ocr(img_path, threads=args.threads, paragraphs=args.paragraphs)
                 elif args.engine == "openthai-markdown":
                     return run_openthai_markdown_ocr(img_path, api_key=args.api_key)
                 else:
@@ -351,7 +546,7 @@ def main():
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_file:
                     tmp_img_path = tmp_file.name
                 try:
-                    extract_pdf_page_image(file_path, args.page, tmp_img_path)
+                    extract_pdf_page_image(file_path, args.page, tmp_img_path, dpi=args.dpi)
                     result = run_img_engine(tmp_img_path)
                     result["source_file"] = file_path
                     result["page"] = args.page

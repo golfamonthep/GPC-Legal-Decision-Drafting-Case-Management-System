@@ -40,20 +40,24 @@ test('PoliceWorker regulations dataset loads and contains priority 2569-2570 reg
   assert.equal(circular2456.isNew, true);
 });
 
-test('OCR python processor script and OpenThai 2.0 OCR models (Text & Markdown) are installed', async () => {
+test('OCR python processor script and OpenThai 2.1.4 OCR models (Text & Markdown) are installed', async () => {
   const ocrScript = path.resolve(process.cwd(), 'scripts/ocr_processor.py');
   assert.ok(fs.existsSync(ocrScript), 'scripts/ocr_processor.py must exist');
 
   const scriptSource = fs.readFileSync(ocrScript, 'utf8');
-  assert.ok(scriptSource.includes('iapp/OpenThai2.0-OCR-Text'), 'Must support iapp/OpenThai2.0-OCR-Text');
-  assert.ok(scriptSource.includes('iapp/OpenThai2.0-OCR-Markdown'), 'Must support iapp/OpenThai2.0-OCR-Markdown');
+  assert.ok(scriptSource.includes('iapp/OpenThai2.1-OCR-Text-20261118'), 'Must support iapp/OpenThai2.1-OCR-Text-20261118');
+  assert.ok(scriptSource.includes('iapp/OpenThai2.1-OCR-Markdown-20261118'), 'Must support iapp/OpenThai2.1-OCR-Markdown-20261118');
 
   const detOnnx = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/det.onnx');
   const recOnnx = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/rec.onnx');
+  const rec2Onnx = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/rec2.onnx');
+  const sha256Sums = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/SHA256SUMS');
   const lineEngine = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/runtime/line_engine.py');
-  assert.ok(fs.existsSync(detOnnx), 'OpenThai2.0-OCR-Text det.onnx must exist');
-  assert.ok(fs.existsSync(recOnnx), 'OpenThai2.0-OCR-Text rec.onnx must exist');
-  assert.ok(fs.existsSync(lineEngine), 'OpenThai2.0-OCR-Text runtime/line_engine.py must exist');
+  assert.ok(fs.existsSync(detOnnx), 'OpenThai2.1-OCR-Text det.onnx must exist');
+  assert.ok(fs.existsSync(recOnnx), 'OpenThai2.1-OCR-Text rec.onnx must exist');
+  assert.ok(fs.existsSync(rec2Onnx), 'OpenThai2.1-OCR-Text rec2.onnx (loopless dual recognizer) must exist');
+  assert.ok(fs.existsSync(sha256Sums), 'OpenThai2.1-OCR-Text SHA256SUMS must exist');
+  assert.ok(fs.existsSync(lineEngine), 'OpenThai2.1-OCR-Text runtime/line_engine.py must exist');
 
   const presetsPath = path.resolve(process.cwd(), 'src/data/thai-law/openthai-ocr-presets.json');
   assert.ok(fs.existsSync(presetsPath), 'openthai-ocr-presets.json must exist');
@@ -61,5 +65,7 @@ test('OCR python processor script and OpenThai 2.0 OCR models (Text & Markdown) 
   const circularPages = presets['scratch/policeworker/circular_2456_2569.pdf'];
   assert.ok(circularPages && circularPages['1'], 'Must have pre-extracted page 1 of Circular 2456');
   assert.ok(circularPages['1'].text.includes('บันทึกข้อความ'), 'OCR text must include บันทึกข้อความ');
+  assert.ok(circularPages['1'].text.includes('ตร.'), 'OpenThai 2.1.4 @ 200 DPI must recover ส่วนราชการ ตร.');
+  assert.ok(!circularPages['1'].text.includes('กฏ ก.ตร'), 'OpenThai 2.1.4 @ 200 DPI must not misread กฎ ก.ตร. as กฏ');
   assert.ok(circularPages['1'].markdown.includes('# บันทึกข้อความ'), 'OCR markdown must include # บันทึกข้อความ');
 });

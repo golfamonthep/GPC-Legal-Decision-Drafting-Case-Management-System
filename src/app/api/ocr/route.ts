@@ -20,17 +20,27 @@ function getPresetFallback(filePath: string, page: number, engine: string) {
   const isMarkdown = engine === "openthai-markdown";
   return {
     engine: isMarkdown
-      ? "OpenThai2.0-OCR-Markdown (iapp/OpenThai2.0-OCR-Markdown)"
+      ? "OpenThai2.1-OCR-Markdown (iapp/OpenThai2.1-OCR-Markdown-20261118 · v2.1.0)"
       : engine === "paddle"
-        ? "PaddleOCR (via OpenThai2.0 Snapshot)"
+        ? "PaddleOCR (via OpenThai2.1 Snapshot)"
         : engine === "typhoon"
-          ? "Typhoon-OCR (SCB 10X · via OpenThai2.0 Snapshot)"
-          : "OpenThai2.0-OCR-Text (iapp/OpenThai2.0-OCR-Text)",
-    model_id: isMarkdown ? "iapp/OpenThai2.0-OCR-Markdown" : "iapp/OpenThai2.0-OCR-Text",
+          ? "Typhoon-OCR (SCB 10X · via OpenThai2.1 Snapshot)"
+          : "OpenThai2.1-OCR-Text (iapp/OpenThai2.1-OCR-Text-20261118 · v2.1.4)",
+    model_id: isMarkdown
+      ? "iapp/OpenThai2.1-OCR-Markdown-20261118"
+      : "iapp/OpenThai2.1-OCR-Text-20261118",
+    model_version: isMarkdown ? "v2.1.0" : "v2.1.4",
+    rec2_enabled: true,
     page,
     elapsed_sec: pageData.elapsed_sec,
     rotation: pageData.rotation,
     text_angle: pageData.text_angle,
+    avg_confidence: pageData.avg_confidence,
+    min_confidence: pageData.min_confidence,
+    low_confidence_count: pageData.low_confidence_count ?? 0,
+    low_confidence_lines: pageData.low_confidence_lines ?? [],
+    dropped_count: pageData.dropped_count ?? 0,
+    dropped: pageData.dropped ?? [],
     format: isMarkdown ? "markdown" : "text",
     text: isMarkdown ? pageData.markdown : pageData.text,
     lines: pageData.lines,
@@ -102,9 +112,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         data: {
-          engine: engine === "openthai-markdown" ? "OpenThai2.0-OCR-Markdown" : "OpenThai2.0-OCR-Text",
+          engine:
+            engine === "openthai-markdown"
+              ? "OpenThai2.1-OCR-Markdown (v2.1.0)"
+              : "OpenThai2.1-OCR-Text (v2.1.4)",
           page,
-          text: "ระบบ Cloud Serverless รองรับการอ่านเอกสารตัวอย่างที่ถอดข้อความด้วย OpenThai 2.0 ไว้ล่วงหน้า สำหรับไฟล์อัปโหลดใหม่ขนาดใหญ่ กรุณารันผ่านเครื่อง Local Engine (OpenThai2.0-OCR-Text ONNX Runtime)",
+          text: "ระบบ Cloud Serverless รองรับการอ่านเอกสารตัวอย่างที่ถอดข้อความด้วย OpenThai 2.1.4 ไว้ล่วงหน้า สำหรับไฟล์อัปโหลดใหม่ขนาดใหญ่ กรุณารันผ่านเครื่อง Local Engine (OpenThai2.1-OCR-Text ONNX Runtime + rec2.onnx)",
           lines: [],
           line_count: 0,
         },

@@ -4,6 +4,18 @@
   "junk_below": 0.9,
   "junk_invalid": 0.05,
   "min_chars": 2,
-  "color": "flatten"
+  "color": "flatten",
+  "min_chars_digits": 1,
+  "min_chars_digits_height": 0.62,
+  "min_chars_latin": true
+ },
+ "rec2": {
+  "file": "rec2.onnx"
+ },
+ "join": {
+  "decimal_comma": true
+ },
+ "runtime": {
+  "ort_low_memory": true
  }
 }

@@ -117,24 +117,24 @@ export default function DocumentOcrWorkbench() {
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 text-xs font-semibold border border-emerald-200 dark:border-emerald-500/30">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-              OpenThai 2.0 OCR & Multi-Engine Installed
+              OpenThai 2.1.4 OCR (Dual-Recognizer) & Multi-Engine Installed
             </div>
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              ระบบถอดข้อความเอกสารราชการ (OpenThai 2.0 · PaddleOCR · Typhoon)
+              ระบบถอดข้อความเอกสารราชการ (OpenThai 2.1.4 · PaddleOCR · Typhoon)
             </h2>
             <p className="text-xs md:text-sm text-slate-600 dark:text-slate-300">
-              สกัดตัวอักษรและตารางภาษาไทยจากเอกสารคดี PDF คำวินิจฉัยศาลปกครอง ราชกิจจานุเบกษา และคำสั่ง ตร. ด้วย iApp OpenThai 2.0 OCR (97.0%–98.7% Accuracy)
+              สกัดตัวอักษรและตารางภาษาไทยจากเอกสารคดี PDF คำวินิจฉัยศาลปกครอง ราชกิจจานุเบกษา และคำสั่ง ตร. ด้วย iApp OpenThai 2.1.4 (รักษาสระลอย ฟอนต์ไม่มีหัว rec2.onnx อ่านหลายคอลัมน์ และจุดทศนิยมแม่นยำ)
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <div className="px-3 py-2 rounded-xl bg-white dark:bg-white/10 border border-indigo-200 dark:border-indigo-500/30 shadow-sm text-xs">
-              <div className="text-indigo-600 dark:text-indigo-300 text-[10px] font-bold">OPENTHAI 2.0 TEXT</div>
-              <div className="font-bold text-slate-900 dark:text-white">iapp/OpenThai2.0-OCR-Text</div>
+              <div className="text-indigo-600 dark:text-indigo-300 text-[10px] font-bold">OPENTHAI 2.1.4 TEXT</div>
+              <div className="font-bold text-slate-900 dark:text-white">OpenThai2.1-OCR-Text (rec+rec2)</div>
             </div>
             <div className="px-3 py-2 rounded-xl bg-white dark:bg-white/10 border border-indigo-200 dark:border-indigo-500/30 shadow-sm text-xs">
-              <div className="text-indigo-600 dark:text-indigo-300 text-[10px] font-bold">OPENTHAI 2.0 MD</div>
-              <div className="font-bold text-slate-900 dark:text-white">iapp/OpenThai2.0-OCR-Markdown</div>
+              <div className="text-indigo-600 dark:text-indigo-300 text-[10px] font-bold">OPENTHAI 2.1 MD</div>
+              <div className="font-bold text-slate-900 dark:text-white">OpenThai2.1-OCR-Markdown</div>
             </div>
             <div className="px-3 py-2 rounded-xl bg-white dark:bg-white/10 border border-indigo-100 dark:border-white/10 shadow-sm text-xs">
               <div className="text-slate-500 dark:text-slate-400 text-[10px]">PADDLE / TYPHOON</div>
@@ -243,8 +243,8 @@ export default function DocumentOcrWorkbench() {
                         : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
-                    <div>OpenThai2.0-OCR-Text</div>
-                    <div className="text-[10px] font-normal text-slate-500">iApp CPU ONNX (97% ศาลปกครอง)</div>
+                    <div>OpenThai2.1-OCR-Text (v2.1.4)</div>
+                    <div className="text-[10px] font-normal text-slate-500">iApp CPU ONNX · Dual rec2 · 200 DPI</div>
                   </button>
                   <button
                     type="button"
@@ -255,8 +255,8 @@ export default function DocumentOcrWorkbench() {
                         : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
                     }`}
                   >
-                    <div>OpenThai2.0-OCR-Markdown</div>
-                    <div className="text-[10px] font-normal text-slate-500">Markdown + ตาราง HTML (98.7%)</div>
+                    <div>OpenThai2.1-OCR-Markdown</div>
+                    <div className="text-[10px] font-normal text-slate-500">Markdown + ตาราง HTML (v2.1)</div>
                   </button>
                   <button
                     type="button"
@@ -391,9 +391,9 @@ export default function DocumentOcrWorkbench() {
                   <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
                     กำลังประมวลผลการอ่านเอกสารด้วย{" "}
                     {engine === "openthai-text"
-                      ? "OpenThai2.0-OCR-Text (iApp ONNX)"
+                      ? "OpenThai2.1-OCR-Text (v2.1.4 · Dual ONNX)"
                       : engine === "openthai-markdown"
-                        ? "OpenThai2.0-OCR-Markdown (iApp Nemotron Parse)"
+                        ? "OpenThai2.1-OCR-Markdown (v2.1 · Nemotron Parse)"
                         : engine === "paddle"
                           ? "PaddleOCR"
                           : "Typhoon-OCR"}
@@ -415,11 +415,29 @@ export default function DocumentOcrWorkbench() {
                   </div>
 
                   {ocrResult.lines && (
-                    <div className="text-xs text-slate-400 flex items-center justify-between px-1">
-                      <span>ตรวจพบข้อความทั้งหมด {ocrResult.line_count || ocrResult.lines.length} บรรทัด</span>
-                      <span>Confidence เฉลี่ย: {
-                        (ocrResult.lines.reduce((acc: number, l: any) => acc + (l.confidence || 0), 0) / (ocrResult.lines.length || 1) * 100).toFixed(1)
-                      }%</span>
+                    <div className="space-y-2">
+                      <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center justify-between gap-2 px-1">
+                        <span>
+                          ตรวจพบข้อความทั้งหมด {ocrResult.line_count || ocrResult.lines.length} บรรทัด
+                          {ocrResult.rec2_enabled ? " · Dual-Recognizer (rec2)" : ""}
+                          {ocrResult.dpi ? ` · ${ocrResult.dpi} DPI` : ""}
+                        </span>
+                        <span>Confidence เฉลี่ย: {
+                          ((ocrResult.avg_confidence ?? (ocrResult.lines.reduce((acc: number, l: any) => acc + (l.confidence || 0), 0) / (ocrResult.lines.length || 1))) * 100).toFixed(1)
+                        }%</span>
+                      </div>
+                      {Array.isArray(ocrResult.low_confidence_lines) && ocrResult.low_confidence_lines.length > 0 && (
+                        <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                          <div className="font-bold">
+                            จุดควรตรวจสอบเพิ่มเติม ({ocrResult.low_confidence_lines.length} บรรทัดที่ความมั่นใจต่ำกว่า 90%)
+                          </div>
+                          {ocrResult.low_confidence_lines.slice(0, 5).map((item: any, idx: number) => (
+                            <div key={idx} className="font-mono text-[11px]">
+                              • [{(item.confidence * 100).toFixed(1)}%] {item.text}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
