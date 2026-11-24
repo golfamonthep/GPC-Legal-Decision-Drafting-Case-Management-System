@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-18T07:02:09.172Z",
+  "updatedAt": "2026-11-24T03:06:43.996Z",
   "summary": {
     "total": 219,
     "complaint": 107,
@@ -6412,7 +6412,7 @@
       "legalCategory": "อุทธรณ์คำสั่ง",
       "legalOfficerName": "ร.ต.อ.กรรพี วีระเดช",
       "committeeOwnerName": null,
-      "proceedingNote": "19 ต.ค.69 คู่กรณีขอขยายเวลาทำคำแก้ 30 วัน",
+      "proceedingNote": "19 ต.ค.69 คู่กรณีขอขยายเวลาทำคำแก้ 30 วัน\n23 พ.ย.69 ส่งสำเนาคำแก้",
       "receivedDate": "2026-09-15T17:17:56.000Z",
       "dueDate30": null,
       "dueDate60": null,
@@ -6428,7 +6428,7 @@
       "isAdminCourt": false,
       "adminCourtSource": null,
       "createdAt": "2026-11-04T10:04:54.657Z",
-      "updatedAt": "2026-11-05T09:22:45.181Z"
+      "updatedAt": "2026-11-24T03:06:43.996Z"
     },
     {
       "id": "case-appeal-131-69",
@@ -6584,6 +6584,14 @@
   "recentChanges": [
     {
       "type": "อุทธรณ์",
+      "blackNumber": "120/69",
+      "petitionerName": "พ.ต.อ.ภีมพจน์ น้อมชอบพิทักษ์",
+      "changeLabel": "อัปเดตการดำเนินการ",
+      "proceedingSnippet": "23 พ.ย.69 ส่งสำเนาคำแก้",
+      "updatedAt": "2026-11-24T03:06:43.996Z"
+    },
+    {
+      "type": "อุทธรณ์",
       "blackNumber": "61/69",
       "petitionerName": "พ.ต.ท.สุดเขตต์ บุญญนานันท์",
       "changeLabel": "อัปเดตการดำเนินการ",
@@ -6732,14 +6740,6 @@
       "petitionerName": "พ.ต.ท.ชรัณ ไชยธงรัตน์",
       "changeLabel": "นิติกร: ว่าที่ พ.ต.ท.สุรพัฒน์ วัลลา",
       "proceedingSnippet": "1ก.ย.68 อนุมัติเข้าที่ประชุม",
-      "updatedAt": "2026-11-16T03:28:05.449Z"
-    },
-    {
-      "type": "ร้องทุกข์",
-      "blackNumber": "60/68",
-      "petitionerName": "ร.ต.อ.พันธุ์ธัช แสนสุข",
-      "changeLabel": "นิติกร: ว่าที่ ร.ต.อ.วิรุฬห์ ขุนนุรักษ์",
-      "proceedingSnippet": "ประชุมพิจารณา 11 ก.ย. 68",
       "updatedAt": "2026-11-16T03:28:05.449Z"
     }
   ]
