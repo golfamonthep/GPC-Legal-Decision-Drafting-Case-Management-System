@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T03:13:01.383Z",
+  "updatedAt": "2026-11-25T05:07:03.923Z",
   "summary": {
     "total": 219,
     "complaint": 107,
@@ -2962,7 +2962,7 @@
       "legalCategory": "ร้องทุกข์",
       "legalOfficerName": "พ.ต.ท.หญิง อรอุมา ซิบยก",
       "committeeOwnerName": null,
-      "proceedingNote": "ตำแหน่งขณะร้องทุกข์ : รอง ผบก.กฝ.ตชด.\n21/09/69ให้คู่กรณีแก้/และ ผบช.ตชด.ชี้แจง\n6 ต.ค.69 ให้ สง.ก.ตร.ขยายคำแก้ออกไป 15 วัน",
+      "proceedingNote": "ตำแหน่งขณะร้องทุกข์ : รอง ผบก.กฝ.ตชด.\n21/09/69ให้คู่กรณีแก้/และ ผบช.ตชด.ชี้แจง\n6 ต.ค.69 ให้ สง.ก.ตร.ขยายคำแก้ออกไป 15 วัน \n2 พ.ย.69 ให้ส่งเอกสารคำแก้ให้คู่กรณี\n2๕ พ.ย.69 ให้คู่กรณีส่งเอสการเพิ่มเติม",
       "receivedDate": null,
       "dueDate30": null,
       "dueDate60": null,
@@ -2978,7 +2978,7 @@
       "isAdminCourt": false,
       "adminCourtSource": null,
       "createdAt": "2026-11-04T10:04:54.594Z",
-      "updatedAt": "2026-11-16T03:28:05.449Z"
+      "updatedAt": "2026-11-25T05:07:03.923Z"
     },
     {
       "id": "case-complaint-53-69",
@@ -6583,6 +6583,14 @@
   ],
   "recentChanges": [
     {
+      "type": "ร้องทุกข์",
+      "blackNumber": "48/69",
+      "petitionerName": "พ.ต.อ.ปฐม อุ่นอบ",
+      "changeLabel": "อัปเดตการดำเนินการ",
+      "proceedingSnippet": "2๕ พ.ย.69 ให้คู่กรณีส่งเอสการเพิ่มเติม",
+      "updatedAt": "2026-11-25T05:07:03.923Z"
+    },
+    {
       "type": "อุทธรณ์",
       "blackNumber": "68/69",
       "petitionerName": "ร.ต.อ.เกรียงไกร แก้วศรีหาบุตร",
@@ -6732,14 +6740,6 @@
       "petitionerName": "พล.ต.ต.หญิง ลักขณา ศักดิแพทย์",
       "changeLabel": "นิติกร: พ.ต.ต.ปราโมทย์ วงษ์นรา",
       "proceedingSnippet": null,
-      "updatedAt": "2026-11-16T03:28:05.449Z"
-    },
-    {
-      "type": "ร้องทุกข์",
-      "blackNumber": "43/68",
-      "petitionerName": "พ.ต.ท.สมชาย ตะโกเนียม",
-      "changeLabel": "นิติกร: ว่าที่ พ.ต.ต.วัฒนา สุระพัฒน์",
-      "proceedingSnippet": "4 กย 68 เข้าประชุม มีมติแล้ว",
       "updatedAt": "2026-11-16T03:28:05.449Z"
     }
   ]
