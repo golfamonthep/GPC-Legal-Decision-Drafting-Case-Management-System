@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-25T05:07:03.923Z",
+  "updatedAt": "2026-11-25T06:44:58.120Z",
   "summary": {
     "total": 219,
     "complaint": 107,
@@ -2992,7 +2992,7 @@
       "legalCategory": "ร้องทุกข์",
       "legalOfficerName": "พ.ต.ต.วัฒนา สุระพัฒน์",
       "committeeOwnerName": null,
-      "proceedingNote": "ตำแหน่งขณะร้องทุกข์ : รอง ผบก.ทท.1\n6ต.ค.69 ให้คู่กรณีส่งคำแก้คำร้องทุกข์ภายใน10วัน",
+      "proceedingNote": "ตำแหน่งขณะร้องทุกข์ : รอง ผบก.ทท.1\n6ต.ค.69 ให้คู่กรณีส่งคำแก้คำร้องทุกข์ภายใน10วัน \n24 พ.ย.69 ขอสำเนารายงานการประชุม",
       "receivedDate": null,
       "dueDate30": null,
       "dueDate60": null,
@@ -3008,7 +3008,7 @@
       "isAdminCourt": false,
       "adminCourtSource": null,
       "createdAt": "2026-11-04T10:04:54.594Z",
-      "updatedAt": "2026-11-16T03:28:05.449Z"
+      "updatedAt": "2026-11-25T06:44:58.120Z"
     },
     {
       "id": "case-complaint-58-69",
@@ -6584,6 +6584,14 @@
   "recentChanges": [
     {
       "type": "ร้องทุกข์",
+      "blackNumber": "53/69",
+      "petitionerName": "พ.ต.อ.ศราวุธ ตันกุล",
+      "changeLabel": "อัปเดตการดำเนินการ",
+      "proceedingSnippet": "24 พ.ย.69 ขอสำเนารายงานการประชุม",
+      "updatedAt": "2026-11-25T06:44:58.120Z"
+    },
+    {
+      "type": "ร้องทุกข์",
       "blackNumber": "48/69",
       "petitionerName": "พ.ต.อ.ปฐม อุ่นอบ",
       "changeLabel": "อัปเดตการดำเนินการ",
@@ -6732,14 +6740,6 @@
       "petitionerName": "พ.ต.อ.ศิริโชติ ธเนศราภา",
       "changeLabel": "นิติกร: ว่าที่ ร.ต.อ.วิรุฬห์ ขุนนุรักษ์",
       "proceedingSnippet": "21 ก.ค.69 ฟ้องศาลปกครองสูงสุด ทำคำให้การ ภายใน 14 ส.ค.69",
-      "updatedAt": "2026-11-16T03:28:05.449Z"
-    },
-    {
-      "type": "ร้องทุกข์",
-      "blackNumber": "29/68",
-      "petitionerName": "พล.ต.ต.หญิง ลักขณา ศักดิแพทย์",
-      "changeLabel": "นิติกร: พ.ต.ต.ปราโมทย์ วงษ์นรา",
-      "proceedingSnippet": null,
       "updatedAt": "2026-11-16T03:28:05.449Z"
     }
   ]
