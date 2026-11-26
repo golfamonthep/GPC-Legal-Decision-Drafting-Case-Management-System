@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T08:11:43.160Z",
+  "updatedAt": "2026-11-26T08:14:51.990Z",
   "summary": {
     "total": 220,
     "complaint": 107,
@@ -6590,7 +6590,7 @@
       "respondentName": "ผบก.ภ.จว.สุรินทร์",
       "subject": "ภ.จว.สุรินทร์ ที่ 638/69\nลง 21 ต.ค.69 ให้ออกไว้ก่อน",
       "legalCategory": "อุทธรณ์คำสั่ง",
-      "legalOfficerName": null,
+      "legalOfficerName": "ร.ต.ท.ณัฐ ธีระวัฒน์",
       "committeeOwnerName": null,
       "proceedingNote": null,
       "receivedDate": "2026-11-25T17:17:56.000Z",
@@ -6608,7 +6608,7 @@
       "isAdminCourt": false,
       "adminCourtSource": null,
       "createdAt": "2026-11-26T08:11:43.160Z",
-      "updatedAt": "2026-11-26T08:14:06.898Z"
+      "updatedAt": "2026-11-26T08:14:51.990Z"
     }
   ],
   "recentChanges": [
@@ -6616,9 +6616,9 @@
       "type": "อุทธรณ์",
       "blackNumber": "166/69",
       "petitionerName": "ร.ต.ต.สมร แสวงศรี",
-      "changeLabel": "เพิ่มคดีใหม่",
+      "changeLabel": "นิติกร: ร.ต.ท.ณัฐ ธีระวัฒน์",
       "proceedingSnippet": null,
-      "updatedAt": "2026-11-26T08:11:43.160Z"
+      "updatedAt": "2026-11-26T08:14:51.990Z"
     },
     {
       "type": "อุทธรณ์",
