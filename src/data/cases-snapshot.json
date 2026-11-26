@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-11-26T04:00:17.559Z",
+  "updatedAt": "2026-11-26T08:11:43.160Z",
   "summary": {
-    "total": 219,
+    "total": 220,
     "complaint": 107,
-    "appeal": 112,
+    "appeal": 113,
     "completed": 171,
-    "pending": 48,
+    "pending": 49,
     "withProceedingNotes": 198,
     "adminCourt": 15
   },
@@ -6579,9 +6579,47 @@
       "adminCourtSource": null,
       "createdAt": "2026-11-13T05:18:51.239Z",
       "updatedAt": "2026-11-17T10:21:30.645Z"
+    },
+    {
+      "id": "case-appeal-166-69",
+      "type": "อุทธรณ์",
+      "blackNumber": "166/69",
+      "redNumber": null,
+      "registryRedText": null,
+      "petitionerName": "ร.ต.ต.สมร แสวงศรี",
+      "respondentName": "ไม่ระบุ",
+      "subject": "ไม่ระบุ",
+      "legalCategory": "อุทธรณ์คำสั่ง",
+      "legalOfficerName": null,
+      "committeeOwnerName": null,
+      "proceedingNote": null,
+      "receivedDate": null,
+      "dueDate30": null,
+      "dueDate60": null,
+      "dueDate90": null,
+      "dueDate120": null,
+      "dueDate240": null,
+      "meetingDate": null,
+      "currentStatus": "อยู่ระหว่างดำเนินการ",
+      "decisionResult": null,
+      "oneDriveUrl": null,
+      "remarks": null,
+      "isOrangeRow": false,
+      "isAdminCourt": false,
+      "adminCourtSource": null,
+      "createdAt": "2026-11-26T08:11:43.160Z",
+      "updatedAt": "2026-11-26T08:11:43.160Z"
     }
   ],
   "recentChanges": [
+    {
+      "type": "อุทธรณ์",
+      "blackNumber": "166/69",
+      "petitionerName": "ร.ต.ต.สมร แสวงศรี",
+      "changeLabel": "เพิ่มคดีใหม่",
+      "proceedingSnippet": null,
+      "updatedAt": "2026-11-26T08:11:43.160Z"
+    },
     {
       "type": "อุทธรณ์",
       "blackNumber": "11/2569",
@@ -6732,14 +6770,6 @@
       "petitionerName": "พล.ต.ต.หญิง ลักขณา ศักดิแพทย์",
       "changeLabel": "นิติกร: ว่าที่ ร.ต.อ.วิรุฬห์ ขุนนุรักษ์",
       "proceedingSnippet": null,
-      "updatedAt": "2026-11-16T03:28:05.449Z"
-    },
-    {
-      "type": "ร้องทุกข์",
-      "blackNumber": "14/68",
-      "petitionerName": "พ.ต.อ.สุธี พรมมาลี",
-      "changeLabel": "นิติกร: พ.ต.ต.สุรพัฒน์ วัลลา",
-      "proceedingSnippet": "ประชุม พฤหัสบดี  26 มิ.ย.68",
       "updatedAt": "2026-11-16T03:28:05.449Z"
     }
   ]
