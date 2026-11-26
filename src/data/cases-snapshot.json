@@ -6587,13 +6587,13 @@
       "redNumber": null,
       "registryRedText": null,
       "petitionerName": "ร.ต.ต.สมร แสวงศรี",
-      "respondentName": "ไม่ระบุ",
-      "subject": "ไม่ระบุ",
+      "respondentName": "ผบก.ภ.จว.สุรินทร์",
+      "subject": "ภ.จว.สุรินทร์ ที่ 638/69\nลง 21 ต.ค.69 ให้ออกไว้ก่อน",
       "legalCategory": "อุทธรณ์คำสั่ง",
       "legalOfficerName": null,
       "committeeOwnerName": null,
       "proceedingNote": null,
-      "receivedDate": null,
+      "receivedDate": "2026-11-25T17:17:56.000Z",
       "dueDate30": null,
       "dueDate60": null,
       "dueDate90": null,
@@ -6608,7 +6608,7 @@
       "isAdminCourt": false,
       "adminCourtSource": null,
       "createdAt": "2026-11-26T08:11:43.160Z",
-      "updatedAt": "2026-11-26T08:11:43.160Z"
+      "updatedAt": "2026-11-26T08:14:06.898Z"
     }
   ],
   "recentChanges": [
