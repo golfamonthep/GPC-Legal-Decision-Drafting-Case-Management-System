@@ -19,12 +19,14 @@ interface LawReaderModalProps {
   sectionId: string | null;
   onClose: () => void;
   onSelectSection: (id: string) => void;
+  onSendToAnalysis?: (section: PoliceLawSection) => void;
 }
 
 export default function LawReaderModal({
   sectionId,
   onClose,
   onSelectSection,
+  onSendToAnalysis,
 }: LawReaderModalProps) {
   const [data, setData] = useState<{
     section: PoliceLawSection | null;
@@ -122,6 +124,18 @@ export default function LawReaderModal({
           </div>
 
           <div className="flex items-center gap-1.5">
+            {section && onSendToAnalysis && (
+              <button
+                type="button"
+                onClick={() => onSendToAnalysis(section)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#d62839] hover:bg-red-700 text-white transition-colors shadow-sm"
+                title="ส่งตัวบทนี้ไปใช้วิเคราะห์ทันที"
+              >
+                <Scale className="h-3.5 w-3.5" />
+                <span>ส่งไปวิเคราะห์</span>
+              </button>
+            )}
+
             <button
               onClick={handleCopy}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white dark:bg-[#202028] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors shadow-sm"

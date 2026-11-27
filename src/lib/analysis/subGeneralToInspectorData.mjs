@@ -721,17 +721,39 @@ export function isSubGeneralLevel(level) {
 
 export function resolveJobTier(jobData = {}) {
   const explicit = String(jobData.analysis_tier || '');
+  if (explicit === 'discipline_appeal' || explicit === 'discipline' || explicit === 'appeal') return 'discipline_appeal';
   if (explicit === 'general') return 'general';
   if (explicit === 'sub_general_to_inspector' || explicit === 'sub_general') return 'sub_general_to_inspector';
+  const motion = String(jobData.appointment_motion || '');
+  if (
+    [
+      'minor_discipline',
+      'severe_dismissal',
+      'severe_expulsion',
+      'discharge_blemish',
+      'suspend_or_temp_discharge',
+      'discharge_chapter8',
+      'appointment_violation_87_4',
+    ].includes(motion)
+  ) {
+    return 'discipline_appeal';
+  }
   const level = String(jobData.level || '');
   if (isSubGeneralLevel(level)) return 'sub_general_to_inspector';
   if (DEFAULT_GENERAL_ACCOUNTS.some((a) => a.source_level === level)) return 'general';
-  const motion = String(jobData.appointment_motion || '');
   const unitType = String(jobData.unit_type || '');
   const annexStatus = String(jobData.annex_status || '');
   const combinedText = [jobData.title, jobData.rank_position, jobData.claim, jobData.response, jobData.issues]
     .filter(Boolean)
     .join(' ');
+  if (
+    /(อุทธรณ์.*วินัย|อุทธรณ์คำสั่งลงโทษ|ปลดออกจากราชการ|ไล่ออกจากราชการ|ตัดเงินเดือน|กักยาม|กักขัง|ภาคทัณฑ์|ทัณฑกรรม|พักราชการ|ให้ออกจากราชการไว้ก่อน|มลทินหรือมัวหมอง|๕๑๕\/๒๕๖๙|515\/2569|มาตรา\s*(?:141|๑๔๑))/.test(
+      combinedText,
+    ) &&
+    !/(เลื่อนตำแหน่งสูงขึ้น|บัญชีอาวุโส|ว\s*๒๔๕๖|ว\s*2456)/.test(combinedText)
+  ) {
+    return 'discipline_appeal';
+  }
   if (
     Boolean(annexStatus) ||
     unitType === 'non_opb_bch' ||

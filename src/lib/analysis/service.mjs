@@ -24,8 +24,9 @@ function autoEnrichJobFromKnowledge(data,k){
   data.bundle_fingerprint=fp;
   data.references=data.references.map(r=>r.bundle_fingerprint&&r.bundle_fingerprint!==fp?{...r,bundle_fingerprint:fp}:r);
  }
+ const tier=resolveJobTier(data);
  const normSubj=normalizeName(data.subject_name);
- if(normSubj){
+ if(normSubj&&tier!=='discipline_appeal'){
   let senMatches=(k.seniority||[]).filter(s=>normalizeName(s.source_name)===normSubj&&(!data.level||s.source_level===data.level)&&(!data.account||s.source_account===data.account));
   if(!senMatches.length){
    senMatches=(k.seniority||[]).filter(s=>normalizeName(s.source_name)===normSubj);
@@ -49,14 +50,43 @@ function autoEnrichJobFromKnowledge(data,k){
    }
   }
  }
- const tier=resolveJobTier(data);
  const hasLaw=data.references.some(r=>r.kind==='law'&&r.reviewed);
  if(!hasLaw&&k.all){
-  const baselineIds=tier==='sub_general_to_inspector'
-   ?['ktr-2567-07','ktr-2567-17','ktr-2567-21','ktr-2567-23','ktr-2567-34','ktr-2567-40','ktr-2567-47','c2456-00-intro','c2456-01','c2456-02','c2456-04','c2456-08','c2456-10','c2456-11','c2456-annex-a']
-   :['ktr-2567-07','ktr-2567-17','ktr-2567-26','ktr-2567-33','ktr-2567-34','ktr-2567-39','ktr-2567-47'];
-  const actChunks=(k.laws||[]).filter(c=>c.source_pdf==='law_act_2565.pdf'&&/(มาตรา\s*(77|78|79|80|81|82|85|๗๗|๗๘|๗๙|๘๐|๘๑|๘๒|๘๕))/.test(`${c.label||''} ${c.text||''}`)).slice(0,4);
-  for(const act of actChunks)baselineIds.unshift(act.id);
+  let baselineIds=[];
+  if(tier==='discipline_appeal'){
+   baselineIds=[
+    'order-515-2569-intro',
+    'order-515-2569-clause-01',
+    'order-515-2569-clause-02',
+    'order-515-2569-clause-03',
+    'order-515-2569-clause-06',
+    'order-515-2569-clause-11',
+    'order-515-2569-clause-12',
+    'order-515-2569-clause-14',
+    'order-515-2569-clause-15',
+    'order-515-2569-clause-18',
+    'order-515-2569-clause-19',
+    'police-act-2565-sec-105',
+    'police-act-2565-sec-112',
+    'police-act-2565-sec-116',
+    'police-act-2565-sec-119',
+    'police-act-2565-sec-125',
+    'police-act-2565-sec-126',
+    'police-act-2565-sec-131',
+    'police-act-2565-sec-138',
+    'police-act-2565-sec-141',
+    'police-act-2565-sec-142',
+    'police-act-2565-sec-143',
+   ];
+   const appealRuleChunks=(k.chunks||[]).filter(c=>c.document_id==='kpkt-appeal-2567').slice(0,4);
+   for(const rc of appealRuleChunks)baselineIds.push(rc.id);
+  }else{
+   baselineIds=tier==='sub_general_to_inspector'
+    ?['police-appointment-regulation-2567-p0007','police-appointment-regulation-2567-p0017','police-appointment-regulation-2567-p0021','police-appointment-regulation-2567-p0034','police-appointment-regulation-2567-p0039','police-appointment-regulation-2567-p0046','circular-2456-2569-intro','circular-2456-2569-clause-01','circular-2456-2569-clause-02','circular-2456-2569-clause-08','circular-2456-2569-clause-11']
+    :['police-appointment-regulation-2567-p0007','police-appointment-regulation-2567-p0017','police-appointment-regulation-2567-p0026','police-appointment-regulation-2567-p0034','police-appointment-regulation-2567-p0038','police-appointment-regulation-2567-p0046'];
+   const actChunks=(k.chunks||[]).filter(c=>c.document_id==='police-act-2565'&&/(มาตรา\s*(77|78|79|80|81|82|85|87|147|๗๗|๗๘|๗๙|๘๐|๘๑|๘๒|๘๕|๘๗|๑๔๗))/.test(`${c.label||''} ${c.text||''}`)).slice(0,5);
+   for(const act of actChunks)baselineIds.unshift(act.id);
+  }
   for(const refId of baselineIds){
    const r=k.all.get(refId);
    if(r&&!data.references.some(x=>x.id===r.id)){

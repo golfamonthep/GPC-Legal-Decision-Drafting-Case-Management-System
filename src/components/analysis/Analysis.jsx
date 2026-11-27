@@ -4,6 +4,7 @@ import { Field, SourceLink } from './components';
 
 export default function Analysis({ job, setJob, operate, knowledge, activeTier, onSources }) {
   const effectiveTier = activeTier || inferJobTier(job.data || {});
+  const isDisciplineJob = effectiveTier === 'discipline_appeal';
   const isSubGenJob = effectiveTier === 'sub_general_to_inspector';
 
   const [facts, setFacts] = useState(job.data.facts || []);
@@ -199,6 +200,7 @@ export default function Analysis({ job, setJob, operate, knowledge, activeTier, 
         </div>
       )}
 
+      {!isDisciplineJob ? (
       <button className="outline" onClick={() => setShowManual(!showManual)}>
         {showManual
           ? 'ปิดแบบตรวจอาวุโส'
@@ -206,7 +208,8 @@ export default function Analysis({ job, setJob, operate, knowledge, activeTier, 
             ? 'เพิ่ม/ยืนยันข้อมูลอาวุโสภายในหน่วย (ระดับ รอง ผบก. ลงมาถึง สว. · ผนวก ก)'
             : 'เพิ่ม/ยืนยันข้อมูลอาวุโสระดับนายพล (ระดับ ผบก. ขึ้นไป · บัญชีอาวุโสครั้งที่ ๔)'}
       </button>
-      {showManual ? (
+      ) : null}
+      {!isDisciplineJob && showManual ? (
         <div className="review-form">
           <h3>
             {isSubGenManual
@@ -383,6 +386,7 @@ export default function Analysis({ job, setJob, operate, knowledge, activeTier, 
         </button>
       ) : null}
 
+      {!isDisciplineJob ? (
       <details className="review-form">
         <summary>
           {isSubGenJob
@@ -481,6 +485,7 @@ export default function Analysis({ job, setJob, operate, knowledge, activeTier, 
           บันทึกเงื่อนไขคำนวณ
         </button>
       </details>
+      ) : null}
 
       <div className="section-title">
         <h3>ผลตรวจข้อมูลสำหรับวิเคราะห์</h3>
@@ -491,9 +496,11 @@ export default function Analysis({ job, setJob, operate, knowledge, activeTier, 
           <p>
             {statusLabel(result.status)} · รุ่นข้อมูล {result.job_version} · ขอบเขต:{' '}
             <strong>
-              {result.is_sub_general
-                ? 'ระดับที่ ๒: ระดับ รอง ผบก. ลงมาถึง สว. (พ.ร.บ.ฯ ม.๗๗(๗)–(๑๐), ๗๙, ๘๐, ๘๒(๓) · กฎ ก.ตร.ฯ ข้อ ๔๗(๓) · ว ๒๔๕๖)'
-                : 'ระดับที่ ๑: ระดับ ผบก. ขึ้นไป หรือระดับนายพล (พ.ร.บ.ฯ ม.๗๗(๑)–(๖), ๗๘, ๘๑(๑)(ก), ๘๒(๑)–(๒) · กฎ ก.ตร.ฯ ข้อ ๔๗(๑)–(๒))'}
+              {result.tier === 'discipline_appeal' || result.is_discipline_appeal
+                ? 'อุทธรณ์ทางวินัย / ออกจากราชการ ต่อ ก.พ.ค.ตร. (พ.ร.บ.ตำรวจ ๒๕๖๕ หมวด ๗–๙ ม.๑๐๕–๑๔๖ · กฎ ก.พ.ค.ตร. อุทธรณ์ ๒๕๖๗ · กฎ ก.ตร. วินัย ๒๕๖๙ · คำสั่ง ตร. ที่ ๕๑๕/๒๕๖๙)'
+                : result.is_sub_general
+                  ? 'ระดับที่ ๒: ร้องทุกข์แต่งตั้ง ระดับ รอง ผบก. ลงมาถึง สว. (พ.ร.บ.ฯ ม.๗๗(๗)–(๑๐), ๗๙, ๘๐, ๘๒(๓) · กฎ ก.ตร.ฯ ข้อ ๔๗(๓) · ว ๒๔๕๖)'
+                  : 'ระดับที่ ๑: ร้องทุกข์แต่งตั้ง ระดับ ผบก. ขึ้นไป หรือระดับนายพล (พ.ร.บ.ฯ ม.๗๗(๑)–(๖), ๗๘, ๘๑(๑)(ก), ๘๒(๑)–(๒) · กฎ ก.ตร.ฯ ข้อ ๔๗(๑)–(๒))'}
             </strong>
             {result.job_version !== job.version ? (
               <strong className="warning-inline"> · ข้อมูลเปลี่ยนแล้ว กรุณาตรวจใหม่</strong>
@@ -534,13 +541,18 @@ export default function Analysis({ job, setJob, operate, knowledge, activeTier, 
           {result.rule_checks?.length ? (
             <div className="review-form" aria-label="ผลการตรวจสอบหลักเกณฑ์ตามระดับตำแหน่ง">
               <h4>
-                หลักเกณฑ์และประเด็นที่ต้องตรวจสอบตามระดับตำแหน่ง (
-                {result.is_sub_general ? 'ระดับ รอง ผบก. ลงมาถึง สว.' : 'ระดับ ผบก. ขึ้นไป / นายพล'})
+                หลักเกณฑ์และประเด็นที่ต้องตรวจสอบ (
+                {result.tier === 'discipline_appeal' || result.is_discipline_appeal
+                  ? 'อุทธรณ์ทางวินัย / ออกจากราชการ ก.พ.ค.ตร.'
+                  : result.is_sub_general
+                    ? 'ระดับ รอง ผบก. ลงมาถึง สว.'
+                    : 'ระดับ ผบก. ขึ้นไป / นายพล'}
+                )
               </h4>
               <ul>
                 {result.rule_checks.map((rc) => (
                   <li key={rc.id}>
-                    <strong>[{rc.clause}] {rc.title}:</strong> {rc.detail}
+                    <strong>{rc.clause ? `[${rc.clause}] ` : ''}{rc.title}:</strong> {rc.detail}
                   </li>
                 ))}
               </ul>

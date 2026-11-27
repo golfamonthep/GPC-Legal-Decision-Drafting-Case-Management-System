@@ -24,8 +24,21 @@ const SUB_GENERAL_QUICK_SEARCHES = [
   { label: 'ตัวอย่างโครงสร้างคำวินิจฉัย', q: 'พิเคราะห์แล้วเห็นว่า', kind: 'precedent' },
 ];
 
-export default function Knowledge({ knowledge, job, operate, setJob, activeTier = 'general' }) {
-  const [q, setQ] = useState('');
+const DISCIPLINE_APPEAL_QUICK_SEARCHES = [
+  { label: 'คำสั่ง ตร. ๕๑๕/๒๕๖๙ (ทั้งหมด)', q: '๕๑๕/๒๕๖๙', kind: 'law' },
+  { label: 'ข้อ ๑ ไม่ถูกต้อง / ไม่เหมาะสม', q: 'ไม่ถูกต้อง', kind: 'law' },
+  { label: 'ข้อ ๒–๓ วินัยไม่ร้ายแรง/ร้ายแรง (ห้ามส่งกลับ ผบก.)', q: 'ไม่สามารถที่จะส่งเรื่องไปให้ผู้บังคับการ', kind: 'law' },
+  { label: 'ข้อ ๖ อำนาจตั้ง กก.สอบสวน (ม.๑๑๙)', q: 'ละเลยไม่ปฏิบัติตามมาตรา ๑๑๙', kind: 'law' },
+  { label: 'ข้อ ๑๑–๑๒ คดีอาญา/ป.ป.ช. ไม่ชะลอวินัย', q: 'ไม่เป็นเหตุให้ต้องชะลอ', kind: 'law' },
+  { label: 'ข้อ ๑๓ โทษ ม.๘๗ วรรคสี่', q: 'มาตรา ๘๗ วรรคสี่', kind: 'law' },
+  { label: 'ข้อ ๑๙ บทเฉพาะกาล ๔๓๖/๒๕๔๘', q: '๔๓๖/๒๕๔๘', kind: 'law' },
+  { label: 'พ.ร.บ.ตำรวจ ม.๑๔๑ (อุทธรณ์ ก.พ.ค.ตร.)', q: 'มาตรา 141', kind: 'law' },
+  { label: 'พ.ร.บ.ตำรวจ ม.๑๒๖ (รายงานผลวินัย)', q: 'มาตรา 126', kind: 'law' },
+  { label: 'กฎ ก.พ.ค.ตร. อุทธรณ์ ๒๕๖๗', q: 'กฎ ก.พ.ค.ตร. ว่าด้วยการอุทธรณ์', kind: 'law' },
+];
+
+export default function Knowledge({ knowledge, job, operate, setJob, activeTier = 'general', initialQuery = '' }) {
+  const [q, setQ] = useState(initialQuery || '');
   const [kind, setKind] = useState('law');
   const [results, setResults] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -34,8 +47,20 @@ export default function Knowledge({ knowledge, job, operate, setJob, activeTier 
   const [page, setPage] = useState(1);
   const [comparison, setComparison] = useState(false);
 
+  const isDisciplineTier = activeTier === 'discipline_appeal';
   const isSubGenTier = activeTier === 'sub_general_to_inspector';
-  const quickSearches = isSubGenTier ? SUB_GENERAL_QUICK_SEARCHES : GENERAL_QUICK_SEARCHES;
+  const quickSearches = isDisciplineTier
+    ? DISCIPLINE_APPEAL_QUICK_SEARCHES
+    : isSubGenTier
+      ? SUB_GENERAL_QUICK_SEARCHES
+      : GENERAL_QUICK_SEARCHES;
+
+  React.useEffect(() => {
+    if (initialQuery) {
+      setQ(initialQuery);
+      setKind('law');
+    }
+  }, [initialQuery]);
 
   const runSearch = (queryValue, kindValue) =>
     operate(async () => {
@@ -77,15 +102,20 @@ export default function Knowledge({ knowledge, job, operate, setJob, activeTier 
     <>
       <div className="page-title">
         <h2>
-          ฐานข้อมูลอ้างอิง ({isSubGenTier ? 'โหมดระดับ รอง ผบก. ลงมาถึง สว.' : 'โหมดระดับ ผบก. ขึ้นไป / นายพล'})
+          ฐานข้อมูลอ้างอิง (
+          {isDisciplineTier
+            ? 'โหมดอุทธรณ์ทางวินัย / ออกจากราชการ ก.พ.ค.ตร.'
+            : isSubGenTier
+              ? 'โหมดระดับ รอง ผบก. ลงมาถึง สว.'
+              : 'โหมดระดับ ผบก. ขึ้นไป / นายพล'}
+          )
         </h2>
         <span className="muted">
-          รุ่น {knowledge?.version} · ตรวจ hash ตรงกับชุดต้นทาง ({knowledge?.sources?.length || 0} ไฟล์ PDF)
+          รุ่น {knowledge?.version} · คลังกฎหมายพร้อมใช้ {knowledge?.chunk_count?.toLocaleString() || 0} มาตรา/ข้อ
         </span>
       </div>
       <p className="muted">
-        ครอบคลุม พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕, กฎ ก.ตร. ว่าด้วยการแต่งตั้งข้าราชการตำรวจ พ.ศ. ๒๕๖๗, บันทึกข้อความ ตร.
-        ที่ ๐๐๐๙.๒๓๑/ว ๒๔๕๖ ลง ๒๒ ต.ค. ๒๕๖๙ (การแต่งตั้งระดับ รอง ผบก. ลงมาถึง สว. พร้อม ผนวก ก – ช), บัญชีอาวุโส และคำวินิจฉัยตัวอย่าง
+        ครอบคลุมคลังกฎหมายตำรวจทั้ง ๔๐ ฉบับ: คำสั่ง ตร. ที่ ๕๑๕/๒๕๖๙ (มอบอำนาจวินัย ๒๔ พ.ย. ๒๕๖๙), พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕, กฎ ก.พ.ค.ตร. อุทธรณ์/ร้องทุกข์ พ.ศ. ๒๕๖๗, กฎ ก.ตร. แต่งตั้ง พ.ศ. ๒๕๖๗, ว ๒๔๕๖, บัญชีอาวุโส และคำวินิจฉัยตัวอย่าง
       </p>
 
       <div className="search-row">
@@ -93,11 +123,11 @@ export default function Knowledge({ knowledge, job, operate, setJob, activeTier 
           aria-label="ค้นฐานอ้างอิง"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="ชื่อบุคคล คำค้น เลขมาตรา หรือข้อกำหนด ว ๒๔๕๖ (เช่น มาตรา 77, ข้อ 47, ผนวก ข, ข้อ ๑๑)"
+          placeholder="ชื่อบุคคล เลขมาตรา หรือคำสั่ง (เช่น ๕๑๕/๒๕๖๙, มาตรา 141, มาตรา 126, มาตรา 77, ข้อ 47, ว ๒๔๕๖)"
           onKeyDown={(e) => e.key === 'Enter' && search()}
         />
         <select aria-label="ชนิดแหล่ง" value={kind} onChange={(e) => setKind(e.target.value)}>
-          <option value="law">กฎหมายและหนังสือเวียน (พ.ร.บ. ๒๕๖๕ / กฎ ก.ตร. ๒๕๖๗ / ว ๒๔๕๖)</option>
+          <option value="law">กฎหมาย ระเบียบ และคำสั่ง ตร. ทั้งหมด (รวม ๕๑๕/๒๕๖๙)</option>
           <option value="seniority">อาวุโสที่ตรวจภาพ</option>
           <option value="appointment">การแต่งตั้ง</option>
           <option value="precedent">คำวินิจฉัยตัวอย่าง</option>

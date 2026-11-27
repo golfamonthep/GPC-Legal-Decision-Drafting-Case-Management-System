@@ -4,13 +4,16 @@ export const emptyInput={analysis_tier:'general',title:'',external_case_ref:'',s
 export function normalizeTierParam(raw){
  if(!raw)return null;
  const v=String(raw).trim();
+ if(v==='discipline_appeal'||v==='discipline'||v==='appeal'||v==='3')return 'discipline_appeal';
  if(v==='sub_general'||v==='sub_general_to_inspector'||v==='2')return 'sub_general_to_inspector';
  if(v==='general'||v==='1')return 'general';
  return null;
 }
 export function inferJobTier(data={}){
+ if(data.analysis_tier==='discipline_appeal'||data.analysis_tier==='discipline'||data.analysis_tier==='appeal')return 'discipline_appeal';
  if(data.analysis_tier==='sub_general_to_inspector'||data.analysis_tier==='sub_general')return 'sub_general_to_inspector';
  if(data.analysis_tier==='general')return 'general';
+ if(['minor_discipline','severe_dismissal','severe_expulsion','discharge_blemish','suspend_or_temp_discharge','discharge_chapter8','appointment_violation_87_4'].includes(data.appointment_motion))return 'discipline_appeal';
  if(/\(เลื่อนจาก|สับเปลี่ยนหมุนเวียน/.test(String(data.level||'')))return 'sub_general_to_inspector';
  if(data.annex_status||['non_opb_bch','opb_unit','direct_tr_unit'].includes(data.unit_type))return 'sub_general_to_inspector';
  return 'general';

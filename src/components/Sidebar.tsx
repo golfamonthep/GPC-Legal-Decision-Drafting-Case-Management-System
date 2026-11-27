@@ -34,8 +34,9 @@ const navigation = [
     icon: Scale,
     permission: "USE_ANALYSIS" as const,
     subItems: [
-      { name: "๑. ระดับ ผบก. ขึ้นไป (นายพล)", href: "/analysis?tier=general" },
-      { name: "๒. ระดับ รอง ผบก. ลงมา (รอง ผบก.–สว.)", href: "/analysis?tier=sub_general" },
+      { name: "๑. ร้องทุกข์ — ผบก. ขึ้นไป (นายพล)", href: "/analysis?tier=general" },
+      { name: "๒. ร้องทุกข์ — รอง ผบก.–สว.", href: "/analysis?tier=sub_general" },
+      { name: "๓. อุทธรณ์ — วินัย/ออกจากราชการ", href: "/analysis?tier=discipline_appeal" },
     ],
   },
   { name: "คลังความรู้กฎหมาย", href: "/library", icon: Library },

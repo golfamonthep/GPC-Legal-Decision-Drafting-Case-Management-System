@@ -38,6 +38,13 @@ export function inferMissingInputFields(data) {
 
   if (!data.analysis_tier) {
     if (
+      /(อุทธรณ์.*วินัย|อุทธรณ์คำสั่งลงโทษ|ปลดออกจากราชการ|ไล่ออกจากราชการ|ตัดเงินเดือน|กักยาม|กักขัง|ภาคทัณฑ์|ทัณฑกรรม|พักราชการ|ให้ออกจากราชการไว้ก่อน|มลทินหรือมัวหมอง|๕๑๕\/๒๕๖๙|515\/2569|มาตรา\s*(?:141|๑๔๑))/.test(
+        combined,
+      ) &&
+      !/(เลื่อนตำแหน่งสูงขึ้น|บัญชีอาวุโส|ว\s*๒๔๕๖|ว\s*2456)/.test(combined)
+    ) {
+      data.analysis_tier = 'discipline_appeal';
+    } else if (
       /(รอง\s*ผบก\.|รองผู้บังคับการ|ผกก\.|ผู้กำกับการ|รอง\s*ผกก\.|สวญ\.|สารวัตรใหญ่|สว\.|สารวัตร|รอง\s*สว\.|พ\.ต\.[อทต]\.|ร\.ต\.[อทต]\.)/.test(
         combined,
       ) &&
@@ -53,6 +60,31 @@ export function inferMissingInputFields(data) {
     ) {
       data.analysis_tier = 'general';
     }
+  }
+
+  if (data.analysis_tier === 'discipline_appeal') {
+    if (!data.appointment_motion && combined) {
+      if (/ไล่ออก/.test(combined)) data.appointment_motion = 'severe_expulsion';
+      else if (/ปลดออก/.test(combined)) data.appointment_motion = 'severe_dismissal';
+      else if (/(มลทิน|มัวหมอง|มาตรา\s*(?:138|๑๓๘))/.test(combined)) data.appointment_motion = 'discharge_blemish';
+      else if (/(พักราชการ|ให้ออกจากราชการไว้ก่อน|มาตรา\s*(?:131|๑๓๑))/.test(combined)) data.appointment_motion = 'suspend_or_temp_discharge';
+      else if (/(มาตรา\s*(?:87|๘๗).*วรรคสี่)/.test(combined)) data.appointment_motion = 'appointment_violation_87_4';
+      else if (/(ภาคทัณฑ์|ทัณฑกรรม|กักยาม|กักขัง|ตัดเงินเดือน|วินัยอย่างไม่ร้ายแรง)/.test(combined)) data.appointment_motion = 'minor_discipline';
+    }
+    if (!data.title) {
+      const parts = [
+        data.external_case_ref ? `สำนวน ${data.external_case_ref}` : '',
+        [data.rank_position, data.subject_name].filter(Boolean).join(' '),
+      ].filter(Boolean);
+      if (parts.length) {
+        data.title = `วิเคราะห์อุทธรณ์ทางวินัย ก.พ.ค.ตร. · ${parts.join(' · ')}`.slice(0, 180);
+      } else if (data.claim) {
+        data.title = `วิเคราะห์อุทธรณ์ทางวินัย ก.พ.ค.ตร. · ${data.claim.slice(0, 80)}`;
+      } else {
+        data.title = 'งานวิเคราะห์อุทธรณ์ทางวินัย / ออกจากราชการ (ก.พ.ค.ตร.)';
+      }
+    }
+    return data;
   }
 
   const isRotation = /(สับเปลี่ยน|หมุนเวียน|โยกย้าย|ระดับเท่าเดิม|ย้ายออกนอกหน่วย)/.test(combined);

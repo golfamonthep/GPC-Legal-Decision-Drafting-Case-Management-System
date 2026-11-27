@@ -5,7 +5,9 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get('q') || '';
   const category = searchParams.get('category') || 'ทั้งหมด';
+  const scope = searchParams.get('scope') || 'all';
   const actId = searchParams.get('actId') || 'all';
+  const hideRepealed = searchParams.get('hideRepealed') === '1' || searchParams.get('hideRepealed') === 'true';
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
 
@@ -13,7 +15,9 @@ export async function GET(request: NextRequest) {
     const result = searchPoliceLaws({
       q,
       category,
+      scope,
       actId,
+      hideRepealed,
       page: Math.max(1, page),
       pageSize: Math.min(100, Math.max(1, pageSize))
     });

@@ -140,3 +140,32 @@ test('ก.พ.ค.ตร. 2567 appeal and grievance rules are active and 2547 ru
   const circularSearch = searchPoliceLaws({ q: 'ว ๒๔๕๖' });
   assert.ok(circularSearch.items.length > 0, 'Must find results for ว ๒๔๕๖');
 });
+
+test('Order 515/2569 (24 Nov 2569) is indexed across all 20 clauses + intro and GPC scope filters separate appeal vs grievance', () => {
+  const acts = getLawActs();
+  const order515 = acts.find(a => a.id === 'tr-order-515-2569');
+  assert.ok(order515, 'Order 515/2569 must exist in catalog');
+  assert.equal(order515?.gpcScope, 'appeal_discipline');
+  assert.equal(order515?.sectionCount, 21);
+  assert.equal(order515?.isNew, true);
+
+  // Search by Arabic or Thai order number
+  const byArabic = searchPoliceLaws({ q: '515' });
+  assert.ok(byArabic.items.some(i => i.actId === 'tr-order-515-2569'));
+  const byThai = searchPoliceLaws({ q: '๕๑๕/๒๕๖๙', actId: 'tr-order-515-2569', pageSize: 30 });
+  assert.equal(byThai.total, 21);
+
+  // Key clauses exist with exact statutory wording
+  const clause1 = getSectionById('order-515-2569-clause-01');
+  assert.ok(clause1.section?.content.includes('ไม่ถูกต้อง') && clause1.section?.content.includes('ไม่เหมาะสม'));
+  const clause13 = getSectionById('order-515-2569-clause-13');
+  assert.ok(clause13.section?.content.includes('มาตรา ๘๗ วรรคสี่'));
+  const clause19 = getSectionById('order-515-2569-clause-19');
+  assert.ok(clause19.section?.content.includes('๔๓๖/๒๕๔๘'));
+
+  // Scope filter separates discipline appeal vs appointment grievance & hideRepealed hides 2547 rules
+  const appealScope = searchPoliceLaws({ scope: 'appeal_discipline', hideRepealed: true, pageSize: 100 });
+  assert.ok(appealScope.items.every(i => i.actId !== 'ktr-appeal-2547' && i.actId !== 'ktr-appointment-2567'));
+  const grievanceScope = searchPoliceLaws({ scope: 'grievance_appointment', hideRepealed: true, pageSize: 100 });
+  assert.ok(grievanceScope.items.every(i => i.actId !== 'tr-order-515-2569' && i.actId !== 'ktr-petition-2547'));
+});

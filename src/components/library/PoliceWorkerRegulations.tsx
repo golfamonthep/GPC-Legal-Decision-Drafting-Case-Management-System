@@ -46,17 +46,21 @@ const CATEGORIES = [
 ];
 
 const POPULAR_SEARCHES = [
+  { label: "คำสั่ง ตร. ๕๑๕/๒๕๖๙ (วินัย · NEW)", query: "๕๑๕" },
   { label: "ว ๒๔๕๖ รอง ผบก.-สว. (NEW)", query: "ว ๒๔๕๖" },
   { label: "วินัย 2569 (NEW)", query: "วินัย 2569" },
   { label: "คำสั่ง ตร. 424-2569 (NEW)", query: "424-2569" },
   { label: "นโยบาย ผบ.ตร. 2570", query: "นโยบาย" },
   { label: "ก.พ.ค.ตร.", query: "ก.พ.ค.ตร." },
   { label: "การแต่งตั้ง 2567-2569", query: "แต่งตั้ง" },
-  { label: "มอบอำนาจหน้าที่ รอง ผบ.ตร.", query: "มอบอำนาจ" },
-  { label: "ระเบียบไม่เกี่ยวกับคดี", query: "ไม่เกี่ยวกับคดี" }
+  { label: "มอบอำนาจ", query: "มอบอำนาจ" },
 ];
 
-export default function PoliceWorkerRegulations() {
+export default function PoliceWorkerRegulations({
+  onOpenCatalogAct,
+}: {
+  onOpenCatalogAct?: (actId: string) => void;
+}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
   const [selectedYear, setSelectedYear] = useState<string>("all");
@@ -284,15 +288,26 @@ export default function PoliceWorkerRegulations() {
                 </span>
 
                 <div className="flex items-center gap-2">
-                  <a
-                    href={item.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-xs font-semibold transition-colors"
-                  >
-                    <span>อ่านฉบับเต็ม</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                  {item.sourceUrl.startsWith("/library?act=") && onOpenCatalogAct ? (
+                    <button
+                      type="button"
+                      onClick={() => onOpenCatalogAct(item.sourceUrl.replace("/library?act=", ""))}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#d62839] hover:bg-red-700 text-white text-xs font-semibold transition-colors"
+                    >
+                      <BookOpen className="h-3 w-3" />
+                      <span>เปิดอ่านครบทุกข้อ</span>
+                    </button>
+                  ) : (
+                    <a
+                      href={item.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-600 dark:text-indigo-300 text-xs font-semibold transition-colors"
+                    >
+                      <span>อ่านฉบับเต็ม</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>

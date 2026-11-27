@@ -38,6 +38,12 @@ test('PoliceWorker regulations dataset loads and contains priority 2569-2570 reg
   assert.ok(circular2456, 'Must contain หนังสือเวียน ตร. ว 2456 (แต่งตั้ง รอง ผบก. - สว. 2569)');
   assert.equal(circular2456.year, 2569);
   assert.equal(circular2456.isNew, true);
+
+  const order515 = items.find((i: any) => i.id === 'police-order-515-2569');
+  assert.ok(order515, 'Must contain คำสั่ง ตร. ที่ ๕๑๕/๒๕๖๙ (มอบอำนาจวินัย 24 พ.ย. 69)');
+  assert.equal(order515.year, 2569);
+  assert.equal(order515.isNew, true);
+  assert.equal(order515.sourceUrl, '/library?act=tr-order-515-2569');
 });
 
 test('OCR python processor script and OpenThai 2.1.4 OCR models (Text & Markdown) are installed', async () => {

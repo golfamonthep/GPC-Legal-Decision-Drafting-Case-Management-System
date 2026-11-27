@@ -13,6 +13,13 @@ description: >-
 > 4. **ห้าม reset หรือเขียนทับงานค้างใน `C:\APP`**: การทำงาน Git/Push ให้ทำผ่าน clean worktree (`C:\Users\polic\.codex\worktrees\ai-harness\APP`) และซิงก์เฉพาะไฟล์ที่เกี่ยวข้องกลับไปยัง `C:\APP` อย่างระมัดระวัง
 > 5. **ดึงสกิลที่ติดตั้งเพิ่มเติมจาก GitHub มาใช้ทุกครั้ง (Mandatory GitHub Installed Skills Integration)**: การทำงานทุกครั้งจะต้องดึงเอาสกิลต่าง ๆ ที่ได้ติดตั้งเพิ่มเติมจาก GitHub (ใน `C:\Users\polic\.codex\skills` เช่น `impeccable`, `design-taste-frontend`, `ui-ux-pro-max`, `ponytail`, `caveman`, `archify`, `thai-law`, `deepseek-harness`, `tabler`, `react-bits`, `motion-react`, `systematic-debugging`, `verification-before-completion`, `agentic-awesome-skills` ฯลฯ) มาประยุกต์ใช้ในการตัดสินใจและลงมือปฏิบัติงานทุกครั้ง เพื่อให้ผลงานมีประสิทธิภาพและคุณภาพสูงสุด
 
+### สรุปสถานะระบบล่าสุด (2026-11-27)
+
+- **อัปเดตคำสั่ง ตร. ที่ ๕๑๕/๒๕๖๙ (๒๔ พ.ย. ๒๕๖๙), ปรับหน้า `/library` ให้คลีนและเลือกกฎหมายง่าย, และเชื่อมคลังกฎหมายครบ ๔๐ ฉบับเข้าส่วนวิเคราะห์พร้อมโหมด "อุทธรณ์ทางวินัย ก.พ.ค.ตร." (2026-11-27)**:
+  - นำเข้า **คำสั่งสำนักงานตำรวจแห่งชาติ ที่ ๕๑๕/๒๕๖๙** (เรื่อง มอบอำนาจการดำเนินการทางวินัย การสั่งให้ข้าราชการตำรวจออกจากราชการ และกำหนดแนวทางปฏิบัติ · ยกเลิกคำสั่ง ตร. ๔๓๖/๒๕๔๘) ครบทั้งบทนำและข้อ ๑–๒๐ (`src/lib/analysis/disciplineAppealData.mjs`, `police-laws.json` 40 ฉบับ 2,422 มาตรา/ข้อ, `policeworker-regulations.json` 466 ฉบับ)
+  - ปรับหน้า `/library` (`PoliceLawCatalog.tsx`, `LibraryClient.tsx`, `LawReaderModal.tsx`, `src/lib/thai-law/search.ts`) ให้คลีน โปร่งตา พร้อม **Searchable Law Picker** แบ่งขอบเขตงาน ก.พ.ค.ตร., ปุ่มกฎหมายหลัก ๖ ฉบับ, สวิตช์ซ่อนฉบับยกเลิกแล้ว และปุ่ม **"ใช้วิเคราะห์"** ส่งเข้า `/analysis` ใน 1 คลิก
+  - เชื่อมคลังกฎหมายทั้งหมดเข้า `knowledge.mjs` ของส่วนวิเคราะห์ และเพิ่มโหมดที่ ๓ **`อุทธรณ์ทางวินัย / ออกจากราชการ (ก.พ.ค.ตร.)`** (`discipline_appeal` ใน `Sidebar.tsx`, `Workbench.jsx`, `InputForm.jsx`, `Analysis.jsx`, `Knowledge.jsx`, `engine.mjs`, `ai.mjs`, `service.mjs`, `safety.mjs`) แยกเด็ดขาดว่าเรื่องวินัยเป็น **เรื่องอุทธรณ์ ก.พ.ค.ตร.** (`npm test` 110/110, `typecheck` 0 errors, `build` 38/38 routes)
+
 ### สรุปสถานะระบบล่าสุด (2026-11-13)
 
 - **ติดตั้งสกิลและโมเดล OpenThai 2.0 OCR (`iapp/OpenThai2.0-OCR-Text` และ `iapp/OpenThai2.0-OCR-Markdown`) เข้าสู่คลังสกิลและระบบคลังความรู้กฎหมาย ๑๐๐% (2026-11-13)**:

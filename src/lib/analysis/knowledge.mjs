@@ -12,6 +12,84 @@ import {
   DEFAULT_GENERAL_ACCOUNTS,
   STATUTORY_TIER_DEFINITIONS,
 } from './subGeneralToInspectorData.mjs';
+import { ORDER_515_2569_SOURCE, ORDER_515_2569_CHUNKS } from './disciplineAppealData.mjs';
+
+const POLICE_LAW_CATALOG_SOURCE = {
+  filename: 'police_law_catalog_2569.json',
+  sha256: 'police-law-catalog-2569-verified',
+  page_count: 9999,
+  role: 'active_source',
+  title: 'คลังกฎหมายตำรวจฉบับสมบูรณ์ (พ.ร.บ.ตำรวจแห่งชาติ ๒๕๖๕, กฎ ก.พ.ค.ตร. อุทธรณ์/ร้องทุกข์ ๒๕๖๗, กฎ ก.ตร. วินัย และกฎหมายที่เกี่ยวข้อง)',
+};
+
+let cachedPoliceLawCatalogChunks = null;
+
+function loadFullPoliceLawCatalogChunks() {
+  if (cachedPoliceLawCatalogChunks) return cachedPoliceLawCatalogChunks;
+  const candidates = [
+    path.resolve(process.cwd(), 'src/data/thai-law/police-laws.json'),
+    'C:\\APP\\src\\data\\thai-law\\police-laws.json',
+  ];
+  const skipDedicatedActIds = new Set([
+    'tr-circular-2456-2569',
+    'ktr-appointment-2567',
+    'tr-order-515-2569',
+  ]);
+  for (const lawsPath of candidates) {
+    if (!existsSync(lawsPath)) continue;
+    try {
+      const parsed = JSON.parse(readFileSync(lawsPath, 'utf8'));
+      const list = [];
+      for (const sec of parsed.catalog || []) {
+        if (skipDedicatedActIds.has(sec.actId)) continue;
+        list.push({
+          id: sec.id,
+          kind: 'law',
+          role: 'law',
+          document_id: sec.actId,
+          source_pdf: POLICE_LAW_CATALOG_SOURCE.filename,
+          page: 1,
+          section_num: sec.sectionNum,
+          section_num_arabic: sec.sectionNumArabic,
+          label: `${sec.actTitle} · ${sec.sectionLabel}`,
+          text: `${sec.actTitle} ${sec.sectionLabel}\n${sec.content}`,
+          status: 'HUMAN_REVIEWED',
+        });
+      }
+      cachedPoliceLawCatalogChunks = list;
+      return list;
+    } catch {
+      // fall through
+    }
+  }
+  return [];
+}
+
+function rankKnowledgeSearch(records, q, kind) {
+  const query = normalizeSearchText(q);
+  const pool = records.filter((r) => !kind || r.kind === kind);
+  if (!query) {
+    return pool.filter((r) => (kind ? true : r.kind === 'law')).slice(0, 60);
+  }
+  const scored = [];
+  for (const r of pool) {
+    const labelNorm = normalizeSearchText(r.label || '');
+    const textNorm = normalizeSearchText(r.text || '');
+    const secNorm = normalizeSearchText(r.section_num_arabic || r.section_num || '');
+    let score = 0;
+    if (secNorm && secNorm === query) score += 2000;
+    if (labelNorm.includes(query)) score += 400;
+    else if (textNorm.includes(query)) score += 80;
+    if (score > 0) {
+      if (r.document_id === 'tr-order-515-2569') score += 40;
+      if (r.document_id === 'police-act-2565') score += 30;
+      if (r.document_id === 'kpkt-appeal-2567' || r.document_id === 'kpkt-grievance-2567') score += 25;
+      scored.push({ r, score });
+    }
+  }
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, 60).map((s) => s.r);
+}
 
 const requireModule = createRequire(import.meta.url);
 const THAI_DIGITS = '๐๑๒๓๔๕๖๗๘๙';
@@ -84,9 +162,10 @@ function mergeExtendedKnowledge(baseBundle) {
     : (baseBundle.appointments || []);
 
   const existingSourceNames = new Set((baseBundle.summary.sources || []).map((s) => s.filename));
-  const sources = existingSourceNames.has(CIRCULAR_2456_SOURCE.filename)
-    ? baseBundle.summary.sources
-    : [...baseBundle.summary.sources, CIRCULAR_2456_SOURCE];
+  const extraSources = [CIRCULAR_2456_SOURCE, ORDER_515_2569_SOURCE, POLICE_LAW_CATALOG_SOURCE].filter(
+    (s) => !existingSourceNames.has(s.filename),
+  );
+  const sources = [...(baseBundle.summary.sources || []), ...extraSources];
 
   const baseChunksFiltered = (baseBundle.chunks || []).filter(
     (c) => c.document_id !== 'police-appointment-regulation-2567',
@@ -96,9 +175,13 @@ function mergeExtendedKnowledge(baseBundle) {
   );
 
   const existingIds = new Set(baseRecordsFiltered.map((r) => r.id));
-  const verifiedLawChunks = [...KTR_APPOINTMENT_2567_CHUNKS, ...CIRCULAR_2456_CHUNKS].filter(
-    (c) => !existingIds.has(c.id),
-  );
+  const catalogChunks = loadFullPoliceLawCatalogChunks();
+  const verifiedLawChunks = [
+    ...ORDER_515_2569_CHUNKS,
+    ...KTR_APPOINTMENT_2567_CHUNKS,
+    ...CIRCULAR_2456_CHUNKS,
+    ...catalogChunks,
+  ].filter((c) => !existingIds.has(c.id));
   const chunks = [...baseChunksFiltered, ...verifiedLawChunks];
   const records = [...baseRecordsFiltered, ...verifiedLawChunks];
 
@@ -117,9 +200,14 @@ function mergeExtendedKnowledge(baseBundle) {
     seniority: enrichedSeniority.length,
     appointments: appointments.length,
     chunk_count: chunks.length,
-    supported_tiers: ['๑. ระดับ ผบก. ขึ้นไป (ระดับนายพล)', '๒. ระดับ รอง ผบก. ลงมา (รอง ผบก. – สว.)'],
+    supported_tiers: [
+      '๑. ร้องทุกข์แต่งตั้ง — ระดับ ผบก. ขึ้นไป (นายพล)',
+      '๒. ร้องทุกข์แต่งตั้ง — ระดับ รอง ผบก. ลงมา (รอง ผบก. – สว.)',
+      '๓. อุทธรณ์ทางวินัย / ออกจากราชการ (ก.พ.ค.ตร.)',
+    ],
     tier_definitions: STATUTORY_TIER_DEFINITIONS,
     circular_2456_source: CIRCULAR_2456_SOURCE.filename,
+    order_515_2569_source: ORDER_515_2569_SOURCE.filename,
   };
 
   const all = new Map(records.map((r) => [r.id, r]));
@@ -139,14 +227,7 @@ function mergeExtendedKnowledge(baseBundle) {
     accounts,
     all,
     search(q, kind) {
-      const query = normalizeSearchText(q);
-      return records
-        .filter(
-          (r) =>
-            (!kind || r.kind === kind) &&
-            (query ? normalizeSearchText((r.label || '') + (r.text || '')).includes(query) : r.kind === 'law'),
-        )
-        .slice(0, 60);
+      return rankKnowledgeSearch(records, q, kind);
     },
     async source(name) {
       if (name === CIRCULAR_2456_SOURCE.filename) {
@@ -377,30 +458,12 @@ function loadSnapshotData() {
 function loadEmbeddedStatutoryFallback() {
   const snapshot = loadSnapshotData();
   const accounts = [...DEFAULT_GENERAL_ACCOUNTS, ...SUB_GENERAL_TO_INSPECTOR_ACCOUNTS];
-  const chunks = [...KTR_APPOINTMENT_2567_CHUNKS, ...CIRCULAR_2456_CHUNKS];
-  const lawsPath = path.resolve(process.cwd(), 'src/data/thai-law/police-laws.json');
-  if (existsSync(lawsPath)) {
-    try {
-      const parsed = JSON.parse(readFileSync(lawsPath, 'utf8'));
-      const relevantActs = new Set(['police-act-2565', 'kpkt-grievance-2567', 'kpkt-appeal-2567']);
-      for (const sec of parsed.catalog || []) {
-        if (!relevantActs.has(sec.actId)) continue;
-        chunks.push({
-          id: sec.id,
-          kind: 'law',
-          role: 'law',
-          document_id: sec.actId,
-          source_pdf: CIRCULAR_2456_SOURCE.filename,
-          page: 1,
-          label: `${sec.actTitle} · ${sec.sectionLabel}`,
-          text: `${sec.actTitle} ${sec.sectionLabel}\n${sec.content}`,
-          status: 'HUMAN_REVIEWED',
-        });
-      }
-    } catch {
-      // keep circular chunks if catalog cannot be read
-    }
-  }
+  const chunks = [
+    ...ORDER_515_2569_CHUNKS,
+    ...KTR_APPOINTMENT_2567_CHUNKS,
+    ...CIRCULAR_2456_CHUNKS,
+    ...loadFullPoliceLawCatalogChunks(),
+  ];
   const seniority = snapshot.seniority || [];
   const appointments = snapshot.appointments || [];
   const records = [
@@ -422,10 +485,10 @@ function loadEmbeddedStatutoryFallback() {
       label: a['ชื่อ–นามสกุล'] || a['ชื่อ-นามสกุล'] || Object.values(a)[5],
     })),
   ];
-  const sources = [CIRCULAR_2456_SOURCE];
+  const sources = [CIRCULAR_2456_SOURCE, ORDER_515_2569_SOURCE, POLICE_LAW_CATALOG_SOURCE];
   const fingerprint = hash(JSON.stringify(chunks.map((c) => c.id)));
   const summary = {
-    version: '2026-10-22-v2456',
+    version: '2026-11-24-order515',
     fingerprint,
     integrity: 'VERIFIED',
     sources,
@@ -434,9 +497,14 @@ function loadEmbeddedStatutoryFallback() {
     accounts,
     chunk_count: chunks.length,
     exclusive_seniority_source: CIRCULAR_2456_SOURCE.filename,
-    supported_tiers: ['๑. ระดับ ผบก. ขึ้นไป (ระดับนายพล)', '๒. ระดับ รอง ผบก. ลงมา (รอง ผบก. – สว.)'],
+    supported_tiers: [
+      '๑. ร้องทุกข์แต่งตั้ง — ระดับ ผบก. ขึ้นไป (นายพล)',
+      '๒. ร้องทุกข์แต่งตั้ง — ระดับ รอง ผบก. ลงมา (รอง ผบก. – สว.)',
+      '๓. อุทธรณ์ทางวินัย / ออกจากราชการ (ก.พ.ค.ตร.)',
+    ],
     tier_definitions: STATUTORY_TIER_DEFINITIONS,
     circular_2456_source: CIRCULAR_2456_SOURCE.filename,
+    order_515_2569_source: ORDER_515_2569_SOURCE.filename,
   };
   const all = new Map(records.map((r) => [r.id, r]));
   return {
@@ -450,14 +518,7 @@ function loadEmbeddedStatutoryFallback() {
     pageRowDates: snapshot.pageRowDates || {},
     all,
     search(q, kind) {
-      const query = normalizeSearchText(q);
-      return records
-        .filter(
-          (r) =>
-            (!kind || r.kind === kind) &&
-            (query ? normalizeSearchText((r.label || '') + (r.text || '')).includes(query) : r.kind === 'law'),
-        )
-        .slice(0, 60);
+      return rankKnowledgeSearch(records, q, kind);
     },
     async source(name) {
       if (name === CIRCULAR_2456_SOURCE.filename) {

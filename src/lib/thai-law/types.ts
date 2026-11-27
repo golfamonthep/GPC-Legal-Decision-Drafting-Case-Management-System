@@ -5,11 +5,24 @@ export type LawCategory =
   | 'กฎหมายปกครองและการปฏิบัติราชการ'
   | 'การรักษาความสงบเรียบร้อยและความมั่นคง';
 
+export type LawGpcScope =
+  | 'all'
+  | 'appeal_discipline'
+  | 'grievance_appointment'
+  | 'criminal'
+  | 'admin'
+  | 'security';
+
 export interface PoliceLawAct {
   id: string;
   sysid: string;
   title: string;
+  shortTitle?: string;
   category: string;
+  gpcScope?: Exclude<LawGpcScope, 'all'>;
+  sectionCount?: number;
+  isRepealed?: boolean;
+  isNew?: boolean;
   source: string;
   sourceUrl: string;
 }
@@ -33,7 +46,9 @@ export interface PoliceLawSection {
 export interface LawSearchOptions {
   q?: string;
   category?: string;
+  scope?: LawGpcScope | string;
   actId?: string;
+  hideRepealed?: boolean;
   page?: number;
   pageSize?: number;
 }
@@ -46,4 +61,5 @@ export interface LawSearchResult {
   items: PoliceLawSection[];
   acts: PoliceLawAct[];
   categories: { name: string; count: number }[];
+  scopes?: { id: LawGpcScope; label: string; count: number; actCount: number }[];
 }

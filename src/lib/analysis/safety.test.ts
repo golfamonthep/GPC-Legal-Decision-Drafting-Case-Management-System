@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {assertOwner,assertAssignment,cleanInput,invalidateDocument,validateCitations,boundedAppend,assertSameOrigin,invalidateSource} from './safety.mjs';
 import {analyze,buildAutoDraftSections,validateProposal,normalizeName,normalizeSearchText} from './engine.mjs';
 import {CIRCULAR_2456_CHUNKS,KTR_APPOINTMENT_2567_CHUNKS,STATUTORY_TIER_DEFINITIONS,SUB_GENERAL_TO_INSPECTOR_ACCOUNTS,evaluateCircular2456Rules,resolveJobTier,resolveSeniorityQuotaSpec} from './subGeneralToInspectorData.mjs';
+import {ORDER_515_2569_CHUNKS,evaluateDisciplineAppealRules} from './disciplineAppealData.mjs';
 import {calculateRetirementInfo,calculateTenureAndEligibility,searchAndComparePerson} from './personSearch.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -356,4 +357,49 @@ test('Zero-API database person search calculates retirement (+1 year after 30 Se
   assert.equal(resWasan.profile.previousPositionDateThai, '1 ต.ค. 2565');
   assert.equal(resWasan.profile.seniorityOrder, 22);
   assert.equal(resWasan.profile.quotaAssessment?.groupKey, 'knowledge_promoted');
+});
+
+test('Discipline cases map to GPC Appeal mode (อุทธรณ์ ก.พ.ค.ตร.) with full Order 515/2569 rules and no appointment seniority gaps', () => {
+  assert.equal(ORDER_515_2569_CHUNKS.length, 21);
+  assert.ok(ORDER_515_2569_CHUNKS.some(c => c.id === 'order-515-2569-clause-01' && c.text.includes('ไม่ถูกต้อง')));
+  assert.ok(ORDER_515_2569_CHUNKS.some(c => c.id === 'order-515-2569-clause-19' && c.text.includes('๔๓๖/๒๕๔๘')));
+
+  const cleaned = cleanInput(
+    {
+      subject_name: 'พ.ต.ท. สมหมาย ใจตรง',
+      rank_position: 'สว.สส.สภ.เมือง',
+      claim: 'ขออุทธรณ์คำสั่งลงโทษไล่ออกจากราชการตามมาตรา 125 และคำสั่ง ตร. ที่ 515/2569 เนื่องจากคดีอาญาและ ป.ป.ช. ยังไม่ถึงที่สุด',
+      response: 'ผู้บังคับการได้ดำเนินการสอบสวนวินัยอย่างร้ายแรงและรายงาน ก.ตร. ภายใน 15 วันแล้ว',
+    },
+    { references: [], facts: [] },
+  );
+  assert.equal(cleaned.analysis_tier, 'discipline_appeal');
+  assert.equal(cleaned.appointment_motion, 'severe_expulsion');
+  assert.ok(cleaned.title.includes('อุทธรณ์ทางวินัย'));
+
+  const ruleEval = evaluateDisciplineAppealRules(cleaned, [{ id: 'order-515-2569-clause-03', document_id: 'tr-order-515-2569' }], []);
+  assert.equal(ruleEval.tier, 'discipline_appeal');
+  assert.ok(ruleEval.checks.some(c => c.id === 'gpc-appeal-jurisdiction'));
+  assert.ok(ruleEval.checks.some(c => c.id === 'order-515-clause-01-18'));
+  assert.ok(ruleEval.checks.some(c => c.id === 'order-515-clause-03-06'));
+  assert.ok(ruleEval.checks.some(c => c.id === 'order-515-clause-11-12'));
+
+  const res = analyze(
+    {
+      version: 1,
+      data: {
+        ...cleaned,
+        bundle_fingerprint: 'fp1',
+        references: [{ id: 'order-515-2569-clause-03', kind: 'law', reviewed: true, role: 'law', label: 'คำสั่ง ตร. ๕๑๕/๒๕๖๙ ข้อ ๓', text: 'การดำเนินการทางวินัยอย่างร้ายแรง' }],
+      },
+    },
+    [],
+    { seniority: [], appointments: [], summary: { fingerprint: 'fp1' } },
+  );
+  assert.equal(res.tier, 'discipline_appeal');
+  assert.equal(res.is_discipline_appeal, true);
+  assert.equal(res.gaps.length, 0);
+  assert.ok(!res.gaps.some((g: string) => g.includes('อาวุโส') || g.includes('50%')));
+  assert.ok(res.auto_draft_sections?.['ข้อมูลเรื่องและบุคคล'].includes('ผู้อุทธรณ์'));
+  assert.ok(res.auto_draft_sections?.['การวิเคราะห์'].includes('อุทธรณ์'));
 });

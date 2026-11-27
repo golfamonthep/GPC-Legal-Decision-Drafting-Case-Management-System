@@ -8,6 +8,7 @@ import Analysis from './Analysis';
 import Drafts from './Drafts';
 import Knowledge from './Knowledge';
 import { PERSON_SEARCH_TRANSFER_KEY } from './PersonSearchStandalone';
+import { LIBRARY_LAW_TRANSFER_KEY } from '../library/PoliceLawCatalog';
 import { KnowledgeRail } from './components';
 import './workbench.css';
 
@@ -23,11 +24,15 @@ const TABS = [
 const TIER_OPTIONS = [
   {
     id: 'general',
-    title: 'ระดับ ผบก. ขึ้นไป (ระดับนายพล)',
+    title: 'ร้องทุกข์แต่งตั้ง · ผบก. ขึ้นไป (นายพล)',
   },
   {
     id: 'sub_general_to_inspector',
-    title: 'ระดับ รอง ผบก. ลงมา (รอง ผบก. – สว.)',
+    title: 'ร้องทุกข์แต่งตั้ง · รอง ผบก.–สว.',
+  },
+  {
+    id: 'discipline_appeal',
+    title: 'อุทธรณ์ทางวินัย / ออกจากราชการ (ก.พ.ค.ตร.)',
   },
 ];
 
@@ -61,6 +66,7 @@ export default function Workbench({
   const [draftDirty, setDraftDirty] = useState(false);
   const [exported, setExported] = useState(null);
   const [selectedRevisionId, setSelectedRevisionId] = useState('');
+  const [transferredLawQuery, setTransferredLawQuery] = useState('');
 
   const activeTier = input.analysis_tier || inferJobTier(job?.data || input);
   const baselineInput = job
@@ -75,6 +81,39 @@ export default function Workbench({
 
   useEffect(() => {
     try {
+      const lawRaw = window.sessionStorage.getItem(LIBRARY_LAW_TRANSFER_KEY);
+      if (lawRaw) {
+        const lawData = JSON.parse(lawRaw);
+        window.sessionStorage.removeItem(LIBRARY_LAW_TRANSFER_KEY);
+        const mappedTier = normalizeTierParam(lawData.targetTier) || defaultTier;
+        const snippet = lawData.sectionLabel
+          ? `${lawData.actTitle} (${lawData.sectionLabel})`
+          : lawData.actTitle || '';
+        setInput((prev) => ({
+          ...prev,
+          analysis_tier: mappedTier,
+          title:
+            prev.title ||
+            (mappedTier === 'discipline_appeal'
+              ? `อุทธรณ์ทางวินัย ก.พ.ค.ตร. · ${lawData.sectionLabel || 'คำสั่ง ตร. ๕๑๕/๒๕๖๙'}`
+              : `ร้องทุกข์การแต่งตั้ง · ${lawData.sectionLabel || ''}`),
+          issues: prev.issues
+            ? `${prev.issues}\nอ้างอิงกฎหมาย: ${snippet}`
+            : `พิจารณาตามหลักกฎหมาย: ${snippet}`,
+        }));
+        setTransferredLawQuery(lawData.sectionLabel || lawData.actTitle || '');
+        setNotice(
+          `ดึงข้อกฎหมาย "${snippet}" เข้าสู่โหมด ${
+            mappedTier === 'discipline_appeal'
+              ? 'อุทธรณ์ทางวินัย ก.พ.ค.ตร.'
+              : mappedTier === 'sub_general_to_inspector'
+                ? 'ร้องทุกข์แต่งตั้ง (รอง ผบก.–สว.)'
+                : 'ร้องทุกข์แต่งตั้ง (ผบก. ขึ้นไป)'
+          } เรียบร้อยแล้ว — กด "บันทึกข้อมูล" ระบบจะแนบชุดกฎหมายฐานให้อัตโนมัติ`,
+        );
+        return;
+      }
+
       const raw = window.sessionStorage.getItem(PERSON_SEARCH_TRANSFER_KEY);
       if (raw) {
         const data = JSON.parse(raw);
@@ -234,7 +273,12 @@ export default function Workbench({
       annex_status: nextTier === 'general' ? '' : input.annex_status,
     });
     if (!job) {
-      const qs = nextTier === 'sub_general_to_inspector' ? '?tier=sub_general' : '?tier=general';
+      const qs =
+        nextTier === 'discipline_appeal'
+          ? '?tier=discipline_appeal'
+          : nextTier === 'sub_general_to_inspector'
+            ? '?tier=sub_general'
+            : '?tier=general';
       window.history.replaceState(null, '', '/analysis' + qs);
     }
   }
@@ -374,7 +418,12 @@ export default function Workbench({
                 });
                 setTab(0);
                 setExported(null);
-                const qs = activeTier === 'sub_general_to_inspector' ? '?tier=sub_general' : '?tier=general';
+                const qs =
+                  activeTier === 'discipline_appeal'
+                    ? '?tier=discipline_appeal'
+                    : activeTier === 'sub_general_to_inspector'
+                      ? '?tier=sub_general'
+                      : '?tier=general';
                 window.history.replaceState(null, '', '/analysis' + qs);
               })
             }
@@ -561,6 +610,7 @@ export default function Workbench({
             setJob={setJob}
             operate={operate}
             activeTier={activeTier}
+            initialQuery={transferredLawQuery}
           />
         ) : (
           <p>ยังไม่มีฐานอ้างอิงบนเว็บที่ผ่านการตรวจความครบถ้วน</p>

@@ -1,5 +1,17 @@
 import React from 'react';
 import { Field } from './components';
+import {
+  DISCIPLINE_AUTHORITY_OPTIONS,
+  DISCIPLINE_SANCTION_OPTIONS,
+} from '@/lib/analysis/disciplineAppealData.mjs';
+
+const DISCIPLINE_CASE_STAGE_OPTIONS = [
+  { value: '', label: 'เลือกสถานะการดำเนินการ / คดีอาญาประกอบ' },
+  { value: 'under_order_515', label: 'ดำเนินการตามคำสั่ง ตร. ที่ ๕๑๕/๒๕๖๙ (ตั้งแต่ ๒๔ พ.ย. ๒๕๖๙)' },
+  { value: 'transitional_order_436', label: 'เรื่องค้างตามคำสั่ง ตร. ที่ ๔๓๖/๒๕๔๘ (บทเฉพาะกาลข้อ ๑๙)' },
+  { value: 'parallel_criminal_nacc', label: 'มีคดีอาญา / ป.ป.ช. / ป.ป.ท. ควบคู่ (ไม่ชะลอวินัยตามข้อ ๑๒)' },
+  { value: 'bch_upgraded_severe', label: 'ผบช. พิจารณาตาม ม.๑๒๖ วรรคสาม เห็นว่าผิดวินัยร้ายแรง (ห้ามส่งกลับ ผบก.)' },
+];
 
 const GENERAL_LEVEL_LABELS = {
   'ผู้ช่วย ผบ.ตร. / รอง จตช. / เทียบเท่า': 'ผู้ช่วย ผบ.ตร. / รอง จตช. (เลื่อนเป็น รอง ผบ.ตร. / จตช.)',
@@ -119,6 +131,7 @@ const SUB_GENERAL_ANNEX_OPTIONS = [
 ];
 
 export default function InputForm({ input, setInput, knowledge, activeTier = 'general' }) {
+  const isDisciplineTier = activeTier === 'discipline_appeal';
   const isSubGenTier = activeTier === 'sub_general_to_inspector';
   const update = (k, v) => setInput({ ...input, [k]: v });
   const allAccounts = knowledge?.accounts || [];
@@ -148,19 +161,41 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
     (a) => a.source_level === input.level && a.source_account === input.account,
   );
 
-  const motionOptions = isSubGenTier ? SUB_GENERAL_MOTION_OPTIONS : GENERAL_MOTION_OPTIONS;
-  const unitTypeOptions = isSubGenTier ? SUB_GENERAL_UNIT_TYPE_OPTIONS : GENERAL_UNIT_TYPE_OPTIONS;
-  const statusOptions = isSubGenTier ? SUB_GENERAL_ANNEX_OPTIONS : GENERAL_STATUS_OPTIONS;
+  const motionOptions = isDisciplineTier
+    ? DISCIPLINE_SANCTION_OPTIONS
+    : isSubGenTier
+      ? SUB_GENERAL_MOTION_OPTIONS
+      : GENERAL_MOTION_OPTIONS;
+  const unitTypeOptions = isDisciplineTier
+    ? DISCIPLINE_AUTHORITY_OPTIONS
+    : isSubGenTier
+      ? SUB_GENERAL_UNIT_TYPE_OPTIONS
+      : GENERAL_UNIT_TYPE_OPTIONS;
+  const statusOptions = isDisciplineTier
+    ? DISCIPLINE_CASE_STAGE_OPTIONS
+    : isSubGenTier
+      ? SUB_GENERAL_ANNEX_OPTIONS
+      : GENERAL_STATUS_OPTIONS;
 
-  const checklist = [
-    { key: 'title', label: 'ชื่อเรื่อง', done: Boolean(input.title?.trim()) },
-    { key: 'subject_name', label: 'ชื่อบุคคลที่วิเคราะห์', done: Boolean(input.subject_name?.trim()) },
-    { key: 'rank_position', label: 'ยศ / ตำแหน่ง', done: Boolean(input.rank_position?.trim()) },
-    { key: 'account', label: 'ระดับ / ประเภทบัญชี', done: Boolean(input.level && input.account) },
-    { key: 'claim', label: 'คำร้อง / ข้อกล่าวอ้าง', done: Boolean(input.claim?.trim()) },
-    { key: 'response', label: 'คำชี้แจงคู่กรณี', done: Boolean(input.response?.trim()) },
-    { key: 'issues', label: 'ประเด็นและคำขอ', done: Boolean(input.issues?.trim()) },
-  ];
+  const checklist = isDisciplineTier
+    ? [
+        { key: 'title', label: 'ชื่อเรื่องอุทธรณ์', done: Boolean(input.title?.trim()) },
+        { key: 'subject_name', label: 'ชื่อผู้อุทธรณ์', done: Boolean(input.subject_name?.trim()) },
+        { key: 'rank_position', label: 'ยศ / ตำแหน่ง', done: Boolean(input.rank_position?.trim()) },
+        { key: 'motion', label: 'ประเภทคำสั่งทางวินัย', done: Boolean(input.appointment_motion) },
+        { key: 'claim', label: 'คำอุทธรณ์และคำขอ', done: Boolean(input.claim?.trim()) },
+        { key: 'response', label: 'คำแก้อุทธรณ์', done: Boolean(input.response?.trim()) },
+        { key: 'issues', label: 'ประเด็นวินิจฉัย', done: Boolean(input.issues?.trim()) },
+      ]
+    : [
+        { key: 'title', label: 'ชื่อเรื่อง', done: Boolean(input.title?.trim()) },
+        { key: 'subject_name', label: 'ชื่อบุคคลที่วิเคราะห์', done: Boolean(input.subject_name?.trim()) },
+        { key: 'rank_position', label: 'ยศ / ตำแหน่ง', done: Boolean(input.rank_position?.trim()) },
+        { key: 'account', label: 'ระดับ / ประเภทบัญชี', done: Boolean(input.level && input.account) },
+        { key: 'claim', label: 'คำร้อง / ข้อกล่าวอ้าง', done: Boolean(input.claim?.trim()) },
+        { key: 'response', label: 'คำชี้แจงคู่กรณี', done: Boolean(input.response?.trim()) },
+        { key: 'issues', label: 'ประเด็นและคำขอ', done: Boolean(input.issues?.trim()) },
+      ];
   const completedCount = checklist.filter((c) => c.done).length;
 
   return (
@@ -193,9 +228,11 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
             value={input.title}
             onChange={(e) => update('title', e.target.value)}
             placeholder={
-              isSubGenTier
-                ? 'เช่น ร้องทุกข์การแต่งตั้งข้าราชการตำรวจ ระดับ รอง ผบก. ลงมาถึง สว. วาระประจำปี 2569'
-                : 'เช่น ร้องทุกข์การแต่งตั้งข้าราชการตำรวจ ระดับ ผบก. ขึ้นไป วาระประจำปี 2569'
+              isDisciplineTier
+                ? 'เช่น อุทธรณ์คำสั่งลงโทษไล่ออกจากราชการ / ตัดเงินเดือน ต่อ ก.พ.ค.ตร.'
+                : isSubGenTier
+                  ? 'เช่น ร้องทุกข์การแต่งตั้งข้าราชการตำรวจ ระดับ รอง ผบก. ลงมาถึง สว. วาระประจำปี 2569'
+                  : 'เช่น ร้องทุกข์การแต่งตั้งข้าราชการตำรวจ ระดับ ผบก. ขึ้นไป วาระประจำปี 2569'
             }
           />
         </Field>
@@ -203,17 +240,19 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
           <input
             value={input.external_case_ref}
             onChange={(e) => update('external_case_ref', e.target.value)}
-            placeholder="เช่น รท. 123/2569 (หากมี)"
+            placeholder={isDisciplineTier ? 'เช่น อธ. 123/2569 (เลขดำอุทธรณ์)' : 'เช่น รท. 123/2569 (หากมี)'}
           />
         </Field>
-        <Field wide label="ชื่อบุคคลที่ใช้วิเคราะห์">
+        <Field wide label={isDisciplineTier ? 'ชื่อผู้อุทธรณ์' : 'ชื่อบุคคลที่ใช้วิเคราะห์'}>
           <input
             value={input.subject_name}
             onChange={(e) => update('subject_name', e.target.value)}
             placeholder={
-              isSubGenTier
-                ? 'ระบุชื่อ-นามสกุล (เช่น พ.ต.อ. ..., พ.ต.ท. ..., ร.ต.อ. ...)'
-                : 'ระบุชื่อ-นามสกุล (เช่น พล.ต.ท. ..., พล.ต.ต. ..., พ.ต.อ. ...)'
+              isDisciplineTier
+                ? 'ระบุชื่อ-นามสกุล ผู้อุทธรณ์'
+                : isSubGenTier
+                  ? 'ระบุชื่อ-นามสกุล (เช่น พ.ต.อ. ..., พ.ต.ท. ..., ร.ต.อ. ...)'
+                  : 'ระบุชื่อ-นามสกุล (เช่น พล.ต.ท. ..., พล.ต.ต. ..., พ.ต.อ. ...)'
             }
           />
         </Field>
@@ -222,12 +261,15 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
             value={input.rank_position}
             onChange={(e) => update('rank_position', e.target.value)}
             placeholder={
-              isSubGenTier
-                ? 'เช่น พ.ต.อ. ผกก.สภ.เมือง... หรือ พ.ต.ท. รอง ผกก.(สอบสวน)...'
-                : 'เช่น พล.ต.ต. ผบก.ภ.จว.... หรือ พ.ต.อ. รอง ผบก.ภ.จว....'
+              isDisciplineTier
+                ? 'เช่น พ.ต.ท. สว.สส.สภ.... หรือ ด.ต. ผบ.หมู่(ป.)...'
+                : isSubGenTier
+                  ? 'เช่น พ.ต.อ. ผกก.สภ.เมือง... หรือ พ.ต.ท. รอง ผกก.(สอบสวน)...'
+                  : 'เช่น พล.ต.ต. ผบก.ภ.จว.... หรือ พ.ต.อ. รอง ผบก.ภ.จว....'
             }
           />
         </Field>
+        {!isDisciplineTier ? (
         <Field label="ระดับ / ประเภทบัญชี">
           <div className="paired">
             <select
@@ -282,11 +324,28 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
             </select>
           </div>
         </Field>
+        ) : (
+        <Field label="เลขที่คำสั่งลงโทษ / คำสั่งให้ออกจากราชการ">
+          <input
+            value={input.level || ''}
+            onChange={(e) => update('level', e.target.value)}
+            placeholder="เช่น คำสั่ง ภ.จว.... ที่ .../๒๕๖๙ ลงวันที่ ..."
+          />
+        </Field>
+        )}
 
-        <Field label={isSubGenTier ? 'กลุ่มสังกัดหน่วยที่มีอำนาจแต่งตั้ง' : 'ขอบเขตการพิจารณา'}>
+        <Field
+          label={
+            isDisciplineTier
+              ? 'ระดับผู้บังคับบัญชาผู้สั่งการ (ตามคำสั่ง ตร. ๕๑๕/๒๕๖๙)'
+              : isSubGenTier
+                ? 'กลุ่มสังกัดหน่วยที่มีอำนาจแต่งตั้ง'
+                : 'ขอบเขตการพิจารณา'
+          }
+        >
           <select
             aria-label="กลุ่มสังกัดหน่วย"
-            value={input.unit_type || (isSubGenTier ? '' : 'tr_hq')}
+            value={input.unit_type || (isSubGenTier || isDisciplineTier ? '' : 'tr_hq')}
             onChange={(e) => update('unit_type', e.target.value)}
           >
             {unitTypeOptions.map((opt) => (
@@ -296,15 +355,19 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
             ))}
           </select>
         </Field>
-        <Field label="หน่วย / สังกัด">
+        <Field label={isDisciplineTier ? 'คู่กรณีในอุทธรณ์ / หน่วยผู้สั่งการ' : 'หน่วย / สังกัด'}>
           <input
             value={input.unit_name || ''}
             onChange={(e) => update('unit_name', e.target.value)}
-            placeholder="เช่น บช.น., ภ.1, บช.ก., สพฐ.ตร., สทส."
+            placeholder={
+              isDisciplineTier
+                ? 'เช่น ผบก.ภ.จว...., ผบช.ภ...., หรือ ผบ.ตร.'
+                : 'เช่น บช.น., ภ.1, บช.ก., สพฐ.ตร., สทส.'
+            }
           />
         </Field>
 
-        <Field label="ประเภทการแต่งตั้ง / ประเด็นหลัก">
+        <Field label={isDisciplineTier ? 'ประเภทคำสั่งทางวินัย / ออกจากราชการ' : 'ประเภทการแต่งตั้ง / ประเด็นหลัก'}>
           <select
             aria-label="ประเภทการแต่งตั้ง"
             value={input.appointment_motion || ''}
@@ -317,7 +380,15 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
             ))}
           </select>
         </Field>
-        <Field label={isSubGenTier ? 'สถานะในบัญชี (ผนวก ก – ช)' : 'สถานะในบัญชีผู้เหมาะสม / การคัดเลือก'}>
+        <Field
+          label={
+            isDisciplineTier
+              ? 'กรอบคำสั่ง / สถานะคดีประกอบ'
+              : isSubGenTier
+                ? 'สถานะในบัญชี (ผนวก ก – ช)'
+                : 'สถานะในบัญชีผู้เหมาะสม / การคัดเลือก'
+          }
+        >
           <select
             aria-label="สถานะตามแบบฟอร์ม ผนวก ก ถึง ช"
             value={input.annex_status || ''}
@@ -331,20 +402,28 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
           </select>
         </Field>
 
-        <Field wide label="คำร้องหรือข้อกล่าวอ้าง">
+        <Field wide label={isDisciplineTier ? 'คำอุทธรณ์และข้อโต้แย้งของผู้อุทธรณ์' : 'คำร้องหรือข้อกล่าวอ้าง'}>
           <textarea
             rows="4"
             value={input.claim}
             onChange={(e) => update('claim', e.target.value)}
-            placeholder="สรุปสาระสำคัญของคำร้องทุกข์หรือคำอุทธรณ์ (ระบบจะถือเป็นข้อกล่าวอ้างจนกว่าจะผูกหลักฐานที่ตรวจแล้ว)"
+            placeholder={
+              isDisciplineTier
+                ? 'สรุปเหตุผลคำอุทธรณ์ของผู้อุทธรณ์ (เช่น อำนาจผู้สั่งไม่ชอบ ขั้นตอนบกพร่อง พยานหลักฐานไม่พอ โทษหนักเกินสมควร ฯลฯ)'
+                : 'สรุปสาระสำคัญของคำร้องทุกข์หรือคำอุทธรณ์ (ระบบจะถือเป็นข้อกล่าวอ้างจนกว่าจะผูกหลักฐานที่ตรวจแล้ว)'
+            }
           />
         </Field>
-        <Field wide label="คำชี้แจง">
+        <Field wide label={isDisciplineTier ? 'คำแก้อุทธรณ์ของคู่กรณีในอุทธรณ์' : 'คำชี้แจง'}>
           <textarea
             rows="4"
             value={input.response}
             onChange={(e) => update('response', e.target.value)}
-            placeholder="สรุปคำชี้แจงของผู้บังคับบัญชาหรือคู่กรณีในสำนวน"
+            placeholder={
+              isDisciplineTier
+                ? 'สรุปคำแก้อุทธรณ์ของคู่กรณีในอุทธรณ์และผลสอบสวนทางวินัย'
+                : 'สรุปคำชี้แจงของผู้บังคับบัญชาหรือคู่กรณีในสำนวน'
+            }
           />
         </Field>
         <Field wide label="ประเด็นและคำขอ">
@@ -352,7 +431,11 @@ export default function InputForm({ input, setInput, knowledge, activeTier = 'ge
             rows="4"
             value={input.issues}
             onChange={(e) => update('issues', e.target.value)}
-            placeholder="ประเด็นที่ต้องการให้วิเคราะห์และคำขอท้ายคำร้องทุกข์/คำอุทธรณ์"
+            placeholder={
+              isDisciplineTier
+                ? 'ประเด็นที่ต้องวินิจฉัย (ไม่ถูกต้อง / ไม่เหมาะสม) และคำขอท้ายคำอุทธรณ์ (ขอเพิกถอนหรือลดโทษ)'
+                : 'ประเด็นที่ต้องการให้วิเคราะห์และคำขอท้ายคำร้องทุกข์/คำอุทธรณ์'
+            }
           />
         </Field>
       </div>
