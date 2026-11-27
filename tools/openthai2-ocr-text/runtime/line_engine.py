@@ -118,6 +118,16 @@ DEFAULTS: dict[str, dict[str, Any]] = {
     # with rec2, and rec2's reading is kept only if it has fewer such letters. Other lines never reach rec2, so
     # court scans keep the first recognizer's reading (rec2 alone loses on them). "" = off.
     "rec2": {"file": "", "min_mixed": 1},
+    # judge9: typewriters and old letterpress draw ๙ with a long tail bent over to the right, and rec reads that as ๕.
+    # After every other step, this small classifier looks at each character read as ๕ in a kept line (a window of the
+    # line around the place it was read from) and turns it into ๙ from the threshold up. It can change nothing else.
+    # "" = off.
+    "judge9": {"file": "", "threshold": 0.95},
+    # pre.dewarp (2.2, optional, off): phone photos are dewarped before detection (dewarp.py: PaddlePaddle UVDoc by
+    # default, or the MonkeyOCRv2 preprocessor; ONNX Runtime); flat pages (scans, born-digital) are left alone. Boxes
+    # then refer to the dewarped image. dewarp_dir: the folder with dewarp_mask.onnx and inference.onnx (uvdoc; or
+    # dewarp_grid.onnx for monkey), relative to the model folder unless absolute. The files are downloaded separately.
+    "pre": {"dewarp": False, "dewarp_dir": "dewarp", "dewarp_backend": "uvdoc"},
     # decimal_comma (2.1.4): an amount whose last comma has exactly two digits after it ("88,226,21", "280,00") gets a
     # decimal point. paragraphs (2.1.4, opt-in): a blank line between rows more than paragraph_gap line heights apart,
     # or where reading moves back up the page (the next column).
@@ -769,6 +779,24 @@ def _prose(col: list[int], ext: list[tuple], hmed: float, texts: list[str] | Non
 _MARK_RE = re.compile(r"[ัิ-ฺ็-๎\s]")
 
 
+def _nine_window(line: np.ndarray, x0: float, x1: float) -> np.ndarray:
+    """48x80 grey window of a line image centred on the character read from x0..x1 (shares of its width)."""
+    g = cv2.cvtColor(line, cv2.COLOR_BGR2GRAY) if line.ndim == 3 else line
+    h, w = g.shape
+    cx, half = (x0 + x1) / 2 * w, 2.0 * h / 2
+    a, b = int(round(cx - half)), int(round(cx + half))
+    left, right = max(0, -a), max(0, b - w)
+    g = g[:, max(0, a):min(w, b)]
+    if left or right:
+        g = cv2.copyMakeBorder(g, 0, 0, left, right, cv2.BORDER_REPLICATE)
+    g = cv2.resize(g, (96, 48), interpolation=cv2.INTER_AREA if h > 48 else cv2.INTER_LINEAR)
+    return g[:, 8:88]
+
+
+def _only_nines(old: str, new: str) -> bool:
+    return len(old) == len(new) and all(x == y or (x, y) == ("๕", "๙") for x, y in zip(old, new))
+
+
 def _mixed(text: str) -> int:
     """Latin letters inside words that also hold Thai letters: "lละพลNSะทU" -> 4. A loopless Thai face read as Latin
     look-alikes; a Thai word next to an English one (separated by a space) does not count."""
@@ -856,6 +884,15 @@ class LineOCR:
         self.rec = _Model(d / "rec.onnx", threads, backend, rt["precision"], low_memory=lm)
         f2 = self.cfg["rec2"]["file"]
         self.rec2 = _Model(d / f2, threads, backend, rt["precision"], low_memory=lm) if f2 and (d / f2).exists() else None
+        f9 = self.cfg["judge9"]["file"]
+        self.judge9 = _Model(d / f9, threads, backend, rt["precision"], low_memory=lm) if f9 and (d / f9).exists() else None
+        self.dewarper = None
+        if self.cfg.get("pre", {}).get("dewarp"):
+            from .dewarp import Dewarper
+
+            dd = Path(self.cfg["pre"]["dewarp_dir"])
+            self.dewarper = Dewarper(dd if dd.is_absolute() else d / dd, backend=self.cfg["pre"]["dewarp_backend"],
+                                     threads=max(1, threads))
 
     # -- detection -----------------------------------------------------------
     def detect(self, img: np.ndarray) -> list[np.ndarray]:
@@ -1004,6 +1041,9 @@ class LineOCR:
     # -- page ----------------------------------------------------------------
     def read(self, image: Any) -> dict:
         img = self._load(image)
+        dewarp_info = None
+        if self.dewarper is not None:
+            img, dewarp_info = self.dewarper(img)
         shape = img.shape[:2]
         t0 = time.perf_counter()
         boxes = self.detect(img)
@@ -1036,6 +1076,7 @@ class LineOCR:
         if self.cfg["marks"]["enabled"]:
             frag |= self._attach_marks(img, page, frag)
         boxes = page["boxes"]
+        nine = self._nine_pass(img, page, frag) if self.judge9 is not None else {}
         back = np.linalg.inv(tf)
         t2 = time.perf_counter()
         lines, row_texts, row_geom = [], [], []
@@ -1061,9 +1102,18 @@ class LineOCR:
                 if reason:
                     dropped.append({**entry, "reason": reason})
                     continue
+                chars = page["chars"].get(i)
+                if i in nine:
+                    raw, chars9 = nine[i]
+                    new = fix_scripts(canonical(raw))
+                    if self.cfg["join"].get("decimal_comma"):
+                        new = _DECIMAL_COMMA.sub(r"\1.\2", new)
+                    if _only_nines(text, new):
+                        text = entry["text"] = new
+                        chars = chars9
                 parts.append(text)
                 entry["words"] = [{**w, "box": [[round(float(x), 1), round(float(y), 1)] for x, y in _apply(back, w["box"])]}
-                                  for w in _words(page["chars"].get(i), boxes[i], text, conf)]
+                                  for w in _words(chars, boxes[i], text, conf)]
                 lines.append(entry)
             if parts:
                 row_texts.append(" ".join(parts))
@@ -1072,9 +1122,32 @@ class LineOCR:
         straightened = skew if abs(skew) >= oc["deskew_above"] else 0.0
         return {"text": self._join(row_texts, row_geom, hmed), "lines": lines, "dropped": dropped,
                 "text_angle": round(page["angle"] + straightened, 2),
-                "rotation": rotation,
+                "rotation": rotation, "dewarp": dewarp_info,
                 "timing": {"det_ms": round((t1 - t0) * 1000, 1), "rec_ms": round((t2 - t1) * 1000, 1),
                            "n_lines": len(page["rec"])}}
+
+    def _nine_pass(self, img: np.ndarray, page: dict, frag: set[int]) -> dict[int, tuple[str, list]]:
+        """Lines holding a ๕ that the judge takes for ๙: {index: (raw text, chars) with those characters changed}."""
+        at, wins, out = [], [], {}
+        for i, (t, _) in page["rec"].items():
+            ch = page["chars"].get(i)
+            if i in frag or "๕" not in t or not ch or "".join(c[0] for c in ch) != t:
+                continue
+            line = crop_line(img, page["boxes"][i], turn=0)
+            if line.shape[0] >= 1.5 * line.shape[1]:  # a vertical run: read turned, its places are not these
+                continue
+            for k, c in enumerate(ch):
+                if c[0] == "๕":
+                    at.append((i, k))
+                    wins.append(_nine_window(line, c[1], c[2]))
+        for b in range(0, len(at), 64):
+            x = np.stack(wins[b:b + 64])[:, None].astype(np.float32) / 127.5 - 1.0
+            for (i, k), p in zip(at[b:b + 64], np.asarray(self.judge9.run(x)).reshape(-1)):
+                if p >= float(self.cfg["judge9"]["threshold"]):
+                    ch = list(out[i][1] if i in out else page["chars"][i])
+                    ch[k] = ("๙", *ch[k][1:])
+                    out[i] = ("".join(c[0] for c in ch), ch)
+        return out
 
     def _page(self, img: np.ndarray, boxes: list[np.ndarray]) -> dict:
         """Recognition, then reading order (the column test looks at the text).

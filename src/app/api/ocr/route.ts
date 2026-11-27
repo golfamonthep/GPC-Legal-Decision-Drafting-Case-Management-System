@@ -5,14 +5,32 @@ import fs from "fs/promises";
 import os from "os";
 import presetOcrData from "@/data/thai-law/openthai-ocr-presets.json";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-const PYTHON_EXECUTABLE = "C:\\Users\\polic\\AppData\\Local\\Programs\\Python\\Python311\\python.exe";
+const PYTHON_EXECUTABLE =
+  "C:\\Users\\polic\\AppData\\Local\\Programs\\Python\\Python311\\python.exe";
+
+interface PresetPageEntry {
+  elapsed_sec?: number;
+  rotation?: number;
+  text_angle?: number;
+  avg_confidence?: number;
+  min_confidence?: number;
+  low_confidence_count?: number;
+  low_confidence_lines?: unknown[];
+  dropped_count?: number;
+  dropped?: unknown[];
+  markdown?: string;
+  text?: string;
+  lines?: unknown[];
+  line_count?: number;
+}
 
 function getPresetFallback(filePath: string, page: number, engine: string) {
-  const presets = presetOcrData as Record<string, Record<string, any>>;
+  const presets = presetOcrData as Record<string, Record<string, PresetPageEntry>>;
   const normalizedKey = filePath.replace(/\\/g, "/");
-  const docPages = presets[normalizedKey] || presets["scratch/policeworker/circular_2456_2569.pdf"];
+  const docPages =
+    presets[normalizedKey] || presets["scratch/policeworker/circular_2456_2569.pdf"];
   if (!docPages) return null;
   const pageData = docPages[String(page)] || docPages["1"];
   if (!pageData) return null;
@@ -20,17 +38,18 @@ function getPresetFallback(filePath: string, page: number, engine: string) {
   const isMarkdown = engine === "openthai-markdown";
   return {
     engine: isMarkdown
-      ? "OpenThai2.1-OCR-Markdown (iapp/OpenThai2.1-OCR-Markdown-20261118 · v2.1.0)"
+      ? "OpenThai2.2-OCR-Markdown (iapp/OpenThai2.2-OCR-Markdown-20261127 · v2.2.0)"
       : engine === "paddle"
-        ? "PaddleOCR (via OpenThai2.1 Snapshot)"
+        ? "PaddleOCR (via OpenThai2.2 Snapshot)"
         : engine === "typhoon"
-          ? "Typhoon-OCR (SCB 10X · via OpenThai2.1 Snapshot)"
-          : "OpenThai2.1-OCR-Text (iapp/OpenThai2.1-OCR-Text-20261118 · v2.1.4)",
+          ? "Typhoon-OCR (SCB 10X · via OpenThai2.2 Snapshot)"
+          : "OpenThai2.2-OCR-Text (iapp/OpenThai2.2-OCR-Text-20261127 · v2.2.1)",
     model_id: isMarkdown
-      ? "iapp/OpenThai2.1-OCR-Markdown-20261118"
-      : "iapp/OpenThai2.1-OCR-Text-20261118",
-    model_version: isMarkdown ? "v2.1.0" : "v2.1.4",
+      ? "iapp/OpenThai2.2-OCR-Markdown-20261127"
+      : "iapp/OpenThai2.2-OCR-Text-20261127",
+    model_version: isMarkdown ? "v2.2.0" : "v2.2.1",
     rec2_enabled: true,
+    judge9_enabled: true,
     page,
     elapsed_sec: pageData.elapsed_sec,
     rotation: pageData.rotation,
@@ -57,6 +76,7 @@ export async function POST(req: NextRequest) {
     let page = 1;
     let lang = "en";
     let apiKey = "";
+    let dewarp = false;
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
@@ -69,27 +89,33 @@ export async function POST(req: NextRequest) {
       page = parseInt((formData.get("page") as string) || "1", 10);
       lang = (formData.get("lang") as string) || "en";
       apiKey = (formData.get("apiKey") as string) || "";
+      dewarp = (formData.get("dewarp") as string) === "true";
 
-      // Write uploaded file to temp dir
       const buffer = Buffer.from(await file.arrayBuffer());
       const tempDir = os.tmpdir();
       const ext = path.extname(file.name) || ".pdf";
-      targetFilePath = path.join(tempDir, `gpc_ocr_${Date.now()}_${Math.random().toString(36).substring(7)}${ext}`);
+      targetFilePath = path.join(
+        tempDir,
+        `gpc_ocr_${Date.now()}_${Math.random().toString(36).substring(7)}${ext}`
+      );
       await fs.writeFile(targetFilePath, buffer);
       isTempFile = true;
     } else {
       const body = await req.json();
       targetFilePath = body.filePath;
       if (!targetFilePath) {
-        return NextResponse.json({ error: "กรุณาระบุ filePath หรืออัปโหลดไฟล์" }, { status: 400 });
+        return NextResponse.json(
+          { error: "กรุณาระบุ filePath หรืออัปโหลดไฟล์" },
+          { status: 400 }
+        );
       }
       engine = body.engine || "openthai-text";
       page = body.page || 1;
       lang = body.lang || "en";
       apiKey = body.apiKey || "";
+      dewarp = Boolean(body.dewarp);
     }
 
-    // Check if local Python runtime is available
     let pythonAvailable = false;
     try {
       await fs.access(PYTHON_EXECUTABLE);
@@ -100,7 +126,9 @@ export async function POST(req: NextRequest) {
 
     if (!pythonAvailable) {
       if (isTempFile && targetFilePath) {
-        try { await fs.unlink(targetFilePath); } catch {}
+        try {
+          await fs.unlink(targetFilePath);
+        } catch {}
       }
       const presetRes = getPresetFallback(targetFilePath, page, engine);
       if (presetRes) {
@@ -114,10 +142,10 @@ export async function POST(req: NextRequest) {
         data: {
           engine:
             engine === "openthai-markdown"
-              ? "OpenThai2.1-OCR-Markdown (v2.1.0)"
-              : "OpenThai2.1-OCR-Text (v2.1.4)",
+              ? "OpenThai2.2-OCR-Markdown (v2.2.0)"
+              : "OpenThai2.2-OCR-Text (v2.2.1)",
           page,
-          text: "ระบบ Cloud Serverless รองรับการอ่านเอกสารตัวอย่างที่ถอดข้อความด้วย OpenThai 2.1.4 ไว้ล่วงหน้า สำหรับไฟล์อัปโหลดใหม่ขนาดใหญ่ กรุณารันผ่านเครื่อง Local Engine (OpenThai2.1-OCR-Text ONNX Runtime + rec2.onnx)",
+          text: "ระบบ Cloud Serverless รองรับการอ่านเอกสารตัวอย่างที่ถอดข้อความด้วย OpenThai 2.2.1 ไว้ล่วงหน้า สำหรับไฟล์อัปโหลดใหม่ขนาดใหญ่ กรุณารันผ่านเครื่อง Local Engine (OpenThai2.2-OCR-Text ONNX Runtime + rec2.onnx + judge9.onnx)",
           lines: [],
           line_count: 0,
         },
@@ -128,12 +156,20 @@ export async function POST(req: NextRequest) {
 
     const args = [
       scriptPath,
-      "--file", targetFilePath,
-      "--engine", engine,
-      "--page", page.toString(),
-      "--lang", lang,
-      "--json"
+      "--file",
+      targetFilePath,
+      "--engine",
+      engine,
+      "--page",
+      page.toString(),
+      "--lang",
+      lang,
+      "--json",
     ];
+
+    if (dewarp) {
+      args.push("--dewarp");
+    }
 
     if (apiKey) {
       args.push("--api-key", apiKey);
@@ -149,12 +185,14 @@ export async function POST(req: NextRequest) {
           windowsHide: true,
           env: {
             ...process.env,
-            PYTHONIOENCODING: "utf-8"
-          }
+            PYTHONIOENCODING: "utf-8",
+          },
         },
         (error, stdout, stderr) => {
           if (error && !stdout) {
-            const fallback = !isTempFile ? getPresetFallback(targetFilePath, page, engine) : null;
+            const fallback = !isTempFile
+              ? getPresetFallback(targetFilePath, page, engine)
+              : null;
             if (fallback) {
               return resolve(fallback);
             }
@@ -167,7 +205,7 @@ export async function POST(req: NextRequest) {
               if (fallback) return resolve(fallback);
             }
             resolve(parsed);
-          } catch (e) {
+          } catch {
             if (stdout) {
               resolve({ raw: stdout, text: stdout });
             } else {
@@ -181,19 +219,22 @@ export async function POST(req: NextRequest) {
     if (isTempFile && targetFilePath) {
       try {
         await fs.unlink(targetFilePath);
-      } catch (e) {
+      } catch {
         // ignore cleanup error
       }
     }
 
     return NextResponse.json({
       success: true,
-      data: ocrResult
+      data: ocrResult,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("OCR API error:", error);
     return NextResponse.json(
-      { error: error.message || "เกิดข้อผิดพลาดในการประมวลผล OCR" },
+      {
+        error:
+          error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการประมวลผล OCR",
+      },
       { status: 500 }
     );
   }

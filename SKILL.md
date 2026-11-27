@@ -15,6 +15,10 @@ description: >-
 
 ### สรุปสถานะระบบล่าสุด (2026-11-27)
 
+- **อัปเกรดระบบ OCR เป็น OpenThai 2.2 (`iapp/OpenThai2.2-OCR-Text-20261127` v2.2.1 + `iapp/OpenThai2.2-OCR-Markdown-20261127` v2.2.0) ทั้งบนเว็บและสกิลกลาง (2026-11-27)**:
+  - ติดตั้งและตรวจ SHA-256 ครบทุกไฟล์ของ `OpenThai2.2-OCR-Text` (`det.onnx`, `rec.onnx`, `rec2.onnx`, `judge9.onnx`, `dewarp/dewarp_mask.onnx`, `runtime/dewarp.py`, `runtime/line_engine.py`) ลงทั้ง `C:\Users\polic\.codex\skills\openthai-ocr\` และ `tools/openthai2-ocr-text/` + อัปเดตเอกสารอ้างอิง `OpenThai2.2-OCR-Markdown-20261127`
+  - อัปเดต `scripts/ocr_processor.py`, `src/app/api/ocr/route.ts`, `DocumentOcrWorkbench.tsx`, `PoliceWorkerRegulations.tsx`, `openthai-ocr-presets.json` (สกัดใหม่ด้วย v2.2.1 `judge9=True` ความมั่นใจ 95.0%–97.3%) และ `policeworker.test.ts` (`npm test` 112/112, `typecheck` 0 errors, `eslint` 0 errors, `build` 38/38 routes)
+
 - **ปรับรูปแบบการแสดงผลมาตราบน `/library` เป็นเอกสารตัวบทเรียงมาตรา + เปิดไฟล์ PDF ราชกิจจานุเบกษาต้นฉบับ ๗ ฉบับหลักบนหน้าเว็บ (2026-11-27)**:
   - เปลี่ยน `PoliceLawCatalog.tsx` จากการ์ด 3 คอลัมน์เป็นรูปแบบเอกสารตัวบทเรียงตามแนวตั้ง (พร้อมตัวสลับสารบัญย่อ, ขยายเต็มมาตราในหน้า, คัดลอก 1 คลิก, อ่านเต็มจอ, ส่งวิเคราะห์)
   - นำเข้า PDF ราชกิจจานุเบกษา/คำสั่ง ตร. ต้นฉบับครบ ๗ ฉบับหลัก (`public/documents/laws/*.pdf` + `circular_2456_2569.pdf`) พร้อม `LawPdfViewerModal.tsx` และปุ่มเปิด PDF ราชกิจจาฯ ในแถบกฎหมายหลัก แบนเนอร์ฉบับ ท้ายมาตรา และ `LawReaderModal.tsx` (`npm test` 112/112, `typecheck` 0 errors, `eslint` 0 errors/0 warnings, `build` 38/38 routes)

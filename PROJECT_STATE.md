@@ -2,6 +2,10 @@
 
 ## สรุปสถานะระบบล่าสุด (2026-11-27)
 
+- **อัปเกรดระบบ OCR เป็น OpenThai 2.2 (`iapp/OpenThai2.2-OCR-Text-20261127` v2.2.1 + `iapp/OpenThai2.2-OCR-Markdown-20261127` v2.2.0) ทั้งบนเว็บและสกิลกลาง (2026-11-27)**:
+  - ติดตั้งและตรวจสอบ SHA-256 ครบทุกไฟล์ไบนารี/รันไทม์ของ **`iapp/OpenThai2.2-OCR-Text-20261127` (`v2.2.1`)** ลงทั้งสกิลกลาง (`C:\Users\polic\.codex\skills\openthai-ocr\models\openthai2-ocr-text\`) และในโครงการ (`tools/openthai2-ocr-text/`): เพิ่ม **`judge9.onnx`** (ตัวจำแนกเลขไทย `๙` กับ `๕` ลดความผิดพลาดบนเอกสารราชกิจจาฯ/พิมพ์ดีด) และ **`dewarp/dewarp_mask.onnx` + `runtime/dewarp.py`** (ปรับความโค้ง/เอียงภาพถ่ายมือถืออัตโนมัติ) พร้อมอัปเดตเอกสารอ้างอิง **`iapp/OpenThai2.2-OCR-Markdown-20261127` (`v2.2.0` · Nemotron 3.5 Parse 0.6B + DFlash2 + `standard_output=True` รวมสระอำ `U+0E33`)**
+  - อัปเกรด `scripts/ocr_processor.py`, `src/app/api/ocr/route.ts`, `src/components/library/DocumentOcrWorkbench.tsx`, `PoliceWorkerRegulations.tsx`, `src/lib/thai-law/policeworker.test.ts` และสกัด `src/data/thai-law/openthai-ocr-presets.json` ใหม่ด้วยเอนจิน v2.2.1 (`judge9=True`, ความมั่นใจเฉลี่ย `95.0%–97.3%` ครอบคลุม ว ๒๔๕๖ 11 หน้า + คำสั่ง ตร. ๕๑๕/๒๕๖๙ + กฎ ก.ตร. วินัย ๒๕๖๙) พร้อมปุ่มเลือก Dewarp ภาพถ่ายมือถือและลิงก์ไปยังโมเดลทางการบน Hugging Face (`npm test` 112/112, `typecheck` 0 errors, `eslint` 0 errors, `build` 38/38 routes)
+
 - **ปรับรูปแบบการแสดงผลมาตราบน `/library` จากการ์ด 3 คอลัมน์เป็นรูปแบบเอกสารตัวบทเรียงมาตรา + เปิดไฟล์ PDF ราชกิจจานุเบกษาต้นฉบับได้ทันทีบนหน้าเว็บ (2026-11-27)**:
   - เปลี่ยนเลย์เอาต์ [PoliceLawCatalog.tsx](file:///C:/APP/src/components/library/PoliceLawCatalog.tsx) จากการ์ดกล่อง 3 คอลัมน์ที่ตัดสั้นอ่านยาก เป็น **รูปแบบตัวบทเอกสารประมวลกฎหมายเรียงตามแนวตั้ง** (คอลัมน์ซ้ายเลขมาตราชัดเจน + คอลัมน์ขวาเนื้อหาตัวบทเต็มจัดวรรคพร้อมปุ่มขยาย/ย่อในหน้า, คัดลอก 1 คลิก, อ่านเต็มจอ, ส่งไปวิเคราะห์) และมีตัวสลับ **สารบัญย่อ** สำหรับกวาดตาเร็ว
   - นำเข้าและผูกไฟล์ **PDF ราชกิจจานุเบกษา / คำสั่ง ตร. ต้นฉบับครบ ๗ ฉบับหลัก** ใน `public/documents/laws/` (`police_act_2565.pdf`, `ktr_discipline_2569.pdf`, `tr_order_515_2569.pdf`, `kpkt_appeal_2567.pdf`, `kpkt_grievance_2567.pdf`, `ktr_appointment_2567.pdf`) และ `public/documents/circular_2456_2569.pdf` เข้ากับ `types.ts` และ `search.ts` (`officialPdfUrl`, `officialPdfLabel`)
@@ -27,6 +31,12 @@
   - **เชื่อมคลังกฎหมายทั้ง ๔๐ ฉบับเข้าส่วนวิเคราะห์ (`/analysis`) และเพิ่มโหมดที่ ๓: "อุทธรณ์ทางวินัย / ออกจากราชการ (ก.พ.ค.ตร.)"** (`src/lib/analysis/knowledge.mjs`, `engine.mjs`, `ai.mjs`, `service.mjs`, `safety.mjs`, `subGeneralToInspectorData.mjs`, `src/components/analysis/Workbench.jsx`, `InputForm.jsx`, `Analysis.jsx`, `Knowledge.jsx`, `api.js`, `src/components/Sidebar.tsx`):
     1. แยกกรอบกฎหมายแม่นยำ: **เรื่องวินัย/สั่งให้ออกจากราชการ = อุทธรณ์ ก.พ.ค.ตร.** (พ.ร.บ.ตำรวจ ๒๕๖๕ หมวด ๗–๙ ม.๑๐๕–๑๔๖, กฎ ก.พ.ค.ตร. อุทธรณ์ ๒๕๖๗, กฎ ก.ตร. วินัย ๒๕๖๙, คำสั่ง ตร. ๕๑๕/๒๕๖๙) แยกเด็ดขาดจาก **เรื่องแต่งตั้งโยกย้าย = ร้องทุกข์ ก.พ.ค.ตร.**
     2. เครื่องยนต์ `evaluateDisciplineAppealRules` ตรวจสอบอัตโนมัติทั้งเขตอำนาจอุทธรณ์ (๓๐/๑๒๐ วัน), หลักความ "ไม่ถูกต้อง" vs "ไม่เหมาะสม" (ข้อ ๑, ๑๘), กฎห้าม ผบช. ส่งเรื่องกลับ ผบก. ตาม ม.๑๒๖ วรรคสาม (ข้อ ๒–๓), กรอบรายงาน ๑๕ วัน, คดีอาญา/ป.ป.ช. ไม่ชะลอวินัย (ข้อ ๑๒), โทษตาม ม.๘๗ วรรคสี่ (ข้อ ๑๓) และบทเฉพาะกาลคำสั่ง ๔๓๖/๒๕๔๘ (ข้อ ๑๙) พร้อม Auto-enrich กฎหมายฐานและร่างคำวินิจฉัยอุทธรณ์ ๘ หัวข้อ (`npm test` **110/110**, `typecheck` 0 errors, `eslint` changed files 0 errors, `build` **38/38 routes**)
+
+## สรุปสถานะระบบล่าสุด (2026-11-27)
+
+- **อัปเกรดระบบ OpenThai OCR เป็น v2.2 (`iapp/OpenThai2.2-OCR-Text-20261127` v2.2.1 และ `iapp/OpenThai2.2-OCR-Markdown-20261127` v2.2.2) ครบทั้งสกิลกลางและหน้าเว็บ (2026-11-27)**:
+  - ติดตั้งและตรวจสอบ SHA-256 ครบทุกไฟล์น้ำหนักและ runtime ของ **OpenThai 2.2.1** (`det.onnx`, `rec.onnx`, `rec2.onnx`, **`judge9.onnx`** ตัวจำแนกเลขไทย ๙/๕ ลดปัญหาอ่าน ๙ เป็น ๕ ในเอกสารพิมพ์ดีด/ราชการ, `dewarp/dewarp_mask.onnx`, `runtime/dewarp.py`, `runtime/line_engine.py`, `config.json`) พร้อมติดตั้ง **UVDoc (`dewarp/inference.onnx`)** ในสกิลกลางสำหรับปรับหน้าภาพถ่ายมือถือออฟไลน์ และอัปเดตชุดอ้างอิง **OpenThai 2.2.2 Markdown** (95.0% ตารางเอกสารไทย, DFlash2 เร็วขึ้น 3.4×)
+  - อัปเดตหน้าเว็บและ API (`scripts/ocr_processor.py`, `src/app/api/ocr/route.ts`, `src/components/library/DocumentOcrWorkbench.tsx`, `src/components/library/PoliceWorkerRegulations.tsx`, `src/lib/thai-law/policeworker.test.ts`): รองรับ `--dewarp` และสวิตช์ปรับภาพถ่ายมือถือบน UI, แสดงสถานะ `rec2` + `judge9 (๙/๕)` + `Dewarped` และจุดควรตรวจสอบความมั่นใจ `< 90%`
 
 ## สรุปสถานะระบบล่าสุด (2026-11-23)
 

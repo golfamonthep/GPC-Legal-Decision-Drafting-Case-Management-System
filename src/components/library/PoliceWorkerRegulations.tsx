@@ -111,7 +111,7 @@ export default function PoliceWorkerRegulations({
               คลังระเบียบ คำสั่ง และนโยบายสำนักงานตำรวจแห่งชาติ
             </h2>
             <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed">
-              เชื่อมโยงฐานข้อมูลสารบรรณและงานนิติการตำรวจจาก <span className="text-indigo-600 dark:text-indigo-300 font-semibold">PoliceWorker.one</span> ครบถ้วน {items.length} ฉบับ พร้อมระบบสกัดข้อความ OCR ออฟไลน์ด้วย OpenThai 2.1.4 OCR
+              เชื่อมโยงฐานข้อมูลสารบรรณและงานนิติการตำรวจจาก <span className="text-indigo-600 dark:text-indigo-300 font-semibold">PoliceWorker.one</span> ครบถ้วน {items.length} ฉบับ พร้อมระบบสกัดข้อความ OCR ออฟไลน์ด้วย OpenThai 2.2 OCR
             </p>
           </div>
 

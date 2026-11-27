@@ -41,6 +41,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
    - ชื่อระบบ/อัตลักษณ์หน้าเว็บปัจจุบัน: **`พล.ต.อ.วิเชียร พจน์โพธิ์ศรี กรรมการ ก.พ.ค.ตร.`**
    - โครงสร้างหลักที่พัฒนาเสร็จแล้ว:
 
+- **อัปเกรดระบบ OCR เป็น OpenThai 2.2 (`iapp/OpenThai2.2-OCR-Text-20261127` v2.2.1 + `iapp/OpenThai2.2-OCR-Markdown-20261127` v2.2.0) (2026-11-27)**:
+  - ติดตั้งและตรวจ SHA-256 ครบทุกไฟล์ (`judge9.onnx` แยกเลขไทย ๙/๕ + `dewarp_mask.onnx` + `runtime/dewarp.py`) ในสกิลกลางและ `tools/openthai2-ocr-text/`
+  - อัปเกรด `ocr_processor.py`, `/api/ocr`, `DocumentOcrWorkbench.tsx`, `PoliceWorkerRegulations.tsx`, `openthai-ocr-presets.json` (สกัดใหม่ด้วย v2.2.1 รวม ว ๒๔๕๖ + คำสั่ง ๕๑๕/๒๕๖๙ + กฎ ก.ตร. วินัย ๒๕๖๙) และ `policeworker.test.ts` (`npm test` 112/112, `typecheck` 0 errors, `eslint` 0 errors, `build` 38/38 routes)
+
 - **ปรับรูปแบบการแสดงผลมาตราบน `/library` เป็นเอกสารตัวบทเรียงมาตรา + เปิดไฟล์ PDF ราชกิจจานุเบกษาต้นฉบับ ๗ ฉบับหลักบนหน้าเว็บ (2026-11-27)**:
   - เปลี่ยน `PoliceLawCatalog.tsx` จากการ์ดกล่อง 3 คอลัมน์เป็นรูปแบบตัวบทเอกสารประมวลกฎหมายเรียงแนวตั้ง (สลับ `สารบัญย่อ` ได้) + ปุ่มคัดลอก/ขยายเต็มมาตรา/ส่งวิเคราะห์
   - ผูกไฟล์ PDF ราชกิจจานุเบกษาและคำสั่ง ตร. ต้นฉบับครบ ๗ ฉบับหลัก (`public/documents/laws/*.pdf` + `circular_2456_2569.pdf`) เปิดอ่านผ่าน `LawPdfViewerModal.tsx` ได้ทันทีจากปุ่ม `PDF`, แบนเนอร์ฉบับ, ท้ายแต่ละมาตรา และ `LawReaderModal.tsx` (`npm test` 112/112, `typecheck` 0 errors, `eslint` 0 errors/0 warnings, `build` 38/38 routes)

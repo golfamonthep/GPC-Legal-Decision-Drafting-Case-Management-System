@@ -46,24 +46,30 @@ test('PoliceWorker regulations dataset loads and contains priority 2569-2570 reg
   assert.equal(order515.sourceUrl, '/library?act=tr-order-515-2569');
 });
 
-test('OCR python processor script and OpenThai 2.1.4 OCR models (Text & Markdown) are installed', async () => {
+test('OCR python processor script and OpenThai 2.2 OCR models (Text v2.2.1 & Markdown v2.2.2) are installed', async () => {
   const ocrScript = path.resolve(process.cwd(), 'scripts/ocr_processor.py');
   assert.ok(fs.existsSync(ocrScript), 'scripts/ocr_processor.py must exist');
 
   const scriptSource = fs.readFileSync(ocrScript, 'utf8');
-  assert.ok(scriptSource.includes('iapp/OpenThai2.1-OCR-Text-20261118'), 'Must support iapp/OpenThai2.1-OCR-Text-20261118');
-  assert.ok(scriptSource.includes('iapp/OpenThai2.1-OCR-Markdown-20261118'), 'Must support iapp/OpenThai2.1-OCR-Markdown-20261118');
+  assert.ok(scriptSource.includes('iapp/OpenThai2.2-OCR-Text-20261127'), 'Must support iapp/OpenThai2.2-OCR-Text-20261127');
+  assert.ok(scriptSource.includes('iapp/OpenThai2.2-OCR-Markdown-20261127'), 'Must support iapp/OpenThai2.2-OCR-Markdown-20261127');
 
   const detOnnx = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/det.onnx');
   const recOnnx = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/rec.onnx');
   const rec2Onnx = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/rec2.onnx');
+  const judge9Onnx = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/judge9.onnx');
+  const dewarpMaskOnnx = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/dewarp/dewarp_mask.onnx');
   const sha256Sums = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/SHA256SUMS');
   const lineEngine = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/runtime/line_engine.py');
-  assert.ok(fs.existsSync(detOnnx), 'OpenThai2.1-OCR-Text det.onnx must exist');
-  assert.ok(fs.existsSync(recOnnx), 'OpenThai2.1-OCR-Text rec.onnx must exist');
-  assert.ok(fs.existsSync(rec2Onnx), 'OpenThai2.1-OCR-Text rec2.onnx (loopless dual recognizer) must exist');
-  assert.ok(fs.existsSync(sha256Sums), 'OpenThai2.1-OCR-Text SHA256SUMS must exist');
-  assert.ok(fs.existsSync(lineEngine), 'OpenThai2.1-OCR-Text runtime/line_engine.py must exist');
+  const dewarpPy = path.resolve(process.cwd(), 'tools/openthai2-ocr-text/runtime/dewarp.py');
+  assert.ok(fs.existsSync(detOnnx), 'OpenThai2.2-OCR-Text det.onnx must exist');
+  assert.ok(fs.existsSync(recOnnx), 'OpenThai2.2-OCR-Text rec.onnx must exist');
+  assert.ok(fs.existsSync(rec2Onnx), 'OpenThai2.2-OCR-Text rec2.onnx (loopless dual recognizer) must exist');
+  assert.ok(fs.existsSync(judge9Onnx), 'OpenThai2.2-OCR-Text judge9.onnx (๙/๕ classifier) must exist');
+  assert.ok(fs.existsSync(dewarpMaskOnnx), 'OpenThai2.2-OCR-Text dewarp_mask.onnx must exist');
+  assert.ok(fs.existsSync(sha256Sums), 'OpenThai2.2-OCR-Text SHA256SUMS must exist');
+  assert.ok(fs.existsSync(lineEngine), 'OpenThai2.2-OCR-Text runtime/line_engine.py must exist');
+  assert.ok(fs.existsSync(dewarpPy), 'OpenThai2.2-OCR-Text runtime/dewarp.py must exist');
 
   const presetsPath = path.resolve(process.cwd(), 'src/data/thai-law/openthai-ocr-presets.json');
   assert.ok(fs.existsSync(presetsPath), 'openthai-ocr-presets.json must exist');
@@ -71,7 +77,7 @@ test('OCR python processor script and OpenThai 2.1.4 OCR models (Text & Markdown
   const circularPages = presets['scratch/policeworker/circular_2456_2569.pdf'];
   assert.ok(circularPages && circularPages['1'], 'Must have pre-extracted page 1 of Circular 2456');
   assert.ok(circularPages['1'].text.includes('บันทึกข้อความ'), 'OCR text must include บันทึกข้อความ');
-  assert.ok(circularPages['1'].text.includes('ตร.'), 'OpenThai 2.1.4 @ 200 DPI must recover ส่วนราชการ ตร.');
-  assert.ok(!circularPages['1'].text.includes('กฏ ก.ตร'), 'OpenThai 2.1.4 @ 200 DPI must not misread กฎ ก.ตร. as กฏ');
+  assert.ok(circularPages['1'].text.includes('ตร.'), 'OpenThai 2.2.1 @ 200 DPI must recover ส่วนราชการ ตร.');
+  assert.ok(!circularPages['1'].text.includes('กฏ ก.ตร'), 'OpenThai 2.2.1 @ 200 DPI must not misread กฎ ก.ตร. as กฏ');
   assert.ok(circularPages['1'].markdown.includes('# บันทึกข้อความ'), 'OCR markdown must include # บันทึกข้อความ');
 });
