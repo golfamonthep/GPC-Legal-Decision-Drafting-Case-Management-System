@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { 
   searchPoliceLaws, 
   getSectionById, 
@@ -238,4 +240,21 @@ test('Legal Data Integrity Guard: 0 duplicate IDs, clean Police Act 2565 (181 se
   // 6. ktr-qualifications-2547 is NOT misclassified under grievance_appointment
   const qualAct = acts.find(a => a.id === 'ktr-qualifications-2547');
   assert.notEqual(qualAct?.gpcScope, 'grievance_appointment');
+
+  // 7. All 7 core laws have verified local Royal Gazette / official PDFs staged under public/
+  const corePdfActs = [
+    'police-act-2565',
+    'ktr-discipline-2569',
+    'tr-order-515-2569',
+    'kpkt-appeal-2567',
+    'kpkt-grievance-2567',
+    'ktr-appointment-2567',
+    'tr-circular-2456-2569',
+  ];
+  for (const id of corePdfActs) {
+    const act = acts.find(a => a.id === id);
+    assert.ok(act?.officialPdfUrl, `Core act ${id} must expose officialPdfUrl`);
+    const diskPath = path.join(process.cwd(), 'public', act.officialPdfUrl.replace(/^\//, ''));
+    assert.ok(fs.existsSync(diskPath), `Official PDF missing on disk for ${id}: ${diskPath}`);
+  }
 });

@@ -64,6 +64,37 @@ const NEW_ACT_IDS = new Set([
   'tr-circular-2456-2569',
 ]);
 
+const OFFICIAL_PDF_BY_ACT: Record<string, { url: string; label: string }> = {
+  'police-act-2565': {
+    url: '/documents/laws/police_act_2565.pdf',
+    label: 'PDF ราชกิจจานุเบกษา (๑๖ ต.ค. ๒๕๖๕ · ๘๒ หน้า)',
+  },
+  'ktr-discipline-2569': {
+    url: '/documents/laws/ktr_discipline_2569.pdf',
+    label: 'PDF ราชกิจจานุเบกษา (๑๒ ต.ค. ๒๕๖๙ · ๙๑ หน้า)',
+  },
+  'tr-order-515-2569': {
+    url: '/documents/laws/tr_order_515_2569.pdf',
+    label: 'PDF คำสั่ง ตร. ต้นฉบับ (๒๔ พ.ย. ๒๕๖๙ · ๗ หน้า)',
+  },
+  'kpkt-appeal-2567': {
+    url: '/documents/laws/kpkt_appeal_2567.pdf',
+    label: 'PDF ราชกิจจานุเบกษา (๓๑ ม.ค. ๒๕๖๗ · ๑๔ หน้า)',
+  },
+  'kpkt-grievance-2567': {
+    url: '/documents/laws/kpkt_grievance_2567.pdf',
+    label: 'PDF ราชกิจจานุเบกษา (๓๑ ม.ค. ๒๕๖๗ · ๑๖ หน้า)',
+  },
+  'ktr-appointment-2567': {
+    url: '/documents/laws/ktr_appointment_2567.pdf',
+    label: 'PDF ราชกิจจานุเบกษา (กฎ ก.ตร. แต่งตั้ง ๒๕๖๗)',
+  },
+  'tr-circular-2456-2569': {
+    url: '/documents/circular_2456_2569.pdf',
+    label: 'PDF หนังสือ ตร. ต้นฉบับ (ว ๒๔๕๖ · ๑๑ หน้า)',
+  },
+};
+
 function inferGpcScope(act: PoliceLawAct): Exclude<LawGpcScope, 'all'> {
   if (GRIEVANCE_ACT_IDS.has(act.id)) return 'grievance_appointment';
   if (act.category === 'วินัย อุทธรณ์ ร้องทุกข์') return 'appeal_discipline';
@@ -72,21 +103,31 @@ function inferGpcScope(act: PoliceLawAct): Exclude<LawGpcScope, 'all'> {
   return 'security';
 }
 
-const sections: PoliceLawSection[] = rawData.catalog as PoliceLawSection[];
+const sections: PoliceLawSection[] = (rawData.catalog as PoliceLawSection[]).map((sec) => {
+  const pdf = OFFICIAL_PDF_BY_ACT[sec.actId];
+  return pdf
+    ? { ...sec, officialPdfUrl: pdf.url, officialPdfLabel: pdf.label }
+    : sec;
+});
 
 const sectionCountByAct: Record<string, number> = {};
 for (const sec of sections) {
   sectionCountByAct[sec.actId] = (sectionCountByAct[sec.actId] || 0) + 1;
 }
 
-const acts: PoliceLawAct[] = (rawData.acts as PoliceLawAct[]).map((act) => ({
-  ...act,
-  shortTitle: SHORT_TITLES[act.id] || act.title.replace(/\s*\(ฉบับ[^)]*\)/g, '').slice(0, 68),
-  gpcScope: inferGpcScope(act),
-  sectionCount: sectionCountByAct[act.id] || 0,
-  isRepealed: act.title.includes('ยกเลิกแล้ว'),
-  isNew: NEW_ACT_IDS.has(act.id),
-}));
+const acts: PoliceLawAct[] = (rawData.acts as PoliceLawAct[]).map((act) => {
+  const pdf = OFFICIAL_PDF_BY_ACT[act.id];
+  return {
+    ...act,
+    shortTitle: SHORT_TITLES[act.id] || act.title.replace(/\s*\(ฉบับ[^)]*\)/g, '').slice(0, 68),
+    gpcScope: inferGpcScope(act),
+    sectionCount: sectionCountByAct[act.id] || 0,
+    isRepealed: act.title.includes('ยกเลิกแล้ว'),
+    isNew: NEW_ACT_IDS.has(act.id),
+    officialPdfUrl: pdf?.url,
+    officialPdfLabel: pdf?.label,
+  };
+});
 
 const actById = new Map(acts.map((a) => [a.id, a]));
 

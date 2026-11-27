@@ -14,12 +14,14 @@ import {
   FileText
 } from "lucide-react";
 import { PoliceLawSection, PoliceLawAct } from "@/lib/thai-law/types";
+import type { LawPdfViewerTarget } from "./LawPdfViewerModal";
 
 interface LawReaderModalProps {
   sectionId: string | null;
   onClose: () => void;
   onSelectSection: (id: string) => void;
   onSendToAnalysis?: (section: PoliceLawSection) => void;
+  onOpenPdf?: (target: LawPdfViewerTarget) => void;
 }
 
 export default function LawReaderModal({
@@ -27,6 +29,7 @@ export default function LawReaderModal({
   onClose,
   onSelectSection,
   onSendToAnalysis,
+  onOpenPdf,
 }: LawReaderModalProps) {
   const [data, setData] = useState<{
     section: PoliceLawSection | null;
@@ -34,14 +37,15 @@ export default function LawReaderModal({
     nextSection: PoliceLawSection | null;
     act: PoliceLawAct | null;
   } | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loadedId, setLoadedId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const loading = Boolean(sectionId) && loadedId !== sectionId;
 
   useEffect(() => {
     if (!sectionId) return;
 
     let isMounted = true;
-    setLoading(true);
 
     fetch(`/api/thai-law/${encodeURIComponent(sectionId)}`)
       .then((res) => {
@@ -51,12 +55,12 @@ export default function LawReaderModal({
       .then((resData) => {
         if (isMounted) {
           setData(resData);
-          setLoading(false);
+          setLoadedId(sectionId);
         }
       })
       .catch((err) => {
         console.error("Error loading law section:", err);
-        if (isMounted) setLoading(false);
+        if (isMounted) setLoadedId(sectionId);
       });
 
     return () => {
@@ -154,7 +158,36 @@ export default function LawReaderModal({
               )}
             </button>
 
-            {section?.sourceUrl && (
+            {(section?.officialPdfUrl || act?.officialPdfUrl) ? (
+              onOpenPdf ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    onOpenPdf({
+                      title: `${act?.shortTitle || section?.actTitle || "ต้นฉบับกฎหมาย"} · ${section?.sectionLabel || ""}`,
+                      subtitle: section?.officialPdfLabel || act?.officialPdfLabel,
+                      pdfUrl: (section?.officialPdfUrl || act?.officialPdfUrl) as string,
+                      source: section?.source || act?.source,
+                    })
+                  }
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white transition-colors shadow-sm"
+                  title="เปิดไฟล์ PDF ต้นฉบับราชกิจจานุเบกษา"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  <span>เปิด PDF ราชกิจจาฯ</span>
+                </button>
+              ) : (
+                <a
+                  href={section?.officialPdfUrl || act?.officialPdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white transition-colors shadow-sm"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  <span>เปิด PDF ราชกิจจาฯ</span>
+                </a>
+              )
+            ) : section?.sourceUrl ? (
               <a
                 href={section.sourceUrl}
                 target="_blank"
@@ -165,7 +198,7 @@ export default function LawReaderModal({
                 <ExternalLink className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">ต้นฉบับกฤษฎีกา</span>
               </a>
-            )}
+            ) : null}
 
             <button
               onClick={onClose}

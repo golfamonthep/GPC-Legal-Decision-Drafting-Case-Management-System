@@ -25,6 +25,8 @@ export interface PoliceLawAct {
   isNew?: boolean;
   source: string;
   sourceUrl: string;
+  officialPdfUrl?: string;
+  officialPdfLabel?: string;
 }
 
 export interface PoliceLawSection {
@@ -41,6 +43,8 @@ export interface PoliceLawSection {
   notes?: string;
   source: string;
   sourceUrl: string;
+  officialPdfUrl?: string;
+  officialPdfLabel?: string;
 }
 
 export interface LawSearchOptions {
