@@ -94,6 +94,11 @@ export async function generateDraftSection(
   const chunkIds = searchResults.map(r => r.chunkId);
   const chunkSnapshot = await import('./revisionGuard').then(m => m.captureChunkRevisionSnapshot(chunkIds, db));
 
+  const isAppealCase = String(caseData.type || '').includes('อุทธรณ์');
+  const partyTerminology = isAppealCase
+    ? 'คดีนี้เป็น "เรื่องอุทธรณ์" ต้องใช้คำว่า "ผู้อุทธรณ์" และ "คู่กรณีในอุทธรณ์" ห้ามใช้คำว่า "ผู้ร้องทุกข์" (ทั้งนี้ ก.พ.ค.ตร. มีอำนาจรับอุทธรณ์เฉพาะโทษปลดออก ไล่ออก หรือคำสั่งให้ออกจากราชการตาม ม.๑๔๑ วรรคสอง และห้ามเพิ่มโทษตามกฎ ก.พ.ค.ตร. อุทธรณ์ ๒๕๖๗ ข้อ ๕๑)'
+    : 'คดีนี้เป็น "เรื่องร้องทุกข์" ต้องใช้คำว่า "ผู้ร้องทุกข์" และ "คู่กรณีในการร้องทุกข์" ห้ามใช้คำว่า "ผู้อุทธรณ์" (กรณีร้องทุกข์การเรียงลำดับอาวุโสและการแต่งตั้งตาม ม.๘๗ อยู่ในหลักเกณฑ์เร่งด่วน ๓๐ วันตามกฎ ก.พ.ค.ตร. ร้องทุกข์ ๒๕๖๗ ข้อ ๖๓–๖๗)';
+
   // 3. Construct system and user prompts
   const systemPrompt = `You are an AI assistant assisting a legal officer in drafting a single section of a ก.พ.ค.ตร. decision.
 
@@ -101,12 +106,13 @@ CRITICAL RULES:
 1. You MUST use ONLY the provided retrieved context. Do NOT use general model knowledge.
 2. You MUST NOT invent any facts, names, dates, case numbers, law sections, or conclusions.
 3. If the provided context is insufficient to fulfill the user's instruction, state clearly that the evidence is insufficient.
-4. You must write in formal Thai legal/government style (ภาษาไทยแบบราชการ/ภาษากฎหมาย).
-5. You are drafting ONLY ONE SECTION of the decision (Section Type: ${sectionType}). Do NOT write the entire decision.
-6. Use cautious legal wording.
-7. Include citation references (อ้างอิง) inline where appropriate, based on the provided context.
-8. Do NOT determine the final outcome or result of the case unless explicitly requested in the user's instruction based on the facts provided.
-9. Return JSON only. Put every used Source ID in citations and list missing information in gaps.`;
+4. You must write in formal Thai legal/government style (ภาษาไทยแบบราชการ/สำนวนคำวินิจฉัย ก.พ.ค.ตร.): ใช้ “พิเคราะห์แล้วเห็นว่า” สำหรับการวางหลักกฎหมาย กฎ ก.พ.ค.ตร. กฎ ก.ตร. และคำสั่ง ตร. และใช้ “พิจารณาแล้วเห็นว่า” สำหรับการปรับข้อเท็จจริง การชั่งน้ำหนักพยานหลักฐาน และการใช้ดุลพินิจ.
+5. ${partyTerminology}
+6. You are drafting ONLY ONE SECTION of the decision (Section Type: ${sectionType}). Do NOT write the entire decision.
+7. Use cautious legal wording and never overstate unverified claims.
+8. Include citation references (อ้างอิง) inline where appropriate, based on the provided context.
+9. Do NOT determine the final outcome or result of the case unless explicitly requested in the user's instruction based on the facts provided.
+10. Return JSON only. Put every used Source ID in citations and list missing information in gaps.`;
 
   const userPrompt = `Case Details:
 - Case Number (Black): ${caseData.blackNumber}

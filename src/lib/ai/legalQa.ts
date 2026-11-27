@@ -1,5 +1,6 @@
 import prisma from "@/lib/db";
 import { searchChunks, SearchMode, RetrievalResultItem, SearchFilters } from "@/lib/rag/retrieval/searchChunks";
+import { searchPoliceLaws } from "@/lib/thai-law/search";
 import { auditLog } from "@/lib/audit";
 import { createAiHarness, getAiHarnessStatus, pseudonymizeText } from '../../../shared/ai-harness.mjs';
 import {
@@ -97,8 +98,8 @@ export async function generateLegalAnswer(
     }
   });
 
-  // 2. Search chunks
-  const searchResults = await searchChunksFn({
+  // 2. Search chunks (with verified local statutory catalog fallback when DB returns empty in runtime)
+  let searchResults = await searchChunksFn({
     query,
     mode,
     filters,
@@ -106,6 +107,25 @@ export async function generateLegalAnswer(
     topK,
     queryId: retrievalQuery.id, // pass the explicitly created queryId
   });
+
+  if (searchResults.length === 0 && !deps.searchChunksFn) {
+    const localHits = searchPoliceLaws({ q: query, hideRepealed: true, pageSize: topK });
+    searchResults = localHits.items.map((item, idx) => ({
+      chunkId: `lawcat:${item.id}`,
+      sourceId: item.actId,
+      sourceTitle: item.actTitle,
+      sourceType: item.category,
+      sourceStatus: "ใช้งาน",
+      reliabilityLevel: "official",
+      content: `${item.sectionLabel}\n${item.content}`,
+      score: Math.max(0.5, 1 - idx * 0.05),
+      citationMetadata: {
+        referenceNumber: item.sectionLabel,
+        sectionName: item.sectionLabel,
+        sourceUrl: item.sourceUrl,
+      },
+    }));
+  }
 
   const configuredModel = harness.status?.model || getAiHarnessStatus().model;
 
@@ -126,7 +146,8 @@ export async function generateLegalAnswer(
   }
 
   const chunkIds = searchResults.map(result => result.chunkId);
-  const chunkSnapshot = await captureChunkRevisionSnapshot(chunkIds, db);
+  const dbChunkIds = chunkIds.filter(id => !id.startsWith("lawcat:"));
+  const chunkSnapshot = dbChunkIds.length > 0 ? await captureChunkRevisionSnapshot(dbChunkIds, db) : null;
 
   // 3. Format context
   const contextText = searchResults.map((chunk) => {
@@ -144,7 +165,7 @@ export async function generateLegalAnswer(
 กฎการตอบ (Rules):
 1. หากข้อมูลในบริบทไม่เพียงพอต่อการตอบคำถาม ห้ามแต่งเติมข้อมูลเด็ดขาด ให้ตอบเพียงว่า "ไม่พบข้อมูลที่เพียงพอในฐานข้อมูลที่ได้รับอนุมัติ"
 2. ห้ามใช้ความรู้ทั่วไปนอกเหนือจากบริบทที่กำหนดให้
-3. รูปแบบการตอบต้องเป็นภาษาทางการ กฎหมาย (Thai legal/government style)
+3. รูปแบบการตอบต้องเป็นภาษาทางการ กฎหมาย (Thai legal/government style) และแยกเขตอำนาจให้แม่นยำตามตัวบทในบริบท (เช่น โทษปลดออก/ไล่ออก/สั่งให้ออกจากราชการอุทธรณ์ ก.พ.ค.ตร. ตาม ม.๑๔๑ วรรคสอง ส่วนโทษวินัยไม่ร้ายแรง ม.๑๒๔ อุทธรณ์ผู้บังคับบัญชาเหนือขึ้นไปหรือ ก.ตร. ตาม ม.๑๔๑ วรรคหนึ่ง, คำสั่งพักราชการเป็นเรื่องร้องทุกข์ ม.๑๔๗ ส่วนสั่งให้ออกจากราชการไว้ก่อนเป็นเรื่องอุทธรณ์ ก.พ.ค.ตร.)
 4. แยกหัวข้อในการตอบดังนี้:
    - ข้อกฎหมาย (หลักกฎหมายที่เกี่ยวข้อง)
    - แนวคำวินิจฉัย/แนวคำพิพากษา (ถ้ามีในบริบท)
@@ -178,14 +199,17 @@ ${contextText}
   if (draftRevisionSnapshot) {
     await assertDraftRevisionUnchanged(draftRevisionSnapshot, db);
   }
-  await assertChunkRevisionUnchanged(chunkSnapshot, db);
+  if (chunkSnapshot) {
+    await assertChunkRevisionUnchanged(chunkSnapshot, db);
+  }
 
   const generatedAnswer = aiResult.data.answer || "ไม่พบข้อมูลที่เพียงพอในฐานข้อมูลที่ได้รับอนุมัติ";
   const citedIds = aiResult.data.citations;
   const citedResults = searchResults.filter(result => citedIds.includes(result.chunkId));
+  const citedDbIds = citedIds.filter(id => !id.startsWith("lawcat:"));
 
-  // 6. Save Answer
-  await saveAnswerToDb(db, retrievalQuery.id, generatedAnswer, aiResult.meta.model, citedIds);
+  // 6. Save Answer (persist only DB-backed chunk citations to respect FK constraints)
+  await saveAnswerToDb(db, retrievalQuery.id, generatedAnswer, aiResult.meta.model, citedDbIds);
   
   // 7. Log audit
   await logAudit(auditLogFn, userId, retrievalQuery.id, aiResult.meta);

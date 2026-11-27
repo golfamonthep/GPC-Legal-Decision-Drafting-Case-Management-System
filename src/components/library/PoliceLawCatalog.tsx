@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -24,6 +24,7 @@ export const LIBRARY_LAW_TRANSFER_KEY = "gpc_library_law_transfer";
 
 const PINNED_ACT_IDS = [
   "tr-order-515-2569",
+  "ktr-discipline-2569",
   "police-act-2565",
   "kpkt-appeal-2567",
   "kpkt-grievance-2567",
@@ -47,6 +48,7 @@ function resolveTargetTierForLaw(actId: string, category?: string, content?: str
   }
   if (
     actId === "tr-order-515-2569" ||
+    actId === "ktr-discipline-2569" ||
     actId === "kpkt-appeal-2567" ||
     actId.startsWith("ktr-inquiry") ||
     actId.startsWith("ktr-punish") ||
@@ -61,10 +63,10 @@ function resolveTargetTierForLaw(actId: string, category?: string, content?: str
     return "discipline_appeal";
   }
   if (actId === "police-act-2565" && content) {
-    if (/(แต่งตั้ง|อาวุโส|ร้องทุกข์|มาตรา\s*(?:77|78|79|80|81|82|85|87|147|๗๗|๗๘|๗๙|๘๐|๘๑|๘๒|๘๕|๘๗|๑๔๗))/.test(content)) {
+    if (/(แต่งตั้ง|อาวุโส|ร้องทุกข์|มาตรา\s*(?:77|78|79|80|81|82|85|87|147|148|149|๗๗|๗๘|๗๙|๘๐|๘๑|๘๒|๘๕|๘๗|๑๔๗|๑๔๘|๑๔๙))/.test(content)) {
       return "general";
     }
-    if (/(วินัย|อุทธรณ์|ปลดออก|ไล่ออก|พักราชการ|สอบสวน|มาตรา\s*(?:105|112|116|117|119|125|126|131|138|141|๑๐๕|๑๑๒|๑๑๖|๑๑๗|๑๑๙|๑๒๕|๑๒๖|๑๓๑|๑๓๘|๑๔๑))/.test(content)) {
+    if (/(วินัย|อุทธรณ์|ปลดออก|ไล่ออก|พักราชการ|สอบสวน|มาตรา\s*(?:105|112|115|116|117|119|120|124|125|126|127|131|137|138|141|142|๑๐๕|๑๑๒|๑๑๕|๑๑๖|๑๑๗|๑๑๙|๑๒๐|๑๒๔|๑๒๕|๑๒๖|๑๒๗|๑๓๑|๑๓๗|๑๓๘|๑๔๑|๑๔๒))/.test(content)) {
       return "discipline_appeal";
     }
   }
@@ -123,13 +125,16 @@ export default function PoliceLawCatalog({ initialActId = null, initialQuery = "
   // Selected section for full text reading modal
   const [readingSectionId, setReadingSectionId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (initialActId) {
-      setSelectedActId(initialActId);
-      setActiveScope("all");
-      setPage(1);
-    }
-  }, [initialActId]);
+  // Track committed search query separately from live input text
+  const [submittedQuery, setSubmittedQuery] = useState(initialQuery);
+  const [prevInitialActId, setPrevInitialActId] = useState<string | null>(initialActId);
+
+  if (initialActId && initialActId !== prevInitialActId) {
+    setPrevInitialActId(initialActId);
+    setSelectedActId(initialActId);
+    setActiveScope("all");
+    setPage(1);
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -143,70 +148,71 @@ export default function PoliceLawCatalog({ initialActId = null, initialQuery = "
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [pickerOpen]);
 
-  const fetchResults = useCallback(
-    (qStr: string, scopeStr: LawGpcScope, actStr: string, hideRep: boolean, pageNum: number) => {
-      setLoading(true);
-      const params = new URLSearchParams({
-        q: qStr,
-        scope: scopeStr,
-        actId: actStr,
-        hideRepealed: hideRep ? "1" : "0",
-        page: String(pageNum),
-        pageSize: String(pageSize),
+  useEffect(() => {
+    let cancelled = false;
+    const params = new URLSearchParams({
+      q: submittedQuery,
+      scope: activeScope,
+      actId: selectedActId,
+      hideRepealed: hideRepealed ? "1" : "0",
+      page: String(page),
+      pageSize: String(pageSize),
+    });
+
+    fetch(`/api/thai-law?${params.toString()}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Search failed");
+        return res.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setItems(data.items || []);
+        setActs(data.acts || []);
+        setScopes(data.scopes || []);
+        setTotal(data.total || 0);
+        setTotalPages(data.totalPages || 1);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error("Error loading law catalog:", err);
+        setLoading(false);
       });
 
-      fetch(`/api/thai-law?${params.toString()}`)
-        .then((res) => {
-          if (!res.ok) throw new Error("Search failed");
-          return res.json();
-        })
-        .then((data) => {
-          setItems(data.items || []);
-          setActs(data.acts || []);
-          setScopes(data.scopes || []);
-          setTotal(data.total || 0);
-          setTotalPages(data.totalPages || 1);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error loading law catalog:", err);
-          setLoading(false);
-        });
-    },
-    [pageSize]
-  );
-
-  useEffect(() => {
-    fetchResults(query, activeScope, selectedActId, hideRepealed, page);
-  }, [fetchResults, page, activeScope, selectedActId, hideRepealed]);
+    return () => {
+      cancelled = true;
+    };
+  }, [submittedQuery, activeScope, selectedActId, hideRepealed, page, pageSize]);
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    setLoading(true);
     setPage(1);
-    fetchResults(query, activeScope, selectedActId, hideRepealed, 1);
+    setSubmittedQuery(query);
   };
 
   const handleSelectAct = (actId: string) => {
+    setLoading(true);
     setSelectedActId(actId);
     setPickerOpen(false);
     setActFilterText("");
     setPage(1);
-    fetchResults(query, activeScope, actId, hideRepealed, 1);
   };
 
   const handleSelectScope = (scopeId: LawGpcScope) => {
+    setLoading(true);
     setActiveScope(scopeId);
     setSelectedActId("all");
     setPage(1);
-    fetchResults(query, scopeId, "all", hideRepealed, 1);
   };
 
   const handleResetAll = () => {
+    setLoading(true);
     setQuery("");
+    setSubmittedQuery("");
     setActiveScope("all");
     setSelectedActId("all");
     setPage(1);
-    fetchResults("", "all", "all", hideRepealed, 1);
   };
 
   const selectedAct = useMemo(
@@ -433,9 +439,10 @@ export default function PoliceLawCatalog({ initialActId = null, initialQuery = "
                 <button
                   type="button"
                   onClick={() => {
+                    setLoading(true);
                     setQuery("");
+                    setSubmittedQuery("");
                     setPage(1);
-                    fetchResults("", activeScope, selectedActId, hideRepealed, 1);
                   }}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-white"
                   title="ล้างคำค้น"

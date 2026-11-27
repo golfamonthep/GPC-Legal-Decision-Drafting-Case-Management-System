@@ -82,8 +82,10 @@ function rankKnowledgeSearch(records, q, kind) {
     else if (textNorm.includes(query)) score += 80;
     if (score > 0) {
       if (r.document_id === 'tr-order-515-2569') score += 40;
+      if (r.document_id === 'ktr-discipline-2569') score += 35;
       if (r.document_id === 'police-act-2565') score += 30;
       if (r.document_id === 'kpkt-appeal-2567' || r.document_id === 'kpkt-grievance-2567') score += 25;
+      if (String(r.label || '').includes('ยกเลิกแล้ว')) score -= 60;
       scored.push({ r, score });
     }
   }

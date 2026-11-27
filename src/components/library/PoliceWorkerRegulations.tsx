@@ -2,17 +2,12 @@
 
 import { useState, useMemo } from "react";
 import { 
-  FileText, 
   Search, 
   ExternalLink, 
-  Download, 
   Sparkles, 
   Shield, 
-  Calendar, 
   Filter, 
-  CheckCircle2, 
   AlertCircle,
-  FileCheck,
   Building,
   Gavel,
   BookOpen
@@ -116,7 +111,7 @@ export default function PoliceWorkerRegulations({
               คลังระเบียบ คำสั่ง และนโยบายสำนักงานตำรวจแห่งชาติ
             </h2>
             <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed">
-              เชื่อมโยงฐานข้อมูลสารบรรณและงานนิติการตำรวจจาก <span className="text-indigo-600 dark:text-indigo-300 font-semibold">PoliceWorker.one</span> ครบถ้วน {items.length} ฉบับ พร้อมระบบสกัดข้อความ OCR ด้วย PaddleOCR และ Typhoon-OCR
+              เชื่อมโยงฐานข้อมูลสารบรรณและงานนิติการตำรวจจาก <span className="text-indigo-600 dark:text-indigo-300 font-semibold">PoliceWorker.one</span> ครบถ้วน {items.length} ฉบับ พร้อมระบบสกัดข้อความ OCR ออฟไลน์ด้วย OpenThai 2.1.4 OCR
             </p>
           </div>
 
@@ -319,7 +314,7 @@ export default function PoliceWorkerRegulations({
         <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 space-y-3">
           <AlertCircle className="h-10 w-10 text-slate-400 mx-auto" />
           <h4 className="font-bold text-slate-800 dark:text-slate-200">ไม่พบระเบียบหรือคำสั่งที่ตรงกับเงื่อนไขการค้นหา</h4>
-          <p className="text-xs text-slate-500">ลองล้างตัวกรองหรือใช้คำค้นหาที่สั้นลง เช่น "วินัย", "424", "แต่งตั้ง"</p>
+          <p className="text-xs text-slate-500">ลองล้างตัวกรองหรือใช้คำค้นหาที่สั้นลง เช่น &ldquo;วินัย&rdquo;, &ldquo;424&rdquo;, &ldquo;แต่งตั้ง&rdquo;</p>
           <button
             onClick={() => {
               setSearchQuery("");

@@ -23,23 +23,24 @@ export function toThaiNum(str: string): string {
 
 const SHORT_TITLES: Record<string, string> = {
   'tr-order-515-2569': 'คำสั่ง ตร. ที่ ๕๑๕/๒๕๖๙ (มอบอำนาจวินัย)',
+  'ktr-discipline-2569': 'กฎ ก.ตร. การดำเนินการทางวินัย พ.ศ. ๒๕๖๙',
   'tr-circular-2456-2569': 'ว ๒๔๕๖ (แต่งตั้ง รอง ผบก.–สว. ๒๕๖๙)',
   'police-act-2565': 'พ.ร.บ.ตำรวจแห่งชาติ พ.ศ. ๒๕๖๕',
   'ktr-appointment-2567': 'กฎ ก.ตร. แต่งตั้ง พ.ศ. ๒๕๖๗',
   'kpkt-appeal-2567': 'กฎ ก.พ.ค.ตร. อุทธรณ์ พ.ศ. ๒๕๖๗',
   'kpkt-grievance-2567': 'กฎ ก.พ.ค.ตร. ร้องทุกข์ พ.ศ. ๒๕๖๗',
-  'ktr-investigation-fact-2556': 'กฎ ก.ตร. สืบสวนข้อเท็จจริง ๒๕๕๖',
-  'ktr-inquiry-2547': 'กฎ ก.ตร. สอบสวนพิจารณา ๒๕๔๗',
-  'ktr-punish-power-2547': 'กฎ ก.ตร. อำนาจและอัตราโทษ ๒๕๔๗',
-  'ktr-suspend-leave-2547': 'กฎ ก.ตร. พักราชการ/ให้ออกไว้ก่อน ๒๕๔๗',
-  'ktr-flagrant-offense-2547': 'กฎ ก.ตร. ความผิดปรากฏชัดแจ้ง ๒๕๔๗',
-  'ktr-filter-committee-2547': 'กฎ ก.ตร. กลั่นกรองลงโทษ ๒๕๔๗',
+  'ktr-investigation-fact-2556': 'กฎ ก.ตร. สืบสวนข้อเท็จจริง ๒๕๕๖ (ยกเลิกแล้ว)',
+  'ktr-inquiry-2547': 'กฎ ก.ตร. สอบสวนพิจารณา ๒๕๔๗ (ยกเลิกแล้ว)',
+  'ktr-punish-power-2547': 'กฎ ก.ตร. อำนาจและอัตราโทษ ๒๕๔๗ (ยกเลิกแล้ว)',
+  'ktr-suspend-leave-2547': 'กฎ ก.ตร. พักราชการ/ให้ออกไว้ก่อน ๒๕๔๗ (ยกเลิกแล้ว)',
+  'ktr-flagrant-offense-2547': 'กฎ ก.ตร. ความผิดปรากฏชัดแจ้ง ๒๕๔๗ (ยกเลิกแล้ว)',
+  'ktr-filter-committee-2547': 'กฎ ก.ตร. กลั่นกรองลงโทษ ๒๕๔๗ (ยกเลิกแล้ว)',
   'ktr-ethics-2551': 'กฎ ก.ตร. จริยธรรมตำรวจ ๒๕๕๑',
   'ktr-discharge-ineff-2547': 'กฎ ก.ตร. ให้ออกเหตุหย่อนประสิทธิภาพ ๒๕๔๗',
-  'ktr-restore-status-2547': 'กฎ ก.ตร. คืนฐานะเดิม/เพิ่มโทษ ๒๕๔๗',
+  'ktr-restore-status-2547': 'กฎ ก.ตร. คืนฐานะเดิม/เพิ่มโทษ ๒๕๔๗ (ยกเลิกแล้ว)',
   'ktr-regular-reserve-2548': 'กฎ ก.ตร. ประจำ ตร./สำรองราชการ ๒๕๔๘',
-  'ktr-order-manner-2547': 'กฎ ก.ตร. วิธีการออกคำสั่งลงโทษ ๒๕๔๗',
-  'ktr-qualifications-2547': 'กฎ ก.ตร. คุณสมบัติแต่งตั้ง ๒๕๔๗',
+  'ktr-order-manner-2547': 'กฎ ก.ตร. วิธีการออกคำสั่งลงโทษ ๒๕๔๗ (ยกเลิกแล้ว)',
+  'ktr-qualifications-2547': 'กฎ ก.ตร. คุณสมบัติและลักษณะต้องห้าม ๒๕๔๗',
   'ktr-appeal-2547': 'กฎ ก.ตร. อุทธรณ์ ๒๕๔๗ (ยกเลิกแล้ว)',
   'ktr-petition-2547': 'กฎ ก.ตร. ร้องทุกข์ ๒๕๔๗ (ยกเลิกแล้ว)',
   'criminal-code-2499': 'ประมวลกฎหมายอาญา',
@@ -54,12 +55,12 @@ const GRIEVANCE_ACT_IDS = new Set([
   'ktr-appointment-2567',
   'kpkt-grievance-2567',
   'ktr-petition-2547',
-  'ktr-qualifications-2547',
   'ktr-regular-reserve-2548',
 ]);
 
 const NEW_ACT_IDS = new Set([
   'tr-order-515-2569',
+  'ktr-discipline-2569',
   'tr-circular-2456-2569',
 ]);
 
@@ -295,9 +296,12 @@ export function searchPoliceLaws(options: LawSearchOptions = {}): LawSearchResul
       score += 100;
     }
 
-    // Slight priority boost for non-repealed current laws
+    // Slight priority boost for non-repealed current laws, and primary mother statute (พ.ร.บ.ตำรวจแห่งชาติ 2565)
     if (score > 0 && !actById.get(item.actId)?.isRepealed) {
       score += 15;
+      if (item.actId === 'police-act-2565') {
+        score += 10;
+      }
     }
 
     if (score > 0) {

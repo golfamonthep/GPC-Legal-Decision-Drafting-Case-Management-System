@@ -403,3 +403,35 @@ test('Discipline cases map to GPC Appeal mode (อุทธรณ์ ก.พ.ค
   assert.ok(res.auto_draft_sections?.['ข้อมูลเรื่องและบุคคล'].includes('ผู้อุทธรณ์'));
   assert.ok(res.auto_draft_sections?.['การวิเคราะห์'].includes('อุทธรณ์'));
 });
+
+test('Jurisdiction guard distinguishes severe appeal (ก.พ.ค.ตร. ม.141 ว.2) vs minor discipline (ม.141 ว.1) vs suspension grievance (ม.147)', () => {
+  const minorEval = evaluateDisciplineAppealRules(
+    { appointment_motion: 'minor_discipline', claim: 'ขออุทธรณ์คำสั่งตัดเงินเดือน 5% 1 เดือน ตามมาตรา 124' },
+    [],
+    [],
+  );
+  assert.ok(
+    minorEval.checks.some(c => c.id === 'gpc-minor-discipline-jurisdiction-warning' && c.detail.includes('มาตรา ๑๔๑ วรรคหนึ่ง')),
+    'Minor discipline must warn that appeal goes to superior/ก.ตร. under s.141 para 1, not ก.พ.ค.ตร.',
+  );
+
+  const suspEval = evaluateDisciplineAppealRules(
+    { appointment_motion: 'suspension_order', claim: 'คำสั่งพักราชการตามมาตรา 131' },
+    [],
+    [],
+  );
+  assert.ok(
+    suspEval.checks.some(c => c.id === 'gpc-suspension-grievance-warning' && c.detail.includes('ร้องทุกข์')),
+    'Suspension order must clarify it is a grievance under s.147 & Rule 71, not direct appeal',
+  );
+
+  const tempDisEval = evaluateDisciplineAppealRules(
+    { appointment_motion: 'temp_discharge', claim: 'คำสั่งให้ออกจากราชการไว้ก่อนตามมาตรา 131 ข้อ 75' },
+    [],
+    [],
+  );
+  assert.ok(
+    tempDisEval.checks.some(c => c.id === 'gpc-appeal-jurisdiction' && c.detail.includes('ห้าม ก.พ.ค.ตร. เพิ่มโทษ')),
+    'Temporary discharge must route to ก.พ.ค.ตร. appeal under s.141 para 2 with no-reformatio-in-peius Rule 51',
+  );
+});

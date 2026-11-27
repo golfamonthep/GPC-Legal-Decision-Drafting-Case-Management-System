@@ -169,3 +169,73 @@ test('Order 515/2569 (24 Nov 2569) is indexed across all 20 clauses + intro and 
   const grievanceScope = searchPoliceLaws({ scope: 'grievance_appointment', hideRepealed: true, pageSize: 100 });
   assert.ok(grievanceScope.items.every(i => i.actId !== 'tr-order-515-2569' && i.actId !== 'ktr-petition-2547'));
 });
+
+test('Legal Data Integrity Guard: 0 duplicate IDs, clean Police Act 2565 (181 secs), official 2567/2569 Royal Gazette texts & repealed flags', () => {
+  const acts = getLawActs();
+  const allRes = searchPoliceLaws({ hideRepealed: false, pageSize: 5000 });
+
+  // 1. Zero duplicate section IDs across entire catalog
+  const idSet = new Set<string>();
+  for (const item of allRes.items) {
+    assert.ok(!idSet.has(item.id), `Duplicate section ID found: ${item.id}`);
+    idSet.add(item.id);
+  }
+
+  // 2. Police Act 2565 has exact 181 sections (1..181), 0 broken sara-am, 0 Royal Gazette page-header noise
+  const act2565 = searchPoliceLaws({ actId: 'police-act-2565', pageSize: 300 });
+  assert.equal(act2565.total, 181, `Expected 181 sections in police-act-2565, got ${act2565.total}`);
+  for (let n = 1; n <= 181; n++) {
+    const sec = getSectionById(`police-act-2565-sec-${n}`).section;
+    assert.ok(sec, `Missing police-act-2565-sec-${n}`);
+    assert.equal(sec.sectionNumArabic, String(n));
+    assert.ok(!/[\u0e01-\u0e2e\u0e48-\u0e4b]\s+\u0e32/.test(sec.content), `Broken sara-am in sec ${n}`);
+    assert.ok(!/หนา\s+[๐-๙0-9]+\s*้/.test(sec.content), `Royal Gazette header noise in sec ${n}`);
+  }
+  // Key sections sanity check
+  assert.ok(getSectionById('police-act-2565-sec-115').section?.content.includes('ภาคทัณฑ์'));
+  assert.ok(getSectionById('police-act-2565-sec-138').section?.content.includes('มลทิน'));
+  assert.ok(getSectionById('police-act-2565-sec-141').section?.content.includes('อุทธรณ์'));
+  assert.ok(getSectionById('police-act-2565-sec-147').section?.content.includes('ร้องทุกข์'));
+
+  // 3. Official Royal Gazette กฎ ก.พ.ค.ตร. อุทธรณ์ ๒๕๖๗ (58 clauses + intro = 59) & ร้องทุกข์ ๒๕๖๗ (70 clauses + intro = 71)
+  const kpktAppeal = searchPoliceLaws({ actId: 'kpkt-appeal-2567', pageSize: 100 });
+  assert.equal(kpktAppeal.total, 59, `Expected 59 items in kpkt-appeal-2567, got ${kpktAppeal.total}`);
+  assert.ok(getSectionById('kpkt-appeal-2567-rule-51').section?.content.includes('เพิ่มโทษ'));
+
+  const kpktGrievance = searchPoliceLaws({ actId: 'kpkt-grievance-2567', pageSize: 100 });
+  assert.equal(kpktGrievance.total, 71, `Expected 71 items in kpkt-grievance-2567, got ${kpktGrievance.total}`);
+  assert.ok(getSectionById('kpkt-grievance-2567-rule-63').section?.content.includes('เจ็ดวัน'));
+
+  // 4. Official Royal Gazette กฎ ก.ตร. วินัย ๒๕๖๙ (intro + 114 clauses + penalty table = 116)
+  const ktrDisc = searchPoliceLaws({ actId: 'ktr-discipline-2569', pageSize: 150 });
+  assert.equal(ktrDisc.total, 116, `Expected 116 items in ktr-discipline-2569, got ${ktrDisc.total}`);
+  assert.ok(getSectionById('ktr-discipline-2569-rule-2').section?.content.includes('ให้ยกเลิก'));
+  assert.ok(getSectionById('ktr-discipline-2569-rule-71').section?.content.includes('ร้องทุกข์'));
+  assert.ok(getSectionById('ktr-discipline-2569-rule-75').section?.content.includes('อุทธรณ์'));
+  assert.ok(getSectionById('ktr-discipline-2569-penalty-table').section?.content.includes('ตารางอำนาจและอัตราการลงโทษ'));
+
+  // 5. All 8 discipline regulations repealed by กฎ ก.ตร. วินัย ๒๕๖๙ ข้อ ๒ + 2 repealed drug acts are flagged isRepealed
+  const mustBeRepealed = [
+    'ktr-inquiry-2547',
+    'ktr-flagrant-offense-2547',
+    'ktr-suspend-leave-2547',
+    'ktr-filter-committee-2547',
+    'ktr-order-manner-2547',
+    'ktr-punish-power-2547',
+    'ktr-restore-status-2547',
+    'ktr-investigation-fact-2556',
+    'narcotics-2522',
+    'drug-suppression-2534',
+    'ktr-appeal-2547',
+    'ktr-petition-2547',
+  ];
+  for (const id of mustBeRepealed) {
+    const act = acts.find(a => a.id === id);
+    assert.ok(act, `Expected act ${id} to exist`);
+    assert.equal(act?.isRepealed, true, `Act ${id} must be marked isRepealed=true`);
+  }
+
+  // 6. ktr-qualifications-2547 is NOT misclassified under grievance_appointment
+  const qualAct = acts.find(a => a.id === 'ktr-qualifications-2547');
+  assert.notEqual(qualAct?.gpcScope, 'grievance_appointment');
+});
